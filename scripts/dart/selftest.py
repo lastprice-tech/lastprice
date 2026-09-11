@@ -14,6 +14,7 @@ import config
 import corpcode
 import docparse
 import emit
+import handoff
 import fixtures
 import phase0
 import phase1
@@ -431,6 +432,129 @@ def conversion_section_cases():
           "관측 %s" % sorted(set(batch.values())))
 
 
+def parser_edge_cases(out_root):
+    """파서 경계값. 여기서 잡는 것은 전부 '조용한 손실'이었던 것들이다."""
+    print("\n  [6] 파서 경계 — 중첩 표·잘린 문서·표기")
+
+    def tables(html):
+        secs, err = docparse.parse_document(html)
+        return [t for s in secs for t in s["tables"]], \
+               " ".join(docparse.section_body(s) for s in secs), err
+
+    def cells(tabs):
+        return [[c["text"] for c in r] for t in tabs for r in t["rows"]]
+
+    # DART 원문은 표 안에 표를 넣는다(실측: 우리 2018 웹회수 8건에 중첩 열림 1,624회,
+    # 최대 깊이 3). 파서가 self._table 을 덮어쓰던 시절에는 바깥 표 187개와 그 셀
+    # 356개가 통째로 사라졌고, 내용 있는 331행이 전부 "(주n) 정정 전/정정 후" 라벨이라
+    # 정정신고서에서 어느 표가 정정 전인지가 인계본에서 없어졌다.
+    nest = ("<TABLE><TR><TD>(주1) 정정 전</TD></TR>"
+            "<TR><TD><TABLE><TR><TD>안쪽</TD></TR></TABLE></TD></TR>"
+            "<TR><TD>(주1) 정정 후</TD></TR></TABLE>")
+    tb, body, err = tables(nest)
+    flat = [c for row in cells(tb) for c in row]
+    check("중첩 표: 바깥 표의 셀이 보존된다",
+          "(주1) 정정 전" in flat and "(주1) 정정 후" in flat, "셀 %r" % (flat,))
+    check("중첩 표: 안쪽 표도 따로 남는다", "안쪽" in flat)
+    check("중첩 표: 표 개수가 <TABLE> 개수와 같다", len(tb) == 2, "표 %d" % len(tb))
+    # table_index 는 원문 등장 순서여야 한다. 바깥 표를 닫는 시점에 실으면 제 자식들
+    # 뒤로 밀려 색인이 문서 순서와 어긋난다.
+    check("중첩 표: 바깥 표가 안쪽 표보다 먼저 색인된다",
+          bool(tb) and any(c == "(주1) 정정 전" for r in tb[0]["rows"] for c in
+                           [x["text"] for x in r]))
+    check("중첩 표: 바깥 셀 내용이 본문으로 새지 않는다", "정정 후" not in body,
+          "본문 %r" % body[:60])
+
+    tb, _, _ = tables("<TABLE><TR><TD>앞<TABLE><TR><TD>안</TD></TR></TABLE>뒤</TD></TR></TABLE>")
+    check("셀 안에 표가 끼어도 그 셀의 앞뒤 텍스트가 한 셀에 남는다",
+          ["앞뒤"] in cells(tb), "셀 %r" % (cells(tb),))
+
+    # 원문 크기 초과 절단·목차 노드를 바이트로 자른 조각은 태그 한가운데서 끝난다.
+    tb, _, _ = tables("<TABLE><TR><TD>합계 100</TD></TR>")
+    check("닫히지 않은 <TABLE> 의 셀도 버리지 않는다",
+          ["합계 100"] in cells(tb), "셀 %r" % (cells(tb),))
+    _, body, _ = tables("<P>꼬리 값")
+    check("닫히지 않은 <P> 의 텍스트를 close() 에서 버리지 않는다",
+          "꼬리 값" in body, "본문 %r" % body)
+
+    # DART 는 '&' 를 escape 하지 않는다. 모르는 엔티티를 빈 문자열로 바꾸면 지워진다.
+    _, body, _ = tables("<P>M&A중개</P>")
+    check("미정의 엔티티(M&A)가 본문에서 보존된다", body == "M&A중개", "본문 %r" % body)
+    tb, _, _ = tables("<TABLE><TR><TD>S&P500</TD></TR></TABLE>")
+    check("미정의 엔티티가 셀에서도 보존된다", ["S&P500"] in cells(tb), "셀 %r" % (cells(tb),))
+    _, body, _ = tables("<P>값 &#1114112;</P>")
+    check("변환 못 하는 문자참조는 지우지 않고 원문을 남긴다", "&#1114112;" in body,
+          "본문 %r" % body)
+
+    tb, _, _ = tables("<TABLE><TR><TD></TD><TD>x</TD></TR></TABLE>")
+    check("빈 셀이 행을 무너뜨리지 않는다", cells(tb) == [["", "x"]], "셀 %r" % (cells(tb),))
+
+    # 안 닫힌 <TD> — 예전에는 다음 셀 태그가 버퍼를 리셋해 두 칸이 다 사라지고
+    # 빈 행이 </TR> 에서 통째로 버려졌다(표 1개 / 행 0개).
+    tb, _, _ = tables("<TABLE><TR><TD>첫칸<TD>둘째칸</TR></TABLE>")
+    check("닫히지 않은 <TD> 의 글자를 다음 셀이 지우지 않는다",
+          cells(tb) == [["첫칸", "둘째칸"]], "셀 %r" % (cells(tb),))
+    tb, _, _ = tables('<TABLE><TR><TD COLSPAN="2" ROWSPAN="3">x<TD>y</TR></TABLE>')
+    spans = [(c["rowspan"], c["colspan"]) for t in tb for r in t["rows"] for c in r]
+    check("닫히지 않은 셀의 rowspan/colspan 도 원문 그대로 남는다",
+          spans == [("3", "2"), ("", "")], "span %r" % (spans,))
+    # 안 닫힌 <TR> — 예전에는 다음 <TR> 이 self._row 를 갈아치워 앞 행이 사라졌다.
+    tb, _, _ = tables("<TABLE><TR><TD>a</TD><TR><TD>b</TD></TR></TABLE>")
+    check("닫히지 않은 <TR> 의 행을 다음 행이 지우지 않는다",
+          cells(tb) == [["a"], ["b"]], "셀 %r" % (cells(tb),))
+    # 표 안이지만 <TR> 밖인 텍스트 — 셀에도 본문에도 없이 사라지던 경로.
+    tb, body, _ = tables("<TABLE>표안텍스트<P>표안P</P><TR><TD>셀</TD></TR></TABLE>")
+    check("표 안·행 밖 텍스트를 버리지 않는다",
+          "표안텍스트" in body and "표안P" in body, "본문 %r" % body)
+
+    # ── 웹 회수 경로: 목차 제목 표기 ──────────────────────────────────────
+    # ZIP 경로의 section_title 은 emit 이 sec["title"](= normalize_for_match 결과)을
+    # 싣는다. 웹 경로만 원문 표기(ㆍ U+318D)로 두면 같은 CSV 안에서 표기가 갈려
+    # 중점('·')으로 거르면 웹 8건이 0건으로 나온다.
+    out = os.path.join(out_root, "t_web")
+    shutil.rmtree(out, ignore_errors=True)
+    d = os.path.join(out, "doc", "20181115000214")
+    os.makedirs(d)
+    html = ("<TITLE>머리</TITLE><TABLE><TR><TD>정정 전</TD></TR>"
+            "<TR><TD><TABLE><TR><TD>1,234</TD></TR></TABLE></TD></TR></TABLE>").encode("cp949")
+    with open(os.path.join(d, "본문.html"), "wb") as f:
+        f.write(html)
+    rec = {"파일종류": "본문HTML", "수령성공여부": "성공",
+           "저장경로": "doc/20181115000214/본문.html", "sha256": "0" * 64,
+           "fetched_at": "2026-09-11T00:00:00+09:00",
+           "목차_노드": [{"순서": 1, "제목": "제1부 주식의 포괄적 교환ㆍ이전의 개요",
+                       "시작바이트": 0, "바이트": len(html)}]}
+    with open(os.path.join(d, "_파일목록.json"), "w", encoding="utf-8") as f:
+        json.dump({"files": [rec]}, f, ensure_ascii=False)
+    notes = []
+    parts, prov = handoff._web_doc_parts(out, "20181115000214", notes)
+    check("웹 회수: 목차 노드를 읽어 낸다", len(parts) == 1, "parts %d" % len(parts))
+    if parts:
+        pt = parts[0]
+        check("웹 회수 제목이 ZIP 경로와 같은 표기로 정규화된다",
+              pt["title"] == docparse.normalize_for_match(pt["title_raw"])
+              and "·" in pt["title"], "title %r" % pt["title"])
+        check("웹 회수 제목의 원문 표기를 따로 보존한다",
+              pt["title_raw"] == "제1부 주식의 포괄적 교환ㆍ이전의 개요")
+        # 같은 필터가 두 경로에 똑같이 걸려야 한다
+        check("중점 표기로 걸러도 웹 회수 제목이 잡힌다",
+              "교환·이전" in pt["title"])
+        check("웹 회수 표에서도 중첩 바깥 표의 셀이 보존된다",
+              any(c["text"] == "정정 전" for t in pt["tables"] for r in t["rows"]
+                  for c in r), "표 %d" % len(pt["tables"]))
+    check("웹 회수 출처를 뭉개지 않는다", prov.get("status") == "014→웹회수")
+
+    # `바이트` 가 없으면 파일 끝까지 읽어 버리던 자리 — 이제는 건너뛰고 사유를 남긴다.
+    rec2 = dict(rec, 목차_노드=[{"순서": 1, "제목": "x", "시작바이트": 0, "바이트": ""}])
+    with open(os.path.join(d, "_파일목록.json"), "w", encoding="utf-8") as f:
+        json.dump({"files": [rec2]}, f, ensure_ascii=False)
+    notes2 = []
+    parts2, _ = handoff._web_doc_parts(out, "20181115000214", notes2)
+    check("`바이트` 결측 노드는 파일 끝까지 읽지 않고 사유를 남긴다",
+          not parts2 and any("바이트 범위가 없어" in n for n in notes2),
+          "parts %d notes %r" % (len(parts2), notes2))
+
+
 def main(out_dir):
     root = os.path.join(os.path.abspath(out_dir), "_selftest")
     shutil.rmtree(root, ignore_errors=True)
@@ -440,6 +564,7 @@ def main(out_dir):
     out = pipeline(root)
     assertions(out)
     conversion_section_cases()
+    parser_edge_cases(root)
     print("\n  결과: 통과 %d / 실패 %d" % (len(PASS), len(FAIL)))
     if FAIL:
         print("  실패 항목:")

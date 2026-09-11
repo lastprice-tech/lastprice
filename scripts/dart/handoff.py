@@ -259,8 +259,13 @@ def _scan_text(out_dir, purpose):
 # 섹션 제목은 추정하지 않는다. dartweb 이 목록 페이지에서 읽어 기록해 둔
 # `목차_노드`(제목·시작바이트·바이트)를 그대로 쓴다 — 뷰어 HTML 의 스타일을 보고
 # 제목처럼 생긴 줄을 고르는 식의 추론은 하지 않는다.
-def _web_body_parts(out_dir, rcept_no, notes):
-    """[(순서, 제목, 본문텍스트, 저장경로)] — 없으면 빈 리스트."""
+def _web_doc_parts(out_dir, rcept_no, notes):
+    """목차 노드별 파싱 결과 — ([{order, title, body, tables}], 출처4컬럼).
+
+    파일을 쓰지 않는 순수 조회다. 서술(_web_body_parts)과 표(_write_web_tables)가
+    같은 목차·같은 파서 결과를 쓰도록 한곳에 모아 둔다 — 두 곳에서 따로 목차를 읽으면
+    section_index/section_title 이 조용히 어긋난다.
+    """
     idx = os.path.join(out_dir, "doc", rcept_no, "_파일목록.json")
     if not os.path.exists(idx):
         return [], {}
@@ -288,34 +293,81 @@ def _web_body_parts(out_dir, rcept_no, notes):
     nodes = rec.get("목차_노드") or []
     if not nodes:
         nodes = [{"순서": 1, "제목": "(본문 전체)", "시작바이트": 0, "바이트": len(raw)}]
-    text_dir = os.path.join(out_dir, "text", rcept_no)
-    os.makedirs(text_dir, exist_ok=True)
 
-    out = []
-    for nd in nodes:
-        start, size = _as_int(nd.get("시작바이트")), _as_int(nd.get("바이트"))
+    parts = []
+    for pos, nd in enumerate(nodes):
+        start, size = _opt_int(nd.get("시작바이트")), _opt_int(nd.get("바이트"))
         if start is None or size is None or size <= 0 or start >= len(raw):
             notes.append("%s 목차 %s: 바이트 범위가 없어 건너뜀 — 값을 지어내지 않음"
                          % (rcept_no, nd.get("순서", "?")))
             continue
+        if start + size > len(raw):
+            # 조용히 짧게 읽지 않는다. 파일이 목차보다 짧으면 그 사실을 남긴다.
+            notes.append("%s 목차 %s: 목차가 가리키는 범위(%d+%d)가 파일 끝(%d)을 넘어 "
+                         "%d바이트만 읽음 — 모자란 만큼은 지어내지 않음"
+                         % (rcept_no, nd.get("순서", "?"), start, size, len(raw),
+                            len(raw) - start))
         chunk = raw[start:start + size]
         txt = docparse.decode_document(chunk)[0]
-        secs, _ = docparse.parse_document(txt)
-        body = " ".join(docparse.section_body(sc) for sc in secs).strip()
-        if not body:
-            continue
-        title = (nd.get("제목") or "").strip() or "(제목 없음)"
-        name = "web_%03d_%s.txt" % (_as_int(nd.get("순서")) or 0, docparse.slug(title))
-        tp = os.path.join(text_dir, name)
-        with open(tp, "w", encoding="utf-8") as f:
-            f.write(title + "\n\n" + body)
-        out.append((_as_int(nd.get("순서")) or 0, title, body,
-                    emit.rel(out_dir, tp)))
+        secs, perr = docparse.parse_document(txt)
+        if perr:
+            # 예전에는 `secs, _ =` 로 버렸다. 파싱이 중간에 죽으면 표·본문이 조용히
+            # 짧아지므로 사유를 남긴다(행은 읽은 만큼 그대로 싣는다).
+            notes.append("%s 목차 %s: %s — 그때까지 읽은 섹션 %d개만 싣는다"
+                         % (rcept_no, nd.get("순서", "?"), perr, len(secs)))
+        order = _opt_int(nd.get("순서"))
+        if order is None:
+            notes.append("%s 목차 %d번째: `순서` 가 없어 section_index 를 빈칸으로 둠 "
+                         "— 번호를 지어내지 않음" % (rcept_no, pos + 1))
+        raw_title = (nd.get("제목") or "").strip() or "(제목 없음)"
+        # 서술은 노드 하나를 한 덩어리로 본다(기존 동작). 표도 같은 덩어리 안에서
+        # 문서 순서대로 이어 붙여 table_index 를 0..n-1 로 매긴다 — emit 이 섹션
+        # 단위로 매기는 것과 같은 규칙이다.
+        #
+        # section_title 은 normalize_for_match 를 거친다. ZIP 경로의 section_title 은
+        # emit 이 sec["title"](= normalize_for_match 결과)을 싣기 때문이다. 웹 경로만
+        # 원문 표기로 두면 같은 CSV 안에서 표기가 갈려 한 필터가 한쪽만 잡는다 —
+        # 실측: 웹 제목 '제1부 주식의 포괄적 교환ㆍ이전의 개요'(U+318D 아래아)는 ZIP
+        # 쪽 표기인 중점('·')으로 거르면 0건이다. 원문 표기는 text/<rc>/web_*.txt 머리글과
+        # 원문_파일목록.csv 의 `목차_노드` 컬럼에 그대로 남아 있어 잃는 것이 없다.
+        parts.append({"order": order, "pos": pos,
+                      "title": docparse.normalize_for_match(raw_title),
+                      "title_raw": raw_title,
+                      "body": " ".join(docparse.section_body(sc) for sc in secs).strip(),
+                      "tables": [t for sc in secs for t in sc["tables"]]})
     prov = {"fetched_at": rec.get("fetched_at", ""),
             # OpenAPI 는 014 였고 이 본문은 웹에서 왔다. 출처를 뭉개지 않는다.
             "status": "014→웹회수",
             "raw_path": rec.get("저장경로", ""),
             "raw_sha256": rec.get("sha256", "")}
+    return parts, prov
+
+
+def _web_body_parts(out_dir, rcept_no, notes):
+    """[(순서, 제목, 본문텍스트, 저장경로)] — 없으면 빈 리스트.
+
+    서술 CSV 전용. 동작은 예전 그대로다(본문이 빈 노드는 행을 만들지 않는다).
+    """
+    parts, prov = _web_doc_parts(out_dir, rcept_no, notes)
+    if not parts:
+        return [], prov
+    text_dir = os.path.join(out_dir, "text", rcept_no)
+    os.makedirs(text_dir, exist_ok=True)
+    out = []
+    for pt in parts:
+        if not pt["body"]:
+            continue
+        # 파일 이름은 인계 데이터가 아니다. `순서` 가 없을 때만 목록 위치로 겹침을
+        # 피하고, 그 사실은 위에서 notes 에 남겼다.
+        name = ("web_%03d_%s.txt" % (pt["order"], docparse.slug(pt["title_raw"]))
+                if pt["order"] is not None
+                else "web_순서없음%02d_%s.txt" % (pt["pos"] + 1,
+                                                docparse.slug(pt["title_raw"])))
+        tp = os.path.join(text_dir, name)
+        with open(tp, "w", encoding="utf-8") as f:
+            f.write(pt["title_raw"] + "\n\n" + pt["body"])   # 파일에는 원문 표기를 남긴다
+        out.append((pt["order"] if pt["order"] is not None else "",
+                    pt["title"], pt["body"], emit.rel(out_dir, tp)))
     return out, prov
 
 
@@ -480,6 +532,109 @@ def build_narrative(out_dir, handoff_dir, purpose, batches, result, warned):
     return meta
 
 
+# ── 웹 회수 문서의 표 ─────────────────────────────────────────────────────
+# OpenAPI 가 014 로 거부한 문서(우리 2018 정정 8건)는 원문 ZIP 이 147바이트짜리 오류
+# 응답이라 11_원문추출.csv 에 행이 0개다. 서술은 _web_body_parts 가 살렸지만 그 함수는
+# 본문 텍스트만 봤기 때문에 표는 어디에도 실리지 않았다 — 표 CSV 의 distinct rcept_no
+# 가 32 가 아니라 24 였던 이유다. 특히 20181115000214/215/218/219/220 은
+# 「분 기 재 무 제 표」 정정본이라 알맹이가 전부 표 안에 있어서, 표를 빼면 그 5건의
+# 행에는 재무수치가 한 칸도 남지 않는다.
+#
+# table_extracted 는 전부 'Y' 다. 11_원문추출.csv 경로에서 상한(MAX_TABLES_PER_SECTION)
+# 을 거는 이유는 '같은 문서의 다른 표는 어차피 원문 ZIP 에 있으니 색인만 남기면 된다'
+# 는 것인데, 이 8건은 ZIP 자체가 없어 어디에도 표가 없다. 실측 10,362표 / 292,934셀이고
+# 1차 표 CSV 는 439,791 → 732,725행이 된다(Excel 한도 1,048,576행 안).
+def _write_web_tables(out_dir, purpose, batches, seen, writers, last, result, warned):
+    """11_원문추출.csv 에 행이 한 줄도 없는 문서의 표를 웹 회수 본문에서 싣는다.
+
+    서술과 같은 목차 노드·같은 파서 결과를 쓰므로 section_index/section_title 이 서술
+    행과 정확히 같다. 제목은 dartweb 이 기록한 `목차_노드[].제목` 그대로이고 추정하지
+    않는다. 값은 파서가 준 것만 싣는다 — rowspan/colspan/단위를 원문 그대로 두고
+    격자로 추론하지 않는 것은 11_원문추출.csv 경로와 같다.
+    """
+    stats = {"docs": 0, "tables": 0, "cells": 0, "empty_tables": 0, "unordered": 0}
+    disc = None
+    for rc in sorted(purpose):
+        if rc in seen:                     # 11_원문추출.csv 에 행이 있는 문서는 건드리지 않는다
+            continue
+        # 섹션이 0건이어도 원문 ZIP 이 읽혔다면 emit 이 _full.txt 를 남긴다. 그 문서는
+        # 서술이 '전문 대체' 경로(section_index=-1)로 가므로 목차 노드 번호와 맞지 않는다.
+        # 여기서 표만 목차 번호로 실으면 서술과 섹션 축이 어긋나므로 손대지 않는다.
+        if os.path.exists(os.path.join(out_dir, "text", rc, "_full.txt")):
+            continue
+        notes = []
+        parts, prov = _web_doc_parts(out_dir, rc, notes)
+        # 같은 사유를 서술 패스가 이미 남겼다. 사실을 지우지도, 두 번 적지도 않는다.
+        for n in notes:
+            if n not in result["notes"]:
+                result["notes"].append(n)
+        if not parts:
+            continue
+        if disc is None:
+            disc = _disclosure_index(out_dir)
+        d = disc.get(rc, {})
+        label = d.get("corp_label", "")
+        if not label:
+            result["notes"].append("%s: 02_공시목록.csv 에 메타가 없어 표 행의 "
+                                   "corp_label/rcept_dt 를 빈칸으로 둠" % rc)
+        b = _batch_of(label, batches, warned, result["notes"])
+        doc_base = dict(corp_label=label, rcept_no=rc, rcept_dt=d.get("rcept_dt", ""),
+                        doc_kind=doc_kind(d.get("report_nm", "")),
+                        doc_purpose=purpose.get(rc, ""))
+        ntab = ncell = 0
+        for pt in parts:
+            for ti, tbl in enumerate(pt["tables"]):
+                # 정렬 키에서만 _as_int 의 '빈칸은 뒤로'를 쓴다. CSV 에 실리는 값은
+                # 아래 section_index 처럼 빈칸 그대로다.
+                k = (label, d.get("rcept_dt", ""), rc,
+                     _as_int(pt["order"] if pt["order"] is not None else ""), ti, 0, 0)
+                if b in last and k < last[b]:
+                    stats["unordered"] += 1
+                last[b] = k
+                tcommon = dict(doc_base,
+                               section_index=(pt["order"] if pt["order"] is not None
+                                              else ""),
+                               section_title=pt["title"], table_index=ti,
+                               table_matched_keyword="|".join(
+                                   docparse.table_keywords(tbl, config.TABLE_KEYWORDS)),
+                               table_extracted="Y",
+                               table_n_rows=len(tbl["rows"]),
+                               unit_hint=tbl.get("unit_hint", ""),
+                               unit_hint_source=tbl.get("unit_hint_source", ""))
+                tcommon.update({key: prov.get(key, "") for key in PROV_KEYS})
+                ntab += 1
+                if not tbl["rows"]:
+                    # 행이 하나도 없는 표. 셀 행이 없다고 통째로 빼면 '표가 없었다'가
+                    # 된다 — 색인 1행으로 존재만 남긴다(11_원문추출 경로의 색인 행과
+                    # 같은 모양: row_index·cell_* 빈칸).
+                    writers[b].write(dict(tcommon, row_index="", cell_ord="",
+                                          cell_tag="", rowspan="", colspan="",
+                                          cell_text=""))
+                    stats["empty_tables"] += 1
+                    continue
+                for ri, row in enumerate(tbl["rows"]):
+                    for ci, cell in enumerate(row):
+                        writers[b].write(dict(tcommon, row_index=ri, cell_ord=ci,
+                                              cell_tag=cell["tag"],
+                                              rowspan=cell["rowspan"],
+                                              colspan=cell["colspan"],
+                                              cell_text=cell["text"]))
+                        ncell += 1
+        if not ntab:
+            result["notes"].append("%s(%s): 웹 회수 본문에 표가 0개 — 표 CSV 에 "
+                                   "행을 만들지 않음(지어낼 것이 없다)"
+                                   % (rc, purpose.get(rc, "")))
+            continue
+        stats["docs"] += 1
+        stats["tables"] += ntab
+        stats["cells"] += ncell
+        result["notes"].append(
+            "%s(%s): OpenAPI 014 — 웹 뷰어 본문에서 표 %d개 / 셀 %d개를 표 CSV 에 수록 "
+            "(table_extracted=Y, 출처 %s)"
+            % (rc, purpose.get(rc, ""), ntab, ncell, prov.get("raw_path", "")))
+    return stats
+
+
 # ── 산출 2: 표 ────────────────────────────────────────────────────────────
 def build_tables(out_dir, handoff_dir, purpose, batches, result, warned):
     """kind=='table' 셀 + 셀을 전개하지 않은 표의 색인 행을 원문 그대로 옮긴다.
@@ -506,12 +661,17 @@ def build_tables(out_dir, handoff_dir, purpose, batches, result, warned):
     unordered = 0
     index_only = 0                   # 셀 미전개 표 = 색인 1행만 남긴 표
     y_index, cell_tables = set(), set()
+    # 11_원문추출.csv 에 행이 한 줄이라도 있는 문서. 웹 회수 표를 덧붙일지 가르는
+    # 기준이라 kind 를 가리지 않고 담는다(표 행만 있고 서술 행이 없는 문서가 생겨도
+    # 같은 셀이 두 번 실리지 않게 — 중복이 누락보다 낫지 않다).
+    seen = set()
     f, rd = _open_source(out_dir)
     try:
         for r in rd:
             rc = r.get("rcept_no") or ""
             if rc not in purpose:
                 continue
+            seen.add(rc)
             kind = r.get("kind")
             if kind not in ("table", "table_index"):
                 continue
@@ -547,10 +707,14 @@ def build_tables(out_dir, handoff_dir, purpose, batches, result, warned):
                        cell_text=r.get("cell_text", ""))
             row.update({key: r.get(key, "") for key in PROV_KEYS})
             writers[b].write(row)
+        # OpenAPI 가 014 로 거부해 11_원문추출.csv 에 행이 0개인 문서의 표.
+        web = _write_web_tables(out_dir, purpose, batches, seen, writers, last,
+                                result, warned)
     finally:
         f.close()
         for w in writers.values():
             w.close()
+    unordered += web["unordered"]
     if unordered:
         result["notes"].append(
             "표 CSV: 입력 순서가 %d곳에서 역행 — 11_원문추출.csv 의 정렬이 바뀐 듯하다. "
@@ -570,9 +734,15 @@ def build_tables(out_dir, handoff_dir, purpose, batches, result, warned):
     if orphan:
         result["notes"].append(
             "표 CSV: 색인 행 없이 셀만 있는 표 %d개 — 입력 형식 확인 필요" % len(orphan))
-    result["table_stats"] = {"cells": sum(w.n for w in writers.values()) - index_only,
-                             "tables_with_cells": len(cell_tables),
-                             "index_only_tables": index_only}
+    if web["empty_tables"]:
+        result["notes"].append(
+            "표 CSV: 웹 회수 문서에서 행이 0개인 표 %d개를 색인 1행씩으로 보존 "
+            "(table_extracted=Y, row_index·cell_text 빈칸)" % web["empty_tables"])
+    result["table_stats"] = {
+        "cells": sum(w.n for w in writers.values()) - index_only - web["empty_tables"],
+        "tables_with_cells": len(cell_tables) + web["tables"] - web["empty_tables"],
+        "index_only_tables": index_only,
+        "web_docs": web["docs"], "web_tables": web["tables"], "web_cells": web["cells"]}
     for b, w in writers.items():
         if w.n:
             result["paths"].append(w.path)
@@ -599,6 +769,20 @@ def _as_int(v):
         return int(v)
     except (TypeError, ValueError):
         return 10 ** 9      # 빈칸은 뒤로
+
+
+def _opt_int(v):
+    """정수면 정수, 아니면 None. 정렬용 _as_int 와 섞어 쓰면 안 된다.
+
+    _as_int 는 못 읽은 값에 10**9 을 돌려준다 — 정렬 키로는 '뒤로'라는 뜻이지만
+    '읽었는가'를 묻는 자리에 쓰면 10억이라는 값을 지어낸 것이 된다. 실제로
+    _web_doc_parts 가 `바이트` 를 _as_int 로 읽어 결측이면 10**9 → 파일 끝까지
+    통째로 읽었고, `순서` 가 결측이면 section_index 에 1000000000 이 실렸다.
+    """
+    try:
+        return int(v)
+    except (TypeError, ValueError):
+        return None
 
 
 # ── 산출 3: 파일목록 ──────────────────────────────────────────────────────

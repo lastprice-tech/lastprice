@@ -443,8 +443,11 @@ def emit_documents(out_dir, metas, by_code, max_doc_bytes, doc_index=None):
         for si, sec in enumerate(sections):
             title_hits = [k for k in config.SECTION_KEYWORDS
                           if docparse.normalize_for_match(k) in sec["title"]]
-            body_hits = [k for k in config.TABLE_KEYWORDS
-                         if k in docparse.section_body(sec)]
+            # 본문은 이제 원문 표기 그대로이다(normalize_for_output = 공백 접기만).
+            # 키워드를 그대로 대본문에 넘기면 ㈜·전각 표기 차이로 히트가 줄어든다.
+            # docparse.text_keywords 가 양쪽을 normalize_for_match 로 맞춰 비교한다.
+            body_hits = docparse.text_keywords(docparse.section_body(sec),
+                                               config.TABLE_KEYWORDS)
             tbl_hits = {ti: docparse.table_keywords(t, config.TABLE_KEYWORDS)
                         for ti, t in enumerate(sec["tables"])}
             if not (title_hits or body_hits or any(tbl_hits.values())):
