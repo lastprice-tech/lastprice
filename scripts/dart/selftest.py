@@ -178,6 +178,14 @@ def pipeline(out_root):
         check("동명 우리금융지주 2건이 서로 다른 corp_code 로 갈린다",
               bool(wm) and bool(wn) and wm[0]["corp_code"] != wn[0]["corp_code"])
         check("신 우리금융지주는 종목코드로 매칭", wn and wn[0]["resolved_by"] == "stock_code")
+        # --only 로 일부만 돌려도 corp_codes.csv 의 나머지 법인이 살아 있어야 한다.
+        # 덮어쓰면 emit 이 라벨을 못 붙여 원문추출 수십만 행이 빈칸이 된다.
+        import corpcode as _cc
+        subset = [e for e in entries[:2]]
+        _cc.write_corp_codes(out, subset)
+        after = _cc.load_corp_codes(out)
+        check("--only 부분 실행이 corp_codes.csv 를 덮어쓰지 않는다",
+              len(after) == len(entries), "%d → %d" % (len(entries), len(after)))
         check("정체성 교차검증 통과",
               all(e["identity_check"] in ("검증됨", "확인항목없음") for e in entries),
               ",".join("%s=%s" % (e["label"], e["identity_check"]) for e in entries

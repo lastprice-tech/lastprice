@@ -244,9 +244,21 @@ CORP_CODE_COLS = [
     "cached", "cache_age_days"]
 
 
-def write_corp_codes(out_dir, entries):
+def write_corp_codes(out_dir, entries, merge=True):
+    """기존 파일과 병합해 쓴다.
+
+    --only 로 일부 법인만 돌릴 때 전체 파일을 부분집합으로 덮어쓰면 나머지 법인의
+    corp_code 가 통째로 사라지고, 그걸 읽는 emit 이 라벨을 못 붙인다(실측: 22행이
+    5행이 되면서 원문추출 36만 행의 라벨이 비었다).
+    """
     if not entries:
         return None
+    if merge:
+        keep = {e["label"]: e for e in load_corp_codes(out_dir)}
+        for e in entries:
+            keep[e["label"]] = e
+        order = {t["label"]: i for i, t in enumerate(config.TARGETS)}
+        entries = sorted(keep.values(), key=lambda e: order.get(e["label"], 999))
     p = os.path.join(out_dir, "corp_codes.csv")
     with open(p, "w", encoding="utf-8-sig", newline="") as f:
         w = csv.DictWriter(f, fieldnames=CORP_CODE_COLS, extrasaction="ignore")
