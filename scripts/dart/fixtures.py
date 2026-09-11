@@ -28,6 +28,10 @@ CODES = {
 EST = {"신한지주": "20010901", "KB금융": "20080929", "iM금융지주": "20110517",
        "우리금융지주": "20190111", "우리금융지주(구)": "20010327"}
 
+# config.TARGETS 에 법인이 추가돼도 픽스처가 깨지지 않도록 합성 코드를 자동 부여한다.
+for _i, _t in enumerate(config.TARGETS, 1):
+    CODES.setdefault(_t["label"], "0010%04d" % _i)
+
 
 def _w(root, ep, name, data, binary=False):
     d = os.path.join(root, ep)

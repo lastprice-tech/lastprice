@@ -12,6 +12,7 @@ import sys
 import client as C
 import config
 import corpcode
+import docparse
 import emit
 import fixtures
 import phase0
@@ -169,7 +170,9 @@ def pipeline(out_root):
         check("탐침 ③ 이 CSM 원문 필요를 결론낸다", "Phase 2 원문 파싱이 필요하다" in rep)
 
         entries = corpcode.load_corp_codes(out)
-        check("17개 법인 전부 해석", len(entries) == 17, "해석 %d" % len(entries))
+        # config.TARGETS 를 기준으로 삼는다 — 대상이 늘 때마다 테스트를 고칠 필요가 없다
+        check("대상 법인 전부 해석", len(entries) == len(config.TARGETS),
+              "해석 %d / 대상 %d" % (len(entries), len(config.TARGETS)))
         wm = [e for e in entries if e["label"] == "우리금융지주(구)"]
         wn = [e for e in entries if e["label"] == "우리금융지주"]
         check("동명 우리금융지주 2건이 서로 다른 corp_code 로 갈린다",
@@ -268,6 +271,10 @@ def assertions(out):
     # 출범 시 계열사 구조가 최우선 산출이라 구시대 어휘를 놓치면 안 된다.
     old = [r for r in doc if "관계회사 및 자회사" in r.get("section_title", "")]
     check("2000년대 초 표기(관계회사·자회사)도 섹션으로 잡는다", bool(old))
+    # NFKC 가 ㆍ(U+318D)를 U+119E 로 바꿔 중점 표기 필터가 0건이 되던 버그
+    check("중점·아래아 표기가 같은 값으로 정규화된다",
+          docparse.normalize_for_match("교환·이전") == docparse.normalize_for_match("교환ㆍ이전")
+          == docparse.normalize_for_match("교환\u119e이전"))
     check("구시대 표기는 제목으로 매칭된다",
           bool(old) and any(r["match_scope"] == "title" for r in old))
     slash_docs = {r["rcept_no"] for r in doc if r["member_selected"].startswith("/")}

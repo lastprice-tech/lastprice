@@ -36,7 +36,11 @@ def normalize_for_match(s: str) -> str:
     if not s:
         return ""
     s = unicodedata.normalize("NFKC", s)
-    for ch in "ㆍ·・‧":
+    # U+119E 가 목록에 있어야 한다: NFKC 가 ㆍ(U+318D HANGUL LETTER ARAEA)를
+    # U+119E(HANGUL JUNGSEONG ARAEA)로 먼저 바꿔버리기 때문에, U+318D 만 적어 두면
+    # 치환이 헛돈다. 실측: "주식의포괄적교환·이전"(중점)으로 필터하면 0건, 아래아
+    # 표기로만 42건이 잡혔다 — 표기를 정확히 맞춰야만 결과가 나오는 함정이었다.
+    for ch in "ㆍᆞ·・‧":
         s = s.replace(ch, "·")
     s = s.replace(" ", " ").replace("　", " ")
     return re.sub(r"\s+", " ", s).strip()

@@ -51,6 +51,22 @@ def _match_any(report_nm, keywords):
     return any(k in nm for k in keywords)
 
 
+def _is_conversion_doc(report_nm):
+    """지주 전환 증권신고서인가. 문서 종류와 사유를 둘 다 만족해야 한다."""
+    nm = docparse.normalize_for_match(report_nm)
+    return (any(k in nm for k in config.CONVERSION_DOC_KINDS)
+            and any(k in nm for k in config.CONVERSION_DOC_REASONS))
+
+
+def doc_kind(report_nm):
+    """원본 / 정정 / 첨부추가 / 발행조건확정."""
+    nm = docparse.normalize_for_match(report_nm)
+    for prefix, label in config.DOC_KIND_PREFIX.items():
+        if nm.startswith(docparse.normalize_for_match(prefix)):
+            return label
+    return "원본"
+
+
 def select_targets(out_dir, entries, base_years=None, verbose=True):
     """(rcept_no, label, 사유) 목록. 근거는 raw/list 에서 직접 읽는다."""
     by_code = {e["corp_code"]: e for e in entries}
