@@ -455,9 +455,18 @@ def emit_documents(out_dir, metas, by_code, max_doc_bytes, doc_index=None):
             body_text = docparse.section_body(sec)
             with open(tp, "w", encoding="utf-8") as f:
                 f.write(sec["title_raw"] + "\n\n" + body_text)
+            # matched_keyword 는 title_hits 가 있으면 body_hits 를 통째로 덮어쓴다.
+            # 그래서 '제목으로도 걸리고 본문으로도 걸린' 섹션에서는 본문 키워드가 조용히
+            # 사라진다. SECTION_KEYWORDS 를 42 → 58 로 늘리자 실제로 그 일이 났다 —
+            # dart_out/raw/document 103건 재측정에서 155개 섹션(문서 27개)이 body → title
+            # 로 뒤집혔고 '자회사' 141회, '기업집단' 29회, '자기자본' 12회,
+            # '자본비율'·'BIS'·'지급여력' 각 2회, '자본적정성' 1회의 기록이 없어졌다.
+            # 표 히트는 이미 table_matched_keyword 로 따로 남기고 있으므로, 본문 히트도
+            # 같은 방식으로 별도 컬럼에 남긴다. matched_keyword/match_scope 의 뜻은 그대로 둔다.
             common = dict(base, section_index=si, section_title=sec["title"],
                           section_title_raw=sec["title_raw"],
                           matched_keyword="|".join(title_hits or body_hits),
+                          body_matched_keyword="|".join(body_hits),
                           match_scope=scope, section_n_tables=len(sec["tables"]),
                           text_path=rel(out_dir, tp))
             rows.append(dict(common, kind="text", table_index="", row_index="",
@@ -507,7 +516,8 @@ def emit_documents(out_dir, metas, by_code, max_doc_bytes, doc_index=None):
                              r.get("section_index") or 0))
     path, _ = write_csv(os.path.join(out_dir, "11_원문추출.csv"), rows,
                         ["corp_label", "corp_code", "rcept_no", "report_nm", "rcept_dt",
-                         "section_index", "section_title", "matched_keyword", "match_scope",
+                         "section_index", "section_title", "matched_keyword",
+                         "body_matched_keyword", "match_scope",
                          "kind", "table_index", "table_matched_keyword", "table_extracted",
                          "table_n_rows", "row_index", "cell_ord", "cell_tag",
                          "rowspan", "colspan", "unit_hint", "cell_text"])

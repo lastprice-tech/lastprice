@@ -23,6 +23,7 @@ import phase2          # noqa: E402
 from client import DartClient, FatalDartError  # noqa: E402
 
 DEFAULT_OUT = "./dart_out"
+DEFAULT_HANDOFF = "./handoff"
 
 
 def parse_years(spec, default):
@@ -45,7 +46,8 @@ def build_parser():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="K-ICS 는 DART 에 없습니다(감독목적 지표). 이 스크립트의 범위 밖입니다.")
     p.add_argument("command", choices=["selftest", "resolve", "phase0", "phase1",
-                                       "phase2", "emit", "all"])
+                                       "phase2", "emit", "handoff", "dartweb",
+                                       "all"])
     p.add_argument("--out", default=DEFAULT_OUT, help="출력 디렉토리 (기본 ./dart_out)")
     p.add_argument("--delay", type=float, default=0.4, help="호출 간 최소 간격(초)")
     p.add_argument("--max-calls", type=int, default=5000, help="이번 실행의 네트워크 호출 상한")
@@ -59,6 +61,10 @@ def build_parser():
     p.add_argument("--endpoint", default="", help="엔드포인트 제한 (쉼표 구분)")
     p.add_argument("--max-doc-bytes", type=int, default=docparse.DEFAULT_MAX_DOC_BYTES)
     p.add_argument("--force", action="store_true", help="Phase 0 게이트를 무시하고 진행")
+    p.add_argument("--handoff-dir", default=DEFAULT_HANDOFF,
+                   help="인계 CSV 출력 디렉토리 (기본 ./handoff)")
+    p.add_argument("--size-limit-mb", type=int, default=500,
+                   help="dartweb 첨부 1건당 저장 상한(MB, 기본 500)")
     return p
 
 
@@ -80,6 +86,62 @@ def gate_phase0(a):
         "  (확인을 건너뛰려면 --force)\n" % p)
 
 
+def run_handoff(a):
+    """11_원문추출.csv → handoff/ 인계 CSV. 네트워크도 API 키도 쓰지 않는다."""
+    import handoff
+    res = handoff.build(a.out, a.handoff_dir)
+    st = res.get("narrative_stats") or {}
+    if st:
+        print("  서술: 섹션 %d개 + 전문대체 문서 %d개 → %d행 "
+              "(청크 분할 %d건, 추가 %d행)"
+              % (st.get("sections", 0), st.get("full_fallback_docs", 0),
+                 st.get("rows", 0), st.get("chunked_sections", 0),
+                 st.get("chunk_extra_rows", 0)))
+        if st.get("docs_without_body"):
+            print("  ! 본문을 한 글자도 못 받은 문서 %d개 — notes 참조"
+                  % st["docs_without_body"])
+        if st.get("len_mismatch"):
+            print("  ! 본문 길이 불일치 %d건 — notes 확인" % st["len_mismatch"])
+    ts = res.get("table_stats") or {}
+    if ts:
+        print("  표: 셀 %d행 / 셀이 있는 표 %d개 + 셀 미전개 표 %d개(색인 1행씩)"
+              % (ts.get("cells", 0), ts.get("tables_with_cells", 0),
+                 ts.get("index_only_tables", 0)))
+    print("  산출물 %d개:" % len(res["paths"]))
+    for p in res["paths"]:
+        print("    %s  (%d행)" % (p, res["counts"].get(os.path.basename(p), 0)))
+    for s in res["skipped"]:
+        print("  건너뜀: %s" % s)
+    for n in res["notes"]:
+        print("  주: %s" % n)
+    return 0
+
+
+def run_dartweb(a):
+    """DART 웹 첨부문서 수집. 모듈은 별도로 관리되므로 여기서 지연 import 한다."""
+    try:
+        import dartweb
+    except ImportError as e:
+        print("\n  dartweb 모듈이 아직 없습니다 (%s).\n"
+              "  scripts/dart/dartweb.py 가 준비된 뒤 다시 실행하세요.\n"
+              "  (이 서브커맨드 외 나머지 명령은 dartweb 없이도 동작합니다.)\n" % e,
+              file=sys.stderr)
+        return 4
+    if a.dry_run:
+        plan = dartweb.plan(a.out)
+        # plan 은 dict 다. len() 을 걸면 늘 키 개수(문서 수와 무관한 상수)만 찍힌다.
+        print("  수집 계획: 문서 %d건 / 첨부 %d건 / 본문 목차 %d부분 / 예상요청 %d회(하한) / 예상 %.0f초"
+              % (plan["문서수"], plan["첨부수"], plan.get("본문목차부분수", 0),
+                 plan["예상요청수"], plan["예상소요초"]))
+        for d in plan["per_doc"]:
+            if d.get("오류") or d.get("첨부비고"):
+                print("    %s: %s" % (d["rcept_no"], d.get("오류") or d["첨부비고"]))
+        return 0
+    dartweb.collect(a.out, delay=a.delay,
+                    size_limit_bytes=a.size_limit_mb * 1024 * 1024)
+    return 0
+
+
 def main(argv=None):
     a = build_parser().parse_args(argv)
     years = parse_years(a.years, config.DEFAULT_YEARS)
@@ -98,6 +160,12 @@ def main(argv=None):
         for p in paths:
             print("    %s" % p)
         return 0
+
+    if a.command == "handoff":
+        return run_handoff(a)
+
+    if a.command == "dartweb":
+        return run_dartweb(a)
 
     client = make_client(a, require_key=not a.dry_run)
     try:

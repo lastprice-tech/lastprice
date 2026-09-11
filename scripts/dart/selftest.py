@@ -270,6 +270,17 @@ def assertions(out):
           "전개 %s" % sorted({r["table_extracted"] for r in idx}))
     check("키워드 없는 표는 셀 전개를 생략",
           any(r["table_extracted"] == "N" and not r["table_matched_keyword"] for r in idx))
+    # 제목으로도 걸리고 본문으로도 걸린 섹션에서 matched_keyword 는 제목 히트만 남긴다.
+    # 그러면 본문 히트가 조용히 사라진다 — 실측(원문 103건)에서 섹션 155개가 그렇게
+    # '자회사'·'자본비율'·'지급여력' 기록을 잃었다. 본문 히트는 별도 컬럼에 남아야 한다.
+    # 픽스처 「가. 관계회사 및 자회사의 투자지분 현황」은 제목이 걸리면서 본문에
+    # '계열회사'가 들어 있는 바로 그 경우다.
+    both = [r for r in doc
+            if r["kind"] == "text" and r["match_scope"] == "title"
+            and r.get("body_matched_keyword")]
+    check("제목·본문에 모두 걸린 섹션의 본문 키워드가 덮어써지지 않는다",
+          any("계열회사" in r["body_matched_keyword"] for r in both),
+          "body_matched_keyword 가 남은 행 %d개" % len(both))
     check("rowspan/colspan 을 격자 추론 없이 보존",
           any(r.get("colspan") == "2" for r in doc))
     check("TE/TU 셀 태그 인식", {"te", "tu"} <= {r.get("cell_tag") for r in doc})
@@ -341,6 +352,85 @@ def assertions(out):
     check("emit 은 멱등 (두 번 돌려도 같은 결과)", same)
 
 
+# ── 지주 전환 신고서 섹션 키워드 회귀 ─────────────────────────────────────
+def conversion_section_cases():
+    """2000년대 「주식교환ㆍ이전신고서」의 실제 제목이 SECTION_KEYWORDS 에 걸리는지.
+
+    emit.emit_documents 는 키워드가 걸린 섹션만 내보낸다. 과거에 "주식이전의 목적"
+    하나만 있어서 「1. 주식교환·이전의 목적」이 부분문자열로 걸리지 않았고, 그 결과
+    신한 2004 · 하나 2005 · 한투 2005/2006 · 국민 2008 의 「목적」 섹션이 출력에서
+    통째로 빠져 있었다. 아래 제목들은 전부 원문에서 실측한 문자열이다.
+    """
+    print("\n  [5] 지주 전환 신고서 섹션 키워드")
+
+    # emit.emit_documents 의 규칙을 글자 그대로 옮긴다. 예전에는 여기에만
+    # `normalize_for_match(k) and` 가드가 있어서, 빈 키워드가 섞여도 이 시험은 조용히
+    # 넘어가고 emit 만 전 섹션을 매칭하는 상태가 됐다 — 시험이 본 코드보다 느슨하면
+    # 시험이 아니다. 가드는 빼고, '빈 키워드가 없다'를 아래에서 따로 단언한다.
+    def hits(title):
+        t = docparse.normalize_for_match(title)
+        return [k for k in config.SECTION_KEYWORDS
+                if docparse.normalize_for_match(k) in t]
+
+    normed = [docparse.normalize_for_match(k) for k in config.SECTION_KEYWORDS]
+    check("SECTION_KEYWORDS 에 빈(공백뿐인) 항목이 없다", all(normed),
+          "빈 항목 %r" % [k for k, n in zip(config.SECTION_KEYWORDS, normed) if not n])
+    check("SECTION_KEYWORDS 는 정규화 후에도 중복이 없다",
+          len(set(normed)) == len(normed),
+          "중복 %r" % sorted({n for n in normed if normed.count(n) > 1}))
+
+    # DART 원문은 중점 자리에 ㆍ(U+318D)를 쓰기도 한다. 같은 서식인데 문서마다
+    # 표기가 갈리므로 두 표기 모두로 시험한다 — 한쪽만 통과하면 절반이 새 나간다.
+    for mark, name in (("\u00b7", "중점 U+00B7"), ("\u318d", "아래아 U+318D")):
+        title = "1. 주식교환%s이전의 목적" % mark
+        check("「%s」 (%s) 이 섹션 키워드에 걸린다" % (title, name), bool(hits(title)),
+              "걸린 키워드 없음")
+
+    for title in ("나. 설립하는 완전모회사의 사업목적",
+                  "타. 기타 이사회결의사항 또는 주식이전계획중 중요한 사항"):
+        check("「%s」 이 섹션 키워드에 걸린다" % title, bool(hits(title)), "걸린 키워드 없음")
+
+    # 같은 내용이 시대별로 다른 제목에 담기는 꼭지들. 한쪽만 걸리면 1차(우리·메리츠)와
+    # 2차(2000년대) 배치가 같은 항목을 두고 서로 다른 것을 담게 된다 — 비교가 깨진다.
+    for old_t, new_t, what in (
+            ("다. 주식매수예정가격 등", "Ⅶ. 주식매수청구권에 관한 사항", "주식매수청구권"),
+            ("라. 행사절차, 방법, 기간 및 장소", "Ⅶ. 주식매수청구권에 관한 사항", "행사절차"),
+            ("가. 당해 회사의 연혁", "2. 회사의 연혁", "회사의 연혁")):
+        check("%s: 2000년대 표기「%s」와 현대 표기「%s」가 둘 다 걸린다"
+              % (what, old_t, new_t), bool(hits(old_t)) and bool(hits(new_t)),
+              "2000년대 %s / 현대 %s" % (hits(old_t), hits(new_t)))
+
+    # 「정 정 신 고 (보고)」는 글자 사이 공백이 의미를 갖는다. normalize_for_match 는
+    # 연속 공백을 하나로 줄일 뿐 없애지 않으므로, 공백이 여러 칸이어도 걸려야 한다.
+    check("「정 정 신 고 (보고)」 가 걸린다 (공백 여러 칸 포함)",
+          bool(hits("정 정 신 고 (보고)")) and bool(hits("정  정  신  고  (보고)")),
+          "걸린 키워드 없음")
+
+    # 설립 신고서와 편입 신고서를 섞으면 설립 목적 분석이 오염된다.
+    vals = set(config.DOC_PURPOSE.values())
+    n_est = sum(1 for v in config.DOC_PURPOSE.values() if v == "설립")
+    check("DOC_PURPOSE 는 32건", len(config.DOC_PURPOSE) == 32,
+          "%d건" % len(config.DOC_PURPOSE))
+    check("DOC_PURPOSE 값은 설립·편입 두 종류뿐",
+          vals == {"설립", "편입·완전자회사화"}, "관측 %s" % sorted(vals))
+    check("DOC_PURPOSE 내역 설립 18 / 편입 14",
+          n_est == 18 and len(config.DOC_PURPOSE) - n_est == 14,
+          "설립 %d / 편입 %d" % (n_est, len(config.DOC_PURPOSE) - n_est))
+    # 접수번호가 한 글자라도 틀리면 그 문서는 어떤 파일에도 걸리지 않고 handoff 에서
+    # 조용히 빠진다(건수 단언은 통과한다). 형식만이라도 붙잡아 둔다.
+    bad_rc = [k for k in config.DOC_PURPOSE if not (len(k) == 14 and k.isdigit())]
+    check("DOC_PURPOSE 키는 전부 14자리 접수번호", not bad_rc, "형식 이상 %r" % bad_rc)
+
+    # handoff._batch_of 는 표에 없는 corp_label 을 경고만 찍고 '2차'로 넣는다.
+    # 라벨을 한 글자 틀리면 1차 법인의 행이 통째로 2차 CSV 로 넘어가도 파일은 만들어진다.
+    batch = getattr(config, "HANDOFF_BATCH", {})
+    unknown = [l for l in batch if l not in config.TARGETS_BY_LABEL]
+    check("HANDOFF_BATCH 의 라벨이 전부 TARGETS 에 실재한다", not unknown,
+          "TARGETS 에 없는 라벨 %r" % unknown)
+    check("HANDOFF_BATCH 값은 1차·2차뿐", set(batch.values()) <= {"1차", "2차"},
+          "관측 %s" % sorted(set(batch.values())))
+
+
 def main(out_dir):
     root = os.path.join(os.path.abspath(out_dir), "_selftest")
     shutil.rmtree(root, ignore_errors=True)
@@ -349,6 +439,7 @@ def main(out_dir):
     transport_cases(root)
     out = pipeline(root)
     assertions(out)
+    conversion_section_cases()
     print("\n  결과: 통과 %d / 실패 %d" % (len(PASS), len(FAIL)))
     if FAIL:
         print("  실패 항목:")
