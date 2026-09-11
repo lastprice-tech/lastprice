@@ -64,7 +64,7 @@ def build_parser():
     p.add_argument("--handoff-dir", default=DEFAULT_HANDOFF,
                    help="인계 CSV 출력 디렉토리 (기본 ./handoff)")
     p.add_argument("--size-limit-mb", type=int, default=500,
-                   help="dartweb 첨부 1건당 저장 상한(MB, 기본 500)")
+                   help="dartweb 수집 누적 용량 상한(MB, 기본 500). 90%% 에 닿으면 감사보고서 계열부터 건너뛰고 넘으면 중단한다")
     return p
 
 
@@ -92,9 +92,10 @@ def run_handoff(a):
     res = handoff.build(a.out, a.handoff_dir)
     st = res.get("narrative_stats") or {}
     if st:
-        print("  서술: 섹션 %d개 + 전문대체 문서 %d개 → %d행 "
+        print("  서술: 섹션 %d개 + 전문대체 문서 %d개 + 웹회수 문서 %d개 → %d행 "
               "(청크 분할 %d건, 추가 %d행)"
               % (st.get("sections", 0), st.get("full_fallback_docs", 0),
+                 st.get("web_fallback_docs", 0),
                  st.get("rows", 0), st.get("chunked_sections", 0),
                  st.get("chunk_extra_rows", 0)))
         if st.get("docs_without_body"):

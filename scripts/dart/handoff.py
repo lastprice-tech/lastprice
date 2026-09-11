@@ -18,6 +18,7 @@ import json
 import os
 
 import config
+import docparse
 import emit
 from phase2 import doc_kind   # 접두 판정은 phase2 것을 그대로 쓴다 (재구현 금지)
 
@@ -249,6 +250,75 @@ def _scan_text(out_dir, purpose):
     return text_rows, meta
 
 
+# ── 웹 회수 본문 (OpenAPI 가 014 로 거부한 문서) ──────────────────────────
+# OpenDART document.xml 이 `014 파일이 존재하지 않습니다` 를 돌려준 문서가 있다
+# (우리 2018 정정 8건). 같은 문서를 dart.fss.or.kr 뷰어로 받으면 본문이 나온다 —
+# 20181115000213 은 10,466,687바이트다. 그 본문을 인계 CSV 에서 빼면
+# "섹션이 하나도 안 잡히면 전문만이라도 남긴다"는 규칙을 어기게 된다.
+#
+# 섹션 제목은 추정하지 않는다. dartweb 이 목록 페이지에서 읽어 기록해 둔
+# `목차_노드`(제목·시작바이트·바이트)를 그대로 쓴다 — 뷰어 HTML 의 스타일을 보고
+# 제목처럼 생긴 줄을 고르는 식의 추론은 하지 않는다.
+def _web_body_parts(out_dir, rcept_no, notes):
+    """[(순서, 제목, 본문텍스트, 저장경로)] — 없으면 빈 리스트."""
+    idx = os.path.join(out_dir, "doc", rcept_no, "_파일목록.json")
+    if not os.path.exists(idx):
+        return [], {}
+    try:
+        with open(idx, encoding="utf-8") as f:
+            obj = json.load(f)
+    except (ValueError, OSError) as e:
+        notes.append("%s: doc/_파일목록.json 을 읽지 못함 (%s)" % (rcept_no, type(e).__name__))
+        return [], {}
+    rec = next((r for r in _filelist_records(obj)
+                if r.get("파일종류") == "본문HTML" and r.get("수령성공여부") == "성공"), None)
+    if not rec:
+        return [], {}
+    html_path = os.path.join(out_dir, rec.get("저장경로", ""))
+    if not rec.get("저장경로") or not os.path.exists(html_path):
+        notes.append("%s: 본문HTML 레코드는 있는데 파일이 없음 (%s)"
+                     % (rcept_no, rec.get("저장경로", "")))
+        return [], {}
+    try:
+        raw = open(html_path, "rb").read()
+    except OSError as e:
+        notes.append("%s: 본문HTML 을 읽지 못함 (%s)" % (rcept_no, type(e).__name__))
+        return [], {}
+
+    nodes = rec.get("목차_노드") or []
+    if not nodes:
+        nodes = [{"순서": 1, "제목": "(본문 전체)", "시작바이트": 0, "바이트": len(raw)}]
+    text_dir = os.path.join(out_dir, "text", rcept_no)
+    os.makedirs(text_dir, exist_ok=True)
+
+    out = []
+    for nd in nodes:
+        start, size = _as_int(nd.get("시작바이트")), _as_int(nd.get("바이트"))
+        if start is None or size is None or size <= 0 or start >= len(raw):
+            notes.append("%s 목차 %s: 바이트 범위가 없어 건너뜀 — 값을 지어내지 않음"
+                         % (rcept_no, nd.get("순서", "?")))
+            continue
+        chunk = raw[start:start + size]
+        txt = docparse.decode_document(chunk)[0]
+        secs, _ = docparse.parse_document(txt)
+        body = " ".join(docparse.section_body(sc) for sc in secs).strip()
+        if not body:
+            continue
+        title = (nd.get("제목") or "").strip() or "(제목 없음)"
+        name = "web_%03d_%s.txt" % (_as_int(nd.get("순서")) or 0, docparse.slug(title))
+        tp = os.path.join(text_dir, name)
+        with open(tp, "w", encoding="utf-8") as f:
+            f.write(title + "\n\n" + body)
+        out.append((_as_int(nd.get("순서")) or 0, title, body,
+                    emit.rel(out_dir, tp)))
+    prov = {"fetched_at": rec.get("fetched_at", ""),
+            # OpenAPI 는 014 였고 이 본문은 웹에서 왔다. 출처를 뭉개지 않는다.
+            "status": "014→웹회수",
+            "raw_path": rec.get("저장경로", ""),
+            "raw_sha256": rec.get("sha256", "")}
+    return out, prov
+
+
 def _narrative_rows(out_dir, purpose, text_rows, meta, notes, stats):
     """섹션 행 → 청크 행. 섹션이 0건인 문서는 _full.txt 로 최소 1행을 만든다."""
     rows = []
@@ -292,6 +362,39 @@ def _narrative_rows(out_dir, purpose, text_rows, meta, notes, stats):
             continue
         full = os.path.join(out_dir, "text", rc, "_full.txt")
         if not os.path.exists(full):
+            # OpenAPI 가 014 로 거부한 문서라도 dartweb 이 웹에서 본문을 받아 뒀을 수 있다.
+            # 목차 노드 단위로 실려 있으므로 제목까지 원문 그대로 살릴 수 있다.
+            web, wprov = _web_body_parts(out_dir, rc, notes)
+            if web:
+                m = meta.get(rc)
+                if m is None:
+                    if disc is None:
+                        disc = _disclosure_index(out_dir)
+                    d = disc.get(rc, {})
+                    m = {"corp_label": d.get("corp_label", ""),
+                         "rcept_dt": d.get("rcept_dt", ""),
+                         "report_nm": d.get("report_nm", "")}
+                stats["web_fallback_docs"] += 1
+                notes.append("%s(%s): OpenAPI 014 — 웹 뷰어 본문 %d부분 %d자를 수록"
+                             % (rc, purpose.get(rc, ""), len(web),
+                                sum(len(b) for _, _, b, _ in web)))
+                for order, title, body, tp in web:
+                    parts = chunks(body)
+                    if len(parts) > 1:
+                        stats["chunked_sections"] += 1
+                        stats["chunk_extra_rows"] += len(parts) - 1
+                    base = dict(corp_label=m.get("corp_label", ""), rcept_no=rc,
+                                rcept_dt=m.get("rcept_dt", ""),
+                                doc_kind=doc_kind(m.get("report_nm", "")),
+                                doc_purpose=purpose.get(rc, ""),
+                                report_nm=m.get("report_nm", ""),
+                                section_index=order, section_title=title,
+                                text_path=tp)
+                    base.update({k: wprov.get(k, "") for k in PROV_KEYS})
+                    for i, part in enumerate(parts, 1):
+                        rows.append(dict(base, chunk_seq=i, text_chars=len(part),
+                                         section_text=part))
+                continue
             # 전문 파일조차 없으면 지어낼 것이 없다. 사유만 남기고 행은 만들지 않는다.
             pv = _prov_from_sidecar(out_dir, rc)
             notes.append("%s(%s): 섹션 0건 + 전문 파일 없음 (raw status=%s) — "
@@ -355,7 +458,7 @@ def _narrative_rows(out_dir, purpose, text_rows, meta, notes, stats):
 def build_narrative(out_dir, handoff_dir, purpose, batches, result, warned):
     text_rows, meta = _scan_text(out_dir, purpose)
     stats = {"chunked_sections": 0, "chunk_extra_rows": 0, "len_mismatch": 0,
-             "full_fallback_docs": 0, "docs_without_body": 0}
+             "full_fallback_docs": 0, "web_fallback_docs": 0, "docs_without_body": 0}
     rows = _narrative_rows(out_dir, purpose, text_rows, meta, result["notes"], stats)
 
     writers = {b: _LazyWriter(os.path.join(handoff_dir, NARRATIVE_NAME[b]), NARRATIVE_COLS)
