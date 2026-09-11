@@ -83,6 +83,11 @@ ROW_FIELDS = [
     "rcept_no", "corp_label", "rcept_dt", "doc_kind", "doc_purpose",
     "파일종류", "문서종류", "정관판별근거", "원파일명", "저장경로", "바이트",
     "sha256", "수령성공여부", "실패사유", "fetched_at", "source_url", "dcm_no",
+    # 스캔 이미지만 든 첨부를 눈에 보이게 한다(본문글자수가 한 자릿수면 스캔이다).
+    "본문글자수", "이미지참조수", "원파일명_출처",
+    # 정정본은 자기 첨부가 없고 같은 묶음의 원 신고서가 갖는다. 그 사실이 인덱스
+    # JSON 에만 있어 CSV 만 보는 사람은 왜 0건인지 알 수 없었다.
+    "첨부_타접수번호소유",
 ]
 
 # ── 목록 파싱 정규식 ──────────────────────────────────────────────────────
@@ -335,7 +340,7 @@ def _ele_of(url: str) -> str:
 # ── 첨부 분류 ─────────────────────────────────────────────────────────────
 # 사용자 지시 우선순위. 앞에 있을수록 먼저 받는다.
 ATTACH_ORDER = ["정관", "이사회의사록", "주식이전(교환)계획서", "평가의견서",
-                "예비투자설명서", "감사보고서", "그 외"]
+                "예비투자설명서", "재무제표", "검토보고서", "감사보고서", "그 외"]
 
 # 용량이 한도의 90% 를 넘으면 이 계열부터 건너뛴다. 부피는 크고 지주 전환 서술과는
 # 가장 먼 서류들이다.
@@ -359,6 +364,15 @@ def attachment_kind(name: str) -> str:
         return "예비투자설명서"
     if "감사보고서" in n:
         return "감사보고서"
+    # 사용자가 명시 요구한 5종 중 하나인데 칸이 없어 '그 외'로 뭉개지고 있었다.
+    # 실측: DART 가 「재무제표」 8 · 「반기재무제표」 10 · 「분기재무제표」 20 으로
+    # 라벨한 38행이 전부 '그 외'에 섞여, 문서종류로 거르면 "재무제표 0건"으로 보였다.
+    if "재무제표" in n:
+        return "재무제표"
+    # 「반기검토보고서」·「분기연결검토보고서」 등. 감사보고서와 성격이 같아 용량
+    # 한도에 닿으면 함께 건너뛴다(BULK_KEYWORDS).
+    if "검토보고서" in n:
+        return "검토보고서"
     return "그 외"
 
 
@@ -849,6 +863,7 @@ CACHE_KEYS = (
     "수령성공여부", "fetched_at", "source_url", "dcm_no", "첨부명", "순번",
     "content_type", "encoding_declared", "encoding_used", "decode_replacements",
     "source_replacement_chars", "attempts", "filename_decode_ok", "viewer_recipe",
+    "본문글자수", "이미지참조수", "원파일명_출처",
     "openapi_status", "openapi_message",
     "수집방식", "수집규약", "목차_노드수", "목차_수집수", "목차_노드", "첨부목록_오류",
 )
@@ -1068,6 +1083,10 @@ def collect(out_dir, rcept_nos=None, delay=DEFAULT_DELAY,
         if not attaches and foreign:
             attach_note = ("이 접수번호 소유 첨부 0건 — 같은 묶음의 %s 이(가) 소유"
                            % ", ".join("%s %d건" % (k, v) for k, v in foreign.items()))
+            # 이 사실이 인덱스 JSON 에만 있으면 CSV 만 보는 사람은 왜 첨부가 0건인지
+            # 알 수 없다. 행에도 실어 보낸다.
+            base["첨부_타접수번호소유"] = ", ".join(
+                "%s %d건" % (k, v) for k, v in sorted(foreign.items()))
         elif not attaches and main_text and ATTACH_MARK not in main_text:
             # 첨부 목록은 '+첨부선택+' 뒤쪽에서만 읽는다. 그 표지가 아예 없으면
             # '첨부가 없는 문서'와 '표지가 바뀌어 못 읽은 문서'가 똑같이 0건으로 보인다.
@@ -1447,6 +1466,14 @@ def _fetch_viewer(s, base, out_dir, path, url, 파일종류, 문서종류, 원�
     # 서버가 이미 깨뜨려 보낸 U+FFFD 개수. 우리 디코드가 성공해도 원문이 복구 불가인
     # 경우가 있다 — 실측: 국민 2008 정관 뷰어 HTML 에 U+FFFD 10,754개.
     rec["source_replacement_chars"] = body.count(b"\xef\xbf\xbd")
+    # ★ 스캔 이미지만 있는 첨부가 있다. 실측: 이사회의사록 18건이 본문 10~908자이고
+    #   내용은 전부 <IMG src="/report/download.do?...jpg"> 캡션뿐이다(우리 2018 정관
+    #   76쪽도 같다). 그래도 '성공'으로만 적히면 텍스트로는 한 글자도 못 쓴다는 사실이
+    #   어디에도 안 남는다. 본문 글자 수와 이미지 참조 수를 남겨 눈에 보이게 한다.
+    #   PDF 는 그 스캔을 담고 있으므로 내용이 사라진 것은 아니다 — 검색이 안 될 뿐이다.
+    plain = re.sub(r"<[^>]+>", " ", text)
+    rec["본문글자수"] = len(re.sub(r"\s+", " ", plain).strip())
+    rec["이미지참조수"] = len(re.findall(r"<IMG\b", text, re.I))
     rec["attempts"] = attempts
     return rec, text
 
@@ -1466,7 +1493,11 @@ def _fetch_pdf(s, base, out_dir, dest_dir, rcept_no, dcm_no, 파일종류, 문�
         return rec
 
     name, ok = content_disposition_filename(hdrs)
+    # DART 가 이름을 주지 않았는데 fallback 을 그대로 원파일명에 적으면, "원 파일명
+    # 그대로" 를 약속한 칸에 우리가 만든 이름이 표시 없이 들어간다. 어느 쪽인지 남긴다.
     rec["원파일명"] = name or fallback_name
+    rec["원파일명_출처"] = "Content-Disposition" if name else (
+        "합성(첨부명+확장자)" if fallback_name else "")
     rec["filename_decode_ok"] = ok
     rec["attempts"] = attempts
 

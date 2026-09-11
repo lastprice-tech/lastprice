@@ -223,7 +223,11 @@ class DartClient:
         if self.key:
             s = s.replace(self.key, "***")
             s = s.replace(urllib.parse.quote(self.key), "***")
-        return re.sub(r"(crtfc_key=)[^&\s\"']+", r"\1***", s)
+        # 종결자에 , 와 ; 를 포함한다. 없으면 CSV 한 줄이나 파일 전체에 이 함수를 쓰는
+        # 순간 `crtfc_key=<키>,다음칸` 의 뒤 필드가 통째로 먹힌다 —
+        # 실측: scrub("...?crtfc_key=<KEY>,nextcol,third") → "...?crtfc_key=***"
+        # 지금은 셀 단위로만 쓰여 피해가 없지만, 조용히 지우는 정규식을 남겨 두지 않는다.
+        return re.sub(r"(crtfc_key=)[^&\s\"',;]+", r"\1***", s)
 
     def _script_sha(self) -> str:
         h = hashlib.sha256()
