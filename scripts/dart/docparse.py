@@ -183,7 +183,11 @@ class DartDocParser(HTMLParser):
         elif t in CELL_TAGS and self._row is not None:
             self._mode, self._buf, self._cell_attrs = "cell", [], a
         elif t == "p":
-            self._mode, self._buf = "text", []
+            # 표 밖의 <P> 만 본문으로 취급한다. DART 는 셀 내용을 <TD><P>…</P></TD> 로
+            # 감싸는 일이 흔한데, 여기서 모드를 갈아치우면 셀 버퍼가 리셋돼 그 셀이
+            # 빈 값으로 나온다(실측: 전체 셀의 9.9%가 그렇게 비어 있었다).
+            if self._row is None:
+                self._mode, self._buf = "text", []
 
     def handle_startendtag(self, tag, attrs):
         pass
@@ -224,6 +228,8 @@ class DartDocParser(HTMLParser):
                 self._cur["tables"].append(self._table)
             self._table = None
         elif t == "p":
+            if self._row is not None:
+                return          # 셀 안의 </P> — 버퍼를 건드리지 않고 </TD> 가 받게 둔다
             if txt:
                 self._recent_text.append(txt)
                 del self._recent_text[:-8]

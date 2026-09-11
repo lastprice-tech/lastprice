@@ -121,6 +121,14 @@ def select_targets(out_dir, entries, base_years=None, verbose=True):
             else:
                 warnings.append("%s: FY%d 사업보고서·감사보고서 모두 없음" % (label, y))
 
+        # 지주 전환 증권신고서 — 인가 사업계획서를 대신하는 서술 원문.
+        # 원본·정정본을 모두 받고 어느 것이 최종인지는 판단하지 않는다.
+        for r in rows:
+            if _is_conversion_doc(r.get("report_nm", "")):
+                picks.setdefault(r["rcept_no"],
+                                 (label, "지주전환 신고서(%s): %s"
+                                  % (doc_kind(r["report_nm"]), r.get("report_nm", ""))))
+
         # 한화생명 → 한화손보 지분 취득 추적. 대량보유보고는 '피취득(발행) 법인' 코드로
         # 색인되므로 한화손보 쪽에서 찾는다.
         kws = config.STAKE_REPORT_KEYWORDS.get(label)

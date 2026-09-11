@@ -392,6 +392,13 @@ def emit_ownership(out_dir, metas, by_code, entries):
                       "trmend_qota_rt", "bsis_qota_rt", "first_acqs_de", "first_acqs_amount"])
 
 
+def is_conversion_doc(report_nm):
+    """지주 전환 증권신고서인가. phase2 와 같은 규칙 (import 순환을 피해 여기 둔다)."""
+    nm = docparse.normalize_for_match(report_nm or "")
+    return (any(k in nm for k in config.CONVERSION_DOC_KINDS)
+            and any(k in nm for k in config.CONVERSION_DOC_REASONS))
+
+
 def emit_documents(out_dir, metas, by_code, max_doc_bytes, doc_index=None):
     """원문 ZIP → 섹션·표 셀. 파싱은 emit 에 있으므로 파서를 고쳐도 쿼터를 다시 쓰지 않는다."""
     rows, notes = [], []
@@ -432,6 +439,7 @@ def emit_documents(out_dir, metas, by_code, max_doc_bytes, doc_index=None):
                     value_source="api")
         pv = prov(out_dir, m, rcept, "api_row")
         skipped = 0
+        force_full = is_conversion_doc(meta_doc.get("report_nm", ""))
         for si, sec in enumerate(sections):
             title_hits = [k for k in config.SECTION_KEYWORDS
                           if docparse.normalize_for_match(k) in sec["title"]]
@@ -460,7 +468,12 @@ def emit_documents(out_dir, metas, by_code, max_doc_bytes, doc_index=None):
 
             # 제목만 걸린 큰 섹션(주석은 표가 250개를 넘는다)은 표 전체를 펼치지 않는다.
             # 대신 표마다 색인 행을 남기므로 무엇이 있는지는 전부 보인다 — 삭제가 아니다.
-            small = len(sec["tables"]) <= config.MAX_TABLES_PER_SECTION
+            #
+            # 예외: 지주 전환 증권신고서는 전량 전개한다. 실측(우리 2018)에서
+            # "자본비율"이 원문에 152회 나오는데 VI. 투자위험요소가 표 358개라 상한에
+            # 걸려 5개만 펼쳐졌다. 전환 후 자본비율·이중레버리지가 이 안에 있어
+            # 서술만 뽑으면 자본 꼭지를 쓸 수 없다.
+            small = len(sec["tables"]) <= config.MAX_TABLES_PER_SECTION or force_full
             for ti, tbl in enumerate(sec["tables"]):
                 hits = tbl_hits[ti]
                 extract = bool(hits) or (bool(title_hits) and small)

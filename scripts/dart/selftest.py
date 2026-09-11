@@ -265,6 +265,10 @@ def assertions(out):
     check("rowspan/colspan 을 격자 추론 없이 보존",
           any(r.get("colspan") == "2" for r in doc))
     check("TE/TU 셀 태그 인식", {"te", "tu"} <= {r.get("cell_tag") for r in doc})
+    # DART 는 셀 내용을 <TD><P>…</P></TD> 로 감싸는 일이 흔하다. <P> 가 셀 버퍼를
+    # 리셋하면 그 셀이 빈 값으로 나온다 (실측: 우리 2018 의 이중레버리지 정의가 통째로 사라졌다)
+    check("<TD><P>텍스트</P></TD> 의 셀 내용이 보존된다",
+          any(r.get("cell_text") == "한화손해보험" for r in doc))
     # DART 는 ZIP 멤버명 앞에 '/' 를 붙이기도 한다. traversal 로 오인해 거부하면
     # 유일한 본문 멤버가 버려져 원문이 통째로 비게 된다 (실측 69개 중 21개가 해당).
     # 2001년식 사업보고서는 '계열회사' 대신 '관계회사·자회사·기업집단'을 쓴다.

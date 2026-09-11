@@ -85,7 +85,7 @@ DOC_XML = """<?xml version="1.0" encoding="euc-kr"?>
 <P>(단위: 백만원)</P>
 <TABLE><TR><TH ROWSPAN="2">회사명</TH><TH COLSPAN="2">지분율</TH></TR>
 <TR><TE>당기</TE><TE>전기</TE></TR>
-<TR><TD>한화손해보험</TD><TE>51.36</TE><TE>51.36</TE></TR>
+<TR><TD><P>한화손해보험</P></TD><TE>51.36</TE><TE>51.36</TE></TR>
 <TR><TU>캐롯손해보험</TU><TD>-</TD><TD>100.00</TD></TR></TABLE></SECTION-1>
 <SECTION-1><TITLE>3. 기타 참고사항</TITLE>
 <P>주석 본문입니다.</P>
