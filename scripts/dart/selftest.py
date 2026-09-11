@@ -4,6 +4,9 @@ from __future__ import annotations
 
 import csv
 import glob
+import zipfile
+import tarfile
+import gzip
 import json
 import os
 import shutil
@@ -328,17 +331,64 @@ def assertions(out):
           any(r["account_nm"] == "보험계약부채" for r in acc))
 
     print("\n  [4] 키 유출·멱등성")
-    leaked = []
-    for p in glob.glob(os.path.join(out, "**", "*"), recursive=True):
-        if not os.path.isfile(p) or p.endswith((".zip", ".xlsx")):
-            continue
+    # 아카이브 안도 본다. .zip/.xlsx 를 건너뛰면 키가 zip 멤버로 새도 이 단언이
+    # 그대로 통과하는데, 이 프로젝트는 zip 을 그대로 인계한다 — 사각지대가 곧 인계 표면이다.
+    def _leak_in(path):
+        """(샜는가, 검사한 멤버 수). 못 여는 아카이브는 '검사 못 함'으로 센다."""
+        low = path.lower()
         try:
-            with open(p, encoding="utf-8", errors="ignore") as f:
-                if FAKE_KEY in f.read():
-                    leaked.append(os.path.relpath(p, out))
+            if low.endswith((".zip", ".xlsx", ".docx", ".pptx")):
+                with zipfile.ZipFile(path) as z:
+                    names = z.namelist()
+                    return any(FAKE_KEY.encode() in z.read(n) for n in names), len(names)
+            if low.endswith((".tar.gz", ".tgz")):
+                with tarfile.open(path, "r:gz") as t:
+                    n = 0
+                    for m in t:
+                        if not m.isfile():
+                            continue
+                        n += 1
+                        f = t.extractfile(m)
+                        if f and FAKE_KEY.encode() in f.read():
+                            return True, n
+                    return False, n
+            if low.endswith(".gz"):
+                with gzip.open(path, "rb") as f:
+                    return FAKE_KEY.encode() in f.read(), 1
         except Exception:
-            pass
-    check("API 키가 어떤 산출물에도 남지 않는다", not leaked, ", ".join(leaked[:5]))
+            # 확장자가 .zip 인데 실제로는 DART 오류 응답 XML 인 파일이 있다
+            # (status 013/014 는 200 으로 오고 본문이 XML 이다). 아카이브로 못 열면
+            # 건너뛰지 말고 평문 바이트로 다시 본다 — 건너뛰는 쪽이 위험하다.
+            try:
+                with open(path, "rb") as f:
+                    return FAKE_KEY.encode() in f.read(), 1
+            except Exception:
+                return None, 0      # 이것마저 실패하면 통과로 뭉개지 않는다
+        with open(path, "rb") as f:
+            return FAKE_KEY.encode() in f.read(), 1
+
+    leaked, unreadable, members = [], [], 0
+    for p in glob.glob(os.path.join(out, "**", "*"), recursive=True):
+        if not os.path.isfile(p):
+            continue
+        hit, n = _leak_in(p)
+        members += n
+        if hit is None:
+            unreadable.append(os.path.relpath(p, out))
+        elif hit:
+            leaked.append(os.path.relpath(p, out))
+    check("API 키가 어떤 산출물에도 남지 않는다 (아카이브 내부 포함)",
+          not leaked, ", ".join(leaked[:5]))
+    check("키 검사가 못 연 파일이 없다 (못 열면 통과로 뭉개진다)",
+          not unreadable, ", ".join(unreadable[:5]))
+
+    # 사각지대 자체를 고정한다: zip 안에 키를 넣어 두면 위 단언이 반드시 실패해야 한다.
+    probe = os.path.join(out, "_leakprobe.zip")
+    with zipfile.ZipFile(probe, "w") as z:
+        z.writestr("inner.csv", "crtfc_key=" + FAKE_KEY)
+    hit, _ = _leak_in(probe)
+    os.remove(probe)
+    check("zip 멤버 안의 키를 실제로 잡아낸다", hit is True)
     log = read_csv(os.path.join(out, "call_log.csv"))
     check("call_log 의 URL 이 마스킹됨",
           bool(log) and all("crtfc_key=***" in r["url_redacted"] or not r["url_redacted"]

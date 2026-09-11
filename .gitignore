@@ -72,6 +72,7 @@ __pycache__/
 # handoff/원문_파일목록.csv 에 dcmNo·source_url 이 다 있어 `run.py dartweb` 으로
 # 언제든 다시 받을 수 있다(853요청·약 26분, 캐시 있으면 그만큼 건너뛴다).
 !/handoff/원본_핵심.zip
+!/handoff/원본_설립본문.zip
 
 # selftest 임시 산출물
 /dart_out/_selftest/

@@ -37,15 +37,20 @@ SOURCE_CSV = "11_원문추출.csv"
 # 컬럼 순서는 인계 스키마 그 자체다. union-of-keys 를 쓰는 emit.write_csv 와 달리
 # 여기서는 고정 목록으로 쓰고, 목록에 없는 키가 섞이면 DictWriter 가 예외를 던지게 둔다
 # (조용히 버려지는 쪽이 더 나쁘다).
+# section_title 은 normalize_for_match 결과(중점 ·)이고 section_text·cell_text 는
+# 원문 표기(아래아 ㆍ)다. 한 표기로 두 컬럼을 필터하면 한쪽만 잡히므로 원문 제목을
+# 함께 싣는다 — 둘 다 있어야 어느 표기로 걸어도 문서를 찾을 수 있다.
 NARRATIVE_COLS = [
     "corp_label", "rcept_no", "rcept_dt", "doc_kind", "doc_purpose", "report_nm",
-    "section_index", "section_title", "chunk_seq", "text_chars", "section_text",
+    "section_index", "section_title", "section_title_raw",
+    "chunk_seq", "text_chars", "section_text",
     "text_path", "fetched_at", "status", "raw_path", "raw_sha256",
 ]
 
 TABLE_COLS = [
     "corp_label", "rcept_no", "rcept_dt", "doc_kind", "doc_purpose",
-    "section_index", "section_title", "table_index", "table_matched_keyword",
+    "section_index", "section_title", "section_title_raw",
+    "table_index", "table_matched_keyword",
     "table_extracted", "table_n_rows",
     "row_index", "cell_ord", "cell_tag", "rowspan", "colspan",
     "unit_hint", "unit_hint_source", "cell_text", "fetched_at", "status",
@@ -367,7 +372,8 @@ def _web_body_parts(out_dir, rcept_no, notes):
         with open(tp, "w", encoding="utf-8") as f:
             f.write(pt["title_raw"] + "\n\n" + pt["body"])   # 파일에는 원문 표기를 남긴다
         out.append((pt["order"] if pt["order"] is not None else "",
-                    pt["title"], pt["body"], emit.rel(out_dir, tp)))
+                    pt["title"], pt["body"], emit.rel(out_dir, tp),
+                    pt["title_raw"]))
     return out, prov
 
 
@@ -400,6 +406,7 @@ def _narrative_rows(out_dir, purpose, text_rows, meta, notes, stats):
                     report_nm=r.get("report_nm", ""),
                     section_index=r.get("section_index", ""),
                     section_title=r.get("section_title", ""),
+                    section_title_raw=r.get("section_title_raw", ""),
                     text_path=r.get("text_path", ""))
         base.update({k: r.get(k, "") for k in PROV_KEYS})
         for i, part in enumerate(parts, 1):
@@ -429,8 +436,8 @@ def _narrative_rows(out_dir, purpose, text_rows, meta, notes, stats):
                 stats["web_fallback_docs"] += 1
                 notes.append("%s(%s): OpenAPI 014 — 웹 뷰어 본문 %d부분 %d자를 수록"
                              % (rc, purpose.get(rc, ""), len(web),
-                                sum(len(b) for _, _, b, _ in web)))
-                for order, title, body, tp in web:
+                                sum(len(x[2]) for x in web)))
+                for order, title, body, tp, title_raw in web:
                     parts = chunks(body)
                     if len(parts) > 1:
                         stats["chunked_sections"] += 1
@@ -441,6 +448,7 @@ def _narrative_rows(out_dir, purpose, text_rows, meta, notes, stats):
                                 doc_purpose=purpose.get(rc, ""),
                                 report_nm=m.get("report_nm", ""),
                                 section_index=order, section_title=title,
+                                section_title_raw=title_raw,
                                 text_path=tp)
                     base.update({k: wprov.get(k, "") for k in PROV_KEYS})
                     for i, part in enumerate(parts, 1):
@@ -487,6 +495,7 @@ def _narrative_rows(out_dir, purpose, text_rows, meta, notes, stats):
                     doc_purpose=purpose.get(rc, ""),
                     report_nm=m.get("report_nm", ""),
                     section_index=FULL_SECTION_INDEX, section_title=FULL_SECTION_TITLE,
+                    section_title_raw=FULL_SECTION_TITLE,
                     text_path="text/%s/_full.txt" % rc)
         base.update({k: m.get(k, "") for k in PROV_KEYS})
         for i, part in enumerate(parts, 1):
@@ -594,7 +603,9 @@ def _write_web_tables(out_dir, purpose, batches, seen, writers, last, result, wa
                 tcommon = dict(doc_base,
                                section_index=(pt["order"] if pt["order"] is not None
                                               else ""),
-                               section_title=pt["title"], table_index=ti,
+                               section_title=pt["title"],
+                               section_title_raw=pt["title_raw"],
+                               table_index=ti,
                                table_matched_keyword="|".join(
                                    docparse.table_keywords(tbl, config.TABLE_KEYWORDS)),
                                table_extracted="Y",
@@ -696,6 +707,7 @@ def build_tables(out_dir, handoff_dir, purpose, batches, result, warned):
                        doc_purpose=purpose.get(rc, ""),
                        section_index=r.get("section_index", ""),
                        section_title=r.get("section_title", ""),
+                    section_title_raw=r.get("section_title_raw", ""),
                        table_index=r.get("table_index", ""),
                        table_matched_keyword=r.get("table_matched_keyword", ""),
                        table_extracted=r.get("table_extracted", ""),
