@@ -67,3 +67,9 @@ __pycache__/
 # 분석 핸드오프 키트 — zip 하나만 커밋한다 (34MB → 1.5MB, 개별 CSV 는 중복)
 /handoff/*
 !/handoff/dart-benchmark-kit.zip
+
+# selftest 임시 산출물
+/dart_out/_selftest/
+
+# 웹 원본·첨부 수집 결과 — doc.tar.gz 만 커밋한다 (PDF 수백 MB)
+/dart_out/doc/
