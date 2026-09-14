@@ -71,8 +71,14 @@ FILELIST_COLS = [
 # 출처 4컬럼은 11_원문추출.csv 의 prov 컬럼에서 그대로 옮긴다.
 PROV_KEYS = ["fetched_at", "status", "raw_path", "raw_sha256"]
 
-NARRATIVE_NAME = {"1차": "원문_지주전환_서술.csv", "2차": "원문_지주전환_서술_2차.csv"}
-TABLE_NAME = {"1차": "원문_지주전환_표.csv", "2차": "원문_지주전환_표_2차.csv"}
+# 차수를 늘릴 때 여기에 파일명을 안 넣으면 그 차수의 행이 조용히 다른 파일로 샌다
+# (실제로 3차를 더할 때 2,045행이 2차 CSV 로 흘러들어갔다). BATCHES 를 한 곳에 두고
+# selftest 가 "HANDOFF_BATCH 의 모든 값에 출력 파일이 있는가"를 단언한다.
+BATCHES = ("1차", "2차", "3차")
+NARRATIVE_NAME = {"1차": "원문_지주전환_서술.csv", "2차": "원문_지주전환_서술_2차.csv",
+                  "3차": "원문_지주전환_서술_3차.csv"}
+TABLE_NAME = {"1차": "원문_지주전환_표.csv", "2차": "원문_지주전환_표_2차.csv",
+              "3차": "원문_지주전환_표_3차.csv"}
 FILELIST_NAME = "원문_파일목록.csv"
 
 
@@ -83,14 +89,14 @@ def doc_purpose_map():
 
 
 def batch_map():
-    """corp_label → '1차' | '2차'."""
+    """corp_label → BATCHES 중 하나."""
     return getattr(config, "HANDOFF_BATCH", {}) or {}
 
 
 def _batch_of(corp_label, batches, warned, notes):
     """표에 없는 라벨은 2차로 넣고 경고를 찍는다. 라벨이 없다고 행을 버리지는 않는다."""
     b = batches.get(corp_label)
-    if b in ("1차", "2차"):
+    if b in BATCHES:
         return b
     if corp_label not in warned:
         warned.add(corp_label)
@@ -523,7 +529,7 @@ def build_narrative(out_dir, handoff_dir, purpose, batches, result, warned):
     rows = _narrative_rows(out_dir, purpose, text_rows, meta, result["notes"], stats)
 
     writers = {b: _LazyWriter(os.path.join(handoff_dir, NARRATIVE_NAME[b]), NARRATIVE_COLS)
-               for b in ("1차", "2차")}
+               for b in BATCHES}
     try:
         for r in rows:
             writers[_batch_of(r["corp_label"], batches, warned, result["notes"])].write(r)
@@ -667,7 +673,7 @@ def build_tables(out_dir, handoff_dir, purpose, batches, result, warned):
     같은 표를 두 번 세게 된다 — 쓰지 않고, 대신 셀이 실제로 따라왔는지만 대조한다.
     """
     writers = {b: _LazyWriter(os.path.join(handoff_dir, TABLE_NAME[b]), TABLE_COLS)
-               for b in ("1차", "2차")}
+               for b in BATCHES}
     last = {}
     unordered = 0
     index_only = 0                   # 셀 미전개 표 = 색인 1행만 남긴 표

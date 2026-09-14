@@ -11,6 +11,7 @@ handoff.py 와 같은 규율을 따른다: dart_out/ 아래 파일만 읽는 순
 """
 from __future__ import annotations
 
+import collections
 import csv
 import os
 import re
@@ -337,14 +338,29 @@ def build_interlock(out_dir, handoff_dir, result):
     result["paths"].append(path)
     result["counts"][os.path.basename(path)] = len(out)
 
-    # ★ 모자 구조에서 상대 회사가 겸직 표에 나오는가 — 없으면 0으로 보고한다.
-    for lab, cp in sorted(COUNTERPART.items()):
-        n = sum(1 for r in out if r.get("corp_label") == lab and r.get("상대회사_언급") == "Y")
-        jik = sum(1 for r in out if r.get("corp_label") == lab
-                  and "겸직" in (r.get("표_매칭낱말") or ""))
+    # ★ 상대 회사가 '겸직자|겸직회사' 표에 나오는가 — 이것이 핵심 질문이다.
+    # 「1. 임원 및 직원 등의 현황」 전체를 세면 임원 '경력'란의 前職 언급이 섞여
+    # 겸직으로 오독된다(실측: 한화손보 9건이 전부 '한화생명보험 …(23.02~24.01)'
+    # 꼴의 종료된 경력이었다). 그래서 머리행이 「겸직자」인 표만 따로 센다.
+    tabs = collections.defaultdict(list)
+    for r in out:
+        if r.get("row_index") == "":
+            continue
+        tabs[(r.get("corp_label"), r.get("section_index"), r.get("table_index"))].append(r)
+    for key, cells in sorted(tabs.items()):
+        lab = key[0]
+        cp = COUNTERPART.get(lab, "")
+        head = " ".join(c.get("cell_text", "") for c in cells
+                        if (c.get("row_index") or "") in ("0", "1"))
+        if "겸직자" not in head and "겸직회사" not in head:
+            continue
+        body = [c for c in cells if (c.get("row_index") or "") not in ("0", "1")]
+        names = sorted({c.get("cell_text", "") for c in body if c.get("cell_text")})
+        hit = [c for c in body if cp and cp in (c.get("cell_text") or "")]
         result["notes"].append(
-            "겸직_업무위탁: %s — 겸직 표 셀 %d개 중 상대(%s) 언급 %d개"
-            % (lab, jik, cp, n))
+            "겸직표 [%s] 섹션%s 표%s — 셀 %d개 / 상대(%s) 등장 %d개%s"
+            % (lab, key[1], key[2], len(body), cp or "-", len(hit),
+               " / 겸직회사: " + " · ".join(n for n in names if n)[:120] if names else ""))
 
 
 # ── 4) 금감원 정정명령 전후 차이 ──────────────────────────────────────────

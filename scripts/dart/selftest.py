@@ -486,8 +486,16 @@ def conversion_section_cases():
     unknown = [l for l in batch if l not in config.TARGETS_BY_LABEL]
     check("HANDOFF_BATCH 의 라벨이 전부 TARGETS 에 실재한다", not unknown,
           "TARGETS 에 없는 라벨 %r" % unknown)
-    check("HANDOFF_BATCH 값은 1·2·3차뿐", set(batch.values()) <= {"1차", "2차", "3차"},
-          "관측 %s" % sorted(set(batch.values())))
+    import handoff as _h
+    check("HANDOFF_BATCH 값이 전부 handoff.BATCHES 안에 있다",
+          set(batch.values()) <= set(_h.BATCHES),
+          "관측 %s / 허용 %s" % (sorted(set(batch.values())), list(_h.BATCHES)))
+    # 차수를 늘리면서 파일명을 안 넣으면 그 차수 행이 조용히 다른 파일로 샌다.
+    # 실제로 3차 2,045행이 2차 CSV 로 흘러들어간 적이 있다.
+    noname = [b for b in _h.BATCHES
+              if b not in _h.NARRATIVE_NAME or b not in _h.TABLE_NAME]
+    check("BATCHES 의 모든 차수에 서술·표 출력 파일명이 있다", not noname,
+          "파일명 없는 차수 %r" % noname)
     # 배치표에 없는 라벨은 handoff 가 경고만 찍고 2차로 넣는다. 3차 문서의 법인이
     # 빠져 있으면 3차 CSV 가 조용히 비고 그 행이 2차로 샌다.
     need3 = {"신한지주", "오렌지라이프생명보험", "KB금융", "KB손해보험",

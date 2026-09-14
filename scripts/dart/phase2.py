@@ -139,6 +139,21 @@ def select_targets(out_dir, entries, base_years=None, verbose=True):
                                  (label, "지주전환 신고서(%s): %s"
                                   % (doc_kind(r["report_nm"]), r.get("report_nm", ""))))
 
+        # 자본흐름 결합용 조달 원문 — 편입 사건 ±2년의 증권발행실적보고서와
+        # 신종자본증권·조건부자본증권 발행결정. 발행금액이 여기에만 있다.
+        for holder, y0, y1 in getattr(config, "FUNDING_WINDOWS", []):
+            if label != holder:
+                continue
+            for r in rows:
+                dt = r.get("rcept_dt", "")
+                if not (y0 <= dt[:4] <= y1):
+                    continue
+                nm = r.get("report_nm", "")
+                if any(h in nm for h in config.FUNDING_DOC_HINTS) or (
+                        "주요사항보고서" in nm
+                        and any(h in nm for h in config.FUNDING_MAJOR_HINTS)):
+                    picks.setdefault(r["rcept_no"], (label, "조달 원문: %s" % nm))
+
         # 한화생명 → 한화손보 지분 취득 추적. 대량보유보고는 '피취득(발행) 법인' 코드로
         # 색인되므로 한화손보 쪽에서 찾는다.
         kws = config.STAKE_REPORT_KEYWORDS.get(label)
