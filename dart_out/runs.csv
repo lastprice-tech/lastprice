@@ -9,3 +9,13 @@ run_20260911_132017,2026-09-11T13:20:17+09:00,a2c794ca397d,85312ceb,-
 run_20260911_133721,2026-09-11T13:37:21+09:00,d3dde984d355,85312ceb,scripts/dart/run.py resolve
 run_20260911_133722,2026-09-11T13:37:22+09:00,d3dde984d355,85312ceb,"scripts/dart/run.py phase1 --only 국민은행,하나은행(구),신한은행(구),동원증권,한국금융지주"
 run_20260911_135259,2026-09-11T13:52:59+09:00,d3dde984d355,85312ceb,"scripts/dart/run.py phase2 --only 국민은행,하나은행(구),신한은행(구),동원증권,한국금융지주"
+run_20260914_093454,2026-09-14T09:34:54+09:00,423265112d82,85312ceb,scripts/dart/run.py resolve --out dart_out
+run_20260914_093503,2026-09-14T09:35:03+09:00,423265112d82,85312ceb,"scripts/dart/run.py phase1 --out dart_out --dry-run --only 삼성생명보험,삼성화재해상보험,DB손해보험,DB생명보험,미래에셋생명보험 --endpoint company,list,otrCprInvstmntSttus,hyslrSttus,irdsSttus,cprndNrdmpBlce,newCaplScritsNrdmpBlce,alotMatter,empSttus"
+run_20260914_093817,2026-09-14T09:38:17+09:00,423265112d82,85312ceb,"scripts/dart/run.py phase2 --out dart_out --only 우리금융지주,동양생명보험"
+run_20260914_095520,2026-09-14T09:55:20+09:00,423265112d82,85312ceb,"scripts/dart/run.py phase1 --out dart_out --only 삼성생명보험,삼성화재해상보험,DB손해보험,DB생명보험,미래에셋생명보험 --endpoint company,list,otrCprInvstmntSttus,hyslrSttus,irdsSttus,cprndNrdmpBlce,newCaplScritsNrdmpBlce,alotMatter,empSttus"
+run_20260914_100217,2026-09-14T10:02:17+09:00,42217ef834ca,85312ceb,-
+run_20260914_100229,2026-09-14T10:02:29+09:00,42217ef834ca,85312ceb,-
+run_20260914_100237,2026-09-14T10:02:37+09:00,42217ef834ca,85312ceb,-
+run_20260914_100619,2026-09-14T10:06:19+09:00,8b9437967489,85312ceb,scripts/dart/run.py phase2 --out dart_out
+run_20260914_103324,2026-09-14T10:33:24+09:00,35843dca0f9d,85312ceb,scripts/dart/run.py phase1 --out dart_out --only 교보생명보험 --endpoint list --refresh
+run_20260914_112239,2026-09-14T11:22:39+09:00,5ebca421fb3e,85312ceb,"scripts/dart/run.py phase2 --out dart_out --only 신한지주,KB금융,우리금융지주,iM금융지주"
