@@ -909,4 +909,10 @@ def build(out_dir, handoff_dir=None):
     build_narrative(out_dir, handoff_dir, purpose, batches, result, warned)
     build_tables(out_dir, handoff_dir, purpose, batches, result, warned)
     build_filelist(out_dir, handoff_dir, purpose, result)
+    # 3차 산출물. 실패해도 1·2차 CSV 를 못 쓰게 만들지 않는다.
+    try:
+        import handoff3
+        handoff3.build_all(out_dir, handoff_dir, result)
+    except Exception as e:               # noqa: BLE001 — 사유를 남기고 계속한다
+        result["notes"].append("3차 산출물 생성 실패: %s: %s" % (type(e).__name__, e))
     return result

@@ -460,13 +460,21 @@ def conversion_section_cases():
     # 설립 신고서와 편입 신고서를 섞으면 설립 목적 분석이 오염된다.
     vals = set(config.DOC_PURPOSE.values())
     n_est = sum(1 for v in config.DOC_PURPOSE.values() if v == "설립")
-    check("DOC_PURPOSE 는 32건", len(config.DOC_PURPOSE) == 32,
-          "%d건" % len(config.DOC_PURPOSE))
+    # 개수를 박아 두면 차수를 더할 때마다 깨져서, 고치는 김에 단언을 무력화하게 된다.
+    # 개수 대신 '설정이 스스로 선언한 총합과 맞는가'를 본다.
+    n3 = len(getattr(config, "DOC_PURPOSE_3RD", {}))
+    check("DOC_PURPOSE 는 1·2차 32건 + 3차분", len(config.DOC_PURPOSE) == 32 + n3,
+          "총 %d건 (3차 %d건)" % (len(config.DOC_PURPOSE), n3))
+    check("DOC_PURPOSE_3RD 가 DOC_PURPOSE 에 전부 반영됐다",
+          all(k in config.DOC_PURPOSE for k in getattr(config, "DOC_PURPOSE_3RD", {})))
     check("DOC_PURPOSE 값은 설립·편입 두 종류뿐",
           vals == {"설립", "편입·완전자회사화"}, "관측 %s" % sorted(vals))
-    check("DOC_PURPOSE 내역 설립 18 / 편입 14",
-          n_est == 18 and len(config.DOC_PURPOSE) - n_est == 14,
+    # 설립 18건은 1·2차에서 확정됐고 3차는 전부 편입이다. 설립이 늘면 분류 사고다.
+    check("DOC_PURPOSE 의 설립은 18건 그대로 (3차는 전부 편입)", n_est == 18,
           "설립 %d / 편입 %d" % (n_est, len(config.DOC_PURPOSE) - n_est))
+    check("3차분은 전부 편입·완전자회사화",
+          set(getattr(config, "DOC_PURPOSE_3RD", {}).values()) <= {"편입·완전자회사화"},
+          "관측 %s" % sorted(set(getattr(config, "DOC_PURPOSE_3RD", {}).values())))
     # 접수번호가 한 글자라도 틀리면 그 문서는 어떤 파일에도 걸리지 않고 handoff 에서
     # 조용히 빠진다(건수 단언은 통과한다). 형식만이라도 붙잡아 둔다.
     bad_rc = [k for k in config.DOC_PURPOSE if not (len(k) == 14 and k.isdigit())]
@@ -478,8 +486,15 @@ def conversion_section_cases():
     unknown = [l for l in batch if l not in config.TARGETS_BY_LABEL]
     check("HANDOFF_BATCH 의 라벨이 전부 TARGETS 에 실재한다", not unknown,
           "TARGETS 에 없는 라벨 %r" % unknown)
-    check("HANDOFF_BATCH 값은 1차·2차뿐", set(batch.values()) <= {"1차", "2차"},
+    check("HANDOFF_BATCH 값은 1·2·3차뿐", set(batch.values()) <= {"1차", "2차", "3차"},
           "관측 %s" % sorted(set(batch.values())))
+    # 배치표에 없는 라벨은 handoff 가 경고만 찍고 2차로 넣는다. 3차 문서의 법인이
+    # 빠져 있으면 3차 CSV 가 조용히 비고 그 행이 2차로 샌다.
+    need3 = {"신한지주", "오렌지라이프생명보험", "KB금융", "KB손해보험",
+             "우리금융지주", "동양생명보험", "iM금융지주", "iM라이프생명보험"}
+    miss3 = sorted(l for l in need3 if batch.get(l) != "3차")
+    check("3차 편입 건의 양쪽 당사자가 모두 3차로 지정됐다", not miss3,
+          "3차가 아닌 라벨 %r" % miss3)
 
 
 def parser_edge_cases(out_root):

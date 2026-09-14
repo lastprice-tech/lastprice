@@ -121,6 +121,16 @@ def select_targets(out_dir, entries, base_years=None, verbose=True):
             else:
                 warnings.append("%s: FY%d 사업보고서·감사보고서 모두 없음" % (label, y))
 
+        # config.DOC_PURPOSE 에 적힌 접수번호는 무조건 받는다. 편입 건의
+        # 「주요사항보고서(주식교환ㆍ이전결정)」와 금감원 「정정명령부과」는
+        # _is_conversion_doc 의 문서종류 조건에 걸리지 않는데, 편입 경위를 읽으려면
+        # 그것들이 필요하다. 설정에 이름이 적힌 것이 가장 강한 의사표시다.
+        for r in rows:
+            rc = r.get("rcept_no", "")
+            if rc in config.DOC_PURPOSE:
+                picks.setdefault(rc, (label, "지정 문서(%s): %s"
+                                      % (config.DOC_PURPOSE[rc], r.get("report_nm", ""))))
+
         # 지주 전환 증권신고서 — 인가 사업계획서를 대신하는 서술 원문.
         # 원본·정정본을 모두 받고 어느 것이 최종인지는 판단하지 않는다.
         for r in rows:
