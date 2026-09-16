@@ -590,6 +590,13 @@ def emit_missing(out_dir, entries, years, half_years, all_metas):
 # ── XLSX ──────────────────────────────────────────────────────────────────
 XLSX_MAX_ROWS = 1000000
 XLSX_MAX_CELL = 32000
+# 이 크기를 넘는 CSV 는 XLSX 에 넣지 않는다.
+#
+# 실측: 11_원문추출.csv 가 2.67 GB(약 750만 행)까지 자라자 openpyxl 이 1M 행짜리 시트
+# 8장을 만들며 RSS 6.2 GB 로 11분 넘게 돌았다. 그렇게 만든 파일은 Excel 이 열지도
+# 못한다. **CSV 가 정본**이므로(README·브리핑에 명시) 큰 것은 넣지 않고 시트에 사유를
+# 남긴다 — 조용히 빠뜨리는 것이 아니라 "여기 없고 어디에 있다" 를 적는다.
+XLSX_MAX_CSV_BYTES = 200 * 1024 * 1024
 
 
 def emit_xlsx(out_dir, csv_paths):
@@ -601,10 +608,15 @@ def emit_xlsx(out_dir, csv_paths):
         return None
     wb = Workbook(write_only=True)
     notes = []
+    skipped_big = []
     for p in csv_paths:
         if not p or not os.path.exists(p):
             continue
         name = os.path.splitext(os.path.basename(p))[0][:31]
+        size = os.path.getsize(p)
+        if size > XLSX_MAX_CSV_BYTES:
+            skipped_big.append((os.path.basename(p), size))
+            continue
         with open(p, encoding="utf-8-sig", newline="") as f:
             reader = csv.reader(f)
             header = next(reader, None)
@@ -628,6 +640,16 @@ def emit_xlsx(out_dir, csv_paths):
         ws.append(["원본 시트", "안내"])
         for t in notes:
             ws.append([t, "행 수 초과로 분할됨 — 잘라내지 않았습니다"])
+    if skipped_big:
+        ws = wb.create_sheet("_미수록안내")
+        ws.append(["CSV 파일", "크기(바이트)", "사유"])
+        for fn, size in skipped_big:
+            ws.append([fn, size,
+                       "XLSX 한도(%d바이트)를 넘어 넣지 않았습니다. "
+                       "CSV 가 정본이며 내용은 하나도 빠지지 않았습니다 — "
+                       "dart_out/%s 를 그대로 쓰십시오." % (XLSX_MAX_CSV_BYTES, fn)])
+        print("  [안내] XLSX 미수록 %d개: %s (CSV 가 정본)"
+              % (len(skipped_big), ", ".join(f for f, _ in skipped_big)))
     path = os.path.join(out_dir, "DART_추출결과.xlsx")
     wb.save(path)
     return path
