@@ -504,6 +504,63 @@ def conversion_section_cases():
     check("3차 편입 건의 양쪽 당사자가 모두 3차로 지정됐다", not miss3,
           "3차가 아닌 라벨 %r" % miss3)
 
+    # ── 4차 회귀 단언 ─────────────────────────────────────────────────────
+    # (1) 사용자 결정의 고정. "AI" 를 다시 넣으면 표 CSV 가 589 → 788 MB 가 되고,
+    #     늘어난 199 MB 는 전부 '신한AIM…사모투자신탁'·'SHANGHAI'·'PENGTAI' 오탐이다.
+    check('TABLE_KEYWORDS_4CHA 에 "AI" 가 없다 (사용자 결정 2026-09-16)',
+          "AI" not in config.TABLE_KEYWORDS_4CHA,
+          "AI 가 다시 들어왔다 — 표 CSV 가 199MB 늘고 전부 오탐이다")
+    check('TABLE_KEYWORDS_4CHA 에 "인공지능"·"플랫폼" 은 남아 있다',
+          "인공지능" in config.TABLE_KEYWORDS_4CHA and "플랫폼" in config.TABLE_KEYWORDS_4CHA,
+          "관측 %r" % [k for k in ("인공지능", "플랫폼") if k not in config.TABLE_KEYWORDS_4CHA])
+
+    # (2) 20-F 트랩. 「해외증권거래소등에신고한사업보고서등의국내신고」는 보고서명에
+    #     "사업보고서" 가 들어 있지만 본문 27자짜리 껍데기다. 이걸 4차로 집으면
+    #     빈 문서 11건이 CSV 에 들어오고, phase2._annual 이 집으면 지주 4곳의
+    #     '최신 사업보고서' 픽이 통째로 무너진다(실제로 무너져 있었다).
+    trap = "해외증권거래소등에신고한사업보고서등의국내신고"
+    check("20-F 국내신고는 4차 문서가 아니다", not config.is_4cha_doc(trap, "20260429"),
+          "4차로 분류됐다 — annual_fy_4cha 의 (YYYY.MM) 필수 조건을 확인할 것")
+    import phase2 as _p2
+    check("20-F 국내신고는 phase2._annual 에서도 빠진다",
+          not _p2._annual([{"report_nm": trap, "rcept_dt": "20260429", "rcept_no": "x"}]),
+          "_annual 이 껍데기를 사업보고서로 골랐다")
+    check("진짜 사업보고서는 phase2._annual 이 고른다",
+          len(_p2._annual([{"report_nm": "사업보고서 (2025.12)", "rcept_dt": "20260313",
+                            "rcept_no": "y"}])) == 1)
+
+    # (3) 4차 문서 판별. 정정본은 받고(사용자 결정), 반기·분기와 창 밖 연도는 뺀다.
+    for nm, dt, want in [("사업보고서 (2025.12)", "20260313", True),
+                         ("[기재정정]사업보고서 (2023.12)", "20240601", True),
+                         ("[첨부추가]사업보고서 (2024.12)", "20250701", True),
+                         ("사업보고서 (2022.12)", "20230315", False),
+                         ("반기보고서 (2025.06)", "20250814", False),
+                         ("분기보고서 (2025.09)", "20251114", False),
+                         ("주주총회소집공고", "20240306", True),
+                         ("주주총회소집공고", "20230306", False)]:
+        check("is_4cha_doc(%r, %s) == %s" % (nm, dt, want),
+              config.is_4cha_doc(nm, dt) is want,
+              "관측 %s" % config.is_4cha_doc(nm, dt))
+
+    # (4) 배치는 법인이 아니라 문서로 정해진다. 4차는 신한지주·KB금융처럼 1~3차와
+    #     *같은 법인* 을 다시 쓰므로, 라벨 맵만 보면 4차 행이 통째로 3차 CSV 로 샌다.
+    #     3차 때 2,045행이 2차로 샌 것과 같은 자리다.
+    _db = {"20260313001051": "4차"}
+    check("문서 단위 배치가 라벨 맵을 이긴다",
+          _h._batch_of("신한지주", {"신한지주": "3차"}, set(), [],
+                       "20260313001051", _db) == "4차")
+    check("문서 단위 배치가 없으면 라벨 맵으로 떨어진다",
+          _h._batch_of("신한지주", {"신한지주": "3차"}, set(), [],
+                       "99999999999999", _db) == "3차")
+    # (5) 빈 라벨 행이 4차로 새지 않는다 (02_공시목록의 미채택 후보 4,616행 방어)
+    check("corp_label 이 빈 행은 4차가 아니다",
+          not _h._is_4cha_row({"corp_label": "", "report_nm": "사업보고서 (2025.12)",
+                               "rcept_dt": "20260316"}),
+          "빈 라벨 행이 4차로 분류됐다")
+    check("corp_label 이 있으면 4차다",
+          _h._is_4cha_row({"corp_label": "삼성생명보험", "report_nm": "사업보고서 (2025.12)",
+                           "rcept_dt": "20260311"}))
+
 
 def parser_edge_cases(out_root):
     """파서 경계값. 여기서 잡는 것은 전부 '조용한 손실'이었던 것들이다."""

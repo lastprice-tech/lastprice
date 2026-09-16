@@ -19,3 +19,9 @@ run_20260914_100237,2026-09-14T10:02:37+09:00,42217ef834ca,85312ceb,-
 run_20260914_100619,2026-09-14T10:06:19+09:00,8b9437967489,85312ceb,scripts/dart/run.py phase2 --out dart_out
 run_20260914_103324,2026-09-14T10:33:24+09:00,35843dca0f9d,85312ceb,scripts/dart/run.py phase1 --out dart_out --only 교보생명보험 --endpoint list --refresh
 run_20260914_112239,2026-09-14T11:22:39+09:00,5ebca421fb3e,85312ceb,"scripts/dart/run.py phase2 --out dart_out --only 신한지주,KB금융,우리금융지주,iM금융지주"
+run_20260916_104717,2026-09-16T10:47:17+09:00,635ec5897176,85312ceb,"scripts/dart/run.py phase1 --dry-run --only 농협생명보험,흥국생명보험,현대해상화재보험,롯데손해보험,흥국화재해상보험,NH농협손해보험,KB국민카드,신한카드,KB증권,신한투자증권 --endpoint company"
+run_20260916_104721,2026-09-16T10:47:21+09:00,635ec5897176,85312ceb,scripts/dart/run.py resolve
+run_20260916_104733,2026-09-16T10:47:33+09:00,635ec5897176,85312ceb,"scripts/dart/run.py phase1 --dry-run --only 농협생명보험,흥국생명보험,현대해상화재보험,롯데손해보험,흥국화재해상보험,NH농협손해보험,KB국민카드,신한카드,KB증권,신한투자증권 --endpoint company"
+run_20260916_104739,2026-09-16T10:47:39+09:00,635ec5897176,85312ceb,"scripts/dart/run.py phase1 --only 농협생명보험,흥국생명보험,현대해상화재보험,롯데손해보험,흥국화재해상보험,NH농협손해보험,KB국민카드,신한카드,KB증권,신한투자증권 --endpoint company"
+run_20260916_110115,2026-09-16T11:01:15+09:00,01b1fd284b5c,85312ceb,scripts/dart/run.py phase2 --dry-run
+run_20260916_110142,2026-09-16T11:01:42+09:00,01b1fd284b5c,85312ceb,scripts/dart/run.py phase2

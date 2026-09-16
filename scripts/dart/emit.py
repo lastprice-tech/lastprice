@@ -440,15 +440,23 @@ def emit_documents(out_dir, metas, by_code, max_doc_bytes, doc_index=None):
         pv = prov(out_dir, m, rcept, "api_row")
         skipped = 0
         force_full = is_conversion_doc(meta_doc.get("report_nm", ""))
+        # 4차(FY2023~25 사업보고서 · 주주총회소집공고)는 주제가 달라 좁은 키워드를 쓴다.
+        # 기존 65+32 개를 그대로 걸면 「재무제표 주석」·「계열회사」가 표를 통째로 끌어와
+        # 표 CSV 가 2,604 MB 가 된다(문서 22건 실측 → 205건 투영). 그 내용은
+        # 04_타법인출자현황·12_지분관계·1~3차 표 CSV 와 겹친다. 4차 규칙은 589 MB 다.
+        # 1~3차 문서는 여기 걸리지 않으므로 출력이 한 줄도 바뀌지 않는다.
+        is_4cha = config.is_4cha_doc(meta_doc.get("report_nm", ""),
+                                     meta_doc.get("rcept_dt", ""))
+        sec_kws = config.SECTION_KEYWORDS_4CHA if is_4cha else config.SECTION_KEYWORDS
+        tbl_kws = config.TABLE_KEYWORDS_4CHA if is_4cha else config.TABLE_KEYWORDS
         for si, sec in enumerate(sections):
-            title_hits = [k for k in config.SECTION_KEYWORDS
+            title_hits = [k for k in sec_kws
                           if docparse.normalize_for_match(k) in sec["title"]]
             # 본문은 이제 원문 표기 그대로이다(normalize_for_output = 공백 접기만).
             # 키워드를 그대로 대본문에 넘기면 ㈜·전각 표기 차이로 히트가 줄어든다.
             # docparse.text_keywords 가 양쪽을 normalize_for_match 로 맞춰 비교한다.
-            body_hits = docparse.text_keywords(docparse.section_body(sec),
-                                               config.TABLE_KEYWORDS)
-            tbl_hits = {ti: docparse.table_keywords(t, config.TABLE_KEYWORDS)
+            body_hits = docparse.text_keywords(docparse.section_body(sec), tbl_kws)
+            tbl_hits = {ti: docparse.table_keywords(t, tbl_kws)
                         for ti, t in enumerate(sec["tables"])}
             if not (title_hits or body_hits or any(tbl_hits.values())):
                 continue
@@ -488,7 +496,10 @@ def emit_documents(out_dir, metas, by_code, max_doc_bytes, doc_index=None):
             small = len(sec["tables"]) <= config.MAX_TABLES_PER_SECTION or force_full
             for ti, tbl in enumerate(sec["tables"]):
                 hits = tbl_hits[ti]
-                extract = bool(hits) or (bool(title_hits) and small)
+                # 4차: 표 자체에 주제 키워드가 있을 때만 전개한다. 제목만 걸린 섹션의
+                # 표는 색인 행(kind=table_index)으로 존재만 남는다 — 기존 규칙과 같은
+                # 모양이라 삭제가 아니고, 전문은 text/<rcept>/_full.txt 에 그대로 있다.
+                extract = bool(hits) if is_4cha else (bool(hits) or (bool(title_hits) and small))
                 preview = " | ".join(c["text"][:20] for r in tbl["rows"][:2] for c in r[:6])
                 tcommon = dict(common, table_index=ti,
                                unit_hint=tbl.get("unit_hint", ""),

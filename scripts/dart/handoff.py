@@ -74,18 +74,48 @@ PROV_KEYS = ["fetched_at", "status", "raw_path", "raw_sha256"]
 # 차수를 늘릴 때 여기에 파일명을 안 넣으면 그 차수의 행이 조용히 다른 파일로 샌다
 # (실제로 3차를 더할 때 2,045행이 2차 CSV 로 흘러들어갔다). BATCHES 를 한 곳에 두고
 # selftest 가 "HANDOFF_BATCH 의 모든 값에 출력 파일이 있는가"를 단언한다.
-BATCHES = ("1차", "2차", "3차")
+BATCHES = ("1차", "2차", "3차", "4차")
 NARRATIVE_NAME = {"1차": "원문_지주전환_서술.csv", "2차": "원문_지주전환_서술_2차.csv",
-                  "3차": "원문_지주전환_서술_3차.csv"}
+                  "3차": "원문_지주전환_서술_3차.csv", "4차": "원문_데이터활용_4차.csv"}
 TABLE_NAME = {"1차": "원문_지주전환_표.csv", "2차": "원문_지주전환_표_2차.csv",
-              "3차": "원문_지주전환_표_3차.csv"}
+              "3차": "원문_지주전환_표_3차.csv", "4차": "데이터활용_표_4차.csv"}
 FILELIST_NAME = "원문_파일목록.csv"
 
 
 # ── 설정 조회 ─────────────────────────────────────────────────────────────
-def doc_purpose_map():
-    """rcept_no → '설립' | '편입·완전자회사화'. 없으면 빈 표(= 대상 0건)."""
-    return getattr(config, "DOC_PURPOSE", {}) or {}
+DOC_PURPOSE_4CHA = "데이터활용·겸영부수"
+
+
+def _is_4cha_row(d):
+    """4차 문서인가. **corp_label 이 빈 행은 제외한다.**
+
+    02_공시목록.csv 의 9.2%(4,616행)는 2차 때 corp_code 동명이인을 가리려고 후보들의
+    공시목록을 받아 둔 잔재다(하나은행 00158909 등). 그 후보들은 채택되지 않았으므로
+    corp_codes.csv 에 없고 phase2 가 원문을 받지도 않는다. 다만 보고서명만 보면
+    '사업보고서 (2025.12)' 라 4차 규칙에 걸리므로(실측 6건), 여기서 막아 둔다 —
+    막지 않으면 나중에 누가 raw/ 에 그 문서를 넣는 순간 라벨 없는 행이 4차 CSV 에 샌다.
+    """
+    return bool(d.get("corp_label")) and config.is_4cha_doc(d.get("report_nm", ""),
+                                                            d.get("rcept_dt", ""))
+
+
+def doc_purpose_map(out_dir=None):
+    """rcept_no → 문서 목적. 1~3차는 config.DOC_PURPOSE 에 손으로 적힌 표,
+    4차는 02_공시목록.csv 에서 **규칙으로** 만든다.
+
+    4차는 FY2023~25 사업보고서(정정 포함) + 주주총회소집공고라 문서가 250건이 넘는다.
+    손으로 접수번호를 적는 방식은 유지가 안 되고, 새 정정본이 올라올 때마다 조용히
+    빠진다. 규칙이 곧 명세이므로 config.is_4cha_doc 하나만 보면 된다.
+    """
+    out = dict(getattr(config, "DOC_PURPOSE", {}) or {})
+    if not out_dir:
+        return out
+    for rc, d in _disclosure_index(out_dir).items():
+        if rc in out:                       # 1~3차에 이미 적힌 문서는 건드리지 않는다
+            continue
+        if _is_4cha_row(d):
+            out[rc] = DOC_PURPOSE_4CHA
+    return out
 
 
 def batch_map():
@@ -93,8 +123,27 @@ def batch_map():
     return getattr(config, "HANDOFF_BATCH", {}) or {}
 
 
-def _batch_of(corp_label, batches, warned, notes):
-    """표에 없는 라벨은 2차로 넣고 경고를 찍는다. 라벨이 없다고 행을 버리지는 않는다."""
+def doc_batch_map(out_dir):
+    """rcept_no → '4차'. **배치는 법인이 아니라 문서로 정해져야 한다.**
+
+    4차는 신한지주·KB금융·한화생명처럼 1~3차와 *같은 법인*을 다시 쓴다. corp_label →
+    배치 맵으로는 표현 자체가 불가능하다. 3차 때 2,045행이 2차 CSV 로 샌 것과 같은
+    자리이므로, 여기서는 문서 단위 맵을 먼저 보고 없을 때만 라벨 맵으로 떨어진다.
+    """
+    out = {}
+    for rc, d in _disclosure_index(out_dir).items():
+        if _is_4cha_row(d):
+            out[rc] = "4차"
+    return out
+
+
+def _batch_of(corp_label, batches, warned, notes, rcept_no="", doc_batches=None):
+    """문서 단위 배치가 있으면 그것을 쓰고, 없으면 라벨 맵을 본다.
+    표에 없는 라벨은 2차로 넣고 경고를 찍는다. 라벨이 없다고 행을 버리지는 않는다."""
+    if doc_batches and rcept_no:
+        b = doc_batches.get(rcept_no)
+        if b in BATCHES:
+            return b
     b = batches.get(corp_label)
     if b in BATCHES:
         return b
@@ -522,7 +571,8 @@ def _narrative_rows(out_dir, purpose, text_rows, meta, notes, stats):
 
 
 # ── 산출 1: 서술 ──────────────────────────────────────────────────────────
-def build_narrative(out_dir, handoff_dir, purpose, batches, result, warned):
+def build_narrative(out_dir, handoff_dir, purpose, batches, result, warned,
+                    doc_batches=None):
     text_rows, meta = _scan_text(out_dir, purpose)
     stats = {"chunked_sections": 0, "chunk_extra_rows": 0, "len_mismatch": 0,
              "full_fallback_docs": 0, "web_fallback_docs": 0, "docs_without_body": 0}
@@ -532,7 +582,8 @@ def build_narrative(out_dir, handoff_dir, purpose, batches, result, warned):
                for b in BATCHES}
     try:
         for r in rows:
-            writers[_batch_of(r["corp_label"], batches, warned, result["notes"])].write(r)
+            writers[_batch_of(r["corp_label"], batches, warned, result["notes"],
+                              r.get("rcept_no", ""), doc_batches)].write(r)
     finally:
         for w in writers.values():
             w.close()
@@ -559,7 +610,8 @@ def build_narrative(out_dir, handoff_dir, purpose, batches, result, warned):
 # 을 거는 이유는 '같은 문서의 다른 표는 어차피 원문 ZIP 에 있으니 색인만 남기면 된다'
 # 는 것인데, 이 8건은 ZIP 자체가 없어 어디에도 표가 없다. 실측 10,362표 / 292,934셀이고
 # 1차 표 CSV 는 439,791 → 732,725행이 된다(Excel 한도 1,048,576행 안).
-def _write_web_tables(out_dir, purpose, batches, seen, writers, last, result, warned):
+def _write_web_tables(out_dir, purpose, batches, seen, writers, last, result, warned,
+                      doc_batches=None):
     """11_원문추출.csv 에 행이 한 줄도 없는 문서의 표를 웹 회수 본문에서 싣는다.
 
     서술과 같은 목차 노드·같은 파서 결과를 쓰므로 section_index/section_title 이 서술
@@ -592,7 +644,7 @@ def _write_web_tables(out_dir, purpose, batches, seen, writers, last, result, wa
         if not label:
             result["notes"].append("%s: 02_공시목록.csv 에 메타가 없어 표 행의 "
                                    "corp_label/rcept_dt 를 빈칸으로 둠" % rc)
-        b = _batch_of(label, batches, warned, result["notes"])
+        b = _batch_of(label, batches, warned, result["notes"], rc, doc_batches)
         doc_base = dict(corp_label=label, rcept_no=rc, rcept_dt=d.get("rcept_dt", ""),
                         doc_kind=doc_kind(d.get("report_nm", "")),
                         doc_purpose=purpose.get(rc, ""))
@@ -653,7 +705,8 @@ def _write_web_tables(out_dir, purpose, batches, seen, writers, last, result, wa
 
 
 # ── 산출 2: 표 ────────────────────────────────────────────────────────────
-def build_tables(out_dir, handoff_dir, purpose, batches, result, warned):
+def build_tables(out_dir, handoff_dir, purpose, batches, result, warned,
+                 doc_batches=None):
     """kind=='table' 셀 + 셀을 전개하지 않은 표의 색인 행을 원문 그대로 옮긴다.
 
     격자로 추론하지 않는다 — rowspan/colspan 과 unit_hint 를 그대로 두고, 병합 해제나
@@ -700,7 +753,8 @@ def build_tables(out_dir, handoff_dir, purpose, batches, result, warned):
                 index_only += 1
             else:
                 cell_tables.add(tkey)
-            b = _batch_of(r.get("corp_label", ""), batches, warned, result["notes"])
+            b = _batch_of(r.get("corp_label", ""), batches, warned, result["notes"],
+                          rc, doc_batches)
             k = (r.get("corp_label", ""), r.get("rcept_dt", ""), rc,
                  _as_int(r.get("section_index")), _as_int(r.get("table_index")),
                  _as_int(r.get("row_index")), _as_int(r.get("cell_ord")))
@@ -727,7 +781,7 @@ def build_tables(out_dir, handoff_dir, purpose, batches, result, warned):
             writers[b].write(row)
         # OpenAPI 가 014 로 거부해 11_원문추출.csv 에 행이 0개인 문서의 표.
         web = _write_web_tables(out_dir, purpose, batches, seen, writers, last,
-                                result, warned)
+                                result, warned, doc_batches)
     finally:
         f.close()
         for w in writers.values():
@@ -902,7 +956,8 @@ def build(out_dir, handoff_dir=None):
     """
     handoff_dir = handoff_dir or DEFAULT_HANDOFF_DIR
     os.makedirs(handoff_dir, exist_ok=True)
-    purpose, batches = doc_purpose_map(), batch_map()
+    purpose, batches = doc_purpose_map(out_dir), batch_map()
+    doc_batches = doc_batch_map(out_dir)
     result = {"paths": [], "counts": {}, "skipped": [], "notes": [],
               "narrative_stats": {}, "table_stats": {}}
     if not purpose:
@@ -912,8 +967,8 @@ def build(out_dir, handoff_dir=None):
         return result
     # 미등록 라벨 경고는 서술·표에서 같은 라벨로 두 번 나오므로 집합을 공유한다.
     warned = set()
-    build_narrative(out_dir, handoff_dir, purpose, batches, result, warned)
-    build_tables(out_dir, handoff_dir, purpose, batches, result, warned)
+    build_narrative(out_dir, handoff_dir, purpose, batches, result, warned, doc_batches)
+    build_tables(out_dir, handoff_dir, purpose, batches, result, warned, doc_batches)
     build_filelist(out_dir, handoff_dir, purpose, result)
     # 3차 산출물. 실패해도 1·2차 CSV 를 못 쓰게 만들지 않는다.
     try:
@@ -921,4 +976,10 @@ def build(out_dir, handoff_dir=None):
         handoff3.build_all(out_dir, handoff_dir, result)
     except Exception as e:               # noqa: BLE001 — 사유를 남기고 계속한다
         result["notes"].append("3차 산출물 생성 실패: %s: %s" % (type(e).__name__, e))
+    # 4차 산출물. 같은 규율 — 앞 차수 CSV 를 못 쓰게 만들지 않는다.
+    try:
+        import handoff4
+        result["batch4_stats"] = handoff4.build_all(out_dir, handoff_dir, result)
+    except Exception as e:               # noqa: BLE001
+        result["notes"].append("4차 산출물 생성 실패: %s: %s" % (type(e).__name__, e))
     return result

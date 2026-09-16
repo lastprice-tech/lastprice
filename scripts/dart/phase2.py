@@ -13,10 +13,22 @@ import emit
 import phase1
 
 
+# 보고서명에 "사업보고서" 가 들어 있지만 사업보고서가 아닌 것.
+# 「해외증권거래소등에신고한사업보고서등의국내신고」는 NYSE 상장 3사(KB금융·신한지주·
+# 우리금융)의 Form 20-F 국내신고로, 본문 27자 + 표 1개짜리 4.6 KB 껍데기다.
+#
+# 이것을 안 거르면 조용히 사고가 난다 — 실측: 접수일이 정기 사업보고서(3월)보다 늦은
+# 4월이라 _annual()[-1] 이 이쪽을 고른다. 그 결과 KB금융·신한지주·우리금융지주·
+# 구 우리금융지주 **4곳은 '최신 사업보고서(현재 계열사 구조)' 로 껍데기를 받았고,
+# 진짜 사업보고서는 한 번도 수집되지 않았다.** 이 픽의 목적 자체가 무너져 있었다.
+NOT_ANNUAL_REPORT = ("해외증권거래소",)
+
+
 def _annual(rows):
     out = [r for r in rows
            if "사업보고서" in docparse.normalize_for_match(r.get("report_nm", ""))
-           and "정정" not in docparse.normalize_for_match(r.get("report_nm", ""))]
+           and "정정" not in docparse.normalize_for_match(r.get("report_nm", ""))
+           and not any(k in (r.get("report_nm") or "") for k in NOT_ANNUAL_REPORT)]
     out.sort(key=lambda r: r.get("rcept_dt", ""))
     return out
 
@@ -153,6 +165,27 @@ def select_targets(out_dir, entries, base_years=None, verbose=True):
                         "주요사항보고서" in nm
                         and any(h in nm for h in config.FUNDING_MAJOR_HINTS)):
                     picks.setdefault(r["rcept_no"], (label, "조달 원문: %s" % nm))
+
+        # ── 4차: FY2023~25 사업보고서(정정 포함 전량) + 주주총회소집공고 ──────
+        # 정정본을 전부 받는 것은 1~3차 원칙(어느 것이 최종인지 판단하지 않는다)과 같고,
+        # 이번 주제에서는 특히 값이 있다 — 겸영·부수업무와 마이데이터 등록은 연중에
+        # 바뀌는 항목이라 정정본이 그 변화를 보여준다(사용자 결정, 2026-09-16).
+        #
+        # config.annual_fy_4cha 는 사업연도 표기 '(YYYY.MM)' 를 **필수**로 요구한다.
+        # 「해외증권거래소등에신고한사업보고서등의국내신고」가 보고서명에 "사업보고서" 를
+        # 포함하면서도 본문 27자짜리 Form 20-F 껍데기이기 때문이다(2024~26 접수 11건).
+        for r in rows:
+            nm, dt = r.get("report_nm", ""), r.get("rcept_dt", "")
+            fy = config.annual_fy_4cha(nm)
+            if fy:
+                picks.setdefault(r["rcept_no"],
+                                 (label, "4차 FY%s 사업보고서(%s): %s"
+                                  % (fy, doc_kind(nm), nm)))
+            elif config.is_meeting_notice_4cha(nm, dt):
+                # 본문만 받는다. 웹 첨부(신구조문대비표 PDF)는 받지 않는다 —
+                # 본문에 표로 들어 있는 경우가 많아, 본문에서 사업목적이 안 나오는
+                # 건수를 먼저 세고 그 건만 골라 받을지 사용자가 판단한다.
+                picks.setdefault(r["rcept_no"], (label, "4차 주주총회소집공고: %s" % dt))
 
         # 한화생명 → 한화손보 지분 취득 추적. 대량보유보고는 '피취득(발행) 법인' 코드로
         # 색인되므로 한화손보 쪽에서 찾는다.
