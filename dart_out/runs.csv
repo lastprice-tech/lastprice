@@ -25,3 +25,4 @@ run_20260916_104733,2026-09-16T10:47:33+09:00,635ec5897176,85312ceb,"scripts/dar
 run_20260916_104739,2026-09-16T10:47:39+09:00,635ec5897176,85312ceb,"scripts/dart/run.py phase1 --only 농협생명보험,흥국생명보험,현대해상화재보험,롯데손해보험,흥국화재해상보험,NH농협손해보험,KB국민카드,신한카드,KB증권,신한투자증권 --endpoint company"
 run_20260916_110115,2026-09-16T11:01:15+09:00,01b1fd284b5c,85312ceb,scripts/dart/run.py phase2 --dry-run
 run_20260916_110142,2026-09-16T11:01:42+09:00,01b1fd284b5c,85312ceb,scripts/dart/run.py phase2
+run_20260916_214205,2026-09-16T21:42:05+09:00,01b1fd284b5c,85312ceb,scripts/dart/run.py phase2
