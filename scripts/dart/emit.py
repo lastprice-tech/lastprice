@@ -494,12 +494,21 @@ def emit_documents(out_dir, metas, by_code, max_doc_bytes, doc_index=None):
             # 걸려 5개만 펼쳐졌다. 전환 후 자본비율·이중레버리지가 이 안에 있어
             # 서술만 뽑으면 자본 꼭지를 쓸 수 없다.
             small = len(sec["tables"]) <= config.MAX_TABLES_PER_SECTION or force_full
+            interlock_sec = any(docparse.normalize_for_match(h) in sec["title"]
+                                for h in config.INTERLOCK_SECTION_HINTS)
             for ti, tbl in enumerate(sec["tables"]):
                 hits = tbl_hits[ti]
                 # 4차: 표 자체에 주제 키워드가 있을 때만 전개한다. 제목만 걸린 섹션의
                 # 표는 색인 행(kind=table_index)으로 존재만 남는다 — 기존 규칙과 같은
                 # 모양이라 삭제가 아니고, 전문은 text/<rcept>/_full.txt 에 그대로 있다.
-                extract = bool(hits) if is_4cha else (bool(hits) or (bool(title_hits) and small))
+                #
+                # 예외: 겸직 원천 섹션(「임원 및 직원」·「대주주 등과의 거래」·「임원의 보수」)
+                # 은 4차에서도 제목 기준으로 전개한다. handoff3.build_interlock 이 이
+                # 섹션들의 표를 *낱말 없이 제목만으로* 고르기 때문이다. 이 예외가 없으면
+                # 3차 산출물 겸직_업무위탁.csv 가 7개 법인에서 7,161행 줄어든다(실측).
+                # 비용은 +45 MB 로, 제목 매칭을 전면 복원할 때(+155 MB)의 3분의 1이다.
+                extract = (bool(hits) or (interlock_sec and bool(title_hits) and small)) \
+                    if is_4cha else (bool(hits) or (bool(title_hits) and small))
                 preview = " | ".join(c["text"][:20] for r in tbl["rows"][:2] for c in r[:6])
                 tcommon = dict(common, table_index=ti,
                                unit_hint=tbl.get("unit_hint", ""),

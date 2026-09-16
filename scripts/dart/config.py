@@ -545,6 +545,15 @@ def is_4cha_doc(report_nm, rcept_dt=""):
     return bool(annual_fy_4cha(report_nm)) or is_meeting_notice_4cha(report_nm, rcept_dt)
 
 
+# 겸직·업무위탁 표가 들어 있는 섹션 제목.
+#
+# **단일 출처다.** emit(표를 전개할지)과 handoff3.build_interlock(표를 고를지)이 같은
+# 목록을 봐야 한다. 예전에는 handoff3 에만 적혀 있어서, 4차 좁은 규칙이 emit 쪽에서
+# 이 섹션들의 표 전개를 끊었는데도 handoff3 은 그대로 찾으려 들었다. 그 결과
+# 겸직_업무위탁.csv 가 7개 법인에서 7,161행 줄었다(삼성생명 3,303 → 2,365,
+# 한화손보 2,561 → 1,097 등). 한쪽만 고치면 또 어긋나므로 여기 한 군데에 둔다.
+INTERLOCK_SECTION_HINTS = ("임원 및 직원", "대주주 등과의 거래", "임원의 보수")
+
 MAX_TABLES_PER_SECTION = 40
 
 # 지주 전환 증권신고서 선별. 두 조건을 모두 만족해야 한다.

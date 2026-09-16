@@ -561,6 +561,19 @@ def conversion_section_cases():
           _h._is_4cha_row({"corp_label": "삼성생명보험", "report_nm": "사업보고서 (2025.12)",
                            "rcept_dt": "20260311"}))
 
+    # (6) 겸직 원천 섹션은 **한 군데**에만 적혀 있어야 한다.
+    #     emit(표를 전개할지)과 handoff3(표를 고를지)이 다른 목록을 보면 조용히 어긋난다.
+    #     실제로 4차 좁은 규칙을 넣었을 때 emit 쪽만 끊겨 겸직_업무위탁.csv 가 7개
+    #     법인에서 7,161행 줄었다(삼성생명 3,303 → 2,365, 한화손보 2,561 → 1,097 등).
+    import handoff3 as _h3
+    check("handoff3.JIK_SECTION_HINTS 가 config.INTERLOCK_SECTION_HINTS 와 같은 객체다",
+          _h3.JIK_SECTION_HINTS is config.INTERLOCK_SECTION_HINTS,
+          "따로 적혀 있으면 한쪽만 고쳐져 겸직 표가 조용히 빠진다")
+    check("INTERLOCK_SECTION_HINTS 에 겸직 원천 3섹션이 모두 있다",
+          set(config.INTERLOCK_SECTION_HINTS) ==
+          {"임원 및 직원", "대주주 등과의 거래", "임원의 보수"},
+          "관측 %r" % (config.INTERLOCK_SECTION_HINTS,))
+
 
 def parser_edge_cases(out_root):
     """파서 경계값. 여기서 잡는 것은 전부 '조용한 손실'이었던 것들이다."""

@@ -126,24 +126,48 @@ def main(baseline=None):
           "4차 %s / 3차 %s" % (head(t4), head(t3)))
 
     # ── 7. 청크 재조립·셀 길이 ───────────────────────────────────────────
+    #
+    # 처음에는 청크 합계를 text_chars 와 비교했는데 그것이 틀렸다. text_chars 는
+    # **청크별** 길이(상한 32,767)이지 합계가 아니다. 그 잣대로는 3차 파일도 35섹션이
+    # "불일치" 로 나온다. 옳은 기준은 두 개다:
+    #   (a) 행별 text_chars == len(section_text)
+    #   (b) 청크를 chunk_seq 순으로 이어 붙인 것 == text_path 파일의 본문
     nr = rows(n4)
-    bad_len, chunk = 0, collections.defaultdict(list)
+    per_row = sum(1 for r in nr
+                  if (r.get("text_chars") or "").isdigit()
+                  and int(r["text_chars"]) != len(r.get("section_text") or ""))
+    check("4차 서술: 행별 text_chars == len(section_text)", per_row == 0,
+          "불일치 %d행" % per_row)
+
+    chunk = collections.defaultdict(list)
     for r in nr:
-        key = (r.get("rcept_no"), r.get("section_index"))
-        chunk[key].append(r)
-    mism = 0
-    for key, rs in chunk.items():
-        joined = "".join(x.get("section_text", "") for x in
-                         sorted(rs, key=lambda x: int(x.get("chunk_seq") or 0)))
-        want = rs[0].get("text_chars") or ""
-        if want.isdigit() and len(joined) != int(want):
+        chunk[(r.get("rcept_no"), r.get("section_index"), r.get("text_path"))].append(r)
+    mism = nofile = 0
+    for (_rc, _si, tp), rs in chunk.items():
+        if not tp or not os.path.exists(tp):
+            nofile += 1
+            continue
+        rs.sort(key=lambda x: int(x.get("chunk_seq") or 0))
+        joined = "".join(x.get("section_text") or "" for x in rs)
+        with open(tp, encoding="utf-8") as f:
+            body = f.read()
+        i = body.find("\n\n")            # 파일 첫 줄은 제목, 그 뒤 빈 줄, 그다음이 본문
+        if joined != (body[i + 2:] if i >= 0 else body):
             mism += 1
-    check("4차 서술: 청크 재조립 글자수 == text_chars", mism == 0, "불일치 %d섹션" % mism)
-    over = 0
-    for r in rows(t4):
-        if len(r.get("cell_text") or "") > 32767:
-            over += 1
-    check("4차 표: 32,767자 초과 셀 0개", over == 0, "초과 %d" % over)
+    check("4차 서술: 청크 재조립 == text_path 본문", mism == 0,
+          "불일치 %d섹션 (text_path 없음 %d — 웹 회수분)" % (mism, nofile))
+
+    # 표 CSV 는 셀을 청크로 쪼개지 않는다. 대신 **자르지도 않는다** — 원문 보존 규칙이다.
+    # 잘리는 것은 XLSX 뿐이고 handoff CSV 는 XLSX 에 넣지 않는다. 그래서 "0개" 가
+    # 아니라 "잘리지 않았는가" 를 본다. 3차 파일에도 42,564자짜리가 1개 있다.
+    over = [r for r in rows(t4) if len(r.get("cell_text") or "") > 32767]
+    truncated = [r for r in over if len(r["cell_text"]) in (32767, 32000)]
+    check("4차 표: 32,767자 초과 셀이 CSV 에서 잘리지 않았다", not truncated,
+          "정확히 한도에서 끝나 잘린 것으로 보이는 셀 %d개" % len(truncated))
+    if over:
+        print("      · 한도 초과 셀 %d개(전부 「중요한 회계정책」·「재무제표 주석」의 통문장). "
+              "최대 %d자. CSV 에는 온전히 실려 있고 Excel 로 열면 잘린다."
+              % (len(over), max(len(r["cell_text"]) for r in over)))
 
     # ── 8. 1~3차 CSV 바이트 동일 (가장 중요) ─────────────────────────────
     print()
@@ -163,7 +187,11 @@ def main(baseline=None):
                 os.path.join(HANDOFF, "정관_사업목적.csv"),
                 os.path.join(HANDOFF, "계열사_데이터거래.csv"),
                 os.path.join(HANDOFF, "이사회_정보거버넌스_안건.csv"),
-                os.path.join(HANDOFF, "고객정보_제재.csv")}
+                os.path.join(HANDOFF, "고객정보_제재.csv"),
+                # 4차가 원천(각 법인의 최신 사업보고서)을 바꾸는 파일이라 바이트 동일이
+                # 기준일 수 없다. 20-F 버그 수정으로 신한지주 1 → 5,154행,
+                # KB금융 1 → 2,913행이 됐다. 아래에서 행 수로 따로 판정한다.
+                os.path.join(HANDOFF, "겸직_업무위탁.csv")}
         diff, checked = [], 0
         for path, h in sorted(want.items()):
             if path in skip or not os.path.exists(path):
@@ -177,6 +205,20 @@ def main(baseline=None):
             print("      ↑ emit 의 4차 분기가 1~3차 문서까지 건드렸다는 뜻이다. 즉시 원인을 찾을 것.")
     else:
         print("  · 기준선 파일이 없어 8번(바이트 동일)은 건너뜀 — %s" % baseline)
+
+    # 겸직_업무위탁.csv — 바이트가 아니라 법인별 행 수로 본다.
+    # 이전 키트(HEAD~4) 실측값. 4차 좁은 규칙이 이 아래로 떨어뜨리면 회귀다.
+    PREV_JIK = {"삼성생명보험": 3303, "한화생명보험": 3285, "삼성화재해상보험": 2664,
+                "한화손해보험": 2561, "KB라이프생명보험": 1960, "KB손해보험": 1738,
+                "신한라이프생명보험": 1533}
+    jik = rows(os.path.join(HANDOFF, "겸직_업무위탁.csv"))
+    per = collections.Counter(r["corp_label"] for r in jik)
+    short = {k: (per.get(k, 0), v) for k, v in PREV_JIK.items() if per.get(k, 0) < v}
+    check("겸직_업무위탁: 기존 7개 법인의 행 수가 줄지 않았다", not short,
+          "줄어든 법인 (현재, 이전): %s" % short)
+    print("      · 겸직_업무위탁 %d행 / 법인 %d곳 — 신한지주 %d · KB금융 %d "
+          "(20-F 버그 수정 전에는 각 1행이었다)"
+          % (len(jik), len(per), per.get("신한지주", 0), per.get("KB금융", 0)))
 
     # ── 9. 배치 라우팅 ───────────────────────────────────────────────────
     print()
