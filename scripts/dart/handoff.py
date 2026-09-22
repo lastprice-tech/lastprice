@@ -754,6 +754,8 @@ def build_tables(out_dir, handoff_dir, purpose, batches, result, warned,
                for b in BATCHES}
     last = {}
     unordered = 0
+    pending_y = None                 # 셀이 따라올지 아직 모르는 Y 색인 행
+    empty_y = 0                      # 원문이 빈 표(Y 인데 셀 0행) — 색인 1행으로 보존
     index_only = 0                   # 셀 미전개 표 = 색인 1행만 남긴 표
     y_index, cell_tables = set(), set()
     # 11_원문추출.csv 에 행이 한 줄이라도 있는 문서. 웹 회수 표를 덧붙일지 가르는
@@ -771,21 +773,40 @@ def build_tables(out_dir, handoff_dir, purpose, batches, result, warned,
             if kind not in ("table", "table_index"):
                 continue
             tkey = (rc, r.get("section_index", ""), r.get("table_index", ""))
+            is_y_index = (kind == "table_index"
+                          and (r.get("table_extracted") or "").strip().upper() == "Y")
             if kind == "table_index":
-                if (r.get("table_extracted") or "").strip().upper() == "Y":
+                if is_y_index:
                     y_index.add(tkey)
-                    continue
-                index_only += 1
+                else:
+                    index_only += 1
             else:
                 cell_tables.add(tkey)
+            # ★ Y 색인 행을 곧바로 버리면 **원문이 빈 표가 통째로 사라진다.**
+            # 예전에는 'Y 면 셀 행이 따라오니 색인 행은 중복' 이라는 전제로 continue
+            # 했는데, 원문에 <TABLE></TABLE> 처럼 행이 0개인 표가 있다(실측 2,079개).
+            # 그런 표는 Y 인데 셀이 한 줄도 없어 산출물에서 존재 자체가 지워졌다
+            # (실측: 11_원문추출.csv 의 4차 표 157,105개 중 1,577개가 표 CSV 에 없었다).
+            # 그래서 Y 색인 행을 **보류**했다가, 셀이 실제로 따라오면 버리고 안 오면 쓴다.
+            if pending_y is not None:
+                if pending_y[0] == tkey and kind == "table":
+                    pending_y = None                      # 셀이 따라왔다 — 색인 행 불필요
+                elif pending_y[0] != tkey:
+                    _tk, _b, _row, _k = pending_y
+                    if _b in last and _k < last[_b]:
+                        unordered += 1
+                    last[_b] = _k
+                    writers[_b].write(_row)
+                    empty_y += 1
+                    pending_y = None
             b = _batch_of(r.get("corp_label", ""), batches, warned, result["notes"],
                           rc, doc_batches)
             k = (r.get("corp_label", ""), r.get("rcept_dt", ""), rc,
                  _as_int(r.get("section_index")), _as_int(r.get("table_index")),
                  _as_int(r.get("row_index")), _as_int(r.get("cell_ord")))
-            if b in last and k < last[b]:
-                unordered += 1
-            last[b] = k
+            # ★ 순서 점검은 **실제로 쓰는 행에서만** 한다. 보류 중인 Y 색인 행으로
+            # last[b] 를 갱신하면, 그 행의 row_index 는 빈칸이라 _as_int 가 10**9 로
+            # 뒤로 보내므로 뒤따르는 셀 행이 전부 '역행' 으로 잡힌다(실측 6 → 69,925).
             row = dict(corp_label=r.get("corp_label", ""), rcept_no=rc,
                        rcept_dt=r.get("rcept_dt", ""),
                        doc_kind=doc_kind(r.get("report_nm", "")),
@@ -803,7 +824,21 @@ def build_tables(out_dir, handoff_dir, purpose, batches, result, warned,
                        unit_hint_source=r.get("unit_hint_source", ""),
                        cell_text=r.get("cell_text", ""))
             row.update({key: r.get(key, "") for key in PROV_KEYS})
+            if is_y_index:
+                pending_y = (tkey, b, row, k)
+                continue
+            if b in last and k < last[b]:
+                unordered += 1
+            last[b] = k
             writers[b].write(row)
+        if pending_y is not None:
+            _tk, _b, _row, _k = pending_y
+            if _b in last and _k < last[_b]:
+                unordered += 1
+            last[_b] = _k
+            writers[_b].write(_row)
+            empty_y += 1
+            pending_y = None
         # OpenAPI 가 014 로 거부해 11_원문추출.csv 에 행이 0개인 문서의 표.
         web = _write_web_tables(out_dir, purpose, batches, seen, writers, last,
                                 result, warned, doc_batches)
@@ -824,9 +859,11 @@ def build_tables(out_dir, handoff_dir, purpose, batches, result, warned,
     ghost = y_index - cell_tables
     if ghost:
         result["notes"].append(
-            "표 CSV: table_extracted=Y 인데 셀 행이 한 줄도 없는 표 %d개 — "
-            "11_원문추출.csv 가 중간에 잘렸을 수 있다. 예: %s"
-            % (len(ghost), ", ".join("%s 섹션%s 표%s" % t for t in sorted(ghost)[:5])))
+            "표 CSV: table_extracted=Y 인데 셀 행이 없는 표 %d개 — 원문이 빈 표다"
+            "(<TABLE></TABLE>). 색인 1행씩으로 **보존**했다(row_index·cell_text 빈칸). "
+            "예: %s" % (len(ghost), ", ".join("%s 섹션%s 표%s" % t for t in sorted(ghost)[:5])))
+    if empty_y:
+        result["notes"].append("표 CSV: 그중 %d개를 색인 행으로 실제 기록" % empty_y)
     orphan = cell_tables - y_index
     if orphan:
         result["notes"].append(
@@ -836,7 +873,8 @@ def build_tables(out_dir, handoff_dir, purpose, batches, result, warned,
             "표 CSV: 웹 회수 문서에서 행이 0개인 표 %d개를 색인 1행씩으로 보존 "
             "(table_extracted=Y, row_index·cell_text 빈칸)" % web["empty_tables"])
     result["table_stats"] = {
-        "cells": sum(w.n for w in writers.values()) - index_only - web["empty_tables"],
+        "cells": (sum(w.n for w in writers.values()) - index_only - empty_y
+                  - web["empty_tables"]),
         "tables_with_cells": len(cell_tables) + web["tables"] - web["empty_tables"],
         "index_only_tables": index_only,
         "web_docs": web["docs"], "web_tables": web["tables"], "web_cells": web["cells"]}

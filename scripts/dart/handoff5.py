@@ -188,7 +188,7 @@ def _wanted(rows):
         return True
     for row in rows[:config.HEADER_SCAN_ROWS]:
         cells = [N(c["text"]) for c in row]
-        if OFFICER_HEADER_KEY in cells:
+        if any(k in cells for k in OFFICER_HEADER_KEYS):
             return True
         if any(k in cells for k in EMPLOYEE_HEADER_KEYS):
             return True
@@ -270,7 +270,9 @@ OFFICER_FIELDS = (
     ("재직기간", ("재직기간", "재직 기간")),
     ("임기만료일", ("임기만료일", "임기 만료일", "임기만료")),
 )
-OFFICER_HEADER_KEY = "담당업무"        # 임원현황 표를 가르는 칸
+# 단일 출처. emit 이 표를 전개할지 고르는 것과 같은 목록이어야 한다.
+OFFICER_HEADER_KEYS = config.OFFICER_HEADER_HINTS
+OFFICER_HEADER_KEY = OFFICER_HEADER_KEYS[0]
 
 EMPLOYEE_HEADER_KEYS = ("사업부문", "직원수", "직원 수", "정규직", "기간제근로자",
                         "1인평균급여액", "연간급여총액", "평균근속연수")
@@ -340,7 +342,7 @@ def _officer_rows(docs):
         d = docs[rc]
         for (si, ti) in sorted(d.tables):
             rows = _grid(d, (si, ti))
-            hs = header_slots(rows, (OFFICER_HEADER_KEY,))
+            hs = header_slots(rows, OFFICER_HEADER_KEYS)
             if not hs:
                 continue
             data_start, slots = hs

@@ -718,6 +718,26 @@ def committee_header(table, normalize):
     return ""
 
 
+# ── 임원현황 표 머리행 ────────────────────────────────────────────────────
+# 「담당업무」 한 칸이 임원현황 표를 가른다. 회사마다 컬럼 수가 다르지만(KB 10개,
+# 신한 12개) 이 칸은 공통이다.
+#
+# 이 규칙이 없으면 **섹션 제목이 비어 있는 임원표가 통째로 빠진다.** 실측: 메리츠
+# 설립 첫해(2011.03) 사업보고서는 「1. 임원 및 직원의 현황」 다음 섹션의 제목이
+# 비어 있어 title_hits 가 0이고, 표 낱말에도 안 걸려 임원표(11행)가 미전개로 남았다.
+# 같은 이유로 4·5차 문서 전체에서 임원표 68개(420행)가 빠져 있었다.
+OFFICER_HEADER_HINTS = ("담당업무", "담당 업무")
+
+
+def officer_header(table, normalize):
+    """임원현황 표면 걸린 머리행 어휘, 아니면 ''."""
+    cells = _header_cells(table, normalize)
+    for h in OFFICER_HEADER_HINTS:
+        if h in cells:
+            return h
+    return ""
+
+
 def interlock_header(table, normalize):
     """겸직 표면 **판별어휘(회사칸 어휘)**, 아니면 ''.
 

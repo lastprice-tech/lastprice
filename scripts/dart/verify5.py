@@ -56,29 +56,41 @@ def hp(name):
     return os.path.join(HANDOFF, name)
 
 
-# 1~3차 산출물. 이 파일들은 5차 작업으로 **한 바이트도** 바뀌면 안 된다.
+# 1~3차 산출물 중 **표가 아닌** 것. 5차 작업으로 한 바이트도 바뀌면 안 된다.
 FROZEN_123 = (
     "원문_지주전환_서술.csv", "원문_지주전환_서술_2차.csv", "원문_지주전환_서술_3차.csv",
-    "원문_지주전환_표.csv", "원문_지주전환_표_2차.csv",
     "원문_CSM롤포워드.csv", "원문_계열구조.csv", "자본흐름_결합.csv",
     "한화_자본총계추이.csv", "한화생명_한화손보_지분추이.csv",
-    "우리2026_정정명령_전후차이.csv",
+    "우리2026_정정명령_전후차이.csv", "겸직_업무위탁.csv", "원문_파일목록.csv",
 )
-# 늘어날 수 있는 파일 — 늘어나도 **기존 행은 전부 남아 있어야** 한다.
-GROW_OK = (
-    "원문_지주전환_표_3차.csv",     # 우리금융지주 FY2019 위원회·겸직 표 전개
-    "데이터활용_표_4차.csv",        # 4차 문서의 위원회 821표·겸직 138표 전개
-    "겸직_업무위탁.csv",            # 같은 전개가 3차 산출물에도 닿는다
-    "원문_데이터활용_4차.csv",
-    "원문_파일목록.csv",
-)
+# 표 CSV. 행 수는 **의도적으로** 바뀐다(아래 두 가지). 그래서 행 지문이 아니라
+# 「표가 하나도 사라지지 않았는가」로 잰다 — 그쪽이 더 강한 보장이다.
+#   ⑴ 머리행 규칙으로 미전개 표가 전개되면 색인 1행이 셀 여러 행으로 **대체**된다.
+#   ⑵ 원문이 빈 표(<TABLE></TABLE>)의 색인 행을 이제 보존한다(예전에는 통째로 빠졌다).
+TABLE_CSV = {
+    "1차": "원문_지주전환_표.csv", "2차": "원문_지주전환_표_2차.csv",
+    "3차": "원문_지주전환_표_3차.csv", "4차": "데이터활용_표_4차.csv",
+    "5차": "조직운영_표_5차.csv",
+}
+
+
+def _batch_of_row(r):
+    import handoff as H
+    d = {"corp_label": r.get("corp_label", ""), "report_nm": r.get("report_nm", ""),
+         "rcept_dt": r.get("rcept_dt", "")}
+    rc = r.get("rcept_no", "")
+    if H._is_5cha_row(rc, d):
+        return "5차"
+    if H._is_4cha_row(d):
+        return "4차"
+    return H.batch_map().get(r.get("corp_label", ""), "2차")
 
 
 def main(lines_dir=None):
     print("\n■ 5차 검증 — 지주 조직 운영\n")
 
-    # ── 1. 1~3차 산출물 바이트 동일성 ──────────────────────────────────────
-    print("[1] 1~3차 산출물이 한 바이트도 바뀌지 않았는가")
+    # ── 1. 표가 아닌 1~3차 산출물은 한 바이트도 바뀌지 않았는가 ────────────
+    print("[1] 표가 아닌 1~3차 산출물이 한 바이트도 바뀌지 않았는가")
     if not lines_dir or not os.path.isdir(lines_dir):
         check("기준선 행 지문 디렉토리", False, "--lines 로 경로를 주세요")
     else:
@@ -88,26 +100,56 @@ def main(lines_dir=None):
             if not os.path.exists(p) or not os.path.exists(lh):
                 diff.append("%s(기준선 없음)" % name)
                 continue
-            old = open(lh).read().split("\n")
-            new = line_hashes(p)
-            (same if old == new else diff).append(name)
-        check("1~3차 산출물 %d개 행 지문 동일" % len(same), not diff,
+            (same if open(lh).read().split("\n") == line_hashes(p) else diff).append(name)
+        check("1~3차 비(非)표 산출물 %d개 행 지문 동일" % len(same), not diff,
               ("바뀐 파일: " + ", ".join(diff)) if diff else "")
 
-        # ── 2. 늘어난 파일의 행 superset ──────────────────────────────────
-        print("\n[2] 늘어난 파일에서 기존 행이 사라지지 않았는가 (superset)")
-        for name in GROW_OK:
-            p, lh = hp(name), os.path.join(lines_dir, name + ".lh")
-            if not os.path.exists(p) or not os.path.exists(lh):
-                check("%s superset" % name, False, "파일 또는 기준선 없음")
-                continue
+    # ── 2. 표 CSV — 원천의 표가 하나도 사라지지 않았는가 ──────────────────
+    print("\n[2] 표 CSV: 11_원문추출.csv 의 표가 하나도 빠지지 않았는가")
+    srcset = collections.defaultdict(set)
+    # handoff.build_tables 는 doc_purpose_map 에 있는 문서만 싣는다. 같은 필터를
+    # 쓰지 않으면 대상이 아닌 문서의 표가 전부 '누락' 으로 잡힌다(실측 오탐 33,688개).
+    import handoff as _H
+    purpose = _H.doc_purpose_map(OUT)
+    p = os.path.join(OUT, "11_원문추출.csv")
+    if os.path.exists(p):
+        with open(p, encoding="utf-8-sig", newline="") as f:
+            for r in csv.DictReader(f):
+                if r.get("kind") not in ("table", "table_index"):
+                    continue
+                if r.get("rcept_no", "") not in purpose:
+                    continue
+                srcset[_batch_of_row(r)].add(
+                    (r.get("rcept_no", ""), r.get("section_index", ""),
+                     r.get("table_index", "")))
+    for b, name in sorted(TABLE_CSV.items()):
+        path = hp(name)
+        if not os.path.exists(path):
+            check("%s 표 보존" % name, not srcset.get(b), "파일 없음")
+            continue
+        got = set()
+        nline = 0
+        with open(path, encoding="utf-8-sig", newline="") as f:
+            for r in csv.DictReader(f):
+                nline += 1
+                got.add((r.get("rcept_no", ""), r.get("section_index", ""),
+                         r.get("table_index", "")))
+        missing = srcset.get(b, set()) - got
+        check("%s: 원천 표 %d개 중 누락 0"
+              % (name, len(srcset.get(b, set()))), not missing,
+              ("누락 %d개 예: %s" % (len(missing), sorted(missing)[:3])) if missing
+              else "산출물 표 %d개 / 행 %d" % (len(got), nline))
+        # 기준선 대비 행 증감은 사실로만 적는다(줄어드는 것이 곧 손실은 아니다 —
+        # 색인 1행이 셀 여러 행으로 대체되면 그 색인 행은 사라지는 것이 정상이다).
+        lh = os.path.join(lines_dir or "", name + ".lh")
+        if lines_dir and os.path.exists(lh):
             old = collections.Counter(open(lh).read().split("\n"))
-            new = collections.Counter(line_hashes(p))
+            new = collections.Counter(line_hashes(path))
             lost = sum(c for h, c in old.items() if new[h] < c)
-            added = sum(new.values()) - sum(old.values())
-            check("%s: 사라진 행 0" % name, lost == 0,
-                  "기존 %d행 → %d행 (증가 %+d, 사라짐 %d)"
-                  % (sum(old.values()), sum(new.values()), added, lost))
+            print("     기준선 대비: %d행 → %d행 (증가 %+d, 기준선에만 있던 행 %d "
+                  "— 색인→셀 대체분)"
+                  % (sum(old.values()), sum(new.values()),
+                     sum(new.values()) - sum(old.values()), lost))
 
     # ── 3. 5차 산출물 행 수 ────────────────────────────────────────────────
     print("\n[3] 5차 산출물 7종")

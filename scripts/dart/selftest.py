@@ -648,6 +648,17 @@ def conversion_section_cases():
           "따로 적으면 한쪽만 고쳐져 겸직 표가 조용히 빠진다")
     check("handoff5 가 config.committee_header 를 그대로 쓴다",
           _h5.COMMITTEE_HEADER is config.committee_header)
+    check("handoff5 가 config.OFFICER_HEADER_HINTS 를 그대로 쓴다",
+          _h5.OFFICER_HEADER_KEYS is config.OFFICER_HEADER_HINTS,
+          "따로 적으면 emit 이 연 표와 handoff5 가 찾는 표가 어긋난다")
+    check("임원표 머리행 판별: 담당업무",
+          config.officer_header(
+              _tbl(["성명", "출생년월", "직위", "등기임원여부", "상근여부",
+                    "담당업무", "보통주", "우선주"]), _N) == "담당업무",
+          "메리츠 설립 첫해(2011.03)의 임원표가 이 머리행이다")
+    check("임원표 오탐 제외: 감사위원 목록",
+          config.officer_header(
+              _tbl(["성명", "사외이사여부", "경력", "전문가 유형"]), _N) == "")
 
     # (5) 5차 문서 집합은 **접수번호 목록**이다. 규칙(사업연도)으로 적으면 다른 법인의
     #     같은 연도 사업보고서까지 좁은 키워드 세트로 바뀌어 1~3차 산출물이 줄어든다.

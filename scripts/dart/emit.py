@@ -550,6 +550,10 @@ def emit_documents(out_dir, metas, by_code, max_doc_bytes, doc_index=None):
                     _jv = config.interlock_header(_t, docparse.normalize_for_match)
                     if _jv:
                         hdr_tbls[_ti] = "겸직:" + _jv
+                        continue
+                    _ov = config.officer_header(_t, docparse.normalize_for_match)
+                    if _ov:
+                        hdr_tbls[_ti] = "임원:" + _ov
             if not (title_hits or body_hits or any(tbl_hits.values()) or hdr_tbls):
                 continue
             scope = "title" if title_hits else (
