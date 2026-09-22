@@ -181,6 +181,61 @@ def write_csv(path, rows, lead_cols=()):
     return path, cols
 
 
+class RowSink(object):
+    """행을 메모리에 쌓지 않고 CSV 로 흘려 보낸다. 컬럼은 여전히 **관측된 키의 합집합**이다.
+
+    예전에는 11_원문추출.csv 의 행 전부를 리스트로 들고 있다가 write_csv 에 넘겼다.
+    원문이 704건으로 늘고 위원회·겸직 표가 추가로 전개되자 **커널이 OOM 으로 죽였다**
+    (dmesg: `Killed process 3133 (python3) anon-rss:7188284kB`, 7.2 GB). 로그는 0바이트로
+    남아 아무 사유도 보이지 않았다 — 조용한 실패다.
+
+    그래서 두 패스로 나눈다. 1패스에서 임시 파일(gzip JSONL)에 한 줄씩 쓰면서 키 집합만
+    메모리에 둔다(수십 개짜리 집합이다). 2패스에서 그 키 합집합을 컬럼으로 삼아 CSV 로
+    옮긴다. 결과 파일은 예전과 **바이트 단위로 같고**, 메모리는 문서 한 건치만 쓴다.
+    임시 파일을 gzip 으로 쓰는 이유는 비압축이면 5 GB 를 넘어 디스크가 모자라기 때문이다.
+    """
+
+    def __init__(self, tmp_path):
+        import gzip
+        self.tmp_path = tmp_path
+        os.makedirs(os.path.dirname(tmp_path), exist_ok=True)
+        self._f = gzip.open(tmp_path, "wt", encoding="utf-8", compresslevel=1)
+        self.keys = set()
+        self.n = 0
+
+    def add(self, row):
+        self.keys |= set(row.keys())
+        self._f.write(json.dumps(row, ensure_ascii=False, separators=(",", ":")))
+        self._f.write("\n")
+        self.n += 1
+
+    def finish(self, path, lead_cols=()):
+        import gzip
+        self._f.close()
+        if not self.n:
+            os.remove(self.tmp_path)
+            return None, []
+        seen, cols = set(), []
+        for c in list(lead_cols):
+            if c not in seen:
+                seen.add(c); cols.append(c)
+        for c in sorted(self.keys - seen - set(PROV_COLS)):
+            cols.append(c); seen.add(c)
+        for c in PROV_COLS:
+            if c not in seen:
+                cols.append(c); seen.add(c)
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        with open(path, "w", encoding="utf-8-sig", newline="") as out, \
+                gzip.open(self.tmp_path, "rt", encoding="utf-8") as src:
+            w = csv.DictWriter(out, fieldnames=cols, extrasaction="ignore")
+            w.writeheader()
+            for line in src:
+                if line.strip():
+                    w.writerow(json.loads(line))
+        os.remove(self.tmp_path)
+        return path, cols
+
+
 # ── 엔드포인트별 산출 ─────────────────────────────────────────────────────
 def corp_lookup(out_dir):
     entries = corpcode.load_corp_codes(out_dir)
@@ -401,8 +456,18 @@ def is_conversion_doc(report_nm):
 
 def emit_documents(out_dir, metas, by_code, max_doc_bytes, doc_index=None):
     """원문 ZIP → 섹션·표 셀. 파싱은 emit 에 있으므로 파서를 고쳐도 쿼터를 다시 쓰지 않는다."""
-    rows, notes = [], []
+    notes = []
     text_dir = os.path.join(out_dir, "text")
+    sink = RowSink(os.path.join(out_dir, "_tmp", "11_원문추출.jsonl.gz"))
+    rows = sink                      # .add() 만 쓴다 — 아래 호출부를 그대로 두기 위함
+    # **문서를 먼저 정렬한다.** 예전에는 행을 다 모은 뒤 (corp_label, rcept_no,
+    # section_index) 로 정렬했다. 한 문서 안에서 section_index 는 이미 오름차순이고
+    # 문서마다 corp_label·rcept_no 가 하나뿐이므로, 문서를 그 두 키로 정렬해 순서대로
+    # 흘려 보내면 결과 순서가 예전과 같다.
+    metas = sorted(metas, key=lambda mm: (
+        ((doc_index or {}).get((mm.get("params") or {}).get("rcept_no", ""), {})
+         .get("corp_label") or ""),
+        (mm.get("params") or {}).get("rcept_no", "")))
     for m in metas:
         rcept = (m.get("params") or {}).get("rcept_no", "")
         meta_doc = (doc_index or {}).get(rcept, {})
@@ -508,7 +573,7 @@ def emit_documents(out_dir, metas, by_code, max_doc_bytes, doc_index=None):
                           body_matched_keyword="|".join(body_hits),
                           match_scope=scope, section_n_tables=len(sec["tables"]),
                           text_path=rel(out_dir, tp))
-            rows.append(dict(common, kind="text", table_index="", row_index="",
+            rows.add(dict(common, kind="text", table_index="", row_index="",
                              cell_ord="", cell_tag="", rowspan="", colspan="",
                              unit_hint="", cell_text="", table_matched_keyword="",
                              header_rule="",
@@ -555,7 +620,7 @@ def emit_documents(out_dir, metas, by_code, max_doc_bytes, doc_index=None):
                                header_rule=hrule,
                                table_extracted="Y" if extract else "N",
                                table_n_rows=len(tbl["rows"]))
-                rows.append(dict(tcommon, kind="table_index", row_index="", cell_ord="",
+                rows.add(dict(tcommon, kind="table_index", row_index="", cell_ord="",
                                  cell_tag="", rowspan="", colspan="", cell_text="",
                                  text_chars="", context=preview[:200], **pv))
                 if not extract:
@@ -566,7 +631,7 @@ def emit_documents(out_dir, metas, by_code, max_doc_bytes, doc_index=None):
                     f.write(tbl.get("raw_xml", ""))
                 for ri, r in enumerate(tbl["rows"]):
                     for ci, cell in enumerate(r):
-                        rows.append(dict(tcommon, kind="table", row_index=ri, cell_ord=ci,
+                        rows.add(dict(tcommon, kind="table", row_index=ri, cell_ord=ci,
                                          cell_tag=cell["tag"], rowspan=cell["rowspan"],
                                          colspan=cell["colspan"], cell_text=cell["text"],
                                          text_chars="", context="",
@@ -574,9 +639,7 @@ def emit_documents(out_dir, metas, by_code, max_doc_bytes, doc_index=None):
         if skipped:
             notes.append("%s: 키워드 미매칭 표 %d개는 셀 전개를 생략(색인 행은 남김, "
                          "--extract-all-tables 로 강제 가능)" % (rcept, skipped))
-    rows.sort(key=lambda r: (r.get("corp_label") or "", r.get("rcept_no") or "",
-                             r.get("section_index") or 0))
-    path, _ = write_csv(os.path.join(out_dir, "11_원문추출.csv"), rows,
+    path, _ = sink.finish(os.path.join(out_dir, "11_원문추출.csv"),
                         ["corp_label", "corp_code", "rcept_no", "report_nm", "rcept_dt",
                          "section_index", "section_title", "matched_keyword",
                          "body_matched_keyword", "match_scope",
