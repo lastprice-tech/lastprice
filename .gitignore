@@ -77,6 +77,20 @@ __pycache__/
 !/handoff/원본_이사회의사록_2.zip
 !/handoff/원본_주요신고서본문.zip
 
+# 5차(지주 조직 운영) 산출물 — 작고 핵심이라 그대로 커밋한다(합계 약 9 MB).
+# 큰 표 CSV(조직운영_표_5차 258MB)는 기존 규약대로 키트 zip 으로만 인계한다.
+!/handoff/임원현황.csv
+!/handoff/직원현황.csv
+!/handoff/겸직현황_정리.csv
+!/handoff/위원회현황.csv
+!/handoff/임원_겸직_결합.csv
+!/handoff/지주_자회사_임원명부교집합.csv
+!/handoff/설립첫해_임원구성.csv
+
+# 6차(지배구조 연차보고서) — 파일목록만 커밋한다. 섹션 40MB·주제 83MB·표 893MB 는
+# raw/governance 와 코드로 언제든 재생성된다(`governance_emit.py`, 약 50분).
+!/handoff/연차보고서_파일목록.csv
+
 # selftest 임시 산출물
 /dart_out/_selftest/
 
