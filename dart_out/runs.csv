@@ -26,3 +26,9 @@ run_20260916_104739,2026-09-16T10:47:39+09:00,635ec5897176,85312ceb,"scripts/dar
 run_20260916_110115,2026-09-16T11:01:15+09:00,01b1fd284b5c,85312ceb,scripts/dart/run.py phase2 --dry-run
 run_20260916_110142,2026-09-16T11:01:42+09:00,01b1fd284b5c,85312ceb,scripts/dart/run.py phase2
 run_20260916_214205,2026-09-16T21:42:05+09:00,01b1fd284b5c,85312ceb,scripts/dart/run.py phase2
+run_20260922_111832,2026-09-22T11:18:32+09:00,38d0ea9e540b,85312ceb,"scripts/dart/run.py phase1 --dry-run --only 하나금융지주,BNK금융지주,JB금융지주,농협금융지주,하나생명보험"
+run_20260922_111838,2026-09-22T11:18:38+09:00,38d0ea9e540b,85312ceb,scripts/dart/run.py resolve
+run_20260922_111844,2026-09-22T11:18:44+09:00,38d0ea9e540b,85312ceb,"scripts/dart/run.py phase1 --dry-run --only 하나금융지주,BNK금융지주,JB금융지주,농협금융지주,하나생명보험"
+run_20260922_111854,2026-09-22T11:18:54+09:00,38d0ea9e540b,85312ceb,"scripts/dart/run.py phase1 --only 하나금융지주,BNK금융지주,JB금융지주,농협금융지주,하나생명보험"
+run_20260922_113740,2026-09-22T11:37:40+09:00,5dad3d45cb3e,85312ceb,scripts/dart/run.py phase2 --dry-run
+run_20260922_113820,2026-09-22T11:38:20+09:00,5dad3d45cb3e,85312ceb,scripts/dart/run.py phase2

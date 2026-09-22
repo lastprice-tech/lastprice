@@ -45,27 +45,69 @@ CHUNK = 30000
 
 # ── 목차 ──────────────────────────────────────────────────────────────────
 # 「제1절  지배구조 연차보고서 ......... 8」 / 「가. 지배구조 원칙과 정책   8」
-_TOC_LINE = re.compile(
-    r"^\s*(제\s*\d+\s*절|\d+\.|[가-힣]\.|\d+\)|[①-⑳]|[IVXivx]+\.)\s*"
-    r"(.+?)[\s.·…]{2,}(\d{1,4})\s*$", re.M)
+#
+# **줄 단위로 고정하면 안 된다.** JB금융지주 목차는 2단 조판이라 한 줄에 좌·우
+# 항목이 같이 있다("가. 지배구조 원칙과 정책 ·····6   라. 최고경영자 후보추천 ···146").
+# ^...$ 로 묶으면 그 줄 전체가 항목 하나로 잡혀 제목이 통째로 망가진다(실측: JB
+# 304쪽 문서가 목차 3항목·본문 발견 0). 그래서 줄에 고정하지 않고 **항목 단위로**
+# 훑는다. 리더 문자는 회사마다 다르다 — 메리츠는 공백, BNK 는 ‥(U+2025), JB 는 ·.
+_LEAD = r"[\s.·…‥ㆍ∙•∙·_\-]"
+_TOC_ITEM = re.compile(
+    r"(제\s*\d+\s*절|\d+\.|[가-힣]\.|\d+\)|[①-⑳]|[IVXivx]+\.)\s*"
+    r"([^\n]{2,60}?)" + _LEAD + r"{3,}(\d{1,4})(?=\s|$)")
 _TOC_HINT = re.compile(r"목\s*차|CONTENTS|Contents")
+_LEADER_TAIL = re.compile(_LEAD + r"+$")
+
+
+def _clean_title(s):
+    return _LEADER_TAIL.sub("", re.sub(r"\s+", " ", s or "").strip()).strip()
 
 
 def _norm(s):
     return re.sub(r"\s+", "", s or "")
 
 
-def parse_toc(pages_text, max_scan=12):
-    """앞쪽 페이지에서 목차 항목을 뽑는다. [(번호, 제목_원문, 목차쪽, 목차PDF인덱스)]."""
+def parse_toc(pages_text, max_scan=14, min_items=5):
+    """앞쪽 페이지에서 목차 항목을 뽑는다. [(번호, 제목_원문, 목차쪽, 목차PDF인덱스)].
+
+    한 쪽에서 min_items 개 이상 잡히거나, 「목차」·CONTENTS 표기가 있으면 목차 쪽으로 본다.
+    """
     items, toc_pages = [], []
     for i, t in enumerate(pages_text[:max_scan]):
-        hits = _TOC_LINE.findall(t)
-        if len(hits) >= 3 or (_TOC_HINT.search(t) and hits):
+        hits = list(_TOC_ITEM.finditer(t))
+        if len(hits) >= min_items or (_TOC_HINT.search(t) and hits):
             toc_pages.append(i)
-            for num, title, pg in hits:
-                items.append((re.sub(r"\s+", " ", num).strip(),
-                              re.sub(r"\s+", " ", title).strip(), pg, i))
+            for m in hits:
+                title = _clean_title(m.group(2))
+                if title and not title.isdigit():
+                    items.append((re.sub(r"\s+", " ", m.group(1)).strip(),
+                                  title, m.group(3), i))
     return items, toc_pages
+
+
+# 본문 표제 직접 검출. 목차를 기계가 못 읽는 문서용 2단계 폴백이다.
+# NH농협금융지주는 목차 쪽이 이미지라 텍스트가 0자다(본문은 42.9만 자로 멀쩡하다).
+# 표제는 번호 + 짧은 제목이고, 끝에 쪽 번호가 붙지 않는다는 점으로 목차 줄과 갈린다.
+_BODY_HEAD = re.compile(
+    r"^[ \t]*(제\s*\d+\s*절|\d{1,2}\.|[가-힣]\.|\d{1,2}\)|[①-⑳])[ \t]*"
+    r"([^\s\d][^\n]{1,38}?)[ \t]*$", re.M)
+
+
+def detect_body_headings(pages_text, start_page=0):
+    """[(번호, 제목_원문, 쪽, 줄)]. 목차가 없을 때만 쓴다."""
+    out = []
+    for pi in range(start_page, len(pages_text)):
+        lines = pages_text[pi].split("\n")
+        for li, line in enumerate(lines):
+            m = _BODY_HEAD.match(line)
+            if not m:
+                continue
+            title = _clean_title(m.group(2))
+            # 숫자만 많은 줄(표의 한 행)과 리더가 남은 줄은 표제가 아니다.
+            if not title or sum(c.isdigit() for c in title) > len(title) / 3:
+                continue
+            out.append((re.sub(r"\s+", " ", m.group(1)).strip(), title, pi, li))
+    return out
 
 
 def locate_sections(toc, pages_text, start_page):
@@ -209,9 +251,9 @@ def topic_hits(title, body, names):
 FILE_COLS = ["지주명", "공시연도", "공시유형", "구분", "제목", "파일명", "방식",
              "다운로드성공", "실패사유", "목록크기", "실제크기", "크기차이",
              "페이지수", "텍스트추출", "텍스트글자수", "스캔본추정", "목차항목수",
-             "본문발견섹션수", "목차없음", "표수", "sha256", "url", "fetched_at"]
+             "본문발견섹션수", "섹션출처", "목차없음", "표수", "sha256", "url", "fetched_at"]
 
-SEC_COLS = ["지주명", "공시연도", "공시유형", "파일명", "섹션번호", "섹션순번",
+SEC_COLS = ["지주명", "공시연도", "공시유형", "파일명", "섹션출처", "섹션번호", "섹션순번",
             "섹션제목_원문", "본문위치", "시작페이지", "chunk_seq", "본문글자수",
             "본문", "text_path", "sha256"]
 
@@ -247,7 +289,7 @@ def process(meta, out_dir, verbose=True):
         "크기차이": meta.get("크기차이", ""), "sha256": meta.get("sha256", ""),
         "url": meta.get("url", ""), "fetched_at": meta.get("fetched_at", ""),
         "페이지수": "", "텍스트추출": "N", "텍스트글자수": "", "스캔본추정": "",
-        "목차항목수": "", "본문발견섹션수": "", "목차없음": "N", "표수": "",
+        "목차항목수": "", "본문발견섹션수": "", "섹션출처": "", "목차없음": "N", "표수": "",
     }
     secs, tbls, tops = [], [], []
     if not name.lower().endswith(".pdf") or meta.get("성공") != "Y":
@@ -289,8 +331,19 @@ def process(meta, out_dir, verbose=True):
     rec["목차항목수"] = str(len(toc))
     start = (max(toc_pages) + 1) if toc_pages else 0
     located = locate_sections(toc, ptext, start)
+    found = sum(1 for _n, _t, p, _l in located if p >= 0)
+    rec["섹션출처"] = "목차"
+    # 목차를 기계가 못 읽거나(NH농협: 목차 쪽이 이미지) 목차 제목이 본문과 어긋나
+    # 절반도 못 찾으면(JB 정정공시) 본문 표제를 직접 찾는다. 어느 방식으로 나눴는지
+    # 를 섹션출처 컬럼에 남긴다 — 방법이 다르면 결과도 다르게 읽어야 한다.
+    if not toc or found < max(3, len(located) * 0.5):
+        alt = detect_body_headings(ptext, start)
+        if len(alt) > found:
+            located = [(n, t, p, l) for n, t, p, l in alt]
+            rec["섹션출처"] = "본문표제"
+            found = len(alt)
     bodies = section_bodies(located, ptext)
-    rec["본문발견섹션수"] = str(sum(1 for _n, _t, p, _l in located if p >= 0))
+    rec["본문발견섹션수"] = str(found)
     # 목차가 없는 짧은 문서(예: BNK 보수체계 연차보고서 6쪽)는 섹션이 0이 된다.
     # 그대로 두면 본문이 통째로 산출물에서 사라진다 — 그건 삭제다. 문서 전체를
     # 한 섹션으로 싣고, 제목 자리에 '목차 없음' 이라는 **사실**을 적는다.
@@ -301,7 +354,8 @@ def process(meta, out_dir, verbose=True):
         rec["목차없음"] = "Y"
 
     base = dict(지주명=rec["지주명"], 공시연도=rec["공시연도"],
-                공시유형=rec["공시유형"], 파일명=name, sha256=rec["sha256"])
+                공시유형=rec["공시유형"], 파일명=name, sha256=rec["sha256"],
+                섹션출처=rec["섹션출처"])
     for i, (num, title, p, _l) in enumerate(located):
         body = bodies.get(i, "")
         for ci, ch in enumerate(_chunks(body)):
