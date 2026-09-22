@@ -342,6 +342,8 @@ def _officer_rows(docs):
         d = docs[rc]
         for (si, ti) in sorted(d.tables):
             rows = _grid(d, (si, ti))
+            if not config.officer_header(_as_table(rows), N):
+                continue          # 「담당업무」만 있고 등기임원여부·출생년월이 없는 표
             hs = header_slots(rows, OFFICER_HEADER_KEYS)
             if not hs:
                 continue

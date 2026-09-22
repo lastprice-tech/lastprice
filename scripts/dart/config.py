@@ -727,11 +727,20 @@ def committee_header(table, normalize):
 # 비어 있어 title_hits 가 0이고, 표 낱말에도 안 걸려 임원표(11행)가 미전개로 남았다.
 # 같은 이유로 4·5차 문서 전체에서 임원표 68개(420행)가 빠져 있었다.
 OFFICER_HEADER_HINTS = ("담당업무", "담당 업무")
+# 「담당업무」만으로는 모자란다. 「14. 투자운용인력현황(상세)」가
+# 「성명|직위|담당업무|자격증종류|자격증취득일|주요경력|협회등록일자|상근여부|…」 라
+# 그대로 걸려, KB금융 FY2025 임원이 펀드 운용인력 510명과 섞여 640행이 됐다.
+# 임원표는 **등기임원여부 또는 출생년월**을 함께 갖는다는 점으로 갈린다 —
+# 운용인력 표에는 둘 다 없다.
+OFFICER_HEADER_REQUIRE = ("등기임원여부", "등기임원 여부", "등기여부",
+                          "출생년월", "생년월", "출생년월일", "생년월일")
 
 
 def officer_header(table, normalize):
     """임원현황 표면 걸린 머리행 어휘, 아니면 ''."""
     cells = _header_cells(table, normalize)
+    if not any(h in cells for h in OFFICER_HEADER_REQUIRE):
+        return ""
     for h in OFFICER_HEADER_HINTS:
         if h in cells:
             return h
