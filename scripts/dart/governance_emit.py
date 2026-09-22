@@ -229,21 +229,38 @@ TOPICS = (
     ("부서 단위 겸직", ("겸)", "(겸)", "겸직 부서", "겸영 부서", "공동 운영", "겸직부서")),
     ("내부통제·책무구조도", ("책무구조도", "내부통제", "책무", "준법감시", "내부통제위원회")),
     ("고객정보·데이터 조직", ("고객정보관리인", "개인정보보호책임자", "데이터 거버넌스",
-                              "데이터거버넌스", "CPO", "정보보호최고책임자", "CISO")),
+                              "데이터거버넌스", "CPO", "정보보호최고책임자", "CISO",
+                              "고객정보", "개인정보", "신용정보관리", "정보보호")),
     ("지주 인원·부문업무", ("임직원", "직원 수", "인원", "부문", "부서", "조직",
                             "정원", "담당업무")),
 )
-_SENT = re.compile(r"[^.。\n]{10,400}[.。]")
+# 원문에서 낱말 주변을 **창으로** 떠 온다.
+#
+# 예전에는 마침표로 끊은 '문장' 만 봤는데, PDF 레이아웃 텍스트는 줄마다 개행이 들어가
+# 한 문장이 여러 줄에 걸친다. 그래서 낱말이 분명히 있는데도 '없음' 이 나왔다 —
+# 실측: 고객정보가 법인당 18~126회, iM·하나에는 「고객정보관리인」이 실제로 있는데
+# 10곳 전부 '없음' 으로 찍혔다. 창 방식은 구두점에 기대지 않는다.
+WIN_BEFORE, WIN_AFTER = 120, 260
 
 
 def topic_hits(title, body, names):
-    out = []
-    for m in _SENT.finditer(body):
-        s = m.group(0).strip()
-        if any(k in s for k in names):
-            out.append(s)
-    if not out and any(k in title for k in names):
-        out.append("(섹션 제목만 일치: %s)" % title)
+    """[(걸린 낱말, 원문 창)]. 정규화는 공백 접기만 한다 — 글자를 바꾸지 않는다."""
+    out, seen = [], set()
+    for k in names:
+        for m in re.finditer(re.escape(k), body):
+            a = max(0, m.start() - WIN_BEFORE)
+            b = min(len(body), m.end() + WIN_AFTER)
+            s = re.sub(r"\s+", " ", body[a:b]).strip()
+            key = s[:80]
+            if key in seen:
+                continue
+            seen.add(key)
+            out.append((k, s))
+    if not out:
+        for k in names:
+            if k in title:
+                out.append((k, "(섹션 제목만 일치: %s)" % title))
+                break
     return out
 
 
@@ -251,7 +268,8 @@ def topic_hits(title, body, names):
 FILE_COLS = ["지주명", "공시연도", "공시유형", "구분", "제목", "파일명", "방식",
              "다운로드성공", "실패사유", "목록크기", "실제크기", "크기차이",
              "페이지수", "텍스트추출", "텍스트글자수", "스캔본추정", "목차항목수",
-             "본문발견섹션수", "섹션출처", "목차없음", "표수", "sha256", "url", "fetched_at"]
+             "본문발견섹션수", "섹션출처", "목차없음", "표수", "표셀수", "쪽당표셀",
+             "표추출신뢰도", "sha256", "url", "fetched_at"]
 
 SEC_COLS = ["지주명", "공시연도", "공시유형", "파일명", "섹션출처", "섹션번호", "섹션순번",
             "섹션제목_원문", "본문위치", "시작페이지", "chunk_seq", "본문글자수",
@@ -267,7 +285,7 @@ TBL_COLS = ["corp_label", "rcept_no", "rcept_dt", "doc_kind", "doc_purpose",
             # PDF 에만 있는 것. 앞 24칸은 1~5차와 같고 뒤에 덧붙인다.
             "원천", "페이지", "cell_x", "추출방법"]
 
-TOPIC_COLS = ["지주명", "공시연도", "공시유형", "파일명", "주제", "추출결과",
+TOPIC_COLS = ["지주명", "공시연도", "공시유형", "파일명", "주제", "추출결과", "주제어",
               "섹션번호", "섹션제목_원문", "원문", "출처페이지", "sha256"]
 
 
@@ -289,7 +307,8 @@ def process(meta, out_dir, verbose=True):
         "크기차이": meta.get("크기차이", ""), "sha256": meta.get("sha256", ""),
         "url": meta.get("url", ""), "fetched_at": meta.get("fetched_at", ""),
         "페이지수": "", "텍스트추출": "N", "텍스트글자수": "", "스캔본추정": "",
-        "목차항목수": "", "본문발견섹션수": "", "섹션출처": "", "목차없음": "N", "표수": "",
+        "목차항목수": "", "본문발견섹션수": "", "섹션출처": "", "목차없음": "N",
+        "표수": "", "표셀수": "", "쪽당표셀": "", "표추출신뢰도": "",
     }
     secs, tbls, tops = [], [], []
     if not name.lower().endswith(".pdf") or meta.get("성공") != "Y":
@@ -367,15 +386,28 @@ def process(meta, out_dir, verbose=True):
         if p < 0:
             continue
         for tname, kws in TOPICS:
-            hits = topic_hits(title, body, kws)
-            if hits:
-                for h in hits[:40]:
-                    tops.append(dict(base, 주제=tname, 추출결과="찾음",
-                                     섹션번호=num, 섹션제목_원문=title,
-                                     원문=h, 출처페이지=p + 1))
+            for kw, h in topic_hits(title, body, kws)[:40]:
+                tops.append(dict(base, 주제=tname, 추출결과="찾음", 주제어=kw,
+                                 섹션번호=num, 섹션제목_원문=title,
+                                 원문=h, 출처페이지=p + 1))
 
     tables = detect_tables(pages)
     rec["표수"] = str(len(tables))
+    # 표 추출이 얼마나 믿을 만한가. **PDF 생성기에 따라 원리적으로 안 되는 문서가 있다.**
+    # 실측: 신한 PDF 는 텍스트를 워드가 아니라 문단 덩어리로 내놓는다(20~40쪽에서 워드
+    # 1,305개, 같은 구간 우리금융은 6,677개). 덩어리 안에 개행까지 들어 있어 좌표로
+    # 칸을 가를 수가 없다. 그 결과 신한 표 셀이 10,997개로 다른 지주(10만~37만)의
+    # 30분의 1이다. **표 본문 자체는 섹션 CSV 에 원문 그대로 있으므로 유실이 아니다** —
+    # 표 CSV 에서 셀로 갈리지 않을 뿐이다. 숫자를 보정하지 않고 사실만 적는다.
+    ncell = sum(len(r) for _p, rs in tables for r in rs)
+    perpage = ncell / max(1, len(pages))
+    rec["표셀수"] = str(ncell)
+    rec["쪽당표셀"] = "%.1f" % perpage
+    # 임계값 50 은 실측 분포에서 왔다. 46건의 쪽당 표 셀은 **두 무리로 확연히 갈린다** —
+    # 신한 4건만 2.6~11.6 이고 나머지 33건은 146~276 이다. 중간값이 없으므로 50 은
+    # 어느 쪽으로도 오분류하지 않는다.
+    rec["표추출신뢰도"] = ("낮음(PDF가 문단 단위로 텍스트를 내놓아 칸이 갈리지 않음)"
+                          if perpage < 50 else "보통")
     for ti, (pi, rows) in enumerate(tables):
         # 이 표가 어느 섹션에 속하는지는 시작 페이지로 정한다(가장 가까운 앞 섹션).
         sec_i, sec_t, sec_n = "", "", ""
@@ -454,7 +486,7 @@ def build(out_dir=OUT, handoff_dir="handoff", only=None, verbose=True):
                              "주제": tname,
                              "추출결과": "없음" if f["본문발견섹션수"] not in ("", "0")
                              else "판단불가",
-                             "섹션번호": "", "섹션제목_원문": "", "원문": "",
+                             "주제어": "", "섹션번호": "", "섹션제목_원문": "", "원문": "",
                              "출처페이지": "", "sha256": f["sha256"]})
 
     p1 = _write(os.path.join(handoff_dir, "연차보고서_파일목록.csv"), files, FILE_COLS)
