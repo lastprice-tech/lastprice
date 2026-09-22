@@ -90,6 +90,7 @@ __pycache__/
 # 6차(지배구조 연차보고서) — 파일목록만 커밋한다. 섹션 40MB·주제 83MB·표 893MB 는
 # raw/governance 와 코드로 언제든 재생성된다(`governance_emit.py`, 약 50분).
 !/handoff/연차보고서_파일목록.csv
+!/handoff/dart-kit-5차6차.zip
 
 # selftest 임시 산출물
 /dart_out/_selftest/
