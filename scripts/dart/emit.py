@@ -447,8 +447,21 @@ def emit_documents(out_dir, metas, by_code, max_doc_bytes, doc_index=None):
         # 1~3차 문서는 여기 걸리지 않으므로 출력이 한 줄도 바뀌지 않는다.
         is_4cha = config.is_4cha_doc(meta_doc.get("report_nm", ""),
                                      meta_doc.get("rcept_dt", ""))
-        sec_kws = config.SECTION_KEYWORDS_4CHA if is_4cha else config.SECTION_KEYWORDS
-        tbl_kws = config.TABLE_KEYWORDS_4CHA if is_4cha else config.TABLE_KEYWORDS
+        # 5차로 새로 받는 pre-2023 문서(메리츠 2011·2012, 신한지주·신한은행 FY2019~22)도
+        # 같은 좁은 세트를 쓴다. 이 문서들은 이번에 처음 emit 되므로 기존 출력이 바뀌지
+        # 않는다. 접수번호를 직접 적은 목록(config.DOC_5CHA)이라 다른 법인의 같은 연도
+        # 보고서가 딸려 들어올 수 없다.
+        is_5cha = config.is_5cha_doc(rcept)
+        narrow = is_4cha or is_5cha
+        # 머리행 기반 표 전개(위원회 구성표·겸직 표)를 적용할 문서인가.
+        # 1~3차 문서에는 적용하지 않는다 — 적용하면 비4차 문서에서 위원회 표 253개
+        # (1,591행)·겸직 표 14개(181행)가 새로 열려 1~3차 산출물이 바뀐다.
+        # 예외는 config.DOC_5CHA_HEADER_ONLY 에 접수번호로 적힌 우리금융지주 FY2019
+        # 하나뿐이고, 그 문서는 키워드 세트를 넓은 것 그대로 둬서 기존 행이 줄지 않는다.
+        header_doc = config.is_header_rule_doc(meta_doc.get("report_nm", ""),
+                                               meta_doc.get("rcept_dt", ""), rcept)
+        sec_kws = config.SECTION_KEYWORDS_4CHA if narrow else config.SECTION_KEYWORDS
+        tbl_kws = config.TABLE_KEYWORDS_4CHA if narrow else config.TABLE_KEYWORDS
         for si, sec in enumerate(sections):
             title_hits = [k for k in sec_kws
                           if docparse.normalize_for_match(k) in sec["title"]]
@@ -458,9 +471,24 @@ def emit_documents(out_dir, metas, by_code, max_doc_bytes, doc_index=None):
             body_hits = docparse.text_keywords(docparse.section_body(sec), tbl_kws)
             tbl_hits = {ti: docparse.table_keywords(t, tbl_kws)
                         for ti, t in enumerate(sec["tables"])}
-            if not (title_hits or body_hits or any(tbl_hits.values())):
+            # 머리행 규칙은 섹션 선별 단계에서부터 본다. 실측: 신한지주 FY2023 과
+            # 한국금융지주 FY2023~25 의 겸직 표는 「IX. 계열회사 등에 관한 사항」에
+            # 있는데, 이 섹션은 4차 키워드 목록에 없다. 표 단계에서만 보면 섹션이
+            # 통째로 건너뛰어져 겸직 표에 닿지 못한다.
+            hdr_tbls = {}
+            if header_doc:
+                for _ti, _t in enumerate(sec["tables"]):
+                    _cv = config.committee_header(_t, docparse.normalize_for_match)
+                    if _cv:
+                        hdr_tbls[_ti] = "위원회:" + _cv
+                        continue
+                    _jv = config.interlock_header(_t, docparse.normalize_for_match)
+                    if _jv:
+                        hdr_tbls[_ti] = "겸직:" + _jv
+            if not (title_hits or body_hits or any(tbl_hits.values()) or hdr_tbls):
                 continue
-            scope = "title" if title_hits else ("table" if any(tbl_hits.values()) else "body")
+            scope = "title" if title_hits else (
+                "table" if (any(tbl_hits.values()) or hdr_tbls) else "body")
             sl = docparse.slug(sec["title"] or "section%03d" % si)
             tp = os.path.join(d, "%03d_%s.txt" % (si, sl))
             body_text = docparse.section_body(sec)
@@ -483,6 +511,7 @@ def emit_documents(out_dir, metas, by_code, max_doc_bytes, doc_index=None):
             rows.append(dict(common, kind="text", table_index="", row_index="",
                              cell_ord="", cell_tag="", rowspan="", colspan="",
                              unit_hint="", cell_text="", table_matched_keyword="",
+                             header_rule="",
                              table_extracted="", table_n_rows="",
                              text_chars=len(body_text), context=body_text[:200], **pv))
 
@@ -507,13 +536,23 @@ def emit_documents(out_dir, metas, by_code, max_doc_bytes, doc_index=None):
                 # 섹션들의 표를 *낱말 없이 제목만으로* 고르기 때문이다. 이 예외가 없으면
                 # 3차 산출물 겸직_업무위탁.csv 가 7개 법인에서 7,161행 줄어든다(실측).
                 # 비용은 +45 MB 로, 제목 매칭을 전면 복원할 때(+155 MB)의 3분의 1이다.
-                extract = (bool(hits) or (interlock_sec and bool(title_hits) and small)) \
-                    if is_4cha else (bool(hits) or (bool(title_hits) and small))
+                hrule = hdr_tbls.get(ti, "")
+                # 머리행 규칙은 낱말 하나가 아니라 **조합**으로 판정한다. 같은
+                # 「대상회사」가 진짜 겸직 표(우리금융지주 성명|대상회사|직위|겸임일자)와
+                # 오탐(KB국민카드 시기|대상회사|주요 내용, 메리츠 구분|내역|대상회사|
+                # 한도금액)에 동시에 쓰이기 때문이다. 사람칸·회사칸·직위칸이 머리행에
+                # 동시에 있을 때만 겸직 표로 본다 — 실측 494표(부분문자열 방식 721표에서
+                # 227표가 빠지고, 그 227표가 전부 오탐이다).
+                extract = (bool(hits) or bool(hrule)
+                           or (interlock_sec and bool(title_hits) and small)) \
+                    if narrow else (bool(hits) or bool(hrule)
+                                    or (bool(title_hits) and small))
                 preview = " | ".join(c["text"][:20] for r in tbl["rows"][:2] for c in r[:6])
                 tcommon = dict(common, table_index=ti,
                                unit_hint=tbl.get("unit_hint", ""),
                                unit_hint_source=tbl.get("unit_hint_source", ""),
                                table_matched_keyword="|".join(hits),
+                               header_rule=hrule,
                                table_extracted="Y" if extract else "N",
                                table_n_rows=len(tbl["rows"]))
                 rows.append(dict(tcommon, kind="table_index", row_index="", cell_ord="",
@@ -541,7 +580,8 @@ def emit_documents(out_dir, metas, by_code, max_doc_bytes, doc_index=None):
                         ["corp_label", "corp_code", "rcept_no", "report_nm", "rcept_dt",
                          "section_index", "section_title", "matched_keyword",
                          "body_matched_keyword", "match_scope",
-                         "kind", "table_index", "table_matched_keyword", "table_extracted",
+                         "kind", "table_index", "table_matched_keyword", "header_rule",
+                         "table_extracted",
                          "table_n_rows", "row_index", "cell_ord", "cell_tag",
                          "rowspan", "colspan", "unit_hint", "cell_text"])
     return path, notes

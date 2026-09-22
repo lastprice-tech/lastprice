@@ -187,6 +187,21 @@ def select_targets(out_dir, entries, base_years=None, verbose=True):
                 # 건수를 먼저 세고 그 건만 골라 받을지 사용자가 판단한다.
                 picks.setdefault(r["rcept_no"], (label, "4차 주주총회소집공고: %s" % dt))
 
+        # ── 5차: 접수번호를 직접 적은 문서 ──────────────────────────────────
+        # 메리츠 설립 첫해(3월 결산) 2건 + 신한지주·신한은행 FY2019~22 각 4건.
+        # 규칙(사업연도)이 아니라 목록인 이유는 config.DOC_5CHA 주석에 적어 뒀다 —
+        # 규칙으로 적으면 다른 법인의 같은 연도 보고서까지 좁은 키워드 세트로 바뀌어
+        # 1~3차 산출물이 조용히 줄어든다.
+        #
+        # 신규 5곳(하나금융지주·BNK·JB·농협금융지주·하나생명보험)의 FY2023~25
+        # 사업보고서는 위 4차 블록의 annual_fy_4cha 가 이미 잡으므로 여기 없다.
+        # 그 법인들의 출범 첫 사업보고서는 group=="지주" 규칙이 잡는다.
+        for r in rows:
+            rc = r.get("rcept_no", "")
+            if rc in getattr(config, "DOC_5CHA", {}):
+                _lab5, why5 = config.DOC_5CHA[rc]
+                picks.setdefault(rc, (label, "5차 지정 문서: %s" % why5))
+
         # 한화생명 → 한화손보 지분 취득 추적. 대량보유보고는 '피취득(발행) 법인' 코드로
         # 색인되므로 한화손보 쪽에서 찾는다.
         kws = config.STAKE_REPORT_KEYWORDS.get(label)

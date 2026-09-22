@@ -74,16 +74,33 @@ PROV_KEYS = ["fetched_at", "status", "raw_path", "raw_sha256"]
 # 차수를 늘릴 때 여기에 파일명을 안 넣으면 그 차수의 행이 조용히 다른 파일로 샌다
 # (실제로 3차를 더할 때 2,045행이 2차 CSV 로 흘러들어갔다). BATCHES 를 한 곳에 두고
 # selftest 가 "HANDOFF_BATCH 의 모든 값에 출력 파일이 있는가"를 단언한다.
-BATCHES = ("1차", "2차", "3차", "4차")
+BATCHES = ("1차", "2차", "3차", "4차", "5차")
 NARRATIVE_NAME = {"1차": "원문_지주전환_서술.csv", "2차": "원문_지주전환_서술_2차.csv",
-                  "3차": "원문_지주전환_서술_3차.csv", "4차": "원문_데이터활용_4차.csv"}
+                  "3차": "원문_지주전환_서술_3차.csv", "4차": "원문_데이터활용_4차.csv",
+                  "5차": "원문_조직운영_5차.csv"}
 TABLE_NAME = {"1차": "원문_지주전환_표.csv", "2차": "원문_지주전환_표_2차.csv",
-              "3차": "원문_지주전환_표_3차.csv", "4차": "데이터활용_표_4차.csv"}
+              "3차": "원문_지주전환_표_3차.csv", "4차": "데이터활용_표_4차.csv",
+              "5차": "조직운영_표_5차.csv"}
 FILELIST_NAME = "원문_파일목록.csv"
 
 
 # ── 설정 조회 ─────────────────────────────────────────────────────────────
 DOC_PURPOSE_4CHA = "데이터활용·겸영부수"
+DOC_PURPOSE_5CHA = "지주 조직운영"
+
+
+def _is_5cha_row(rcept_no, d):
+    """5차 문서인가. 신규 5곳은 **문서 종류를 가리지 않고 전량** 5차다.
+
+    신규 5곳(하나금융지주·BNK·JB·농협금융지주·하나생명보험)의 FY2023~25 사업보고서는
+    문서 규칙만 보면 4차에 걸린다. 그대로 두면 사용자가 지정한 4차 10곳짜리 산출물에
+    법인 5곳이 말없이 섞여 4차의 뜻이 바뀐다. 그래서 5차 판정을 먼저 본다.
+    """
+    lab = d.get("corp_label") or ""
+    if not lab:
+        return False
+    return lab in getattr(config, "NEW_CORPS_5CHA", ()) or \
+        (rcept_no or "") in getattr(config, "DOC_5CHA", {})
 
 
 def _is_4cha_row(d):
@@ -95,8 +112,12 @@ def _is_4cha_row(d):
     '사업보고서 (2025.12)' 라 4차 규칙에 걸리므로(실측 6건), 여기서 막아 둔다 —
     막지 않으면 나중에 누가 raw/ 에 그 문서를 넣는 순간 라벨 없는 행이 4차 CSV 에 샌다.
     """
-    return bool(d.get("corp_label")) and config.is_4cha_doc(d.get("report_nm", ""),
-                                                            d.get("rcept_dt", ""))
+    lab = d.get("corp_label") or ""
+    if not lab:
+        return False
+    if lab in getattr(config, "NEW_CORPS_5CHA", ()):     # 신규 5곳은 전량 5차
+        return False
+    return config.is_4cha_doc(d.get("report_nm", ""), d.get("rcept_dt", ""))
 
 
 def doc_purpose_map(out_dir=None):
@@ -113,7 +134,9 @@ def doc_purpose_map(out_dir=None):
     for rc, d in _disclosure_index(out_dir).items():
         if rc in out:                       # 1~3차에 이미 적힌 문서는 건드리지 않는다
             continue
-        if _is_4cha_row(d):
+        if _is_5cha_row(rc, d):
+            out[rc] = DOC_PURPOSE_5CHA
+        elif _is_4cha_row(d):
             out[rc] = DOC_PURPOSE_4CHA
     return out
 
@@ -124,7 +147,7 @@ def batch_map():
 
 
 def doc_batch_map(out_dir):
-    """rcept_no → '4차'. **배치는 법인이 아니라 문서로 정해져야 한다.**
+    """rcept_no → '4차' | '5차'. **배치는 법인이 아니라 문서로 정해져야 한다.**
 
     4차는 신한지주·KB금융·한화생명처럼 1~3차와 *같은 법인*을 다시 쓴다. corp_label →
     배치 맵으로는 표현 자체가 불가능하다. 3차 때 2,045행이 2차 CSV 로 샌 것과 같은
@@ -132,7 +155,9 @@ def doc_batch_map(out_dir):
     """
     out = {}
     for rc, d in _disclosure_index(out_dir).items():
-        if _is_4cha_row(d):
+        if _is_5cha_row(rc, d):
+            out[rc] = "5차"
+        elif _is_4cha_row(d):
             out[rc] = "4차"
     return out
 
@@ -982,4 +1007,10 @@ def build(out_dir, handoff_dir=None):
         result["batch4_stats"] = handoff4.build_all(out_dir, handoff_dir, result)
     except Exception as e:               # noqa: BLE001
         result["notes"].append("4차 산출물 생성 실패: %s: %s" % (type(e).__name__, e))
+    # 5차 산출물(지주 조직 운영). 같은 규율 — 앞 차수 CSV 를 못 쓰게 만들지 않는다.
+    try:
+        import handoff5
+        handoff5.build(out_dir, handoff_dir, result)
+    except Exception as e:               # noqa: BLE001
+        result["notes"].append("5차 산출물 생성 실패: %s: %s" % (type(e).__name__, e))
     return result

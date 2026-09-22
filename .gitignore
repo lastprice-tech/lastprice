@@ -82,3 +82,6 @@ __pycache__/
 
 # 웹 원본·첨부 수집 결과 — doc.tar.gz 만 커밋한다 (PDF 수백 MB)
 /dart_out/doc/
+
+# dart selftest scratch (run.py selftest 를 scripts/dart 안에서 돌리면 생긴다)
+scripts/dart/dart_out/

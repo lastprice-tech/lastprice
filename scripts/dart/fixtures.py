@@ -28,6 +28,14 @@ CODES = {
 EST = {"신한지주": "20010901", "KB금융": "20080929", "iM금융지주": "20110517",
        "우리금융지주": "20190111", "우리금융지주(구)": "20010327"}
 
+# config 에 expect_est_dt 가 적힌 법인은 픽스처도 그 값을 쓴다.
+# 예전에는 위 표에만 적혀 있어서, 대상에 expect_est_dt 를 가진 법인을 추가하는 순간
+# 픽스처 설립일(19900101)과 어긋나 selftest 의 정체성 검증이 실패했다(5차 지주 4곳
+# 추가에서 실제로 났다). 자기 소스를 보게 하면 대상이 늘어도 따라온다.
+for _e in config.TARGETS:
+    if _e.get("expect_est_dt"):
+        EST.setdefault(_e["label"], _e["expect_est_dt"])
+
 # config.TARGETS 에 법인이 추가돼도 픽스처가 깨지지 않도록 합성 코드를 자동 부여한다.
 for _i, _t in enumerate(config.TARGETS, 1):
     CODES.setdefault(_t["label"], "0010%04d" % _i)
