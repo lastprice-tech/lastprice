@@ -66,6 +66,10 @@ def save_part(key, mrows, lrows, extra):
     collect.write_csv(os.path.join(PARTS, key + ".manifest.csv"), mrows, collect.MANIFEST_COLS)
     collect.write_csv(os.path.join(PARTS, key + ".lawlist.csv"), lrows, collect.LAWLIST_COLS)
     extra = dict(extra, 완료=True, 시각=time.strftime("%Y-%m-%dT%H:%M:%S%z"))
+    err = os.path.join(PARTS, key + ".err")
+    if os.path.exists(err):                      # 앞선 실패 기록은 이력으로 옮겨 둔다
+        os.makedirs(os.path.join(PARTS, "_이전실패"), exist_ok=True)
+        os.replace(err, os.path.join(PARTS, "_이전실패", key + ".err"))
     with open(os.path.join(PARTS, key + ".json"), "w", encoding="utf-8") as f:
         json.dump(extra, f, ensure_ascii=False, indent=1)
 
@@ -272,7 +276,12 @@ def probe_deferred(client, res):
         cur = v["현행"]
         st, xb, murl, host = client.api("lawService.do", target="admrul",
                                         ID=cur["행정규칙일련번호"], type="XML")
-        units = collect.annex_list(xb) if xb else []
+        try:
+            units = collect.annex_list(xb) if xb else []
+        except ET.ParseError as e:
+            out[name] = {"정식명": cur["행정규칙명"], "상태": "측정 실패 — XML 해석 불가: %s" % e,
+                         "출처URL": murl}
+            continue
         out[name] = {"정식명": cur["행정규칙명"], "종류": cur.get("행정규칙종류"),
                      "소관부처": cur.get("소관부처명"), "시행일자": cur.get("시행일자"),
                      "행정규칙일련번호": cur["행정규칙일련번호"], "본문XML바이트": len(xb),
@@ -313,7 +322,7 @@ def run():
                 n = sum(1 for _ in open(os.path.join(PARTS, key + ".manifest.csv"),
                                         encoding="utf-8-sig")) - 1
                 log("    완료 — manifest %d행 · 체계도 노드 %d" % (n, len(d["노드"])))
-            except lawclient.AuthError:
+            except (lawclient.AuthError, lawclient.BlockedError):
                 raise
             except Exception as e:                  # noqa: BLE001 — 법령 하나 실패로 전체를 멈추지 않는다
                 msg = client.mask(traceback.format_exc())
@@ -332,7 +341,7 @@ def run():
             try:
                 run_rule(client, seq, req, res["rules"][req], parents)
                 log("    완료")
-            except lawclient.AuthError:
+            except (lawclient.AuthError, lawclient.BlockedError):
                 raise
             except Exception as e:                  # noqa: BLE001
                 errs.append((key, req, client.mask(str(e))))
@@ -346,6 +355,10 @@ def run():
     except lawclient.AuthError as e:
         log("■ 인증 오류 — 멈춥니다. 오류 원문:\n%s" % e)
         return 3
+    except lawclient.BlockedError as e:
+        # 끝난 법령은 parts 에 남아 있다. 다시 부르면 끝나지 않은 것부터 이어간다.
+        log("■ 서버 차단 — 멈춥니다(끝난 법령은 보존, 재개 시 이어서). %s" % client.mask(str(e)))
+        return 4
     merge()
     log("끝 — 호출 %d건 · %.1f분 · 실패 법령 %d" % (client.n_calls, (time.time() - t0) / 60, len(errs)))
     for e in errs:
@@ -449,10 +462,31 @@ def zip_all():
     return made
 
 
+def wait_and_run(interval=900, tries=16):
+    """서버 차단이 풀릴 때까지 기다렸다가 재개한다. 확인은 **가벼운 검색 한 번**뿐이고,
+    차단 페이지를 따라가지 않는다. 풀리면 run() — 끝난 법령은 건너뛴다."""
+    client = lawclient.LawClient(os.path.join(collect.MAN, "call_log.csv"))
+    for i in range(1, tries + 1):
+        try:
+            st, body, murl, host = client.api("lawSearch.do", target="eflaw", type="XML",
+                                              query="중대재해 처벌 등에 관한 법률", nw="3")
+            ET.fromstring(body)
+            log("차단 풀림 확인(%d번째 확인) — 간격 %.1f초로 재개" % (i, client.delay))
+            return run()
+        except (lawclient.BlockedError, ET.ParseError) as e:
+            log("아직 차단(%d/%d) — %d분 뒤 다시 확인. %s" % (i, tries, interval // 60,
+                                                          client.mask(str(e))[:120]))
+        time.sleep(interval)
+    log("■ %d번 확인했지만 차단이 풀리지 않음 — 멈춥니다" % tries)
+    return 4
+
+
 def main(argv):
     cmd = argv[1] if len(argv) > 1 else "run"
     if cmd == "run":
         return run()
+    if cmd == "waitrun":
+        return wait_and_run()
     if cmd == "merge":
         merge()
         return 0

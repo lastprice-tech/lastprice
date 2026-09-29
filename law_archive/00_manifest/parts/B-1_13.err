@@ -1,0 +1,15 @@
+Traceback (most recent call last):
+  File "/home/user/lastprice/scripts/law/runall.py", line 310, in run
+    run_law(client, grp, seq, req, res["laws"][req],
+  File "/home/user/lastprice/scripts/law/runall.py", line 105, in run_law
+    mrows, lrows, hier, stmd_rules = collect.collect_law(client, grp, seq, official, info)
+                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/lastprice/scripts/law/collect.py", line 333, in collect_law
+    nodes, edges, lines = parse_stmd(masked)
+                          ^^^^^^^^^^^^^^^^^^
+  File "/home/user/lastprice/scripts/law/collect.py", line 159, in parse_stmd
+    root = ET.fromstring(xml_bytes)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.11/xml/etree/ElementTree.py", line 1350, in XML
+    parser.feed(text)
+xml.etree.ElementTree.ParseError: not well-formed (invalid token): line 1, column 124

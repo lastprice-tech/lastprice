@@ -1,0 +1,18 @@
+Traceback (most recent call last):
+  File "/home/user/lastprice/scripts/law/runall.py", line 333, in run
+    run_rule(client, seq, req, res["rules"][req], parents)
+  File "/home/user/lastprice/scripts/law/runall.py", line 200, in run_rule
+    versions, n_hist = rule_versions(client, cur, official)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/lastprice/scripts/law/runall.py", line 137, in rule_versions
+    rows = resolve._search(client, "admrul", official, nw="2")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/lastprice/scripts/law/resolve.py", line 52, in _search
+    r, total = _rows(body, item)
+               ^^^^^^^^^^^^^^^^^
+  File "/home/user/lastprice/scripts/law/resolve.py", line 35, in _rows
+    root = ET.fromstring(xml_bytes)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.11/xml/etree/ElementTree.py", line 1350, in XML
+    parser.feed(text)
+xml.etree.ElementTree.ParseError: not well-formed (invalid token): line 1, column 133

@@ -51,10 +51,23 @@ class AuthError(RuntimeError):
     """인증 실패. 요청서 지시: 첫 호출에서 나면 멈추고 오류 원문을 보고한다."""
 
 
+class BlockedError(RuntimeError):
+    """서버가 API 응답 대신 자동화 차단 페이지를 돌려준다(실측 2026-09-29 10:33, 약 2,270회
+    호출 뒤: 350바이트 HTML 이 자바스크립트로 `/LieQj/DRF/…` 로 넘긴다). 이 확인 절차를
+    스크립트로 따라가는 것은 서버 보호 장치를 우회하는 일이므로 **하지 않는다** — 멈추고
+    기다렸다가 더 느린 간격으로 다시 시도한다."""
+
+
+def looks_blocked(body):
+    head = (body or b"")[:600].lower()
+    return b"<html" in head and b"<script" in head and b"location" in head
+
+
 class LawClient(object):
     def __init__(self, ledger_path, delay=DELAY):
         self.oc = load_oc()
-        self.delay = delay
+        # LAW_DELAY 로 간격을 늘릴 수 있다(차단 뒤 재개할 때 더 천천히).
+        self.delay = float(os.environ.get("LAW_DELAY") or delay)
         self.ledger_path = ledger_path
         self._last = 0.0
         self.n_calls = 0
@@ -121,6 +134,8 @@ class LawClient(object):
         """DRF lawSearch.do / lawService.do. 응답 본문의 인증 오류를 감지한다."""
         qs = urllib.parse.urlencode(dict(OC=self.oc, **params))
         st, body, ct, murl, host = self._fetch("/DRF/%s?%s" % (service, qs), "api")
+        if looks_blocked(body):
+            raise BlockedError("XML 대신 자동화 차단 페이지(JS 리다이렉트) — %s" % murl)
         head = body[:600].decode("utf-8", "replace")
         # 법제처는 오류도 HTTP 200 으로 주고 본문에 <Response><result>…</result> 를 싣는다
         # (실측: OC 없이 부르면 「필수입력요소 검증에 실패하였습니다.」). 오류 봉투일 때만
@@ -135,4 +150,6 @@ class LawClient(object):
     def file(self, path):
         """/LSW/flDownload.do?flSeq=… 같은 첨부 경로. OC 는 붙지 않는다."""
         st, body, ct, murl, host = self._fetch(path, "file")
+        if looks_blocked(body):
+            raise BlockedError("파일 대신 자동화 차단 페이지(JS 리다이렉트) — %s" % murl)
         return st, body, ct, murl, host
