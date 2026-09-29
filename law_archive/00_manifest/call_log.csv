@@ -565,3 +565,16 @@
 2026-09-29T07:14:06+0000,file,https://www.law.go.kr/LSW/flDownload.do?flSeq=162490141,200,57468,4,https://www.law.go.kr,재시도 전 오류: URLError: <urlopen error [Errno 104] Connection reset by peer> ; URLError: <urlopen error [Errno 104] Connection reset by peer> ; URLError: <urlopen error [Errno 104] Connection reset by peer>
 2026-09-29T07:14:30+0000,api,http://www.law.go.kr/DRF/lawService.do?OC=***&target=eflaw&MST=283635&efYd=20270101&type=XML,200,1504579,1,http://www.law.go.kr,
 2026-09-29T07:14:32+0000,file,http://www.law.go.kr/LSW/flDownload.do?flSeq=162490787,200,90582,1,http://www.law.go.kr,
+2026-09-29T07:14:48+0000,file,http://www.law.go.kr/LSW/flDownload.do?flSeq=162490793,200,52370,2,http://www.law.go.kr,재시도 전 오류: URLError: <urlopen error [Errno 104] Connection reset by peer>
+2026-09-29T07:15:52+0000,file,https://www.law.go.kr/LSW/flDownload.do?flSeq=162490799,200,100744,5,https://www.law.go.kr,재시도 전 오류: URLError: <urlopen error [Errno 104] Connection reset by peer> ; URLError: <urlopen error [Errno 104] Connection reset by peer> ; URLError: <urlopen error [Errno 104] Connection reset by peer> ; URLError: <urlopen error [Errno 104] Connection reset by peer>
+2026-09-29T07:15:55+0000,file,http://www.law.go.kr/LSW/flDownload.do?flSeq=162490809,200,57468,1,http://www.law.go.kr,
+2026-09-29T07:16:19+0000,api,http://www.law.go.kr/DRF/lawService.do?OC=***&target=eflaw&MST=269543&efYd=20270101&type=XML,200,1520097,1,http://www.law.go.kr,
+2026-09-29T07:16:52+0000,file,http://www.law.go.kr/LSW/flDownload.do?flSeq=162490453,200,90582,3,http://www.law.go.kr,재시도 전 오류: URLError: <urlopen error [Errno 104] Connection reset by peer> ; URLError: <urlopen error [Errno 104] Connection reset by peer>
+2026-09-29T07:16:54+0000,file,http://www.law.go.kr/LSW/flDownload.do?flSeq=162490459,200,52370,1,http://www.law.go.kr,
+2026-09-29T07:16:56+0000,file,http://www.law.go.kr/LSW/flDownload.do?flSeq=162490465,200,100744,1,http://www.law.go.kr,
+2026-09-29T07:16:58+0000,file,http://www.law.go.kr/LSW/flDownload.do?flSeq=162490475,200,57468,1,http://www.law.go.kr,
+2026-09-29T07:17:21+0000,api,http://www.law.go.kr/DRF/lawService.do?OC=***&target=eflaw&MST=241137&efYd=20270101&type=XML,200,1486511,1,http://www.law.go.kr,
+2026-09-29T07:17:23+0000,file,http://www.law.go.kr/LSW/flDownload.do?flSeq=162491161,200,90582,1,http://www.law.go.kr,
+2026-09-29T07:17:26+0000,file,http://www.law.go.kr/LSW/flDownload.do?flSeq=162491167,200,52370,1,http://www.law.go.kr,
+2026-09-29T07:17:42+0000,file,http://www.law.go.kr/LSW/flDownload.do?flSeq=162491173,200,100744,2,http://www.law.go.kr,재시도 전 오류: URLError: <urlopen error [Errno 104] Connection reset by peer>
+2026-09-29T07:17:58+0000,file,http://www.law.go.kr/LSW/flDownload.do?flSeq=162491183,200,57468,2,http://www.law.go.kr,재시도 전 오류: URLError: <urlopen error [Errno 104] Connection reset by peer>
