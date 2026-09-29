@@ -101,7 +101,9 @@ class LawClient(object):
                         urllib.request.Request(url, headers={"User-Agent": UA}), timeout=TIMEOUT)
                     body = r.read()
                     ct = r.headers.get("Content-Type", "")
-                    self._log(kind, url, r.status, len(body), attempts, host)
+                    # 재시도 끝에 받았으면 직전 실패 사유도 남긴다(성공 행의 오류 칸).
+                    self._log(kind, url, r.status, len(body), attempts, host,
+                              ("재시도 전 오류: " + last_err) if last_err else "")
                     return r.status, body, ct, self.mask(url), host
                 except urllib.error.HTTPError as e:
                     last_err = "HTTP %s %s" % (e.code, e.reason)

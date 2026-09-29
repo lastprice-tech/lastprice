@@ -2,16 +2,20 @@
 """본문 XML → HTML → PDF (사용자 결정 ① — (가) XML 직접 렌더링이 기본).
 
 목적이 조문 인용이므로 **모양보다 조문이 빠짐없이 들어 있는지**가 중요하다. 그래서
-공식 본문 XML의 조문·항·호·목·부칙·별표 텍스트를 **원문 그대로**(공백 접기도 하지
+공식 본문 XML의 조문·항·호·목·부칙 텍스트를 **원문 그대로**(공백 접기도 하지
 않는다 — CSS pre-wrap) HTML로 옮기고, Chromium headless 로 오프라인 인쇄한다.
-네트워크를 쓰지 않으므로 결정적으로 재현되고, verify7 이 PDF 텍스트에 모든 조문
-표지가 들어 있는지 기계로 확인한다.
+네트워크를 쓰지 않으므로 같은 XML 이면 같은 글자가 찍힌다(단 Chromium 이 PDF 에
+생성 시각을 넣으므로 **sha256 은 찍을 때마다 바뀐다** — 다시 찍으면 manifest 를 갱신).
+verify7 이 PDF 텍스트에 모든 조문 표지가 들어 있는지 기계로 확인한다.
+
+별표·서식은 본문 PDF 에 **목록만** 싣는다(annex_index_html). 내용은 법제처 원본
+PDF(없으면 HWP)로 따로 받고, 원본 링크가 아예 없는 것만 annex_text_html 로 따로 찍는다.
 
 모든 PDF 첫 쪽 머리에 출처를 찍는다(사용자 요청):
   「법제처 Open API 원문 XML 렌더링 · 시행일 YYYY-MM-DD · 법령일련번호 NNN」
 
 ■ 법제처가 준 별표·서식 원본 PDF 에는 아무것도 찍지 않는다 — 그것은 원문이다.
-  도장은 **우리가 렌더링한** 본문·체계도 PDF 에만 찍는다.
+  도장은 **우리가 렌더링한** 본문·체계도·(원본 없는) 별표 PDF 에만 찍는다.
 """
 from __future__ import annotations
 
@@ -68,9 +72,9 @@ h2 { font-family: %(gothic)s; font-weight: 700; font-size: 11.5pt; margin: 14px 
            font-size: 9pt; margin: 3px 0 0 0; }
 .axnote { font-family: %(gothic)s; font-size: 8.6pt; color: #333; margin: 0 0 6px 0; }
 table.ax { border-collapse: collapse; width: 100%%; font-size: 8.6pt; table-layout: fixed; }
-table.ax col.k { width: 3.2em; } table.ax col.n { width: 3.4em; }
+table.ax col.k { width: 3.2em; } table.ax col.n { width: 5em; }
 table.ax col.d { width: 6.4em; } table.ax col.f { width: 42%%; }
-table.ax td.k, table.ax td.n, table.ax td.d, table.ax th { white-space: nowrap; }
+table.ax td.k, table.ax td.d, table.ax th { white-space: nowrap; }
 table.ax th { font-family: %(gothic)s; font-weight: 700; background: #eee; }
 table.ax th, table.ax td { border: 1px solid #999; padding: 2px 5px; vertical-align: top;
                            text-align: left; word-break: break-all; }
@@ -81,7 +85,11 @@ pre.axraw { font-family: %(mono)s; font-size: 8.4pt; line-height: 1.35;
 
 # 「제5조의2(인가받을 의무 등)」 머리. 조번호는 견고딕으로 찍되 **글자는 바꾸지 않는다**
 # (span 으로 감쌀 뿐이라 PDF 텍스트는 원문과 같다 — verify7 의 조문표지 대조가 그대로 유효).
-_JO = re.compile(r"^(\s*제\s*\d+\s*조(?:\s*의\s*\d+)?(?:\s*[（(][^)）]*[)）])?)")
+_JO = re.compile(r"^(\s*제\s*\d+(?:\s*-\s*\d+)*\s*조(?:\s*의\s*\d+)?(?:\s*[（(][^)）]*[)）])?)")
+# 행정규칙 조문 머리 — 「제5조(…)」「제1-1조(…)」「제2조의2(…)」「제2조 삭제」. 괄호·「<」·
+# 「삭제」가 바로 뒤따를 때만 머리로 본다(문장 첫머리의 「제3조에 따라」를 머리로 잡지 않게).
+_RULE_HEAD = re.compile(r"^\s*(제\s*\d+(?:\s*-\s*\d+)*\s*조(?:\s*의\s*\d+)?)(?=\s*[（(<〈]|\s*삭\s*제)")
+_RULE_CHAP = re.compile(r"^\s*제\s*\d+(?:\s*-\s*\d+)*\s*[편장절관]\s")
 
 
 def _jo_html(txt):
@@ -131,61 +139,101 @@ def annex_units(root):
     return list(root.iter("별표단위"))
 
 
+def is_rule_root(root):
+    return root.tag == "AdmRulService"
+
+
+def annex_no(unit, rule=False):
+    """별표 번호 표기. 법령은 「1의2」, 행정규칙은 원문 표기대로 「1-2」(실측: 금융지주회사
+    감독규정 〈별표1-2〉, 외국환거래규정 [별지 제2-1호 서식])."""
+    num = (_t(unit, "별표번호").lstrip("0") or "0")
+    gaji = _t(unit, "별표가지번호").lstrip("0")
+    return num + (("-%s" if rule else "의%s") % gaji if gaji else "")
+
+
 def annex_index_html(root, annex_files=None):
     """별표·서식 목록 표. annex_files: XML 순서와 같은 [(저장 파일명, 상태)] — 없으면 빈칸.
 
     목록 줄 수 ≠ 파일 목록 수면 짝이 틀어진 것이므로 찍지 않고 멈춘다(엉뚱한 파일명을
-    다른 별표 옆에 적는 것보다 낫다).
+    다른 별표 옆에 적는 것보다 낫다). 머리 설명은 실제 저장 결과를 센 숫자로 쓴다.
     """
     units = annex_units(root)
     if not units:
         return []
+    rule = is_rule_root(root)
     files = list(annex_files) if annex_files is not None else [("", "")] * len(units)
     if len(files) != len(units):
         raise ValueError("별표 목록 %d건 ≠ 파일 목록 %d건" % (len(units), len(files)))
-    n_b = sum(1 for u in units if (_t(u, "별표구분") or "별표") == "별표")
+    kinds = {}
+    for u in units:
+        k = _t(u, "별표구분") or "별표"
+        kinds[k] = kinds.get(k, 0) + 1
+    got = {"원본 PDF": 0, "원본 HWP": 0, "XML 렌더링": 0, "파일 없음": 0}
+    for fname, state in files:
+        if not fname:
+            got["파일 없음"] += 1
+        elif fname.endswith("_XML렌더링.pdf"):
+            got["XML 렌더링"] += 1
+        elif fname.lower().endswith((".hwp", ".hwpx")):
+            got["원본 HWP"] += 1
+        else:
+            got["원본 PDF"] += 1
+    head = " · ".join("%s %d건" % (k, n) for k, n in kinds.items())
+    saved = " · ".join("%s %d" % (k, n) for k, n in got.items() if n)
     out = ["<h2>별표·서식</h2>",
-           '<div class="axnote">별표 %d건 · 서식 %d건. 내용은 이 PDF에 싣지 않고 법제처가 '
-           "제공한 원본 파일로 따로 저장했다(같은 폴더의 별표/·서식/). 원본 파일이 없는 것만 "
-           "원문 XML의 별표내용을 따로 렌더링했다.</div>" % (n_b, len(units) - n_b),
+           '<div class="axnote">%s. 내용은 이 PDF에 싣지 않고 따로 저장했다(같은 폴더의 '
+           "별표/·서식/) — %s. 「원본」은 법제처가 제공한 파일 그대로이고, 「XML 렌더링」은 "
+           "원본 링크가 없어 원문 XML의 별표내용을 따로 찍은 것이다.</div>" % (head, saved),
            '<table class="ax"><colgroup><col class="k"><col class="n"><col><col class="d">'
            '<col class="f"></colgroup><tr><th>구분</th><th>번호</th><th>제목</th>'
            "<th>시행일</th><th>저장 파일</th></tr>"]
     for u, (fname, state) in zip(units, files):
-        num = (_t(u, "별표번호").lstrip("0") or "0")
-        gaji = _t(u, "별표가지번호").lstrip("0")
         cell = _esc(fname) if fname else "(%s)" % _esc(state or "파일 없음")
         if fname and state and state not in ("OK",):
             cell += " · %s" % _esc(state)
         out.append('<tr><td class="k">%s</td><td class="n">%s</td><td>%s</td><td class="d">%s</td>'
                    '<td class="f">%s</td></tr>'
-                   % (_esc(_t(u, "별표구분") or "별표"), num + ("의%s" % gaji if gaji else ""),
+                   % (_esc(_t(u, "별표구분") or "별표"), annex_no(u, rule),
                       _esc(_title(u)), _fmt_date(_t(u, "별표시행일자")), cell))
     out.append("</table>")
     return out
 
 
 def annex_text_html(unit, law_name, efyd, serial, pending=False, extra=""):
-    """원본 PDF·HWP 가 없는 별표 하나를 원문 XML 별표내용으로 따로 찍는다(글자 그대로)."""
+    """원본 PDF·HWP 가 없는 별표 하나를 원문 XML 별표내용으로 따로 찍는다(글자 그대로).
+
+    법제처 XML 은 별표내용을 줄마다 CDATA 하나로 싣고 줄 사이에 빈 CDATA 를 끼운다
+    (실측: 금융지주회사법 시행령 별표 11건 모두 홀수 번째 줄이 빈 줄). 그대로 찍으면
+    줄마다 빈 줄이 끼어 표의 세로선이 끊기므로, **홀수 번째 줄이 전부 비었을 때만** 그
+    빈 줄을 접고 그 사실을 PDF 머리에 적는다. 글자는 바꾸지 않고, 원문 XML 은 그대로다.
+    """
+    rule = extra == "행정규칙"
     kind = _t(unit, "별표구분") or "별표"
-    num = (_t(unit, "별표번호").lstrip("0") or "0")
-    gaji = _t(unit, "별표가지번호").lstrip("0")
-    head = "%s [%s %s]" % (law_name, kind, num + ("의%s" % gaji if gaji else ""))
+    head = "%s [%s %s]" % (law_name, kind, annex_no(unit, rule))
+    text = _raw(unit, "별표내용")
+    lines = text.split("\n")
+    folded = len(lines) > 2 and all(not x.strip() for x in lines[1::2])
+    if folded:
+        text = "\n".join(lines[0::2])
+    note = "%s · %s · 별표시행일 %s" % (law_name, _title(unit),
+                                        _fmt_date(_t(unit, "별표시행일자")) or "(XML에 없음)")
+    if folded:
+        note += " · XML 줄 구분용 빈 줄 %d개를 접음(글자는 원문 그대로)" % len(lines[1::2])
     return "\n".join([
         "<!doctype html><html><head><meta charset='utf-8'><title>%s</title>"
         "<style>%s</style></head><body>" % (_esc(head), CSS),
         stamp_html("원문 XML 별표내용 렌더링(원본 파일 없음)", efyd, serial, pending, extra),
-        '<div class="axnote">%s · %s · 별표시행일 %s</div>'
-        % (_esc(law_name), _esc(_title(unit)), _fmt_date(_t(unit, "별표시행일자"))),
-        '<pre class="axraw">%s</pre>' % _esc(_raw(unit, "별표내용")),
+        '<div class="axnote">%s</div>' % _esc(note),
+        '<pre class="axraw">%s</pre>' % _esc(text),
         "</body></html>"])
 
 
 def _title(unit):
     """별표제목 표시용. 법제처 XML 은 CDATA 안에 엔티티를 글자로 넣어 둔다(실측:
-    `<![CDATA[삭제 &lt;2016. 7. 28.&gt;]]>`). 사이트는 「삭제 <2016. 7. 28.>」로 보이므로
-    **PDF 에 찍을 때만** 한 번 푼다. 원문 XML·manifest 의 제목은 받은 그대로 둔다."""
-    return html.unescape(_t(unit, "별표제목"))
+    `<![CDATA[삭제 &lt;2016. 7. 28.&gt;]]>`). 같은 XML 의 별표제목문자열 필드가 푼 꼴을
+    주므로 그것을 쓰고, 그 필드가 없는 XML(행정규칙)에서만 한 번 푼다. **PDF 에 찍을 때만**
+    이렇게 하고, 원문 XML·manifest 의 제목은 받은 그대로 둔다."""
+    return _t(unit, "별표제목문자열") or html.unescape(_t(unit, "별표제목"))
 
 
 def _raw(e, tag):
@@ -288,17 +336,32 @@ def admrul_html(xml_bytes, efyd, serial, pending=False, annex_files=None):
            "<h1>%s</h1>" % _esc(name),
            '<table class="meta">%s</table>' % "".join(meta_rows),
            "<h2>조문</h2>"]
+    # 조문내용 한 요소가 조 하나인 규정(금융지주회사감독규정 104요소)도 있고, 규정 전체가
+    # 한 요소에 든 것(외국환거래규정 1요소·18만 자·「제1-1조」 208개)도 있다. 그래서
+    # 줄 단위로 조 머리·장절 머리를 찾아 나눈다. 줄 글자는 그대로 싣는다.
     labels = []
     for c in root.findall("조문내용"):
         txt = (c.text or "").strip()
         if not txt:
             continue
-        m = re.match(r"(제\s*\d+\s*조(?:\s*의\s*\d+)?)", txt)
-        if m:
-            labels.append(re.sub(r"\s+", "", m.group(1)))
-            out.append('<div class="art t">%s</div>' % _jo_html(txt))
-        else:
-            out.append('<div class="chap t">%s</div>' % _esc(txt))
+        in_art = False
+        for line in txt.split("\n"):
+            m = _RULE_HEAD.match(line)
+            if m:
+                if in_art:
+                    out.append("</div>")
+                labels.append(re.sub(r"\s+", "", m.group(1)))
+                out.append('<div class="art"><div class="t">%s</div>' % _jo_html(line))
+                in_art = True
+            elif _RULE_CHAP.match(line):
+                if in_art:
+                    out.append("</div>")
+                    in_art = False
+                out.append('<div class="chap t">%s</div>' % _esc(line))
+            else:
+                out.append('<div class="t">%s</div>' % (_esc(line) or "&#8203;"))
+        if in_art:
+            out.append("</div>")
     bus = root.findall("부칙")
     if bus:
         out.append("<h2>부칙</h2>")
