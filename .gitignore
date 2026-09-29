@@ -100,3 +100,16 @@ __pycache__/
 
 # dart selftest scratch (run.py selftest 를 scripts/dart 안에서 돌리면 생긴다)
 scripts/dart/dart_out/
+
+# ── 7차: 법령 원문 아카이브 (법제처 Open API) ─────────────────────────────
+# 인증값(LAW_OC)은 .env 에만 둔다 — 절대 커밋하지 않는다.
+.env
+# PDF·HWP 원본은 커밋하지 않는다(용량). 스크립트·00_manifest·체계도(json·md)만 추적한다.
+# 디렉터리를 먼저 재포함해야 git 이 안으로 내려가 예외 파일을 볼 수 있다.
+/law_archive/**
+!/law_archive/**/
+!/law_archive/00_manifest/**
+!/law_archive/**/0_체계도/체계도.json
+!/law_archive/**/0_체계도/체계도.md
+# 법령 단위 zip 은 로컬 인계용이다(커밋하지 않는다).
+/law_archive_zip/
