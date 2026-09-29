@@ -122,3 +122,14 @@
 2026-09-29T06:05:08+0000,api,http://www.law.go.kr/DRF/lawService.do?OC=***&target=eflaw&MST=283839&efYd=20270701&type=XML,200,388956,1,http://www.law.go.kr,
 2026-09-29T06:05:15+0000,api,http://www.law.go.kr/DRF/lawService.do?OC=***&target=eflaw&MST=289415&efYd=20270309&type=XML,200,379027,1,http://www.law.go.kr,
 2026-09-29T06:05:21+0000,api,http://www.law.go.kr/DRF/lawService.do?OC=***&target=eflaw&MST=289537&efYd=20260911&type=XML,200,515144,1,http://www.law.go.kr,
+2026-09-29T06:05:24+0000,file,http://www.law.go.kr/LSW/flDownload.do?flSeq=169113627,200,107041,1,http://www.law.go.kr,
+2026-09-29T06:05:26+0000,file,http://www.law.go.kr/LSW/flDownload.do?flSeq=169113635,200,68043,1,http://www.law.go.kr,
+2026-09-29T06:05:28+0000,file,http://www.law.go.kr/LSW/flDownload.do?flSeq=169113641,200,129297,1,http://www.law.go.kr,
+2026-09-29T06:05:43+0000,file,http://www.law.go.kr/LSW/flDownload.do?flSeq=169113649,200,56499,2,http://www.law.go.kr,재시도 전 오류: URLError: <urlopen error [Errno 104] Connection reset by peer>
+2026-09-29T06:06:16+0000,file,http://www.law.go.kr/LSW/flDownload.do?flSeq=169113655,200,132830,3,http://www.law.go.kr,재시도 전 오류: URLError: <urlopen error [Errno 104] Connection reset by peer> ; URLError: <urlopen error [Errno 104] Connection reset by peer>
+2026-09-29T06:06:20+0000,file,http://www.law.go.kr/LSW/flDownload.do?flSeq=169113665,200,191678,1,http://www.law.go.kr,
+2026-09-29T06:06:32+0000,api,http://www.law.go.kr/DRF/lawService.do?OC=***&target=lsStmd&MST=284345&type=XML,200,71575,1,http://www.law.go.kr,
+2026-09-29T06:06:34+0000,api,http://www.law.go.kr/DRF/lawService.do?OC=***&target=eflaw&MST=284345&efYd=20260918&type=XML,200,262271,1,http://www.law.go.kr,
+2026-09-29T06:06:37+0000,file,http://www.law.go.kr/LSW/flDownload.do?flSeq=162243203,200,283187,1,http://www.law.go.kr,
+2026-09-29T06:06:42+0000,api,http://www.law.go.kr/DRF/lawService.do?OC=***&target=eflaw&MST=279293&efYd=20271029&type=XML,200,267509,1,http://www.law.go.kr,
+2026-09-29T06:06:46+0000,file,http://www.law.go.kr/LSW/flDownload.do?flSeq=163663657,200,283652,1,http://www.law.go.kr,
