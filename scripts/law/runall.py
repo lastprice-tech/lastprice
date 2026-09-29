@@ -657,6 +657,104 @@ def recheck():
     return 0
 
 
+# ── 전달용 묶음 ───────────────────────────────────────────────────────────
+BUNDLE_CAP = int(28.5 * 2 ** 20)      # 원본 바이트 합 상한 — 압축 뒤 30MiB(전달 한도) 아래
+SEND_LIMIT = 30 * 2 ** 20
+MAN_FILES = ["manifest.csv", "law_list.csv", "hierarchy.json", "verify7.txt", "행정규칙_상위법.csv",
+             "서식200초과_목록.csv", "보류_크기측정.json", "resolve.json", "call_log.csv"]
+
+
+def _unit_files(folder):
+    out = []
+    for root, ds, fs in os.walk(folder):
+        ds.sort()
+        for f in sorted(fs):
+            if ".tmp" in f:
+                continue
+            out.append(os.path.join(root, f))
+    return out
+
+
+def bundle(out_dir):
+    """법령 원문 전체를 30MiB 아래 묶음으로(사용자 요청 2026-09-29, 대화로 전달).
+
+    순서: 00_manifest(기록) → A 01~15 → B-1 01~14 → B-2 규칙 01~18. zip 안 경로는
+    law_archive/ 아래 구조 그대로. 법령 폴더를 통째로 담고, 넘치면 다음 묶음. 한 법령이
+    상한보다 크면 **파일 단위로** 여러 묶음에 나눈다(바이트 분할이 아니라 묶음마다 따로 열린다).
+    """
+    import hashlib
+    units = [("00_manifest", [os.path.join(collect.MAN, f) for f in MAN_FILES
+                              if os.path.exists(os.path.join(collect.MAN, f))])]
+    for grp in ("A", "B-1"):
+        gdir = os.path.join(collect.ARCH, collect.GROUP_DIR[grp])
+        for d in sorted(os.listdir(gdir)):
+            units.append(("%s %s" % (grp, d), _unit_files(os.path.join(gdir, d))))
+    rules = []
+    for par in sorted(os.listdir(RULE_DIR)):
+        for d in os.listdir(os.path.join(RULE_DIR, par)):
+            rules.append((d, os.path.join(RULE_DIR, par, d)))
+    for d, full in sorted(rules):
+        units.append(("B-2 %s" % d, _unit_files(full)))
+    # 짜기
+    plan, cur, size = [], [], 0
+    for label, files in units:
+        tot = sum(os.path.getsize(f) for f in files)
+        if tot <= BUNDLE_CAP and size + tot <= BUNDLE_CAP:
+            cur.append((label, files)); size += tot
+            continue
+        if cur:
+            plan.append(cur); cur, size = [], 0
+        if tot <= BUNDLE_CAP:
+            cur.append((label, files)); size = tot
+            continue
+        part, psize, k = [], 0, 1                      # 큰 법령 — 파일 단위로 나눈다
+        for f in files:
+            fs = os.path.getsize(f)
+            if part and psize + fs > BUNDLE_CAP:
+                plan.append([("%s (나눔 %d)" % (label, k), part)]); part, psize, k = [], 0, k + 1
+            part.append(f); psize += fs
+        cur, size = [("%s (나눔 %d)" % (label, k) if k > 1 else label, part)], psize
+    if cur:
+        plan.append(cur)
+    os.makedirs(out_dir, exist_ok=True)
+    for f in os.listdir(out_dir):
+        if f.startswith("7차_법령원문_"):
+            os.remove(os.path.join(out_dir, f))
+    n = len(plan)
+    rows_all, made = [], []
+    for i, b in enumerate(plan, 1):
+        name = "7차_법령원문_%02d_of_%02d.zip" % (i, n)
+        for label, files in b:
+            for f in files:
+                h = hashlib.sha256(open(f, "rb").read()).hexdigest()
+                rows_all.append(dict(묶음=name, 단위=label, 파일경로=collect.rel(f),
+                                     바이트=os.path.getsize(f), sha256=h))
+    cols = ["묶음", "단위", "파일경로", "바이트", "sha256"]
+    for i, b in enumerate(plan, 1):
+        name = "7차_법령원문_%02d_of_%02d.zip" % (i, n)
+        zp = os.path.join(out_dir, name)
+        mine = [r for r in rows_all if r["묶음"] == name]
+        with zipfile.ZipFile(zp, "w", zipfile.ZIP_DEFLATED) as z:
+            for label, files in b:
+                for f in files:
+                    z.write(f, collect.rel(f))
+            for fn, lst in (("묶음목록_이묶음.csv", mine),) + ((("묶음목록_전체.csv", rows_all),) if i == 1 else ()):
+                buf = io.StringIO()
+                w = csv.DictWriter(buf, fieldnames=cols)
+                w.writeheader()
+                w.writerows(lst)
+                z.writestr("law_archive/" + fn, ("\ufeff" + buf.getvalue()).encode("utf-8"))
+        made.append((name, os.path.getsize(zp), [lab for lab, _f in b], len(mine)))
+    over = [m for m in made if m[1] >= SEND_LIMIT]
+    for name, sz, labs, cnt in made:
+        print("%s  %5.1fMiB  파일 %4d  %s" % (name, sz / 2 ** 20, cnt,
+                                            ", ".join(labs) if len(labs) <= 4 else
+                                            "%s … %s (%d개)" % (labs[0], labs[-1], len(labs))))
+    print("묶음 %d개 · 파일 %d개 · 합계 %.1fMiB · 30MiB 이상 %d" % (
+        n, len(rows_all), sum(m[1] for m in made) / 2 ** 20, len(over)))
+    return made, rows_all, over
+
+
 def main(argv):
     cmd = argv[1] if len(argv) > 1 else "run"
     if cmd == "run":
@@ -667,6 +765,9 @@ def main(argv):
         return retry()
     if cmd == "recheck":
         return recheck()
+    if cmd == "bundle":
+        made, rows_all, over = bundle(argv[2])
+        return 0 if not over else 1
     if cmd == "merge":
         merge()
         return 0

@@ -146,10 +146,11 @@ def fix_annexes(rows):
 
 
 def fix_attachments(client, rows):
-    """4. 행정규칙 첨부 전부."""
+    """4. 행정규칙 첨부 전부. 멱등 — 옛 「첨부원본」뿐 아니라 이미 받은 「첨부파일」도 치우고
+    다시 받는다(중간에 끊겨 다시 돌려도 행이 겹치지 않는다)."""
     out, n_old, n_new = [], 0, 0
     for r in rows:
-        if r["유형"] == "첨부원본":
+        if r["유형"] in ("첨부원본", "첨부파일"):
             if r["파일경로"] and os.path.exists(os.path.join(REPO, r["파일경로"])):
                 os.remove(os.path.join(REPO, r["파일경로"]))
             n_old += 1
@@ -201,10 +202,17 @@ def fix_absence_notes(d, lrows):
     return n
 
 
-def main():
+def main(argv):
+    """`--only KEY[,KEY]` — 그 part 만 고친다(중단 뒤 이어가기: 끝난 part 를 다시 돌리면
+    본문을 또 찍는다). 끝에는 항상 병합·zip."""
+    only = None
+    if "--only" in argv:
+        only = set(argv[argv.index("--only") + 1].split(","))
     t0 = time.time()
     client = lawclient.LawClient(os.path.join(collect.MAN, "call_log.csv"))
     for key, d in list(parts()):
+        if only is not None and key not in only:
+            continue
         mp, rows, lp, lrows = load(key)
         msg = []
         if "노드" in d:
@@ -230,4 +238,4 @@ def main():
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    sys.exit(main(sys.argv))
