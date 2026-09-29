@@ -26,7 +26,17 @@ import render        # noqa: E402
 MAN = collect.MAN
 REPO = collect.REPO
 BASELINE = "/tmp/claude-0/snap7/baseline_1to6.sha256"
-SAVED = ("OK", "삭제별표", "HWP대체(PDF실패)", collect.RENDERED_ANNEX)
+SAVED = ("OK", "삭제별표", "이동별표", "HWP대체(PDF실패)", collect.RENDERED_ANNEX)
+MAGIC = {"PDF": lambda b: b[:4] == b"%PDF", "HWP": lambda b: b[:4] == b"\xd0\xcf\x11\xe0",
+         "HWPX": lambda b: b[:4] == b"PK\x03\x04", "ZIP": lambda b: b[:4] == b"PK\x03\x04",
+         "XLSX": lambda b: b[:4] == b"PK\x03\x04", "DOCX": lambda b: b[:4] == b"PK\x03\x04"}
+
+
+def fold(s):
+    """PDF 글자층 비교용: NFKC + Noto KR 글꼴이 다른 코드로 내보내는 두 글자(ʻ→‘, ⻑→長)."""
+    import unicodedata
+    return re.sub(r"\s+", "", unicodedata.normalize("NFKC", s or "").replace("\u02bb", "\u2018")
+                  .replace("\u2ed1", "\u9577"))
 
 out_lines, fails = [], []
 
@@ -102,9 +112,21 @@ def main():
     xfail = [r for r in rows if r["유형"] in ("원문XML", "본문") and r["상태"] not in ("OK",)]
     check("원문 XML·본문 실패 0", not xfail,
           "; ".join("%s %s %s %s" % (r["정식명"], r["시행일자"], r["유형"], r["상태"]) for r in xfail[:10]))
-    att = [r for r in rows if r["유형"] == "첨부원본"]
-    att_bad = [r for r in att if r["상태"] not in ("OK", "HWP대체(PDF실패)", "없음")]
-    say("  행정규칙 첨부원본(고시·세칙 전체) %d건 · 실패 %d" % (len(att), len(att_bad)))
+    att = [r for r in rows if r["유형"] == "첨부파일"]
+    att_bad = [r for r in att if r["상태"] not in ("OK", "없음")]
+    import runall
+    att_short = []
+    for x in xml_rows:
+        if x["계층"] != "행정규칙":
+            continue
+        want = len(runall.attachments(open(os.path.join(REPO, x["파일경로"]), "rb").read()))
+        got = sum(1 for r in att if vkey(r) == vkey(x) and r["상태"] == "OK")
+        if got != want:
+            att_short.append("%s XML %d · 저장 %d" % (x["정식명"], want, got))
+    say("  행정규칙 첨부파일 %d건 · 실패 %d" % (len(att), len(att_bad)))
+    check("행정규칙 첨부파일 = XML 첨부 목록(전부)", not att_short and not att_bad,
+          "; ".join(att_short[:5]))
+    check("옛 「첨부원본」(하나만 고른) 행 0", not [r for r in rows if r["유형"] == "첨부원본"])
 
     # 2 ─ 시행규칙 「없음」 ↔ 체계도
     say("\n[2] 시행규칙 「없음」 ↔ 체계도")
@@ -117,7 +139,7 @@ def main():
 
     # 3 ─ %PDF·쪽수, manifest sha256 ↔ 디스크, 고아 파일
     say("\n[3] 파일 형식·쪽수·sha256")
-    notpdf, zero, shabad, gone = [], [], [], []
+    notpdf, zero, shabad, gone, magic_bad = [], [], [], [], []
     for r in rows:
         if not r["파일경로"]:
             continue
@@ -127,6 +149,14 @@ def main():
             continue
         if r["sha256"] and sha(p) != r["sha256"]:
             shabad.append(r["파일경로"])
+        if r["원본형식"] in MAGIC:
+            with open(p, "rb") as f:
+                head = f.read(8)
+            if not MAGIC[r["원본형식"]](head):
+                magic_bad.append("%s(%s)" % (r["파일경로"], r["원본형식"]))
+        if r["원본형식"] in ("HWPX", "ZIP", "XLSX") and collect._zip_kind(open(p, "rb").read()) != r["원본형식"]:
+            magic_bad.append("%s(%s≠%s)" % (r["파일경로"], r["원본형식"],
+                                           collect._zip_kind(open(p, "rb").read())))
         if p.lower().endswith(".pdf"):
             with open(p, "rb") as f:
                 if not f.read(5).startswith(b"%PDF"):
@@ -143,6 +173,8 @@ def main():
     check("manifest 의 파일이 모두 디스크에 있다", not gone, "; ".join(gone[:5]))
     check("manifest sha256 = 디스크", not shabad, "; ".join(shabad[:5]))
     check("%PDF 아닌 .pdf 0", not notpdf, "; ".join(notpdf[:5]))
+    check("파일 바이트 = manifest 원본형식(zip 을 hwpx 로 적지 않음)", not magic_bad,
+          "; ".join(magic_bad[:5]))
     check("0쪽·쪽수 못 읽은 PDF 0", not zero, "; ".join(zero[:5]))
     check("manifest 에 없는 파일(고아) 0", not orphan, "; ".join(orphan[:5]))
 
@@ -159,6 +191,7 @@ def main():
     # 5 ─ 본문 PDF: 조문 표지 전부 + 첫 쪽 머리글
     say("\n[5] 본문 PDF — 조문 표지·첫 쪽 머리글")
     lab_bad, stamp_bad, unverif, weak_all = [], [], [], []
+    ref_n, ref_miss = [0], []
     for x in xml_rows:
         b = bodies.get(vkey(x))
         if not b or not b["파일경로"]:
@@ -170,6 +203,14 @@ def main():
             labels = render.article_labels(ET.fromstring(xb))
         ok, npg, txt = render.pdf_info(os.path.join(REPO, b["파일경로"]))
         miss, weak = render.label_check(labels, txt)
+        if x["계층"] != "행정규칙":
+            ft = fold(txt)
+            for u in ET.fromstring(xb).iter("조문참고자료"):
+                t = fold(u.text)[:15]
+                if t:
+                    ref_n[0] += 1
+                    if t not in ft:
+                        ref_miss.append("%s: %s" % (os.path.basename(b["파일경로"]), (u.text or "").strip()[:30]))
         if not labels:
             unverif.append(b["파일경로"])
         if miss:
@@ -184,6 +225,8 @@ def main():
             stamp_bad.append(b["파일경로"])
     check("조문 표지 누락 0 (조 머리 꼴·부칙 앞까지)", not lab_bad, "; ".join(lab_bad[:5]))
     check("머리 꼴 없이 글자만 있는 표지 0", not weak_all, "; ".join(weak_all[:5]))
+    check("조문참고자료(시행일·유효기간·위헌 주석 등) %d개 모두 본문에" % ref_n[0], not ref_miss,
+          "; ".join(ref_miss[:5]))
     check("첫 쪽 머리글의 시행일·일련번호·시행예정 표시 = manifest", not stamp_bad, "; ".join(stamp_bad[:5]))
     say("  조문 표지를 못 찾아 누락 검사를 못 한 본문 %d건%s"
         % (len(unverif), (": " + "; ".join(unverif[:5])) if unverif else ""))
@@ -200,6 +243,11 @@ def main():
     for e in ex[:60]:
         say("   · [%s] %s ← %s" % (e["종류"], e["이름"], ", ".join(e["상위"][:3])))
     check("체계도 법령 수 = 법률 29", len(hj["법령"]) == 29, str(len(hj["법령"])))
+    blank = [(law, n["key"]) for law, v in hj["법령"].items() for n in v["노드"] if not n.get("이름")]
+    check("체계도 이름 없는 노드 0(자치법규 뭉침 방지)", not blank, str(blank[:3]))
+    import collections as _c
+    kinds = _c.Counter(n.get("분류") for v in hj["법령"].values() for n in v["노드"])
+    say("  노드 분류: %s" % dict(kinds))
 
     # 7 ─ 시행예정·버전 중복
     say("\n[7] 시행예정·버전 키")
@@ -209,6 +257,12 @@ def main():
     say("  시행예정 판 %d (법률 %d · 행정규칙 %d)" % (len(pend), sum(r["계층"] != "행정규칙" for r in pend),
                                              sum(r["계층"] == "행정규칙" for r in pend)))
     check("(MST, 시행일, 시행예정) 중복 0", len(keys) == len(set(keys)))
+    past = [r for r in xml_rows if r["시행예정여부"] == "Y" and r["시행일자"] <= "20260929"]
+    check("시행예정 판의 시행일 > 오늘(지난 판 0)", not past,
+          "; ".join("%s %s" % (r["정식명"], r["시행일자"]) for r in past))
+    ex = [r for r in lrows if r["상태"].startswith("제외")]
+    say("  제외한 지난 판 %d: %s" % (len(ex), "; ".join("%s %s(%s)" % (r["정식명"], r["시행일자"],
+                                                                   r["법령일련번호"]) for r in ex)))
     check("파일경로 중복 0", len(paths) == len(set(paths)), str(len(paths) - len(set(paths))))
 
     # 8 ─ OC 가림

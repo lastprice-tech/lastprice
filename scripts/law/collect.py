@@ -87,14 +87,36 @@ def sha256(b):
     return hashlib.sha256(b).hexdigest()
 
 
+def _zip_kind(b):
+    """PK 파일: HWPX 는 mimetype 이 application/hwp+zip, XLSX 는 xl/ 가 있다. 나머지는 ZIP."""
+    import io
+    import zipfile
+    try:
+        with zipfile.ZipFile(io.BytesIO(b)) as z:
+            names = z.namelist()
+            if "mimetype" in names and z.read("mimetype").startswith(b"application/hwp"):
+                return "HWPX"
+            if any(n.startswith("xl/") for n in names):
+                return "XLSX"
+            if any(n.startswith("word/") for n in names):
+                return "DOCX"
+    except zipfile.BadZipFile:
+        return "ZIP?"
+    return "ZIP"
+
+
 def sniff(b):
     """실제 시그니처로 형식을 판정한다. 확장자·Content-Type 을 믿지 않는다."""
     if b[:4] == b"%PDF":
         return "PDF"
     if b[:4] == b"\xd0\xcf\x11\xe0":
-        return "HWP"            # HWP 5.0 (OLE 복합문서)
+        # HWP 5.0 (OLE 복합문서). 같은 OLE 인 xls·doc 과는 FileHeader 스트림 이름으로 가른다.
+        if "FileHeader".encode("utf-16-le") in b[:1 << 20] or b"HwpSummaryInformation" in b[:1 << 20] \
+                or "HwpSummaryInformation".encode("utf-16-le") in b[:1 << 20]:
+            return "HWP"
+        return "OLE"
     if b[:4] == b"PK\x03\x04":
-        return "HWPX"
+        return _zip_kind(b)     # 실측: 행정규칙 첨부 zip 4건이 HWPX 로 잘못 적혔었다
     head = b[:200].lower()
     if b"<html" in head or b"<!doctype" in head:
         return "HTML(오류페이지)"
@@ -169,6 +191,13 @@ def parse_stmd(xml_bytes):
             n = dict(key=key, 종류=g("법종구분") or e.tag, 이름=g("행정규칙명"),
                      ID=g("행정규칙ID"), 일련번호=g("행정규칙일련번호"), 시행일자=g("시행일자"),
                      분류="행정규칙")
+        elif g("자치법규ID") or g("자치법규명"):
+            # 조례·규칙(자치법규)은 ID 체계가 따로다. 전에는 법령 가지로 떨어져 이름 없는 노드
+            # 하나로 뭉쳤다(개인정보 보호법 조례 164개 → 1개). 자기 키로 따로 센다.
+            key = "자치법규:" + (g("자치법규ID") or g("자치법규명"))
+            n = dict(key=key, 종류=g("법종구분") or e.tag, 이름=g("자치법규명"),
+                     ID=g("자치법규ID"), 일련번호=g("자치법규일련번호"), 시행일자=g("시행일자"),
+                     분류="자치법규")
         else:
             key = "법령:" + (g("법령ID") or g("법령명"))
             n = dict(key=key, 종류=g("법종구분"), 이름=g("법령명"), ID=g("법령ID"),
@@ -219,7 +248,7 @@ def annex_list(xml_bytes):
         g = lambda k: (b.findtext(k) or "").strip()
         kind = g("별표구분") or "별표"
         out.append(dict(구분=kind, 번호=render.annex_no(b, rule),
-                        제목=g("별표제목"), 시행일자=g("별표시행일자"),
+                        제목=render._title(b), 시행일자=g("별표시행일자"),
                         pdf=g("별표서식PDF파일링크"), hwp=g("별표서식파일링크"), unit=b))
     return out
 
@@ -280,7 +309,7 @@ def fetch_annex(client, a, dest_noext, meta, dry=False, ctx=None):
             # PDF 링크가 있었는데 못 받아 HWP 로 대신한 것은 「OK」와 가른다 — PDF 를
             # 다시 받아야 할 대상이다. PDF 링크가 원래 없던 것은 OK(HWP 가 원본의 전부).
             pdf_failed = want == "HWP" and bool(a["pdf"])
-            state = ("HWP대체(PDF실패)" if pdf_failed else "삭제별표" if deleted else "OK")
+            state = annex_state(a, want, fmt, pdf_failed, deleted)
             note = ""
             if want == "HWP":
                 got = "HWP 링크에서 %s 원본" % fmt       # HWP 링크가 PDF 를 줄 때도 있다
@@ -296,6 +325,20 @@ def fetch_annex(client, a, dest_noext, meta, dry=False, ctx=None):
 
 
 RENDERED_ANNEX = "원본없음·XML렌더링"
+PAST_NOTE = ("API 가 시행예정으로 줬으나 시행일 %s ≤ max(오늘 %s, 현행 시행일 %s) — 지난(연혁) 판으로 "
+             "보고 받지 않음(요청 범위: 현행+시행예정)")
+MOVED = re.compile(r"(으로|로)\s*이동")
+
+
+def annex_state(a, want, fmt, pdf_failed, deleted):
+    """별표 상태. HWP대체(PDF실패) > 삭제별표 > 이동별표(「…로 이동」 자리표시) > OK."""
+    if pdf_failed:
+        return "HWP대체(PDF실패)"
+    if deleted:
+        return "삭제별표"
+    if MOVED.search(a["제목"]) and len(a["제목"]) < 80:
+        return "이동별표"
+    return "OK"
 
 
 def render_annex(a, dest_noext, row, ctx, deleted=False):
@@ -369,7 +412,19 @@ def collect_law(client, grp, seq, req, info, pilot=False, dry=False):
         versions = []
         if t["현행"]:
             versions.append((t["현행"], False))
+        cur_ef = t["현행"]["시행일자"] if t["현행"] else ""
         for p in t["시행예정"]:
+            # API(nw=2)가 「시행예정」으로 준 판도 시행일이 오늘·현행 시행일 이전이면 지난 판이다
+            # (실측: 조세특례제한법 시행령 283625 @20260701 — 현행 288915 @20260918 보다 앞).
+            # 요청서 범위는 현행+시행예정이고 연혁은 제외 — 받지 않고 law_list 에 사유를 남긴다.
+            if p["시행일자"] <= max(resolve.TODAY, cur_ef):
+                lrows.append(dict(그룹=grp, 순번=seq, 요청명=req, 정식명=p["법령명한글"], 계층=tier,
+                                  법령ID=p["법령ID"], 법령일련번호=p["법령일련번호"],
+                                  공포일자=p["공포일자"], 공포번호=p["공포번호"], 시행일자=p["시행일자"],
+                                  시행예정여부="N", 소관부처=p.get("소관부처명", ""),
+                                  법령구분=p.get("법령구분명", ""), 일치방식=t["일치"], 상태="제외(지난 판)",
+                                  비고=PAST_NOTE % (p["시행일자"], resolve.TODAY, cur_ef)))
+                continue
             versions.append((p, True))
         seen_v, uniq = set(), []                   # 같은 (MST, 시행일, 시행예정)이 두 번 오면 하나만
         for row, pending in versions:

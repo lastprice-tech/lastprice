@@ -165,34 +165,52 @@ def attachments(xml_bytes):
     return out
 
 
+ATT_EXT = {".pdf": "PDF", ".hwp": "HWP", ".hwpx": "HWPX", ".zip": "ZIP", ".xlsx": "XLSX",
+           ".docx": "DOCX"}
+FMT_EXT = {"PDF": ".pdf", "HWP": ".hwp", "HWPX": ".hwpx", "ZIP": ".zip", "XLSX": ".xlsx",
+           "DOCX": ".docx", "OLE": ".ole"}
+
+
 def fetch_attachments(client, atts, dest_dir, stem, meta):
-    """고시·세칙 전체 원본. PDF 가 있으면 PDF 만, 없거나 실패하면 HWP."""
+    """행정규칙 첨부파일 **전부**를 원본 그대로 받는다(hwp·pdf·hwpx·zip·xlsx …).
+
+    어느 첨부가 규칙 전문인지는 이름·순서로 가를 수 없다(실측: 첫 첨부가 다른 고시의
+    제정고시문, 2쪽짜리 개정고시문, 여러 문서를 묶은 zip, 서식이 가리키는 엑셀 양식).
+    그래서 고르지 않고 모두 남기며, 원파일명·실제 형식을 적는다. 형식은 확장자가 아니라
+    바이트로 판정한다(zip 을 hwpx 로 적지 않는다). 규칙 전문은 본문 PDF(원문 XML)가 기준이다.
+    """
+    if not atts:
+        return [dict(meta, 유형="첨부파일", 상태="없음", 비고="XML 에 첨부파일 없음")]
     rows = []
-    pdfs = [a for a in atts if a[0].lower().endswith(".pdf")]
-    others = [a for a in atts if not a[0].lower().endswith(".pdf")]
-    tried = []
-    for name, link in pdfs + others:
-        path_qs = urllib.parse.urlsplit(link)
-        path_qs = path_qs.path + ("?" + path_qs.query if path_qs.query else "")
-        st, body, ct, murl, host = client.file(path_qs)
+    for i, (name, link) in enumerate(atts, 1):
+        u = urllib.parse.urlsplit(link)
+        st, body, ct, murl, host = client.file(u.path + ("?" + u.query if u.query else ""))
         fmt = collect.sniff(body) if body else ""
-        tried.append("%s→%s" % (name, fmt or "실패"))
-        if st == 200 and fmt in ("PDF", "HWP", "HWPX"):
-            ext = {"PDF": ".pdf", "HWP": ".hwp", "HWPX": ".hwpx"}[fmt]
-            path = os.path.join(dest_dir, "%s_첨부원본%s" % (stem, ext))
-            try:
-                h = collect.write(path, body)
-            except OSError as e:
-                tried[-1] += " 저장실패(%s)" % type(e).__name__
-                continue
-            pages = render.pdf_info(path)[1] if fmt == "PDF" else ""
-            rows.append(dict(meta, 유형="첨부원본", 제목=name, 파일경로=collect.rel(path),
-                             원본형식=fmt, 페이지수=pages, sha256=h, 출처URL=murl,
-                             상태="OK" if (fmt == "PDF" or not pdfs) else "HWP대체(PDF실패)",
-                             비고="고시·세칙 전체 원본(법제처 첨부파일) · 원파일명 %s" % name))
-            return rows
-    rows.append(dict(meta, 유형="첨부원본", 상태="실패" if atts else "없음",
-                     비고="; ".join(tried) if atts else "XML 에 첨부파일 없음"))
+        row = dict(meta, 유형="첨부파일", 번호=str(i), 제목=name, 출처URL=murl)
+        if st != 200 or not body or fmt.startswith(("HTML", "기타", "ZIP?")):
+            rows.append(dict(row, 상태="실패", 비고="원파일명 %s → %s" % (name, fmt or "응답 없음")))
+            continue
+        ext0 = os.path.splitext(name)[1].lower()
+        want = ATT_EXT.get(ext0)
+        ext = FMT_EXT.get(fmt, ext0 or ".bin")
+        label = collect.title_slug(name[:-len(ext0)] if want else name, n=60)
+        dest = collect.fit_dest(os.path.join(dest_dir, "%s_첨부%02d" % (stem, i)), label, tail=ext)
+        try:
+            h = collect.write(dest + ext, body)
+        except OSError as e:
+            rows.append(dict(row, 상태="실패", 비고="저장 실패(%s): 원파일명 %s" % (type(e).__name__, name)))
+            continue
+        note = "법제처 첨부파일 원본 그대로 · 원파일명 %s" % name
+        if want and want != fmt:
+            note += " · 확장자(%s)와 실제 형식(%s)이 다름 — 실제 형식으로 저장" % (want, fmt)
+        if fmt == "ZIP":
+            import zipfile
+            with zipfile.ZipFile(dest + ext) as z:
+                members = [m.filename for m in z.infolist() if not m.is_dir()]
+            note += " · 묶음 파일 %d개" % len(members)
+        pages = render.pdf_info(dest + ext)[1] if fmt == "PDF" else ""
+        rows.append(dict(row, 파일경로=collect.rel(dest + ext), 원본형식=fmt, 페이지수=pages,
+                         sha256=h, 상태="OK", 비고=note))
     return rows
 
 
@@ -396,13 +414,25 @@ def merge():
     for law, v in laws.items():
         for n in v["노드"]:
             if n.get("분류") == "행정규칙" and n.get("ID") not in b2_ids:
-                e = extra.setdefault(n["ID"], {"이름": n["이름"], "종류": n["종류"], "상위": []})
+                e = extra.setdefault(n["ID"], {"ID": n["ID"], "일련번호": n.get("일련번호", ""),
+                                               "시행일자": n.get("시행일자", ""), "이름": n["이름"],
+                                               "종류": n["종류"], "상위": []})
                 if law not in e["상위"]:
                     e["상위"].append(law)
     hj = {"생성": time.strftime("%Y-%m-%dT%H:%M:%S%z"), "원천": "lsStmd",
           "법령": laws, "체계도에만있는행정규칙": list(extra.values())}
     with open(os.path.join(collect.MAN, "hierarchy.json"), "w", encoding="utf-8") as f:
         json.dump(hj, f, ensure_ascii=False, indent=1)
+    # 행정규칙이 어느 법률 폴더에 들어갔고 체계도상 상위 법률은 무엇인지 — 폴더만 보면
+    # 「보험업감독규정이 왜 외국환거래법 밑에?」가 되므로 한 표로 남긴다.
+    prow = []
+    for i, req in enumerate(T.B2_RULES, 1):
+        d = part_done(part_key("B-2", i)) or {}
+        prow.append(dict(순번=i, 요청명=req, 정식명=d.get("정식명", ""), 폴더=d.get("폴더", ""),
+                         체계도상위법률=" · ".join(d.get("상위법") or []) or "(체계도 미연결)",
+                         배치규칙="체계도에 이 규칙을 올린 법률 중 목록(A→B-1) 순서상 첫째"))
+    collect.write_csv(os.path.join(collect.MAN, "행정규칙_상위법.csv"), prow,
+                      ["순번", "요청명", "정식명", "폴더", "체계도상위법률", "배치규칙"])
     # 서식 200개 초과 판 — 목록(요청서 5-3; 사용자 지시로 확인 없이 받았고 목록은 남긴다)
     cnt = {}
     for r in mrows:
@@ -442,6 +472,10 @@ def zip_all():
         os.makedirs(os.path.dirname(zp), exist_ok=True)
         prefix = collect.rel(u) + os.sep
         mine = [r for r in rows if r["파일경로"].startswith(prefix)]
+        # 파일 없는 기록 행(폐기한 보조뷰어·실패·없음)도 그 법령 zip 의 manifest 에 넣는다.
+        sig = {(r["그룹"], r["상위법"] if r["그룹"] != "B-2" else r["정식명"]) for r in mine}
+        mine += [r for r in rows if not r["파일경로"] and
+                 (r["그룹"], r["상위법"] if r["그룹"] != "B-2" else r["정식명"]) in sig]
         tmp = zp + ".tmp"
         with zipfile.ZipFile(tmp, "w", zipfile.ZIP_DEFLATED) as z:
             for root, _ds, fs in os.walk(u):

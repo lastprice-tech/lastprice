@@ -70,6 +70,7 @@ h2 { font-family: %(gothic)s; font-weight: 700; font-size: 11.5pt; margin: 14px 
 .byl { margin: 0 0 12px 0; page-break-inside: auto; }
 .byl pre { white-space: pre-wrap; word-break: break-all; font-family: inherit;
            font-size: 9pt; margin: 3px 0 0 0; }
+.ref { font-size: 8.6pt; color: #444; margin: 1px 0 0 1.0em; }
 .axnote { font-family: %(gothic)s; font-size: 8.6pt; color: #333; margin: 0 0 6px 0; }
 table.ax { border-collapse: collapse; width: 100%%; font-size: 8.6pt; table-layout: fixed; }
 table.ax col.k { width: 3.2em; } table.ax col.n { width: 5em; }
@@ -111,8 +112,16 @@ def _t(e, tag):
     return (x.text or "").strip() if x is not None and x.text else ""
 
 
+_NUMREF = re.compile(r"&#(x[0-9a-fA-F]+|[0-9]+);")
+
+
 def _esc(s):
-    return html.escape(s or "", quote=False)
+    """HTML 이스케이프. 그 전에 법제처 CDATA 에 **글자로 박힌** 숫자 문자 참조(실측:
+    보험업감독규정 부칙 `&#8228;`, 검사·제재 규정 부칙 `&#65378;`)만 제 글자로 되돌린다 —
+    사이트에 보이는 글자와 같게. 원문 XML 은 그대로 둔다."""
+    s = _NUMREF.sub(lambda m: chr(int(m.group(1)[1:], 16) if m.group(1)[0] in "xX"
+                                  else int(m.group(1))), s or "")
+    return html.escape(s, quote=False)
 
 
 def _fmt_date(d):
@@ -146,9 +155,11 @@ def is_rule_root(root):
 def annex_no(unit, rule=False):
     """별표 번호 표기. 법령은 「1의2」, 행정규칙은 원문 표기대로 「1-2」(실측: 금융지주회사
     감독규정 〈별표1-2〉, 외국환거래규정 [별지 제2-1호 서식])."""
-    num = (_t(unit, "별표번호").lstrip("0") or "0")
+    num = _t(unit, "별표번호").lstrip("0")
     gaji = _t(unit, "별표가지번호").lstrip("0")
-    return num + (("-%s" if rule else "의%s") % gaji if gaji else "")
+    if not num and not gaji:
+        return ""       # 원문이 「[별표]」「[별지 서식]」처럼 번호가 없다 — 「0」을 지어내지 않는다
+    return (num or "0") + (("-%s" if rule else "의%s") % gaji if gaji else "")
 
 
 def annex_index_html(root, annex_files=None):
@@ -193,7 +204,7 @@ def annex_index_html(root, annex_files=None):
             cell += " · %s" % _esc(state)
         out.append('<tr><td class="k">%s</td><td class="n">%s</td><td>%s</td><td class="d">%s</td>'
                    '<td class="f">%s</td></tr>'
-                   % (_esc(_t(u, "별표구분") or "별표"), annex_no(u, rule),
+                   % (_esc(_t(u, "별표구분") or "별표"), annex_no(u, rule) or "(번호 없음)",
                       _esc(_title(u)), _fmt_date(_t(u, "별표시행일자")), cell))
     out.append("</table>")
     return out
@@ -209,13 +220,14 @@ def annex_text_html(unit, law_name, efyd, serial, pending=False, extra=""):
     """
     rule = extra == "행정규칙"
     kind = _t(unit, "별표구분") or "별표"
-    head = "%s [%s %s]" % (law_name, kind, annex_no(unit, rule))
+    head = "%s [%s %s]" % (law_name, kind, annex_no(unit, rule) or "(번호 없음)")
     text = _raw(unit, "별표내용")
     lines = text.split("\n")
     folded = len(lines) > 2 and all(not x.strip() for x in lines[1::2])
     if folded:
         text = "\n".join(lines[0::2])
-    note = "%s · [%s %s] · %s · 별표시행일 %s" % (law_name, kind, annex_no(unit, rule), _title(unit),
+    note = "%s · [%s %s] · %s · 별표시행일 %s" % (law_name, kind, annex_no(unit, rule) or "(번호 없음)",
+                                                 _title(unit),
                                              _fmt_date(_t(unit, "별표시행일자")) or "(XML에 없음)")
     if folded:
         note += " · XML 줄 구분용 빈 줄 %d개를 접음(글자는 원문 그대로)" % len(lines[1::2])
@@ -292,6 +304,18 @@ def _render_children(e, out, level):
             _render_children(child, out, level + 1)
 
 
+def _refs(u):
+    """조문참고자료 — 사이트가 조문 밑에 보여주는 주석(「[본조신설 …]」「[시행일: 2027.2.20]
+    제42조의2제1항제1호」「…까지 유효함」「헌법불합치」 등). 인용할 때 그 조가 아직 시행 전인지·
+    한시인지를 알아야 하므로 글자 그대로 싣는다(실측: 법률 XML 126개에 12,549개)."""
+    out = []
+    for r in u.findall("조문참고자료"):
+        t = (r.text or "").strip("\n")
+        if t.strip():
+            out.append('<div class="ref t">%s</div>' % _esc(t))
+    return out
+
+
 def article_labels(root):
     """XML 에 있는 조문 표지(「제5조의2」 꼴) 목록 — verify7 이 PDF 텍스트와 대조한다."""
     labels = []
@@ -314,6 +338,10 @@ def law_html(xml_bytes, efyd, serial, pending=False, annex_files=None):
             v = _t(bi, k)
             if v:
                 meta_rows.append("<tr><td>%s</td><td>%s</td></tr>" % (k, _esc(v)))
+        # 일부 조항만 늦게 시행되는 경우(실측: 자본시장법 20260804 「20270204:제166조」).
+        v = _raw(bi, "조문시행일자문자열").strip()
+        if v:
+            meta_rows.append('<tr><td>조문별 시행일</td><td class="t">%s</td></tr>' % _esc(v))
     out = ["<!doctype html><html><head><meta charset='utf-8'><title>%s</title>"
            "<style>%s</style></head><body>" % (_esc(name), CSS),
            stamp_html("원문 XML 렌더링", efyd, serial, pending),
@@ -325,11 +353,14 @@ def law_html(xml_bytes, efyd, serial, pending=False, annex_files=None):
         if u.tag != "조문단위":
             continue
         txt = _t(u, "조문내용")
+        refs = _refs(u)
         if _t(u, "조문여부") == "전문":            # 장·절·관 제목
             out.append('<div class="chap t">%s</div>' % _esc(txt))
+            out.extend(refs)
             continue
         out.append('<div class="art"><div class="t">%s</div>' % _jo_html(txt))
         _render_children(u, out, 1)
+        out.extend(refs)
         out.append("</div>")
     bu = root.find("부칙")
     if bu is not None and len(bu):
