@@ -25,6 +25,7 @@ import csv
 import io
 import json
 import os
+import re
 import sys
 import time
 import traceback
@@ -481,12 +482,157 @@ def wait_and_run(interval=900, tries=16):
     return 4
 
 
+# ── 사후 보정 ─────────────────────────────────────────────────────────────
+RETRY_STATES = ("실패", "HWP대체(PDF실패)")
+
+
+def _vkey(r):
+    return (r["그룹"], r["상위법"], r["계층"], r["정식명"], r["법령일련번호"], r["시행일자"],
+            r["시행예정여부"])
+
+
+def _load_part(key):
+    p = os.path.join(PARTS, key + ".manifest.csv")
+    return p, list(csv.DictReader(open(p, encoding="utf-8-sig")))
+
+
+def _rebody(rows, x, is_rule):
+    """한 판의 본문 PDF 를 저장된 원문 XML 로 다시 찍고 행을 갱신한다(별표 목록이 바뀐 뒤)."""
+    xb = open(os.path.join(collect.REPO, x["파일경로"]), "rb").read()
+    arows = [r for r in rows if r["유형"] in ("별표", "서식") and _vkey(r) == _vkey(x)]
+    b = [r for r in rows if r["유형"] == "본문" and _vkey(r) == _vkey(x)][0]
+    pending = x["시행예정여부"] == "Y"
+    fn = render.admrul_html if is_rule else render.law_html
+    h, _nm, labels = fn(xb, x["시행일자"], x["법령일련번호"], pending, collect.annex_files(arows))
+    pdfp = os.path.join(collect.REPO, b["파일경로"])
+    collect._swap_render(h, pdfp)
+    new = collect.body_row({}, pdfp, labels, len(arows))
+    b.update(페이지수=new["페이지수"], sha256=new["sha256"], 상태=new["상태"], 비고=new["비고"])
+
+
+def retry():
+    """「실패」·「HWP대체(PDF실패)」 별표·서식만 다시 받는다. 받은 판은 본문 PDF 의 별표
+    목록도 다시 찍는다. PDF 를 새로 받으면 앞서 대신 받은 HWP 는 치우고 비고에 적는다."""
+    client = lawclient.LawClient(os.path.join(collect.MAN, "call_log.csv"))
+    fixed, still = [], []
+    try:
+        for key in order_keys():
+            if not part_done(key):
+                continue
+            path, rows = _load_part(key)
+            todo = [r for r in rows if r["유형"] in ("별표", "서식") and r["상태"] in RETRY_STATES]
+            if not todo:
+                continue
+            touched = set()
+            for r in todo:
+                x = [q for q in rows if q["유형"] == "원문XML" and _vkey(q) == _vkey(r)][0]
+                xb = open(os.path.join(collect.REPO, x["파일경로"]), "rb").read()
+                units = collect.annex_list(xb)
+                arows = [q for q in rows if q["유형"] in ("별표", "서식") and _vkey(q) == _vkey(r)]
+                a = units[arows.index(r)]
+                assert a["번호"] == r["번호"], (a["번호"], r["번호"])
+                stem = os.path.basename(x["파일경로"])[:-len("_원문.xml")]
+                tdir = os.path.dirname(os.path.join(collect.REPO, x["파일경로"]))
+                sub = collect.annex_sub(a)
+                dest = collect.fit_dest(os.path.join(tdir, sub, "%s_%s%s" % (
+                    stem, collect.slug(a["구분"]) or sub, a["번호"])), collect.title_slug(a["제목"]))
+                is_rule = r["계층"] == "행정규칙"
+                meta = {k: r[k] for k in ("그룹", "상위법", "계층", "정식명", "법령ID", "법령일련번호",
+                                          "공포일자", "공포번호", "시행일자", "시행예정여부", "소관부처")}
+                new = collect.fetch_annex(client, a, dest, meta,
+                                          ctx=(r["정식명"], r["시행일자"], r["법령일련번호"],
+                                               r["시행예정여부"] == "Y", is_rule))
+                old_path, old_state = r["파일경로"], r["상태"]
+                if new["상태"] in ("OK", "삭제별표") or (new["상태"] != "실패" and old_state == "실패"):
+                    if old_path and old_path != new.get("파일경로") and os.path.exists(
+                            os.path.join(collect.REPO, old_path)):
+                        os.remove(os.path.join(collect.REPO, old_path))
+                    new["비고"] = ("재시도로 확보(%s, 이전 상태 %s%s)" % (
+                        time.strftime("%Y-%m-%d %H:%M"), old_state,
+                        ", 대신 받은 HWP 교체" if old_state != "실패" else "")
+                        + (" · " + new["비고"] if new.get("비고") else ""))
+                    r.clear()
+                    r.update({c: new.get(c, "") for c in collect.MANIFEST_COLS})
+                    fixed.append("%s %s %s%s → %s" % (r["정식명"], r["시행일자"], r["유형"], r["번호"],
+                                                      r["상태"]))
+                    touched.add(_vkey(x))
+                else:
+                    still.append("%s %s %s%s (%s)" % (r["정식명"], r["시행일자"], r["유형"], r["번호"],
+                                                      new.get("비고", "")))
+            for vk in touched:
+                x = [q for q in rows if q["유형"] == "원문XML" and _vkey(q) == vk][0]
+                _rebody(rows, x, x["계층"] == "행정규칙")
+            collect.write_csv(path, rows, collect.MANIFEST_COLS)
+    except lawclient.BlockedError as e:
+        log("■ 서버 차단 — 재시도 중단. %s" % client.mask(str(e)))
+    log("재시도 — 확보 %d · 여전히 못 받음 %d · 호출 %d" % (len(fixed), len(still), client.n_calls))
+    for f in fixed + ["여전히: " + s_ for s_ in still]:
+        log("  ", f)
+    return 0 if not still else 1
+
+
+def recheck():
+    """API 호출 없이 본문 PDF 의 조문 검사와 시행규칙 「없음」 비고를 새 규칙으로 다시 판정한다
+    (PDF·XML 은 그대로 — sha256 불변)."""
+    changed = []
+    for key in order_keys():
+        if not part_done(key):
+            continue
+        path, rows = _load_part(key)
+        xs = {_vkey(r): r for r in rows if r["유형"] == "원문XML" and r["파일경로"]}
+        dirty = False
+        for b in rows:
+            if b["유형"] != "본문" or not b["파일경로"] or _vkey(b) not in xs:
+                continue
+            xb = open(os.path.join(collect.REPO, xs[_vkey(b)]["파일경로"]), "rb").read()
+            if b["계층"] == "행정규칙":
+                labels = render.admrul_html(xb, b["시행일자"], b["법령일련번호"])[2]
+            else:
+                labels = render.article_labels(ET.fromstring(xb))
+            n_ax = sum(1 for r in rows if r["유형"] in ("별표", "서식") and _vkey(r) == _vkey(b))
+            new = collect.body_row({}, os.path.join(collect.REPO, b["파일경로"]), labels, n_ax)
+            if new["sha256"] != b["sha256"]:
+                raise SystemExit("본문 PDF 가 manifest 와 다르다: %s" % b["파일경로"])
+            if (new["상태"], new["비고"]) != (b["상태"], b["비고"]):
+                changed.append("%s %s %s: %s → %s" % (b["정식명"], b["시행일자"], b["계층"],
+                                                      b["상태"], new["상태"]))
+                b.update(상태=new["상태"], 비고=new["비고"])
+                dirty = True
+        if dirty:
+            collect.write_csv(path, rows, collect.MANIFEST_COLS)
+        lp = os.path.join(PARTS, key + ".lawlist.csv")
+        lrows = list(csv.DictReader(open(lp, encoding="utf-8-sig")))
+        d = part_done(key)
+        ldirty = False
+        for r in lrows:
+            if r["상태"] == "없음" and r["계층"] == "시행규칙" and d.get("시행규칙급_체계도노드") is not None:
+                law = r["정식명"][:-len(" 시행규칙")] if r["정식명"].endswith(" 시행규칙") else r["정식명"]
+                note = collect.rule_absence_note(law, d["시행규칙급_체계도노드"])
+                m = re.search(r"사용자 확인\(.*$", r["비고"] or "")
+                if m:
+                    note += " · " + m.group(0)
+                if note != r["비고"]:
+                    changed.append("%s 없음 비고 갱신" % r["정식명"])
+                    r["비고"] = note
+                    ldirty = True
+        if ldirty:
+            collect.write_csv(lp, lrows, collect.LAWLIST_COLS)
+    log("재판정 — 바뀐 행 %d" % len(changed))
+    for c in changed:
+        log("  ", c)
+    return 0
+
+
 def main(argv):
     cmd = argv[1] if len(argv) > 1 else "run"
     if cmd == "run":
         return run()
     if cmd == "waitrun":
         return wait_and_run()
+    if cmd == "retry":
+        return retry()
+    if cmd == "recheck":
+        return recheck()
     if cmd == "merge":
         merge()
         return 0

@@ -240,8 +240,11 @@ def label_check(labels, pdf_text):
     """조문 표지가 PDF 에 **조 머리 꼴로** 있는가. → (누락, 본문 속 언급만 있는 것).
 
     「제1조」를 그냥 부분 문자열로 찾으면 「제1조의2」·「제2조제1항」·부칙의 「제1조(시행일)」
-    안에서도 걸려 누락을 못 잡는다. 그래서 (1) 첫 「부칙」 제목 줄 앞까지만 보고, (2) 표지
-    바로 뒤가 「(」·「<」·「〈」·「삭제」인 곳만 머리로 센다(뒤에 숫자·「의숫자」가 오면 다른 조).
+    안에서도 걸려 누락을 못 잡는다. 그래서 (1) 첫 「부칙」 제목 줄 앞까지만 보고, (2) **줄
+    머리**에서 표지로 시작하고 바로 뒤가 줄 끝·공백·「(」·「[」·「<」·「〈」·「삭제」인 곳만 조
+    머리로 센다(뒤에 숫자·「의숫자」가 오면 다른 조). 렌더링이 조마다 새 줄에서 시작하므로
+    줄 머리가 곧 조 머리다. 실측: 원문 XML 에 제목 없이 「제24조」만 있는 조(자본시장법
+    시행령), 대괄호 제목 「제28조[…]」(전자등록법)도 있다 — 둘 다 조 머리다.
     머리 꼴은 없지만 글자는 있는 표지는 따로 돌려준다 — 조용히 통과시키지 않는다.
     """
     lines = pdf_text.split("\n")
@@ -250,11 +253,12 @@ def label_check(labels, pdf_text):
         if ln.strip() == "부칙" and i > 0:
             cut = i
             break
-    flat = re.sub(r"\s+", "", "\n".join(lines[:cut]))
+    heads = [re.sub(r"\s+", "", ln) for ln in lines[:cut]]
     flat_all = re.sub(r"\s+", "", pdf_text)
     miss, weak = [], []
     for l in labels:
-        if re.search(re.escape(l) + r"(?![0-9]|의[0-9])(?=[（(<〈]|삭제)", flat):
+        pat = re.compile(re.escape(l) + r"(?![0-9]|의[0-9])(?:$|[（(\[<〈]|삭제)")
+        if any(h.startswith(l) and pat.match(h) for h in heads):
             continue
         (weak if l in flat_all else miss).append(l)
     return miss, weak

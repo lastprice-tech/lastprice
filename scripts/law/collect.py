@@ -388,9 +388,7 @@ def collect_law(client, grp, seq, req, info, pilot=False, dry=False):
         if not versions:
             note = ""
             if tier == "시행규칙":
-                note = ("체계도에도 시행규칙 노드 없음(교차 확인)" if not stmd_rules else
-                        "체계도에는 시행규칙급 노드가 있다: " +
-                        ", ".join("%s(%s)" % (n["이름"], n["종류"]) for n in stmd_rules))
+                note = rule_absence_note(req, stmd_rules)
             lrows.append(dict(그룹=grp, 순번=seq, 요청명=req, 정식명=req + T.TIER_SUFFIX[tier],
                               계층=tier, 상태="없음", 비고=note))
             continue
@@ -471,6 +469,21 @@ def claim_stem(stem_path, key):
     prev = _STEMS.setdefault(stem_path, key)
     if prev != key:
         raise RuntimeError("파일명 충돌: %s — %s 와 %s" % (rel(stem_path), prev, key))
+
+
+def rule_absence_note(law, stmd_rules):
+    """시행규칙 「없음」의 체계도 교차 확인. 이름으로 본다 — 체계도의 총리령·대법원규칙 가운데
+    「○○ 직제 시행규칙」처럼 **다른 규칙**을 이 법의 시행규칙으로 오인하지 않는다."""
+    want = re.sub(r"\s+", "", law + " 시행규칙")
+    same = [n for n in stmd_rules if re.sub(r"\s+", "", n["이름"]) == want]
+    if same:
+        return ("체계도에는 「%s 시행규칙」이 있다(목록 검색과 불일치 — 확인 필요): %s"
+                % (law, ", ".join("%s(%s)" % (n["이름"], n["종류"]) for n in same)))
+    note = "체계도에도 「%s 시행규칙」 없음(교차 확인)" % law
+    if stmd_rules:
+        note += " · 체계도의 다른 시행규칙급 노드(이 법의 시행규칙 아님): " + ", ".join(
+            "%s(%s)" % (n["이름"], n["종류"]) for n in stmd_rules)
+    return note
 
 
 def body_row(meta, pdfp, labels, n_annex, **extra):

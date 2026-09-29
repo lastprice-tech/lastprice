@@ -109,10 +109,10 @@ def main():
     # 2 ─ 시행규칙 「없음」 ↔ 체계도
     say("\n[2] 시행규칙 「없음」 ↔ 체계도")
     none_rows = [r for r in lrows if r["상태"] == "없음"]
-    conflict = [r for r in none_rows if "시행규칙급 노드가 있다" in (r["비고"] or "")]
+    conflict = [r for r in none_rows if "목록 검색과 불일치" in (r["비고"] or "")]
     for r in none_rows:
         say("  없음: %s — %s" % (r["정식명"], r["비고"]))
-    check("「없음」인데 체계도에 시행규칙급 노드가 있는 법 0", not conflict,
+    check("「없음」인데 체계도에 같은 이름의 시행규칙이 있는 법 0", not conflict,
           "; ".join(r["정식명"] + " " + r["비고"] for r in conflict))
 
     # 3 ─ %PDF·쪽수, manifest sha256 ↔ 디스크, 고아 파일
