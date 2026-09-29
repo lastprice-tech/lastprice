@@ -1656,3 +1656,7 @@ Found"
 2026-09-29T10:35:27+0000,api,http://www.law.go.kr/DRF/lawSearch.do?OC=***&target=eflaw&type=XML&query=%EC%A4%91%EB%8C%80%EC%9E%AC%ED%95%B4+%EC%B2%98%EB%B2%8C+%EB%93%B1%EC%97%90+%EA%B4%80%ED%95%9C+%EB%B2%95%EB%A5%A0&nw=3,200,2276,1,http://www.law.go.kr,
 2026-09-29T10:35:31+0000,api,http://www.law.go.kr/DRF/lawService.do?OC=***&target=lsStmd&MST=283843&type=XML,200,18198,1,http://www.law.go.kr,
 2026-09-29T10:35:34+0000,api,http://www.law.go.kr/DRF/lawService.do?OC=***&target=eflaw&MST=283843&efYd=20260911&type=XML,200,403569,1,http://www.law.go.kr,
+2026-09-29T10:35:41+0000,api,http://www.law.go.kr/DRF/lawService.do?OC=***&target=eflaw&MST=285199&efYd=20270401&type=XML,200,475087,1,http://www.law.go.kr,
+2026-09-29T10:35:48+0000,api,http://www.law.go.kr/DRF/lawService.do?OC=***&target=eflaw&MST=290001&efYd=20261002&type=XML,200,434897,1,http://www.law.go.kr,
+2026-09-29T10:35:55+0000,api,http://www.law.go.kr/DRF/lawService.do?OC=***&target=eflaw&MST=285199&efYd=20261001&type=XML,200,472186,1,http://www.law.go.kr,
+2026-09-29T10:36:03+0000,api,http://www.law.go.kr/DRF/lawService.do?OC=***&target=eflaw&MST=288033&efYd=20260707&type=XML,200,474420,1,http://www.law.go.kr,
