@@ -56,8 +56,31 @@ def title_slug(t, n=40):
     import html as _h
     t = _h.unescape(_h.unescape(t or ""))
     t = re.sub(r"[（(][^()（）]*관련[^()（）]*[)）]", "", t)
+    t = re.sub(r"\[[^\]]*관련[^\]]*\]", "", t)
     t = re.sub(r"<[^>]*>|〈[^〉]*〉|&[a-z]+;", "", t)
-    return slug(t)[:n] or "제목없음"
+    t = slug(t)[:n]
+    if t.count("(") > t.count(")"):               # 자르다 연 괄호가 남으면 그 앞까지
+        t = t[:t.rfind("(")]
+    return t.rstrip(",.·ㆍ_-") or "제목없음"
+
+
+NAME_MAX = 240          # ext4 한 이름 255바이트. .tmp.pdf 등 붙는 것을 빼고 넉넉히 둔다.
+
+
+def fit_dest(prefix_path, title, tail="_XML렌더링.pdf"):
+    """별표 저장 경로(확장자 없음). 파일 이름이 NAME_MAX 바이트를 넘으면 제목을 줄인다.
+
+    실측: 「공중등협박…법률」 줄기는 118바이트 — 시행예정·일련번호·별표번호·제목 40자까지
+    붙으면 305바이트가 되어 저장이 실패한다(OSError 36). 제목만 줄이고 번호는 지킨다.
+    """
+    d, base = os.path.split(prefix_path)
+    t = title
+    while t and len((base + "_" + t + tail).encode("utf-8")) > NAME_MAX:
+        t = t[:-1]
+    t = t.rstrip(",.·ㆍ_-(")
+    if not t:
+        return os.path.join(d, base)
+    return os.path.join(d, base + "_" + t)
 
 
 def sha256(b):
@@ -90,12 +113,15 @@ def rel(p):
 
 
 def write_csv(path, rows, cols):
+    """임시 파일에 쓰고 바꿔 넣는다 — 쓰다 멈춰도 기존 manifest 가 반쯤 잘리지 않는다."""
     os.makedirs(os.path.dirname(path), exist_ok=True)
-    with open(path, "w", encoding="utf-8-sig", newline="") as f:
+    tmp = path + ".tmp"
+    with open(tmp, "w", encoding="utf-8-sig", newline="") as f:
         w = csv.DictWriter(f, fieldnames=cols, extrasaction="ignore")
         w.writeheader()
         for r in rows:
             w.writerow(r)
+    os.replace(tmp, path)
 
 
 # ── 정식명 확정 ───────────────────────────────────────────────────────────
@@ -242,7 +268,11 @@ def fetch_annex(client, a, dest_noext, meta, dry=False, ctx=None):
         if st == 200 and fmt in ("PDF", "HWP", "HWPX"):
             ext = {"PDF": ".pdf", "HWP": ".hwp", "HWPX": ".hwpx"}[fmt]
             path = dest_noext + ext
-            h = write(path, body)
+            try:
+                h = write(path, body)
+            except OSError as e:
+                return dict(row, 상태="실패", 출처URL=murl,
+                            비고="저장 실패(%s): %s" % (type(e).__name__, os.path.basename(path)))
             pages = ""
             if fmt == "PDF":
                 ok, n, _ = render.pdf_info(path)
@@ -253,10 +283,13 @@ def fetch_annex(client, a, dest_noext, meta, dry=False, ctx=None):
             state = ("HWP대체(PDF실패)" if pdf_failed else "삭제별표" if deleted else "OK")
             note = ""
             if want == "HWP":
-                note = ("PDF 링크가 있었으나 실패(%s) → HWP 원본" % "; ".join(tried[:-1])
-                        if pdf_failed else "PDF 링크 없음 → HWP 원본")
+                got = "HWP 링크에서 %s 원본" % fmt       # HWP 링크가 PDF 를 줄 때도 있다
+                note = ("PDF 링크가 있었으나 실패(%s) → %s" % ("; ".join(tried[:-1]), got)
+                        if pdf_failed else "PDF 링크 없음 → %s" % got)
                 if deleted and pdf_failed:
                     note += " · 삭제별표"
+            elif fmt != "PDF":
+                note = "PDF 링크에서 %s 를 받음(원본 그대로 저장)" % fmt
             return dict(row, 파일경로=rel(path), 원본형식=fmt, 페이지수=pages, sha256=h,
                         출처URL=murl, 상태=state, 비고=note)
     return dict(row, 상태="실패", 비고="; ".join(tried) or "링크 없음")
@@ -271,7 +304,8 @@ def render_annex(a, dest_noext, row, ctx, deleted=False):
     상태는 rerender 가 찾을 수 있게 RENDERED_ANNEX 로 두고, 삭제 별표면 비고에 적는다."""
     unit = a.get("unit")
     if unit is None or ctx is None or not (unit.findtext("별표내용") or "").strip():
-        return dict(row, 상태="실패", 비고="원본 PDF·HWP 링크 없음, 원문 XML 별표내용도 비어 있음")
+        return dict(row, 상태="실패", 비고="원본 PDF·HWP 링크 없음, 원문 XML 별표내용도 비어 있음"
+                    + (" · 삭제별표" if deleted else ""))
     name, ef, serial, pending, is_rule = ctx
     path = dest_noext + "_XML렌더링.pdf"
     render.html_to_pdf(render.annex_text_html(unit, name, ef, serial, pending,
@@ -337,6 +371,13 @@ def collect_law(client, grp, seq, req, info, pilot=False, dry=False):
             versions.append((t["현행"], False))
         for p in t["시행예정"]:
             versions.append((p, True))
+        seen_v, uniq = set(), []                   # 같은 (MST, 시행일, 시행예정)이 두 번 오면 하나만
+        for row, pending in versions:
+            k = (row["법령일련번호"], row["시행일자"], pending)
+            if k not in seen_v:
+                seen_v.add(k)
+                uniq.append((row, pending))
+        versions = uniq
         # 같은 시행일에 시행예정판이 여럿일 수 있다(실측: 조세특례제한법 법률 20270101 5건,
         # 법인세법 시행령 20270101 3건 — 공포가 다른 개정이 같은 날 시행). 파일명이 「법령_
         # 계층_시행일_시행예정」뿐이면 서로 덮어쓰므로, 겹치는 판에만 법령일련번호를 붙인다.
@@ -395,9 +436,9 @@ def collect_law(client, grp, seq, req, info, pilot=False, dry=False):
             arows, used = [], set()
             for a in annexes:
                 sub = annex_sub(a)
-                label = a["구분"] or sub          # 별표·서식·별지 — 원문 구분 이름 그대로
-                dest = os.path.join(tdir, sub, "%s_%s%s_%s" % (stem, label, a["번호"],
-                                                               title_slug(a["제목"])))
+                label = slug(a["구분"]) or sub    # 별표·서식·별지 — 원문 구분 이름 그대로
+                dest = fit_dest(os.path.join(tdir, sub, "%s_%s%s" % (stem, label, a["번호"])),
+                                title_slug(a["제목"]))
                 dup = ""
                 if dest in used:       # 같은 판 안에서 (구분·번호·제목)이 겹치면 덮지 않는다
                     k = 2
@@ -435,17 +476,18 @@ def claim_stem(stem_path, key):
 def body_row(meta, pdfp, labels, n_annex, **extra):
     """본문 PDF 의 manifest 행 — 조문표지 누락 검사와 별표 목록 건수를 적는다."""
     ok, npg, txt = render.pdf_info(pdfp)
-    flat = txt.replace(" ", "")
-    miss = [l for l in labels if l not in flat]
+    miss, weak = render.label_check(labels, txt)
     note = "렌더링(원문XML→PDF) · 조문표지 %d개 중 누락 %d%s" % (
         len(labels), len(miss), (" " + ",".join(miss[:5])) if miss else "")
+    if weak:
+        note += " · 조 머리 꼴 없이 글자만 있는 표지 %d(%s)" % (len(weak), ",".join(weak[:5]))
     if n_annex:
         note += " · 별표·서식 %d건은 목록만(내용은 따로 저장)" % n_annex
     if not labels:
         # 조문 표지를 하나도 못 찾으면 누락 검사가 빈 검사다 — OK 로 적지 않는다.
         state, note = "검증불가", note + " · 원문 XML 에서 조문 표지를 찾지 못해 누락 검사를 못 함"
     else:
-        state = "OK" if not miss else "조문누락"
+        state = "조문누락" if miss else "확인필요" if weak else "OK"
     return dict(meta, 유형="본문", 파일경로=rel(pdfp), 원본형식="PDF", 페이지수=npg,
                 sha256=sha256(open(pdfp, "rb").read()), 상태=state, 비고=note, **extra)
 
@@ -460,7 +502,7 @@ def try_viewer(client, ms, ef, out_pdf, labels, meta):
     try:
         subprocess.run(cmd, capture_output=True, timeout=180)
     except Exception as e:                      # noqa: BLE001
-        client._log("viewer", url, 0, 0, 1, "chromium", str(e))
+        client._log("viewer", url, 0, 0, 1, "chromium", "%s: %s" % (type(e).__name__, str(e)[-120:]))
         return dict(meta, 유형="보조뷰어", 상태="실패", 비고=client.mask(str(e))[:200])
     # Chromium 이 직접 부르므로 LawClient 원장을 거치지 않는다 — 원장에 따로 한 줄 남긴다.
     client._log("viewer", url, "", os.path.getsize(out_pdf) if os.path.exists(out_pdf) else 0,
@@ -488,7 +530,7 @@ def _swap_render(html_text, path):
     """임시 파일에 찍고 확인한 뒤 제자리로 바꾼다 — 찍다 실패해도 기존 PDF 는 그대로다."""
     tmp = path + ".tmp.pdf"
     try:
-        render.html_to_pdf(html_text, tmp)
+        render.html_to_pdf(html_text, tmp)       # html_to_pdf 가 남은 tmp 를 먼저 지운다
         ok, npg, _ = render.pdf_info(tmp)
         if not ok or npg < 1:
             raise RuntimeError("렌더링 결과가 PDF 가 아니거나 0쪽: %s" % rel(path))
@@ -562,7 +604,17 @@ def rerender():
             if not os.path.exists(xp):
                 problems.append("체계도 XML 없음: %s" % rel(xp))
                 continue
-            plan.append(("체계도", r, open(xp, "rb").read(), None, None))
+            xb = open(xp, "rb").read()
+            src = [s_ for s_ in rows if s_["유형"] == "체계도원문XML" and s_["파일경로"] == rel(xp)]
+            if src and src[0]["sha256"] and sha256(xb) != src[0]["sha256"]:
+                problems.append("체계도 XML sha256 불일치: %s" % rel(xp))
+                continue
+            try:
+                parse_stmd(xb)
+            except Exception as e:                  # noqa: BLE001
+                problems.append("체계도 XML 해석 실패 %s: %s" % (rel(xp), e))
+                continue
+            plan.append(("체계도", r, xb, None, None))
     if problems:
         print("■ 다시 찍기 전 검사에서 %d건 어긋남 — 아무것도 찍지 않았습니다" % len(problems))
         for p_ in problems[:20]:

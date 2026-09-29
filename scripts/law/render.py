@@ -89,7 +89,7 @@ _JO = re.compile(r"^(\s*제\s*\d+(?:\s*-\s*\d+)*\s*조(?:\s*의\s*\d+)?(?:\s*[�
 # 행정규칙 조문 머리 — 「제5조(…)」「제1-1조(…)」「제2조의2(…)」「제2조 삭제」. 괄호·「<」·
 # 「삭제」가 바로 뒤따를 때만 머리로 본다(문장 첫머리의 「제3조에 따라」를 머리로 잡지 않게).
 _RULE_HEAD = re.compile(r"^\s*(제\s*\d+(?:\s*-\s*\d+)*\s*조(?:\s*의\s*\d+)?)(?=\s*[（(<〈]|\s*삭\s*제)")
-_RULE_CHAP = re.compile(r"^\s*제\s*\d+(?:\s*-\s*\d+)*\s*[편장절관]\s")
+_RULE_CHAP = re.compile(r"^\s*제\s*\d+(?:\s*-\s*\d+)*\s*[편장절관](?:\s*의\s*\d+)?\s")
 
 
 def _jo_html(txt):
@@ -215,8 +215,8 @@ def annex_text_html(unit, law_name, efyd, serial, pending=False, extra=""):
     folded = len(lines) > 2 and all(not x.strip() for x in lines[1::2])
     if folded:
         text = "\n".join(lines[0::2])
-    note = "%s · %s · 별표시행일 %s" % (law_name, _title(unit),
-                                        _fmt_date(_t(unit, "별표시행일자")) or "(XML에 없음)")
+    note = "%s · [%s %s] · %s · 별표시행일 %s" % (law_name, kind, annex_no(unit, rule), _title(unit),
+                                             _fmt_date(_t(unit, "별표시행일자")) or "(XML에 없음)")
     if folded:
         note += " · XML 줄 구분용 빈 줄 %d개를 접음(글자는 원문 그대로)" % len(lines[1::2])
     return "\n".join([
@@ -234,6 +234,30 @@ def _title(unit):
     주므로 그것을 쓰고, 그 필드가 없는 XML(행정규칙)에서만 한 번 푼다. **PDF 에 찍을 때만**
     이렇게 하고, 원문 XML·manifest 의 제목은 받은 그대로 둔다."""
     return _t(unit, "별표제목문자열") or html.unescape(_t(unit, "별표제목"))
+
+
+def label_check(labels, pdf_text):
+    """조문 표지가 PDF 에 **조 머리 꼴로** 있는가. → (누락, 본문 속 언급만 있는 것).
+
+    「제1조」를 그냥 부분 문자열로 찾으면 「제1조의2」·「제2조제1항」·부칙의 「제1조(시행일)」
+    안에서도 걸려 누락을 못 잡는다. 그래서 (1) 첫 「부칙」 제목 줄 앞까지만 보고, (2) 표지
+    바로 뒤가 「(」·「<」·「〈」·「삭제」인 곳만 머리로 센다(뒤에 숫자·「의숫자」가 오면 다른 조).
+    머리 꼴은 없지만 글자는 있는 표지는 따로 돌려준다 — 조용히 통과시키지 않는다.
+    """
+    lines = pdf_text.split("\n")
+    cut = len(lines)
+    for i, ln in enumerate(lines):
+        if ln.strip() == "부칙" and i > 0:
+            cut = i
+            break
+    flat = re.sub(r"\s+", "", "\n".join(lines[:cut]))
+    flat_all = re.sub(r"\s+", "", pdf_text)
+    miss, weak = [], []
+    for l in labels:
+        if re.search(re.escape(l) + r"(?![0-9]|의[0-9])(?=[（(<〈]|삭제)", flat):
+            continue
+        (weak if l in flat_all else miss).append(l)
+    return miss, weak
 
 
 def _raw(e, tag):
@@ -362,14 +386,24 @@ def admrul_html(xml_bytes, efyd, serial, pending=False, annex_files=None):
                 out.append('<div class="t">%s</div>' % (_esc(line) or "&#8203;"))
         if in_art:
             out.append("</div>")
+    # 행정규칙 XML 은 <부칙> 하나에 (부칙공포일자, 부칙공포번호, 부칙내용) 셋이 차례로
+    # 되풀이된다(실측: 금융지주회사감독규정 부칙 40여 개). 셋씩 짝지어 부칙마다 머리를 단다.
     bus = root.findall("부칙")
     if bus:
         out.append("<h2>부칙</h2>")
         for b in bus:
-            hd = "부칙 〈%s, %s〉" % (_t(b, "부칙공포번호"), _fmt_date(_t(b, "부칙공포일자")))
-            body = "\n".join((x.text or "").strip() for x in b.findall("부칙내용") if x.text)
-            out.append('<div class="bu"><div class="hd">%s</div><div class="t">%s</div></div>'
-                       % (_esc(hd), _esc(body)))
+            day = no = ""
+            for c in b:
+                t = (c.text or "").strip()
+                if c.tag == "부칙공포일자":
+                    day = t
+                elif c.tag == "부칙공포번호":
+                    no = t
+                elif c.tag == "부칙내용":
+                    hd = "부칙 〈%s, %s〉" % (no, _fmt_date(day))
+                    out.append('<div class="bu"><div class="hd">%s</div><div class="t">%s</div></div>'
+                               % (_esc(hd), _esc(t)))
+                    day = no = ""
     out.extend(annex_index_html(root, annex_files))
     out.append("</body></html>")
     return "\n".join(out), name, labels
@@ -394,6 +428,9 @@ def hierarchy_html(tree_lines, title, efyd, serial):
 def html_to_pdf(html_text, pdf_path, timeout=180):
     """오프라인 file:// 인쇄. 외부 자원을 참조하지 않으므로 네트워크가 필요 없다."""
     os.makedirs(os.path.dirname(pdf_path), exist_ok=True)
+    # 예전 파일이 남아 있으면 Chromium 이 아무것도 안 써도 「있음」으로 통과한다 — 먼저 지운다.
+    if os.path.exists(pdf_path):
+        os.remove(pdf_path)
     with tempfile.NamedTemporaryFile("w", suffix=".html", delete=False,
                                      encoding="utf-8") as f:
         f.write(html_text)

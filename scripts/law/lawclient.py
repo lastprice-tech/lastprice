@@ -89,7 +89,7 @@ class LawClient(object):
     # ── 호출 ──────────────────────────────────────────────────────────────
     def _fetch(self, path_qs, kind):
         """(HTTP상태, 바이트, Content-Type, 가린URL, 사용호스트). 실패하면 상태 0."""
-        last_err, attempts = "", 0
+        last_err, attempts, errs = "", 0, []
         for host in HOSTS:
             url = host + path_qs
             for i in range(RETRIES):
@@ -103,14 +103,16 @@ class LawClient(object):
                     ct = r.headers.get("Content-Type", "")
                     # 재시도 끝에 받았으면 직전 실패 사유도 남긴다(성공 행의 오류 칸).
                     self._log(kind, url, r.status, len(body), attempts, host,
-                              ("재시도 전 오류: " + last_err) if last_err else "")
+                              ("재시도 전 오류: " + " ; ".join(errs))[-300:] if errs else "")
                     return r.status, body, ct, self.mask(url), host
                 except urllib.error.HTTPError as e:
                     last_err = "HTTP %s %s" % (e.code, e.reason)
+                    errs.append(last_err)
                     if e.code in (400, 401, 403, 404):
                         break                       # 재시도해도 같다
                 except Exception as e:              # noqa: BLE001 — 사유를 남기고 재시도
                     last_err = "%s: %s" % (type(e).__name__, e)
+                    errs.append(last_err)
                 time.sleep(2 ** (i + 1))
         self._log(kind, HOSTS[0] + path_qs, 0, 0, attempts, "", last_err)
         return 0, b"", "", self.mask(HOSTS[0] + path_qs), ""
