@@ -169,7 +169,8 @@ def main():
             on_disk.add(os.path.relpath(p, REPO))
     listed = {r["파일경로"] for r in rows if r["파일경로"]}
     orphan = sorted(on_disk - listed - {p for p in on_disk if p.endswith(("체계도.json", "체계도.md"))})
-    orphan = [p for p in orphan if not p.endswith("_run.log")]
+    # 실행 로그(_run.log · _fix7.log 등 `_` 로 시작하는 .log)는 수집물이 아니다
+    orphan = [p for p in orphan if not (os.path.basename(p).startswith("_") and p.endswith(".log"))]
     check("manifest 의 파일이 모두 디스크에 있다", not gone, "; ".join(gone[:5]))
     check("manifest sha256 = 디스크", not shabad, "; ".join(shabad[:5]))
     check("%PDF 아닌 .pdf 0", not notpdf, "; ".join(notpdf[:5]))

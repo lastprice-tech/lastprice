@@ -15,6 +15,13 @@
     python3 scripts/dart/risk8.py fetch-dart      # 사업보고서 FY2025·증권신고서 원문(document.xml)
     python3 scripts/dart/risk8.py fetch-viewer    # 같은 문서의 DART 뷰어 본문 PDF(쪽 번호용)
     python3 scripts/dart/risk8.py fetch-disclosure  # 경영공시 2026.6월말(DISCLOSURE 목록)
+    python3 scripts/dart/risk8.py extract         # 받은 PDF → dart_out/text/risk8/*.txt (=== p.N ===)
+    python3 scripts/dart/risk8.py candidates      # 인용 범위 안 문장을 항목 어휘로 태깅 → 후보문장·검색기록
+    python3 scripts/dart/risk8.py emit            # data/risk8_선별.json → handoff/원문_지주리스크체계(_근거).csv
+    python3 scripts/dart/verify8.py               # 검증
+
+선별(risk8_선별.json)은 후보와 원문 쪽을 읽고 사람이(이 작업에서는 Claude 가) 고른 인용이다.
+인용은 텍스트 파일의 해당 쪽 글자 그대로이고(줄바꿈만 공백), verify8 이 쪽마다 대조한다.
 """
 from __future__ import annotations
 
@@ -323,8 +330,383 @@ def fetch_disclosure():
     return out
 
 
+# ── 4. 텍스트화(쪽 번호 보존) ─────────────────────────────────────────────
+TEXT = os.path.join(OUT, "text", "risk8")
+
+
+def _sources():
+    """(doc_id, corp_label, doc_kind, 설명, PDF 경로, 비고) — 받은 원본 PDF 전부."""
+    src = []
+    p = os.path.join(WORK, "연차보고서_FY2025.csv")
+    if os.path.exists(p):
+        for r in csv.DictReader(open(p, encoding="utf-8-sig")):
+            if r.get("성공") != "Y":
+                continue
+            fn = r["저장파일명"]
+            src.append(("연차보고서__" + os.path.splitext(fn)[0], r["지주명"], "연차보고서",
+                        "%s (공시일 %s)" % (r["제목"], r["공시일"]),
+                        os.path.join(OUT, "raw", "governance", r["지주명"], fn), r.get("url", "")))
+    p = os.path.join(WORK, "DART_문서목록.csv")
+    if os.path.exists(p):
+        for r in csv.DictReader(open(p, encoding="utf-8-sig")):
+            if not r["rcept_no"]:
+                continue
+            pdf = os.path.join(OUT, "doc", r["rcept_no"], "본문.pdf")
+            src.append(("%s__%s__%s" % (r["doc_kind"], r["corp_label"], r["rcept_no"]),
+                        r["corp_label"], r["doc_kind"],
+                        "%s %s (접수 %s)" % (r.get("사건") or "", r["report_nm"], r["rcept_dt"] or r["rcept_no"]),
+                        pdf, "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=" + r["rcept_no"]))
+    p = os.path.join(WORK, "경영공시_2026_2Q.csv")
+    if os.path.exists(p):
+        for r in csv.DictReader(open(p, encoding="utf-8-sig")):
+            if r.get("성공") != "Y":
+                continue
+            src.append(("경영공시__" + r["corp_label"], r["corp_label"], "경영공시", r["제목"],
+                        r["저장파일"], r["실제url"] or r["url"]))
+    return src
+
+
+def extract():
+    """PDF 를 쪽마다 `=== p.N ===` 표지와 함께 텍스트로. 원본 sha256 이 같으면 다시 하지 않는다.
+    스캔본(글자 없음)은 표시만 하고 OCR 하지 않는다."""
+    import hashlib
+    import pypdf
+    os.makedirs(TEXT, exist_ok=True)
+    idx_p = os.path.join(WORK, "텍스트목록.csv")
+    prev = {}
+    if os.path.exists(idx_p):
+        prev = {r["doc_id"]: r for r in csv.DictReader(open(idx_p, encoding="utf-8-sig"))}
+    out = []
+    for doc_id, lab, kind, desc, pdf, url in _sources():
+        rec = dict(doc_id=doc_id, corp_label=lab, doc_kind=kind, 설명=desc, 원본=pdf, 출처=url,
+                   원본sha256="", 쪽수="", 글자수="", 빈쪽수="", 스캔추정="", 텍스트="",
+                   텍스트sha256="", 상태="")
+        if not os.path.exists(pdf):
+            rec["상태"] = "원본 PDF 없음"
+            out.append(rec)
+            continue
+        h = hashlib.sha256(open(pdf, "rb").read()).hexdigest()
+        tp = os.path.join(TEXT, doc_id + ".txt")
+        old = prev.get(doc_id)
+        if old and old.get("원본sha256") == h and os.path.exists(tp) and old.get("상태") == "추출":
+            out.append(old)
+            continue
+        rec["원본sha256"] = h
+        try:
+            reader = pypdf.PdfReader(pdf)
+            parts, empty, total = [], 0, 0
+            for i, pg in enumerate(reader.pages, 1):
+                try:
+                    t = pg.extract_text() or ""
+                except Exception as e:                # noqa: BLE001
+                    t = ""
+                    parts.append("=== p.%d === [추출 실패 %s]" % (i, type(e).__name__))
+                    empty += 1
+                    continue
+                if not t.strip():
+                    empty += 1
+                total += len(t)
+                parts.append("=== p.%d ===\n%s" % (i, t))
+            body = "\n".join(parts) + "\n"
+            with open(tp + ".part", "w", encoding="utf-8") as f:
+                f.write(body)
+            os.replace(tp + ".part", tp)
+            n = len(reader.pages)
+            rec.update(쪽수=str(n), 글자수=str(total), 빈쪽수=str(empty),
+                       스캔추정="Y" if total / max(1, n) < 60 else "N", 텍스트=tp,
+                       텍스트sha256=hashlib.sha256(body.encode("utf-8")).hexdigest(), 상태="추출")
+        except Exception as e:                        # noqa: BLE001
+            rec["상태"] = "PDF 열기 실패: %s: %s" % (type(e).__name__, e)
+        print("  %-60s %s쪽 %s자 %s" % (doc_id[:60], rec["쪽수"], rec["글자수"], rec["상태"]))
+        out.append(rec)
+    _w(idx_p, out, list(out[0].keys()))
+    print("텍스트 — 문서 %d · 추출 %d · 스캔추정 %d · 원본없음 %d"
+          % (len(out), sum(r["상태"] == "추출" for r in out), sum(r["스캔추정"] == "Y" for r in out),
+             sum(r["상태"] == "원본 PDF 없음" for r in out)))
+    return out
+
+
+# ── 5. 후보 문장 ──────────────────────────────────────────────────────────
+# 항목별 어휘(정규식). 태깅은 후보를 좁히는 용도일 뿐, 인용 여부는 사람이(내가) 읽고 정한다.
+FIELDS = [
+    ("risk_committee", r"위험관리\s*위원회|리스크\s*관리\s*위원회|리스크위원회|Risk\s*Management\s*Committee"),
+    ("group_council", r"(리스크|위험)\s*(관리)?\s*(실무)?\s*(협의회|협의체|심의회)|리스크정책위원회|실무\s*위원회|실무\s*협의회"),
+    ("cro", r"CRO|위험관리\s*책임자|리스크\s*관리\s*책임자|최고\s*리스크|Chief\s*Risk"),
+    ("raf", r"위험\s*선호|리스크\s*선호|Risk\s*Appetite|RAF|위험\s*성향|리스크\s*성향|(위험|리스크)\s*한도|허용\s*한도|한도\s*(관리|설정|배분)|(위험)?자본\s*배분|위험\s*자본\s*(한도|배분)"),
+    ("measurement", r"요구\s*자본|내부\s*자본|가용\s*자본|통합\s*(위험|리스크)|VaR|자본\s*적정성|ICAAP|위험\s*자본|경제적\s*자본|Risk\s*Capital|위험\s*측정|리스크\s*측정"),
+    ("reporting", r"(리스크|위험)[^.。]{0,40}보고|보고[^.。]{0,20}(리스크|위험)|MIS|모니터링|리스크\s*관리\s*시스템"),
+    ("stress", r"위기\s*상황\s*분석|스트레스\s*테스트|Stress|위기\s*상황\s*시나리오|비상\s*(조달|자금|계획)|컨틴전시|Contingency|위기\s*관리"),
+    ("oprisk", r"운영\s*(리스크|위험)|손실\s*사건|손실\s*데이터|BCP|업무\s*연속성|위탁|IT\s*리스크|정보\s*보호|사이버"),
+    ("compensation", r"성과\s*보수|이연\s*지급|환수|Clawback|클로백|(리스크|위험)\s*(를|을)?\s*(고려|반영|조정)[^.。]{0,20}(성과|보수|평가)|(성과|보수)[^.。]{0,30}(리스크|위험)\s*(조정|반영|고려)|보수\s*체계|보수\s*정책|리스크\s*조정"),
+    ("org", r"리스크\s*관리\s*(부|팀|본부|부문|실|총괄|그룹|센터|조직)|위험\s*관리\s*(부|팀|본부|부문|실|조직|전담)|리스크\s*총괄|리스크\s*검증|전담\s*조직|리스크\s*관리\s*인력"),
+    # 증권신고서(지주 전환)용 보조 태그 — CSV 의 열이 아니라 근거 파일·source_text 에만 쓴다.
+    ("internal_control", r"내부\s*통제|준법\s*감시|내부\s*감사"),
+    ("holding_plan", r"지주\s*회사[^.。]{0,40}(운영|체제|계획|역할|기능|전략)|(경영|운영)\s*계획|자회사\s*(관리|편입)|그룹\s*(통합|시너지)"),
+]
+MAIN_FIELDS = [f for f, _ in FIELDS[:10]]
+
+# 사업보고서의 「실제 위험관리 절」(사용자 결정 2026-09-30). (시작 표제, 끝 표제) — 공백을 뺀
+# 글자로 찾는다. 메리츠·한국투자는 Ⅱ. 사업의 내용, 나머지는 Ⅳ. 이사의 경영진단 및 분석의견.
+BIZ_SCOPE = {
+    "KB금융지주": ("Ⅳ-6", "라.파생상품및위험관리정책에관한사항", r"(V|Ⅴ)\.회계감사인의감사의견등"),
+    "신한금융지주": ("Ⅳ-6", "마.위험관리정책에관한사항", r"(V|Ⅴ)\.회계감사인의감사의견등"),
+    "하나금융지주": ("Ⅳ-6", "라.파생상품및위험관리정책에관한사항", r"(V|Ⅴ)\.회계감사인의감사의견등"),
+    "우리금융지주": ("Ⅳ-6", "라.파생상품및위험관리정책에관한사항", r"7\.우리은행주요연결종속회사에대한이사의경영진단및분석"),
+    "메리츠금융지주": ("Ⅱ-5 [메리츠증권]", "나.위험관리에관한사항", r"다\.수수료현황"),
+    "iM금융지주": ("Ⅳ-6", "다.파생상품및위험관리정책에관한사항", r"(V|Ⅴ)\.회계감사인의감사의견등"),
+    "NH농협금융지주": ("Ⅳ-6", "라.파생상품및위험관리정책에관한사항", r"(V|Ⅴ)\.회계감사인의감사의견등"),
+    "한국투자금융지주": ("Ⅱ-5 [한국투자증권]", "라.위험관리에관한사항", r"2\)한국투자저축은행"),
+}
+
+
+def re_split_pages(s):
+    import re
+    out, cur = [], None
+    for m in re.finditer(r"^=== p\.(\d+) ===[^\n]*\n?", s, flags=re.M):
+        if cur is not None:
+            out.append((cur[0], s[cur[1]:m.start()]))
+        cur = (int(m.group(1)), m.end())
+    if cur is not None:
+        out.append((cur[0], s[cur[1]:]))
+    return out
+
+
+def _nows(s):
+    import re
+    return re.sub(r"\s+", "", s)
+
+
+def _scope(doc, pages):
+    """(절 이름, [(쪽, 절 안의 글)]). 사업보고서는 BIZ_SCOPE, 나머지는 문서 전체."""
+    import re
+    if doc["doc_kind"] != "사업보고서":
+        return "문서 전체", pages
+    loc, start, end = BIZ_SCOPE[doc["corp_label"]]
+    # 목차 쪽을 피하려고, 시작 표제가 있는 첫 쪽 가운데 줄표(.....)가 없는 쪽을 쓴다.
+    si = None
+    for i, (n, t) in enumerate(pages):
+        if start in _nows(t) and "....." not in t:
+            si = i
+            break
+    if si is None:
+        return "절 못 찾음(%s %s)" % (loc, start), []
+    out = []
+    for n, t in pages[si:]:
+        ns = _nows(t)
+        if not out:
+            # 시작 표제 앞 글은 버린다(공백을 무시하고 위치를 찾는다)
+            k = _find_nows(t, start)
+            t = t[k:]
+            ns = _nows(t)
+        m = re.search(end, ns)
+        if m and (out or m.start() > len(start)):
+            k = _find_nows(t, None, m.start())
+            out.append((n, t[:k]))
+            break
+        out.append((n, t))
+    return "%s %s" % (loc, start), out
+
+
+def _find_nows(t, needle, pos_nows=None):
+    """공백을 뺀 글에서의 위치를 원문 위치로 바꾼다."""
+    import re
+    if needle is not None:
+        pos_nows = _nows(t).find(needle)
+        if pos_nows < 0:
+            return 0
+    cnt = 0
+    for i, ch in enumerate(t):
+        if not ch.isspace():
+            if cnt == pos_nows:
+                return i
+            cnt += 1
+    return len(t)
+
+
+def _sentences(text):
+    """쪽 안의 글을 문장·항목 단위로 자른다. 줄바꿈은 공백으로 잇고 글자는 바꾸지 않는다."""
+    import re
+    lines = [l.rstrip() for l in text.split("\n")]
+    out, buf = [], []
+    bullet = re.compile(r"^\s*([-•ㅇ○◦■□▶▷※·∙]|\(?\d{1,2}\)|[①-⑳]|[가-하]\.|[가-하]\)|\([가-하]\)|\d{1,2}\.\s)")
+    for l in lines:
+        if not l.strip():
+            if buf:
+                out.append(" ".join(buf)); buf = []
+            continue
+        if bullet.match(l) and buf:
+            out.append(" ".join(buf)); buf = []
+        buf.append(l.strip())
+        if re.search(r"(다|음|함|임|됨|요)\.\s*$", l):
+            out.append(" ".join(buf)); buf = []
+    if buf:
+        out.append(" ".join(buf))
+    res = []
+    for s in out:
+        # 한 줄 안에 문장이 여럿이면 「다. 」에서 더 자른다
+        for p in re.split(r"(?<=다\.)\s+(?=\S)", s):
+            p = re.sub(r"\s+", " ", p).strip()
+            if p:
+                res.append(p)
+    return res
+
+
+def candidates():
+    import re
+    idx = list(csv.DictReader(open(os.path.join(WORK, "텍스트목록.csv"), encoding="utf-8-sig")))
+    comp = [(f, re.compile(rx, re.I)) for f, rx in FIELDS]
+    cand, log = [], []
+    for doc in idx:
+        if doc["상태"] != "추출":
+            continue
+        pages = re_split_pages(open(doc["텍스트"], encoding="utf-8").read())
+        sec, scoped = _scope(doc, pages)
+        pr = "%s~%s" % (scoped[0][0], scoped[-1][0]) if scoped else ""
+        hits = {f: 0 for f, _ in FIELDS}
+        for n, t in scoped:
+            for s in _sentences(t):
+                tags = [f for f, c in comp if c.search(s)]
+                for f in tags:
+                    hits[f] += 1
+                if tags:
+                    cand.append(dict(doc_id=doc["doc_id"], corp_label=doc["corp_label"],
+                                     doc_kind=doc["doc_kind"], section=sec, page=n,
+                                     fields="|".join(tags), sentence=s))
+        for f, rx in FIELDS:
+            log.append(dict(doc_id=doc["doc_id"], corp_label=doc["corp_label"], doc_kind=doc["doc_kind"],
+                            section=sec, pages=pr, field=f, regex=rx, hits=hits[f]))
+        print("  %-58s %-40s p.%-9s 후보 %d" % (doc["doc_id"][:58], sec[:40], pr,
+                                                sum(1 for c in cand if c["doc_id"] == doc["doc_id"])))
+    _w(os.path.join(WORK, "후보문장.csv"), cand, ["doc_id", "corp_label", "doc_kind", "section", "page",
+                                                "fields", "sentence"])
+    _w(os.path.join(WORK, "검색기록.csv"), log, ["doc_id", "corp_label", "doc_kind", "section", "pages",
+                                               "field", "regex", "hits"])
+    print("후보 문장 %d · 검색기록 %d" % (len(cand), len(log)))
+    return cand
+
+
+# ── 6. CSV 작성 ───────────────────────────────────────────────────────────
+SELECTION = os.path.join(HERE, "data", "risk8_선별.json")
+HANDOFF = "handoff"
+NOT_FOUND = "문서에 없음"
+SEP = " ‖ "
+
+# 행(회사×문서) — 인용 기준 문서 doc_id 와, 같은 문서의 추가·재·정정본(대조만, 판정 없음).
+# 메리츠 2022 정정본 묶음은 표지 앞 20,000자(공백 제외)에 나오는 완전자회사 상호로 나눴다
+# (메리츠화재해상보험주식회사 / 메리츠증권주식회사).
+ROW_FY = {"연차보고서": "FY2025", "사업보고서": "FY2025", "경영공시": "2026.2Q(2026.6.30 기준)"}
+CONVERSION_ROWS = {
+    "증권신고서__메리츠금융지주__20101210000020": ("2010(접수 2010-12-10)", []),
+    "증권신고서__우리금융지주__20181108000394": ("2018(접수 2018-11-08)", []),
+    "증권신고서__메리츠금융지주__20221121000209": (
+        "2022(접수 2022-11-21)",
+        ["20221130001841", "20221205000327", "20221220000012", "20230102000239"]),
+    "증권신고서__메리츠금융지주__20230119000440": ("2023(접수 2023-01-19)", ["20230206000364"]),
+}
+
+
+def _amendments(doc_id, idx):
+    """같은 회사·같은 문서의 다른 본(추가공시·재공시·정정). 판정 없이 대조 대상만 고른다."""
+    me = idx[doc_id]
+    if me["doc_kind"] == "증권신고서":
+        rcs = CONVERSION_ROWS.get(doc_id, ("", []))[1]
+        return ["증권신고서__%s__%s" % (me["corp_label"], rc) for rc in rcs]
+    return [d for d, r in idx.items() if d != doc_id and r["corp_label"] == me["corp_label"]
+            and r["doc_kind"] == me["doc_kind"]]
+
+
+def emit():
+    sel = json.load(open(SELECTION, encoding="utf-8"))
+    idx = {r["doc_id"]: r for r in csv.DictReader(open(os.path.join(WORK, "텍스트목록.csv"),
+                                                          encoding="utf-8-sig"))}
+    log = list(csv.DictReader(open(os.path.join(WORK, "검색기록.csv"), encoding="utf-8-sig")))
+    texts = {}
+
+    def nows_text(doc_id):
+        if doc_id not in texts:
+            texts[doc_id] = _nows(open(idx[doc_id]["텍스트"], encoding="utf-8").read()) \
+                if idx.get(doc_id, {}).get("상태") == "추출" else None
+        return texts[doc_id]
+
+    wide, long_ = [], []
+    order = {lab: i for i, lab in enumerate(LABELS)}
+    kinds = {"연차보고서": 0, "사업보고서": 1, "경영공시": 2, "증권신고서": 3}
+    rows = sorted(sel["rows"], key=lambda r: (kinds[r["doc_kind"]], order[r["corp_label"]], r["doc_id"]))
+    for row in rows:
+        d = idx[row["doc_id"]]
+        fy = ROW_FY.get(row["doc_kind"]) or CONVERSION_ROWS[row["doc_id"]][0]
+        src = dict(source_file=d["원본"], source_url=d["출처"], source_sha256=d["원본sha256"],
+                   text_sha256=d["텍스트sha256"])
+        # 정정·추가공시 대조: 인용 문구가 그 본에도 (공백 무시) 그대로 있는가
+        amends = _amendments(row["doc_id"], idx)
+        allq = [(f, q) for f, qs in list(row["fields"].items()) + list((row.get("extra") or {}).items())
+                for q in qs]
+        amend_notes = []
+        for a in amends:
+            t = nows_text(a)
+            if t is None:
+                amend_notes.append("%s: 텍스트 없음(%s)" % (a.split("__")[-1], idx.get(a, {}).get("상태", "목록 없음")))
+                continue
+            same = sum(1 for _f, q in allq if _nows(q["quote"]) in t)
+            amend_notes.append("%s: 인용 %d개 중 %d개 같은 문구 있음" % (a.split("__")[-1], len(allq), same))
+        out = dict(corp_label=row["corp_label"], fy=fy, doc_kind=row["doc_kind"],
+                   section_title=row["section_title"])
+        src_text, pages = [], set()
+        for f in MAIN_FIELDS:
+            qs = row["fields"].get(f, [])
+            if qs:
+                out[f] = SEP.join("[p.%d] %s" % (int(q["page"]), q["quote"]) for q in qs)
+            else:
+                out[f] = NOT_FOUND
+        for f, qs in list(row["fields"].items()) + list((row.get("extra") or {}).items()):
+            for q in qs:
+                src_text.append("[%s p.%d] %s" % (f, int(q["page"]), q["quote"]))
+                pages.add(int(q["page"]))
+                long_.append(dict(corp_label=row["corp_label"], fy=fy, doc_kind=row["doc_kind"],
+                                  doc_id=row["doc_id"], section_title=row["section_title"], field=f,
+                                  page=int(q["page"]), quote=q["quote"], 검색="", **src))
+        # 「문서에 없음」 칸의 검색 근거 — 어느 범위를 어떤 어휘로 찾았고 몇 건이었는가
+        for f in MAIN_FIELDS + (["internal_control", "holding_plan"] if row["doc_kind"] == "증권신고서" else []):
+            has = row["fields"].get(f) if f in MAIN_FIELDS else (row.get("extra") or {}).get(f)
+            if has:
+                continue
+            lg = [x for x in log if x["doc_id"] == row["doc_id"] and x["field"] == f]
+            how = ("범위 %s p.%s · 정규식 %s · 후보 %s건 — 읽고 해당 서술 없음으로 판단"
+                   % (lg[0]["section"], lg[0]["pages"], lg[0]["regex"], lg[0]["hits"])) if lg else "검색기록 없음"
+            long_.append(dict(corp_label=row["corp_label"], fy=fy, doc_kind=row["doc_kind"],
+                              doc_id=row["doc_id"], section_title=row["section_title"], field=f,
+                              page="", quote=NOT_FOUND, 검색=how, **src))
+        out["source_text"] = SEP.join(src_text) if src_text else NOT_FOUND
+        out["page"] = ", ".join(str(p) for p in sorted(pages))
+        note = row.get("note", "").strip()
+        if amend_notes:
+            note = (note + " / " if note else "") + "다른 본 대조(판정 없음): " + "; ".join(amend_notes)
+        out["note"] = note
+        out.update(doc_id=row["doc_id"], **src)
+        wide.append(out)
+    cols = (["corp_label", "fy", "doc_kind", "section_title"] + MAIN_FIELDS +
+            ["source_text", "page", "note", "doc_id", "source_file", "source_url", "source_sha256", "text_sha256"])
+    _w(os.path.join(HANDOFF, "원문_지주리스크체계.csv"), wide, cols)
+    _w(os.path.join(HANDOFF, "원문_지주리스크체계_근거.csv"), long_,
+       ["corp_label", "fy", "doc_kind", "doc_id", "section_title", "field", "page", "quote", "검색",
+        "source_file", "source_url", "source_sha256", "text_sha256"])
+    nq = sum(1 for r in long_ if r["quote"] != NOT_FOUND)
+    print("원문_지주리스크체계.csv %d행 · 근거 %d행(인용 %d · 문서에 없음 %d)"
+          % (len(wide), len(long_), nq, len(long_) - nq))
+    return wide, long_
+
+
 def main(argv):
     cmd = argv[1] if len(argv) > 1 else ""
+    if cmd == "emit":
+        emit()
+        return 0
+    if cmd == "candidates":
+        candidates()
+        return 0
+    if cmd == "extract":
+        extract()
+        return 0
     if cmd == "fetch-disclosure":
         import governance
         governance._ensure_legacy_tls()      # 우리·iM legacy renegotiation — 한 번 재실행
