@@ -32,3 +32,6 @@ run_20260922_111844,2026-09-22T11:18:44+09:00,38d0ea9e540b,85312ceb,"scripts/dar
 run_20260922_111854,2026-09-22T11:18:54+09:00,38d0ea9e540b,85312ceb,"scripts/dart/run.py phase1 --only 하나금융지주,BNK금융지주,JB금융지주,농협금융지주,하나생명보험"
 run_20260922_113740,2026-09-22T11:37:40+09:00,5dad3d45cb3e,85312ceb,scripts/dart/run.py phase2 --dry-run
 run_20260922_113820,2026-09-22T11:38:20+09:00,5dad3d45cb3e,85312ceb,scripts/dart/run.py phase2
+run_20260930_170812,2026-09-30T17:08:12+09:00,35710695451d,85312ceb,scripts/dart/risk8.py fetch-dart
+run_20260930_171234,2026-09-30T17:12:34+09:00,1385cdcd730b,85312ceb,scripts/dart/risk8.py fetch-dart
+run_20260930_172908,2026-09-30T17:29:08+09:00,1385cdcd730b,85312ceb,scripts/dart/risk8.py fetch-dart
