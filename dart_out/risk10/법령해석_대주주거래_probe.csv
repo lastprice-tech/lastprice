@@ -1,5 +1,5 @@
 ﻿검색어,구분,목록,검색조건,사이트_총건수,받은_쪽수,받은_행수,고유_건수,일치,법령해석,비조치의견서,법령해석(2014이전),비조치의견서(2014이전),현장건의_과제(제외),기타,요청URL,수집시각,비고
-(robots.txt 점검),,,,,,,,,,,,,,,https://better.fsc.go.kr/robots.txt,2026-10-01T17:21:06+09:00,상태 없음(HTTP 404) · robots.txt 가 HTTP 404 — RFC 9309 §2.3.1.3 에 따라 제한 없음으로 봄 · 원문: (저장본 없음) · 목록 API 허용 True · 상세 허용 True
+(robots.txt 점검),,,,,,,,,,,,,,,https://better.fsc.go.kr/robots.txt,2026-10-01T17:31:49+09:00,상태 없음(HTTP 404) · robots.txt 가 HTTP 404 — RFC 9309 §2.3.1.3 에 따라 제한 없음으로 봄 · 원문: (저장본 없음) · 목록 API 허용 True · 상세 허용 True
 (이용약관 점검) 사이트 이용안내,,,,,,,,,,,,,,,https://better.fsc.go.kr/fsc_new/page/selectPage.do?stNo=11&muNo=198&muGpNo=195,2026-10-01T17:10:07+09:00,"글 840자 · 자동수집 금지 문구 0개 · 이메일 주소 수집 금지 문구 0개(해당 아님) · '무단·수집·크롤·로봇' 든 문장 원문: 금융위원회는 브라우저 Internet Explorer 7, Chrome 29, Opera 16, Firefox 24, Safari 6.0 / 화면해상도 1024 * 768 pixel 이상을 권장하며, 그 이상의 해상도에서 보시면 더 많은 내용을 화면 스크롤 없이 보실 수 있습니다. / 행정지도 : 금융과 관련된 행정지도의 예시 및 의견 수집, 시행 고지. · 원본 dart_out/raw/web10/fsc/policy/사이트_이용안내.html"
 (이용약관 점검) 저작권정책,,,,,,,,,,,,,,,https://better.fsc.go.kr/fsc_new/page/selectPage.do?stNo=11&muNo=200&muGpNo=195,2026-10-01T17:10:42+09:00,"글 535자 · 자동수집 금지 문구 0개 · 이메일 주소 수집 금지 문구 0개(해당 아님) · '무단·수집·크롤·로봇' 든 문장 원문: 금융규제민원포털 사이트의 내용은 저작권법에 의한 보호를 받는 저작물로서, 이에 대한 무단 복제 및 배포를 원칙적으로 금합니다. / 이를 무단 복제·배포하는 경우 저작권법 제136조,137조,138조 에 의한 권리의 침해죄, 부정발행등의 죄, 출처명시위반의 죄 등에 해당될 수 있습니다. / 본 사이트의 자료를 적법한 절차에 따라 다른 인터넷 사이트에 게재하는 경우에도 단순한 오류 정정 이외에 내용의 무단변경을 금지하며, 이를 위반할 때에는 형사 처벌을 받을 수 있습니다. · 원본 dart_out/raw/web10/fsc/policy/저작권정책.html"
 (이용약관 점검) 이메일무단수집거부,,,,,,,,,,,,,,,https://better.fsc.go.kr/fsc_new/page/selectPage.do?stNo=11&muNo=201&muGpNo=195,2026-10-01T17:11:18+09:00,"글 135자 · 자동수집 금지 문구 0개 · 이메일 주소 수집 금지 문구 1개(해당 아님) · '무단·수집·크롤·로봇' 든 문장 원문: 이메일무단수집거부 / 본 사이트에 게시된 이메일 주소가 전자우편 수집 프로그램이나 그밖의 기술적 장치를 이용하여 무단으로 수집되는 것을 거부하며, 이를 위반시 정보통신망에 의해 형사처벌됨을 유념하시기 바랍니다. · 원본 dart_out/raw/web10/fsc/policy/이메일무단수집거부.html"
@@ -29,15 +29,18 @@
 계열회사,probe,최근회신사례,,102,1,10,,,,,,,,,https://better.fsc.go.kr/fsc_new/replyCase/selectReplyCasePastReplyList.do,2026-10-01T17:18:35+09:00,
 특수관계인,probe,통합조회,,88,1,10,,,,,,,,,https://better.fsc.go.kr/fsc_new/replyCase/selectReplyCaseTotalReplyList.do,2026-10-01T17:19:10+09:00,
 특수관계인,probe,최근회신사례,,107,1,10,,,,,,,,,https://better.fsc.go.kr/fsc_new/replyCase/selectReplyCasePastReplyList.do,2026-10-01T17:21:23+09:00,
-보험업법 제111조,주,통합조회,제목+내용,11,2,11,11,Y,7,0,0,0,4,0,https://better.fsc.go.kr/fsc_new/replyCase/selectReplyCaseTotalReplyList.do,2026-10-01T17:22:44+09:00,
-보험업법 제111조,주,최근회신사례,제목+내용,4,1,4,4,Y,3,1,0,0,0,0,https://better.fsc.go.kr/fsc_new/replyCase/selectReplyCasePastReplyList.do,2026-10-01T17:12:10+09:00,
-대주주와의 거래,주,통합조회,제목+내용,8,1,8,8,Y,2,1,0,4,1,0,https://better.fsc.go.kr/fsc_new/replyCase/selectReplyCaseTotalReplyList.do,2026-10-01T17:12:30+09:00,
-대주주와의 거래,주,최근회신사례,제목+내용,12,2,12,12,Y,11,1,0,0,0,0,https://better.fsc.go.kr/fsc_new/replyCase/selectReplyCasePastReplyList.do,2026-10-01T17:22:51+09:00,
-금융지주회사 자회사 보험회사,주,통합조회,제목+내용,0,1,0,0,Y,0,0,0,0,0,0,https://better.fsc.go.kr/fsc_new/replyCase/selectReplyCaseTotalReplyList.do,2026-10-01T17:12:42+09:00,
-금융지주회사 자회사 보험회사,주,최근회신사례,제목+내용,0,1,0,0,Y,0,0,0,0,0,0,https://better.fsc.go.kr/fsc_new/replyCase/selectReplyCasePastReplyList.do,2026-10-01T17:13:01+09:00,
-대주주 특수관계인,주,통합조회,제목+내용,1,1,1,1,Y,0,0,0,0,1,0,https://better.fsc.go.kr/fsc_new/replyCase/selectReplyCaseTotalReplyList.do,2026-10-01T17:13:07+09:00,
-대주주 특수관계인,주,최근회신사례,제목+내용,2,1,2,2,Y,2,0,0,0,0,0,https://better.fsc.go.kr/fsc_new/replyCase/selectReplyCasePastReplyList.do,2026-10-01T17:13:28+09:00,
-외국 계열회사,주,통합조회,제목+내용,0,1,0,0,Y,0,0,0,0,0,0,https://better.fsc.go.kr/fsc_new/replyCase/selectReplyCaseTotalReplyList.do,2026-10-01T17:13:34+09:00,
-외국 계열회사,주,최근회신사례,제목+내용,0,1,0,0,Y,0,0,0,0,0,0,https://better.fsc.go.kr/fsc_new/replyCase/selectReplyCasePastReplyList.do,2026-10-01T17:13:41+09:00,
-금융지주회사법 제34조,주,통합조회,제목+내용,2,1,2,2,Y,2,0,0,0,0,0,https://better.fsc.go.kr/fsc_new/replyCase/selectReplyCaseTotalReplyList.do,2026-10-01T17:15:15+09:00,
-금융지주회사법 제34조,주,최근회신사례,제목+내용,2,1,2,2,Y,2,0,0,0,0,0,https://better.fsc.go.kr/fsc_new/replyCase/selectReplyCasePastReplyList.do,2026-10-01T17:15:22+09:00,
+해외 계열회사,probe,통합조회,,4,1,4,,,,,,,,,https://better.fsc.go.kr/fsc_new/replyCase/selectReplyCaseTotalReplyList.do,2026-10-01T17:32:05+09:00,
+해외 계열회사,probe,최근회신사례,,2,1,2,,,,,,,,,https://better.fsc.go.kr/fsc_new/replyCase/selectReplyCasePastReplyList.do,2026-10-01T17:32:12+09:00,
+외국 계열사,probe,통합조회,,0,1,0,,,,,,,,,https://better.fsc.go.kr/fsc_new/replyCase/selectReplyCaseTotalReplyList.do,2026-10-01T17:32:46+09:00,
+외국 계열사,probe,최근회신사례,,0,1,0,,,,,,,,,https://better.fsc.go.kr/fsc_new/replyCase/selectReplyCasePastReplyList.do,2026-10-01T17:33:06+09:00,
+해외 계열사,probe,통합조회,,9,1,9,,,,,,,,,https://better.fsc.go.kr/fsc_new/replyCase/selectReplyCaseTotalReplyList.do,2026-10-01T17:33:11+09:00,
+해외 계열사,probe,최근회신사례,,6,1,6,,,,,,,,,https://better.fsc.go.kr/fsc_new/replyCase/selectReplyCasePastReplyList.do,2026-10-01T17:33:18+09:00,
+외국계열회사,probe,통합조회,,0,1,0,,,,,,,,,https://better.fsc.go.kr/fsc_new/replyCase/selectReplyCaseTotalReplyList.do,2026-10-01T17:33:37+09:00,
+외국계열회사,probe,최근회신사례,,0,1,0,,,,,,,,,https://better.fsc.go.kr/fsc_new/replyCase/selectReplyCasePastReplyList.do,2026-10-01T17:33:43+09:00,
+자회사인 보험회사,probe,통합조회,,6,1,6,,,,,,,,,https://better.fsc.go.kr/fsc_new/replyCase/selectReplyCaseTotalReplyList.do,2026-10-01T17:33:49+09:00,
+자회사인 보험회사,probe,최근회신사례,,5,1,5,,,,,,,,,https://better.fsc.go.kr/fsc_new/replyCase/selectReplyCasePastReplyList.do,2026-10-01T17:34:09+09:00,
+금융지주회사의 자회사인 보험회사,probe,통합조회,,4,1,4,,,,,,,,,https://better.fsc.go.kr/fsc_new/replyCase/selectReplyCaseTotalReplyList.do,2026-10-01T17:34:44+09:00,
+금융지주회사의 자회사인 보험회사,probe,최근회신사례,,4,1,4,,,,,,,,,https://better.fsc.go.kr/fsc_new/replyCase/selectReplyCasePastReplyList.do,2026-10-01T17:34:50+09:00,
+보험회사의 대주주,probe,통합조회,,4,1,4,,,,,,,,,https://better.fsc.go.kr/fsc_new/replyCase/selectReplyCaseTotalReplyList.do,2026-10-01T17:35:24+09:00,
+보험회사의 대주주,probe,최근회신사례,,8,1,8,,,,,,,,,https://better.fsc.go.kr/fsc_new/replyCase/selectReplyCasePastReplyList.do,2026-10-01T17:35:45+09:00,
+(중단),,,,,,,,,,,,,,,,2026-10-01T17:35:45+09:00,--probe: 1쪽 점검만 하고 멈춤(정상)
