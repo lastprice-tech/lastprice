@@ -92,6 +92,10 @@ __pycache__/
 !/handoff/연차보고서_파일목록.csv
 !/handoff/dart-kit-5차6차.zip
 
+# 8차(지주 리스크관리 체계 원문) — 결과 CSV 두 개. 원본 PDF·XML 은 dart_out(무시) 에 있다.
+!/handoff/원문_지주리스크체계.csv
+!/handoff/원문_지주리스크체계_근거.csv
+
 # selftest 임시 산출물
 /dart_out/_selftest/
 
