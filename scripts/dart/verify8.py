@@ -76,6 +76,21 @@ def main():
             miss.append("%s %s p.%s %s" % (r["doc_id"], r["field"], r["page"], r["quote"][:40]))
     ok(not miss, "1. 인용 %d개가 모두 해당 쪽 원문에 있음(공백 무시)%s"
        % (len(quotes), "" if not miss else " — 불일치 %d: %s" % (len(miss), miss[:5])))
+    # 1a. 사업보고서 인용은 「실제 위험관리 절」(risk8.BIZ_SCOPE) 안에 있어야 한다
+    out_scope, scoped = [], {}
+    for r in quotes:
+        if r["doc_kind"] != "사업보고서":
+            continue
+        if r["doc_id"] not in scoped:
+            s = open(idx[r["doc_id"]]["텍스트"], encoding="utf-8").read()
+            _sec, sp = risk8._scope(idx[r["doc_id"]], risk8.re_split_pages(s))
+            scoped[r["doc_id"]] = {n: nows(t) for n, t in sp}
+        t = scoped[r["doc_id"]].get(int(r["page"]))
+        if t is None or nows(r["quote"]) not in t:
+            out_scope.append("%s %s p.%s" % (r["doc_id"], r["field"], r["page"]))
+    ok(not out_scope, "1a. 사업보고서 인용 %d개가 모두 위험관리 절 범위 안%s"
+       % (sum(1 for r in quotes if r["doc_kind"] == "사업보고서"),
+          "" if not out_scope else " — 범위 밖 %s" % out_scope[:5]))
     bad_sha = []
     for d in sorted({r["doc_id"] for r in wide}):
         m = idx[d]

@@ -482,45 +482,31 @@ def _scope(doc, pages):
     if doc["doc_kind"] != "사업보고서":
         return "문서 전체", pages
     loc, start, end = BIZ_SCOPE[doc["corp_label"]]
-    # 목차 쪽을 피하려고, 시작 표제가 있는 첫 쪽 가운데 줄표(.....)가 없는 쪽을 쓴다.
-    si = None
-    for i, (n, t) in enumerate(pages):
-        if start in _nows(t) and "....." not in t:
-            si = i
-            break
-    if si is None:
-        return "절 못 찾음(%s %s)" % (loc, start), []
+    # 표제는 **줄 맨 앞**에 있을 때만 인정한다 — 본문 속 참조(「…마. 위험관리정책에 관한
+    # 사항 - (3)시장위험을 참고하시기 바랍니다」, 신한 p.773)를 표제로 잡지 않기 위해서다.
+    # 목차 쪽(줄표 .....)도 건너뛴다.
     out = []
-    for n, t in pages[si:]:
-        ns = _nows(t)
+    for n, t in pages:
+        if not out and "....." in t:
+            continue
+        lines = t.split("\n")
         if not out:
-            # 시작 표제 앞 글은 버린다(공백을 무시하고 위치를 찾는다)
-            k = _find_nows(t, start)
-            t = t[k:]
-            ns = _nows(t)
-        m = re.search(end, ns)
-        if m and (out or m.start() > len(start)):
-            k = _find_nows(t, None, m.start())
-            out.append((n, t[:k]))
+            k = next((i for i, l in enumerate(lines) if _nows(l).startswith(start)), None)
+            if k is None:
+                continue
+            lines = lines[k:]
+            body = lines[1:]
+            head = [lines[0]]
+        else:
+            body, head = lines, []
+        e = next((i for i, l in enumerate(body) if re.match(end, _nows(l))), None)
+        if e is not None:
+            out.append((n, "\n".join(head + body[:e])))
             break
-        out.append((n, t))
+        out.append((n, "\n".join(head + body)))
+    if not out:
+        return "절 못 찾음(%s %s)" % (loc, start), []
     return "%s %s" % (loc, start), out
-
-
-def _find_nows(t, needle, pos_nows=None):
-    """공백을 뺀 글에서의 위치를 원문 위치로 바꾼다."""
-    import re
-    if needle is not None:
-        pos_nows = _nows(t).find(needle)
-        if pos_nows < 0:
-            return 0
-    cnt = 0
-    for i, ch in enumerate(t):
-        if not ch.isspace():
-            if cnt == pos_nows:
-                return i
-            cnt += 1
-    return len(t)
 
 
 def _sentences(text):
