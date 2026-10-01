@@ -950,8 +950,12 @@ def plan(out_dir, rcept_nos=None):
 
 # ── collect ───────────────────────────────────────────────────────────────
 def collect(out_dir, rcept_nos=None, delay=DEFAULT_DELAY,
-            size_limit_bytes=DEFAULT_SIZE_LIMIT, skip_pdf=False, log=print):
-    """실제 수집. → dict(성공, 실패, 미수집, 누적바이트, 중단여부, rows=[...])"""
+            size_limit_bytes=DEFAULT_SIZE_LIMIT, skip_pdf=False, log=print,
+            bulk_skip_always=False):
+    """실제 수집. → dict(성공, 실패, 미수집, 누적바이트, 중단여부, rows=[...])
+
+    bulk_skip_always=True 면 용량과 무관하게 BULK_KEYWORDS 첨부(감사·검토보고서·재무제표)를
+    처음부터 건너뛴다(9차: 쪽 번호용 본문 PDF 만 필요한 분기보고서 등). 기록은 남는다."""
     out_dir = os.path.abspath(out_dir)
     targets = _targets(rcept_nos)
     purposes = doc_purposes()
@@ -1193,7 +1197,9 @@ def collect(out_dir, rcept_nos=None, delay=DEFAULT_DELAY,
                         add(r2)
                         n_skip += 1
                 break
-            bulk_skip = state["bytes"] >= soft_limit and is_bulk(aname)
+            bulk_skip = (bulk_skip_always or state["bytes"] >= soft_limit) and is_bulk(aname)
+            bulk_why = ("bulk_skip_always — 감사·검토보고서·재무제표 첨부 제외" if bulk_skip_always
+                        else "용량 제한으로 미수집")
 
             pdf_rec = html_rec = None
             pdf_name = ""
@@ -1213,7 +1219,7 @@ def collect(out_dir, rcept_nos=None, delay=DEFAULT_DELAY,
                 pdf_rec = _reuse(base, hit)
                 pdf_name = hit.get("원파일명", "")
             elif bulk_skip or skip_pdf:
-                why = ("용량 제한으로 미수집" if bulk_skip else "skip_pdf=True")
+                why = (bulk_why if bulk_skip else "skip_pdf=True")
                 pdf_rec = _record(base, 파일종류="첨부PDF", 문서종류=kind, 원파일명="",
                                   저장경로="", 바이트=0, sha256="", 수령성공여부="미수집",
                                   실패사유=why, fetched_at="", source_url=pdf_url,
@@ -1239,7 +1245,7 @@ def collect(out_dir, rcept_nos=None, delay=DEFAULT_DELAY,
             elif bulk_skip:
                 html_rec = _record(base, 파일종류="첨부HTML", 문서종류=kind, 원파일명=aname,
                                    저장경로="", 바이트=0, sha256="", 수령성공여부="미수집",
-                                   실패사유="용량 제한으로 미수집", fetched_at="",
+                                   실패사유=bulk_why, fetched_at="",
                                    source_url=view_url, dcm_no=dcm)
                 viewer_text = ""
             else:

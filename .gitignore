@@ -96,6 +96,19 @@ __pycache__/
 !/handoff/원문_지주리스크체계.csv
 !/handoff/원문_지주리스크체계_근거.csv
 
+# 9차(리스크부문 v0.4 위임) — 결과 CSV·원문 발췌 md
+!/handoff/RAAS_매뉴얼_원문.md
+!/handoff/원문_지주리스크체계_원문/
+!/handoff/법령원문_9차/
+!/handoff/원문_위험관리위원회_활동.csv
+!/handoff/원문_지주조직_CRO.csv
+!/handoff/원문_지주내부회계.csv
+!/handoff/원문_비은행지주_자본지표.csv
+!/handoff/원문_보험자회사_지주연계.csv
+!/handoff/목록_생보협회_자율규제.csv
+!/handoff/목록_법령해석.csv
+!/handoff/법령해석_원문/
+
 # selftest 임시 산출물
 /dart_out/_selftest/
 

@@ -439,11 +439,19 @@ FIELDS = [
     ("oprisk", r"운영\s*(리스크|위험)|손실\s*사건|손실\s*데이터|BCP|업무\s*연속성|위탁|IT\s*리스크|정보\s*보호|사이버"),
     ("compensation", r"성과\s*보수|이연\s*지급|환수|Clawback|클로백|(리스크|위험)\s*(를|을)?\s*(고려|반영|조정)[^.。]{0,20}(성과|보수|평가)|(성과|보수)[^.。]{0,30}(리스크|위험)\s*(조정|반영|고려)|보수\s*체계|보수\s*정책|리스크\s*조정"),
     ("org", r"리스크\s*관리\s*(부|팀|본부|부문|실|총괄|그룹|센터|조직)|위험\s*관리\s*(부|팀|본부|부문|실|조직|전담)|리스크\s*총괄|리스크\s*검증|전담\s*조직|리스크\s*관리\s*인력"),
+    # 9차 추가 열(리스크부문 v0.4, 2026-10-01)
+    ("subsidiary_control", r"사전\s*협의|사전\s*승인|협의\s*사항|승인\s*사항|공문|공식\s*문서|자회사[^.。]{0,30}(평가|지시|요청|통보)|(CRO|위험관리\s*책임자|리스크\s*관리\s*책임자)[^.。]{0,30}평가"),
+    ("model_validation", r"모형\s*검증|모델\s*검증|검증\s*(조직|부서|팀|결과|주기)|독립적\s*(인\s*)?검증|적합성\s*검증|사후\s*검증|백\s*테스팅|Back\s*-?\s*testing|Validation"),
+    ("internal_capital", r"내부\s*자본|자본\s*버퍼|완충\s*자본|목표\s*(비율|수준)|내부\s*목표|자본\s*적정성\s*평가|ICAAP|경제적\s*자본|위험\s*자본"),
+    ("early_warning", r"조기\s*경보|Early\s*Warning|EWS|위기\s*단계|위기\s*상황\s*(단계|등급|판단)|비상\s*(대응|대책)|위기\s*대응|컨틴전시|Contingency"),
+    ("contagion", r"(위험|리스크)[^.。]{0,10}전이|전이\s*(위험|리스크|효과)|전염|교차\s*판매|공동\s*(상품|개발|영업|마케팅)|계열\s*(사)?\s*(판매|거래)\s*비중|평판\s*(리스크|위험)|그룹\s*내\s*(거래|위험)|복합\s*점포|이해\s*상충"),
+    ("related_party", r"대주주|특수\s*관계|계열\s*(회사|사)?\s*(간|와의)?\s*거래|자회사\s*등?\s*과의\s*거래|내부\s*거래|신용\s*공여"),
+    ("icfr", r"내부\s*회계|연결\s*내부\s*회계|ICFR"),
     # 증권신고서(지주 전환)용 보조 태그 — CSV 의 열이 아니라 근거 파일·source_text 에만 쓴다.
     ("internal_control", r"내부\s*통제|준법\s*감시|내부\s*감사"),
     ("holding_plan", r"지주\s*회사[^.。]{0,40}(운영|체제|계획|역할|기능|전략)|(경영|운영)\s*계획|자회사\s*(관리|편입)|그룹\s*(통합|시너지)"),
 ]
-MAIN_FIELDS = [f for f, _ in FIELDS[:10]]
+MAIN_FIELDS = [f for f, _ in FIELDS[:17]]     # 8차 10개 + 9차 7개
 
 # 사업보고서의 「실제 위험관리 절」(사용자 결정 2026-09-30). (시작 표제, 끝 표제) — 공백을 뺀
 # 글자로 찾는다. 메리츠·한국투자는 Ⅱ. 사업의 내용, 나머지는 Ⅳ. 이사의 경영진단 및 분석의견.
@@ -601,6 +609,74 @@ def _amendments(doc_id, idx):
             and r["doc_kind"] == me["doc_kind"]]
 
 
+def _source_meta(d):
+    """행의 출처 — rcept_no_or_url · doc_name · collected_at(원본 수집 시각). 텍스트목록 한 줄 → dict."""
+    import zipfile
+    kind, rc = d["doc_kind"], d["doc_id"].split("__")[-1]
+    out = dict(rcept_no_or_url="", doc_name="", collected_at="")
+    if kind == "연차보고서":
+        fn = os.path.basename(d["원본"])
+        r = next((x for x in csv.DictReader(open(os.path.join(WORK, "연차보고서_FY2025.csv"),
+                                                 encoding="utf-8-sig")) if x["저장파일명"] == fn), {})
+        url = r.get("실제url") or r.get("url", "")
+        mp = d["원본"] + ".meta.json"
+        m = json.load(open(mp, encoding="utf-8")) if os.path.exists(mp) else {}
+        if m.get("real_filename"):          # 한국투자: POST 다운로드 — 그 파일을 가리키는 값까지 적는다
+            url = "%s (POST real_filename=%s; 게시글 %s)" % (url, m["real_filename"], m.get("게시글url", ""))
+        out.update(rcept_no_or_url=url,
+                   doc_name="%s (공시일 %s)" % (r.get("제목", ""), r.get("공시일", "")),
+                   collected_at=r.get("fetched_at", ""))
+    elif kind == "경영공시":
+        r = next((x for x in csv.DictReader(open(os.path.join(WORK, "경영공시_2026_2Q.csv"),
+                                                 encoding="utf-8-sig")) if x["corp_label"] == d["corp_label"]), {})
+        url = r.get("실제url") or r.get("url", "")
+        post = next((x[6] for x in DISCLOSURE if x[0] == d["corp_label"] and x[3] == "POST"), None)
+        if post:
+            url = "%s (POST real_filename=%s; 목록 %s)" % (url, post.get("real_filename", ""), r.get("목록", ""))
+        out.update(rcept_no_or_url=url, doc_name=r.get("제목", ""), collected_at=r.get("fetched_at", ""))
+    else:                                   # DART 사업보고서·증권신고서 — 인용 쪽은 뷰어 본문 PDF
+        out["rcept_no_or_url"] = rc
+        names = {x["rcept_no"]: x["report_nm"] for x in csv.DictReader(
+            open(os.path.join(WORK, "DART_문서목록.csv"), encoding="utf-8-sig")) if x["rcept_no"]}
+        conv = os.path.join(OUT, "risk9", "전환신고서_문서명.csv")
+        if os.path.exists(conv):
+            for x in csv.DictReader(open(conv, encoding="utf-8-sig")):
+                if x.get("report_nm"):
+                    names[x["rcept_no"]] = x["report_nm"]
+        out["doc_name"] = names.get(rc, "")
+        ix = os.path.join(OUT, "doc", rc, "_파일목록.json")
+        if os.path.exists(ix):
+            rec = next((f for f in json.load(open(ix, encoding="utf-8")).get("files", [])
+                        if f.get("파일종류") == "본문PDF"), {})
+            out["collected_at"] = rec.get("fetched_at", "")
+        else:                               # 2차 수집 본문(handoff/원본_주요신고서본문.zip) — zip 안 파일 시각
+            with zipfile.ZipFile(os.path.join(HANDOFF, "원본_주요신고서본문.zip")) as z:
+                t = z.getinfo("doc/%s/본문.pdf" % rc).date_time
+            out["collected_at"] = "%04d-%02d-%02dT%02d:%02d:%02d (원본_주요신고서본문.zip 안 파일 시각, 2차 수집)" % t
+    return out
+
+
+ROW_MD_DIR = os.path.join(HANDOFF, "원문_지주리스크체계_원문")
+
+
+def _row_md(row, d, meta, pages_cited):
+    """행마다 인용한 쪽의 전문(텍스트 파일 그대로)을 .md 로. 인용 대조용 원문 텍스트."""
+    os.makedirs(ROW_MD_DIR, exist_ok=True)
+    P = dict(re_split_pages(open(d["텍스트"], encoding="utf-8").read()))
+    lines = ["# %s · %s · %s" % (row["corp_label"], row["doc_kind"], meta["doc_name"]), "",
+             "- doc_id: %s" % row["doc_id"],
+             "- 출처: %s" % meta["rcept_no_or_url"],
+             "- 수집일: %s" % meta["collected_at"],
+             "- 원본 sha256: %s · 텍스트 sha256: %s" % (d["원본sha256"], d["텍스트sha256"]),
+             "- 아래는 이 행에서 인용한 쪽의 추출 텍스트 전문이다(pypdf, 글자 수정 없음).", ""]
+    for n in sorted(pages_cited):
+        lines += ["## p.%d" % n, "", "```text", P.get(n, "(쪽 없음)").rstrip("\n"), "```", ""]
+    p = os.path.join(ROW_MD_DIR, row["doc_id"] + ".md")
+    with open(p, "w", encoding="utf-8") as f:
+        f.write("\n".join(lines))
+    return p
+
+
 def emit():
     sel = json.load(open(SELECTION, encoding="utf-8"))
     idx = {r["doc_id"]: r for r in csv.DictReader(open(os.path.join(WORK, "텍스트목록.csv"),
@@ -623,8 +699,10 @@ def emit():
     for row in rows:
         d = idx[row["doc_id"]]
         fy = ROW_FY.get(row["doc_kind"]) or CONVERSION_ROWS[row["doc_id"]][0]
-        src = dict(source_file=d["원본"], source_url=d["출처"], source_sha256=d["원본sha256"],
-                   text_sha256=d["텍스트sha256"])
+        meta = _source_meta(d)
+        src = dict(rcept_no_or_url=meta["rcept_no_or_url"], doc_name=meta["doc_name"],
+                   collected_at=meta["collected_at"], source_file=d["원본"],
+                   source_sha256=d["원본sha256"], text_sha256=d["텍스트sha256"])
         # 정정·추가공시 대조: 인용 문구가 그 본에도 (공백 무시) 그대로 있는가
         amends = _amendments(row["doc_id"], idx)
         allq = [(f, q) for f, qs in list(row["fields"].items()) + list((row.get("extra") or {}).items())
@@ -678,13 +756,15 @@ def emit():
             note = (note + " / " if note else "") + "다른 본 대조(판정 없음): " + "; ".join(amend_notes)
         out["note"] = note
         out.update(doc_id=row["doc_id"], **src)
+        out["원문_md"] = _row_md(row, d, meta, pages)
         wide.append(out)
     cols = (["corp_label", "fy", "doc_kind", "section_title"] + MAIN_FIELDS +
-            ["source_text", "page", "note", "doc_id", "source_file", "source_url", "source_sha256", "text_sha256"])
+            ["source_text", "rcept_no_or_url", "doc_name", "page", "note", "collected_at",
+             "doc_id", "원문_md", "source_file", "source_sha256", "text_sha256"])
     _w(os.path.join(HANDOFF, "원문_지주리스크체계.csv"), wide, cols)
     _w(os.path.join(HANDOFF, "원문_지주리스크체계_근거.csv"), long_,
        ["corp_label", "fy", "doc_kind", "doc_id", "section_title", "field", "page", "quote", "검색",
-        "source_file", "source_url", "source_sha256", "text_sha256"])
+        "rcept_no_or_url", "doc_name", "collected_at", "source_file", "source_sha256", "text_sha256"])
     nq = sum(1 for r in long_ if r["quote"] != NOT_FOUND)
     print("원문_지주리스크체계.csv %d행 · 근거 %d행(인용 %d · 문서에 없음 %d)"
           % (len(wide), len(long_), nq, len(long_) - nq))
