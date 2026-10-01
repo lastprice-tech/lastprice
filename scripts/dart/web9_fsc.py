@@ -4,9 +4,10 @@
     python3 scripts/dart/web9_fsc.py             # 검색 → 상세 → 목록 CSV·원문 md
     python3 scripts/dart/web9_fsc.py --refresh   # 저장해 둔 원본을 쓰지 않고 다시 받는다
 
-요청은 공용 모듈 web9.Web(UA·1.2초 간격·3회 재시도)로 하나씩 보낸다. 접속 자체가 끊기면(프록시 터널
-끊김 등) 30·60초 쉬고 다시 해 보고, 그래도 안 되거나 401·403·429·로그인 화면·캡차가 나오면 우회하지 않고
-멈춘 뒤 사유를 검색기록에 남긴다. 받은 응답은 web9.save 로 dart_out/raw/web9/fsc/ 에 원본 + .meta.json.
+요청은 공용 모듈 web9.Web(UA·1.2초 간격·3회 재시도)로 하나씩 보내되, 요청 시작 사이를 4초 이상 둔다(GAP).
+접속 자체가 끊기면(프록시 터널 끊김 등) 30·60초 쉬고 다시 해 보고(기록: raw/web9/fsc/접속끊김.csv), 그래도
+안 되거나 401·403·429·로그인 화면·캡차가 나오면 우회하지 않고 멈춘 뒤 사유를 검색기록에 남긴다.
+받은 응답은 web9.save 로 dart_out/raw/web9/fsc/ 에 원본 + .meta.json. 이미 받은 원본은 다시 받지 않는다.
 
 목록 API — 사이트 화면의 DataTables 가 부르는 것과 같은 방식(POST, 서버측 파라미터, 한 쪽 10건, 끝 쪽까지)
   · 회신사례 통합조회 (TotalReplyList.do) → POST /fsc_new/replyCase/selectReplyCaseTotalReplyList.do
@@ -80,6 +81,12 @@ class Stop(Exception):
 
 # ── 요청 ─────────────────────────────────────────────────────────────────
 W = None
+# 첫 실행에서 연달아 3~5번 접속한 뒤 TLS 접속이 몇십 초씩 끊기는 일이 되풀이됐다(프록시 기록: ClientHello
+# 보낸 뒤 응답 없이 11초 만에 닫힘). 사이트가 Connection: close 라 요청마다 새 접속이므로 간격을 넓힌다.
+GAP = 4.0                                                     # 요청 시작 사이 최소 간격(초) — web9 의 1.2초보다 길게
+DROPS = []                                                    # 접속 끊김으로 다시 시도한 기록(이 실행)
+DROP_LOG = os.path.join(RAW, TASK, "접속끊김.csv")            # 실행마다 덧붙이는 기록(시각·URL·오류)
+FETCHED = []                                                  # 이 실행에서 새로 받은 원본
 
 
 def fetch(url, referer="", data=None, headers=None):
@@ -89,6 +96,9 @@ def fetch(url, referer="", data=None, headers=None):
         W = Web()
     last = None
     for k in range(3):
+        wait = GAP - (time.time() - W.last)
+        if wait > 0:
+            time.sleep(wait)
         try:
             fu, st, hd, b = W.get(url, referer=referer, data=data, headers=headers)
         except urllib.error.HTTPError as e:
@@ -97,6 +107,14 @@ def fetch(url, referer="", data=None, headers=None):
             raise
         except Exception as e:                        # noqa: BLE001 — 프록시 터널 끊김 등
             last = e
+            DROPS.append((now(), url, "%s: %s" % (type(e).__name__, e)))
+            os.makedirs(os.path.dirname(DROP_LOG), exist_ok=True)
+            new = not os.path.exists(DROP_LOG)
+            with open(DROP_LOG, "a", encoding="utf-8-sig" if new else "utf-8", newline="") as fo:
+                wr = csv.writer(fo)
+                if new:
+                    wr.writerow(["시각", "URL", "오류(web9.Web.get 3회 재시도 뒤)"])
+                wr.writerow(DROPS[-1])
             if k < 2:
                 print("  … 접속 끊김(%s) — %d초 뒤 다시" % (type(e).__name__, 30 * (k + 1)), flush=True)
                 time.sleep(30 * (k + 1))
@@ -121,6 +139,7 @@ def cached(task, name, url, referer="", data=None, headers=None, extra=None):
         meta["요청본문"] = dict(data)
     meta.update(extra or {})
     _, meta = save(task, name, b, meta)
+    FETCHED.append(name)
     return b, meta
 
 
@@ -383,7 +402,13 @@ def main():
         print("멈춤:", stop, flush=True)
         logrow(검색어="(중단)", 비고=stop, 수집시각=now())
 
-    rows_out, md_n, serials = [], 0, {}
+    rows_out, md_n = [], 0
+    # 최근회신사례의 일련번호가 두 건에 겹치는 일이 있다(예: 150137 = 법령해석 454 · 비조치의견서 311).
+    # 겹치는 번호는 모든 해당 건의 파일명에 구분을 덧붙인다.
+    sc = {}
+    for it in items.values():
+        if it.get("serial"):
+            sc[it["serial"]] = sc.get(it["serial"], 0) + 1
     for it in items.values():
         note = []
         d = it.get("detail")
@@ -425,6 +450,10 @@ def main():
             ans = ps[0].strip(" \t\n") if ps else ""
             if not ans:
                 note.append("회답 칸이 비어 있음")
+            elif len(ans) < 40:
+                note.append("answer_summary: 회답 첫 문단이 %d자 — 이어지는 회답은 상세 페이지·원문 md" % len(ans))
+            if q_full and q_full == text(f["회답"][0]):
+                note.append("사이트의 질의요지 칸 글이 회답 칸과 같음(원문 그대로 둠)")
         if d and not f.get("질의요지"):
             note.append("상세에 질의요지 칸 없음")
         if d and not f.get("회답"):
@@ -442,17 +471,22 @@ def main():
             fn = serial or "%s_idx%s" % (it["code"], it["idx"])
             if not serial:
                 note.append("일련번호 없음 — 파일명은 사이트 내부번호")
-            if fn in serials and serials[fn] != (it["code"], it["idx"]):
-                fn = "%s_%s%s" % (fn, it["code"], it["idx"])
-                note.append("일련번호가 다른 건과 겹쳐 파일명에 구분 덧붙임")
-            serials[fn] = (it["code"], it["idx"])
+            elif sc.get(serial, 0) > 1:
+                fn = "%s_%s%s" % (serial, it["code"], it["idx"])
+                note.append("일련번호 %s 가 다른 건과 겹쳐 파일명에 구분·내부번호 덧붙임" % serial)
             body_md = os.path.join(OUT_MD, fn + ".md")
             write_md(body_md, it, title, rd, serial, kind, d)
             md_n += 1
         rows_out.append(dict(title=title, reply_date=rd, kind=kind, question=question, answer_summary=ans,
                              url=it.get("url", ""), search_terms=", ".join(it["terms"]), related=related,
                              body_md=body_md, collected_at=(it.get("meta") or {}).get("fetched_at", ""),
-                             note="; ".join(note), _serial=serial))
+                             note="; ".join(note), _it=it))
+    for w in WORDS:                                            # 낱말별 합집합(두 목록, 현장건의 과제 제외)
+        hit = [r for r in rows_out if w in r["_it"]["terms"]]
+        by = {c: sum(1 for r in hit if r["_it"]["code"] == c) for c in ("law", "opinion", "pastreq")}
+        logrow(검색어=w, 목록="합집합(통합조회∪최근회신사례)", 고유_건수=len(hit), 수집시각=now(),
+               비고="법령해석 %d · 비조치의견서 %d · 2014이전 %d · related=Y %d"
+                  % (by["law"], by["opinion"], by["pastreq"], sum(r["related"] == "Y" for r in hit)))
     rows_out.sort(key=lambda r: (r["related"] != "Y", [-ord(c) for c in r["reply_date"]], r["title"]))
     cols = ["title", "reply_date", "kind", "question", "answer_summary", "url", "search_terms", "related",
             "body_md", "collected_at", "note"]
@@ -460,11 +494,23 @@ def main():
         wr = csv.DictWriter(fo, fieldnames=cols, extrasaction="ignore")
         wr.writeheader()
         wr.writerows(rows_out)
+    made = {os.path.basename(r["body_md"]) for r in rows_out if r["body_md"]}
+    for fn in sorted(os.listdir(OUT_MD)):                     # 이 스크립트 전용 폴더 — 이번에 안 만든 md 는 지운다
+        if fn.endswith(".md") and fn not in made:
+            os.remove(os.path.join(OUT_MD, fn))
+            print("  지난 실행의 md 지움:", fn)
     ny = sum(r["related"] == "Y" for r in rows_out)
-    logrow(검색어="(합계·중복 제거)", 목록="통합조회+최근회신사례", 고유_건수=len(rows_out), 수집시각=now(),
-           비고="법령해석·비조치의견서 %d건(현장건의 과제 제외) · related=Y %d건 · 원문 md %d개 · 상세 실패 %d건%s"
+    ndrop = 0
+    if os.path.exists(DROP_LOG):
+        with open(DROP_LOG, encoding="utf-8-sig") as fi:
+            ndrop = max(0, sum(1 for _ in csv.reader(fi)) - 1)
+    logrow(검색어="(합계·중복 제거)", 목록="통합조회∪최근회신사례", 고유_건수=len(rows_out), 수집시각=now(),
+           비고="법령해석·비조치의견서 %d건(현장건의 과제 제외) · related=Y %d건 · 원문 md %d개 · 상세 실패 %d건"
+                " · 이 실행에서 새로 받은 원본 %d개(나머지는 %s 에 저장된 원본) · 접속 끊김 뒤 재시도 이 실행 %d회"
+                "(누적 기록 %d회, %s) · %s"
               % (len(rows_out), ny, md_n, sum(1 for it in items.values() if not it.get("detail")),
-                 (" · 중단: " + stop) if stop else ""))
+                 len(FETCHED), os.path.join(RAW, TASK), len(DROPS), ndrop, DROP_LOG,
+                 ("중단: " + stop) if stop else "이 실행에서 401·403·429·로그인·캡차 없음"))
     with open(LOG_CSV, "w", encoding="utf-8-sig", newline="") as fo:
         wr = csv.DictWriter(fo, fieldnames=list(log[0].keys()))
         wr.writeheader()
@@ -489,21 +535,31 @@ def write_md(path, it, title, rd, serial, kind, d):
            "- 찾은 검색어: %s" % ", ".join(it["terms"]),
            "- 원본: %s (HTTP %s · sha256 %s)" % (it["raw"], m.get("http_status", ""), m.get("sha256", "")),
            "- 옮긴 방식: 상세 페이지 본문 표를 순서대로, 글자는 바꾸지 않고 HTML 태그만 걷어냈다"
-           "(<br> 은 줄바꿈, <p> 문단 사이는 빈 줄, 태그 없는 칸은 원래 줄바꿈 그대로, &nbsp; 등 엔티티는 그 글자로).",
+           "(`<br>` 은 줄바꿈, `<p>` 문단 사이는 빈 줄, 태그 없는 칸은 원래 줄바꿈 그대로, `&nbsp;` 등 엔티티는 "
+           "그 글자(U+00A0 등)로). 칸 이름(처리구분·질의요지·회답·이유 …)은 사이트 표의 머리 칸 그대로다.",
            "", "---", ""]
+
+    def gap():
+        if out[-1] != "":
+            out.append("")
+
     for head, rows in d["blocks"]:
         if head:
+            gap()
             out += ["## %s" % head, ""]
         for lab, raw in rows:
             t = text(raw)
             if lab is None:
+                gap()
                 out += ["### %s" % t, ""]
+            elif lab == "첨부파일":
+                out += ["- %s: %s" % (lab, " / ".join(x.strip() for x in t.split("\n") if x.strip()))]
             elif lab in LONG or "\n" in t or len(t) > 100:
+                gap()
                 out += ["### %s" % lab, "", t, ""]
             else:
-                out += ["- %s: %s" % (lab, re.sub(r"\s*\n\s*", " / ", t) if lab == "첨부파일" else t)]
-        if out[-1] != "":
-            out.append("")
+                out += ["- %s: %s" % (lab, t)]
+        gap()
     with open(path, "w", encoding="utf-8") as fo:
         fo.write("\n".join(out).rstrip() + "\n")
 
