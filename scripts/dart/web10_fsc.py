@@ -78,7 +78,9 @@ MAIN = ["보험업법 제111조", "대주주와의 거래", "금융지주회사 
 #   PROBE: 너무 넓어 1쪽만 받아 총건수만 기록(합집합에 넣지 않음).
 AUX = {}
 PROBE = {}
-CANDIDATES = ["제111조", "대주주와의 거래등", "제106조", "제34조", "제36조", "계열회사", "특수관계인"]  # 사용자 예시
+CANDIDATES = ["제111조", "대주주와의 거래등", "제106조", "제34조", "제36조", "계열회사", "특수관계인",  # 사용자 예시
+              "해외 계열회사", "외국 계열사", "해외 계열사", "외국계열회사", "자회사인 보험회사",
+              "금융지주회사의 자회사인 보험회사", "보험회사의 대주주"]                             # 좁은 낱말 점검
 
 OUT_CSV = os.path.join(OUT, "목록_법령해석_대주주거래.csv")
 OUT_MD = os.path.join(OUT, "법령해석_대주주거래")
@@ -232,7 +234,7 @@ def policy_check(logrow):
 
 
 # ── 관련 조문 판정 ─────────────────────────────────────────────────────────
-GAP_RE = r"[」』\"”’'\s]*"
+GAP_RE = r"[」』｣\"”’'\s(（]*"                   # 법률명 뒤 닫는 낫표(전각·반각)·따옴표·공백·여는 괄호만
 HO = r"제\s*(\d+)\s*호((?:\s*(?:및|·|ㆍ|,|、|와|과|또는)\s*(?:같은\s*항\s*)?제\s*\d+\s*호)*)"
 P111 = re.compile(r"보험업법" + GAP_RE + r"(?:§\s*111|제\s*111\s*조)(?!\s*의\s*\d)")
 P106 = re.compile(r"보험업법" + GAP_RE + r"(?:§\s*106|제\s*106\s*조)(?!\s*의\s*\d)"
@@ -287,6 +289,11 @@ def loose_notes(texts, found):
         for m in LOOSE.finditer(flat):
             if any(a <= m.start() < b for a, b in spans):
                 continue
+            tail = re.sub(r"[」』｣\"”’'\s()（）]+$", "", flat[max(0, m.start() - 40):m.start()])
+            nm = re.search(r"([가-힣]*(?:법률|시행령|규정|규칙|법))$", tail)
+            if nm and nm.group(1) not in ("보험업법", "금융지주회사법", "법", "동법") \
+                    and not tail.endswith(("같은 법", "이 법")):
+                continue                                        # 다른 법령(자본시장법 등)의 조문 — note 에서 뺌
             out.append("%s: 「%s」" % (lab, flat[max(0, m.start() - 20):m.end() + 12]))
     return out
 
@@ -358,6 +365,7 @@ def main():
                     print("PROBE %-16s %-6s 총 %4d건" % (w, lst, tots[0]), flush=True)
                     logrow(검색어=w, 구분="probe", 목록=lst, 사이트_총건수=tots[0], 받은_쪽수=1, 받은_행수=len(rows),
                            요청URL=LISTS[lst]["api"], 수집시각=meta.get("fetched_at", ""))
+            raise Stop("--probe: 1쪽 점검만 하고 멈춤(정상)")
 
         words = [(w, "주", None) for w in MAIN] + [(w, "보조", why) for w, why in AUX.items()] + \
                 [(w, "점검(1쪽)", why) for w, why in PROBE.items()]
