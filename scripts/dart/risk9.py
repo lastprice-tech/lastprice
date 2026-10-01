@@ -271,7 +271,8 @@ def main_xml(rc):
     names = [n for n in z.namelist() if n == rc + ".xml"]
     if not names:
         return None                       # 첨부정정 등 — 본문 XML 이 없다
-    return z.read(names[0]).decode("utf-8", "replace")
+    import docparse                       # 2021년 이전 원문은 EUC-KR 이다 — 선언을 보고 utf-8·cp949 순으로
+    return docparse.decode_document(z.read(names[0]))[0]
 
 
 def part(x, roman_from, roman_to_pat):
@@ -778,7 +779,8 @@ def icfr_attach(rc):
                                    (rc + "_00761.xml", "연결", r"^\d+_\[.*\]연결감사보고서.*\.pdf$")):
         if member not in z.namelist():
             continue
-        t = re.sub(r"\s+", " ", _h.unescape(re.sub(r"<[^>]+>", " ", z.read(member).decode("utf-8", "replace"))))
+        import docparse
+        t = re.sub(r"\s+", " ", _h.unescape(re.sub(r"<[^>]+>", " ", docparse.decode_document(z.read(member))[0])))
         heads = [m.start() for m in re.finditer(r"내부회계관리제도\s*(감사의견|검토의견|감사보고서|검토보고서)", t)]
         body = [h for h in heads if "‥" not in t[h:h + 80]]          # 목차 줄(‥‥ 쪽번호) 제외
         if not body:
@@ -943,6 +945,12 @@ def capital_rows(rc):
     # 지주 본체 / 자회사 경계: 「재무건전성 등 기타 참고사항」 절 안의 대괄호 표제 「[주요종속회사…]」·「[주요 자회사…]」
     mt = re.search(r"<TITLE[^>]*>[^<]*재무건전성", sl)
     base = mt.start() if mt else 0
+    # 「[지배회사에 관한 사항…]」 표제 중 뒤에 자본 지표가 이어지는 것(사업 개요의 같은 표제는 건너뜀)
+    for hb in re.finditer(r"\[\s*지배회사에\s*관한\s*사항", sl[base:]):
+        nxt = re.sub(r"<[^>]+>", " ", sl[base + hb.start(): base + hb.start() + 3000])
+        if re.search(r"필요자본|자본적정성|부채비율|자기자본", nxt):
+            base = base + hb.start()
+            break
     m2 = re.search(r"\[\s*주요\s*(종속\s*회사|자회사)", sl[base:])
     sub_at = base + m2.start() if m2 else None
     out = []
@@ -973,7 +981,9 @@ def capital_rows(rc):
                 if "지급여력비율" in label and not holding:
                     cands.append("지급여력비율(보험 자회사)")
                 for metric in cands:
-                    j = next((j for j in range(1, len(row)) if _num(row[j][0])), None)
+                    # 당기 칸 = 행 이름 다음의 첫 값 열(머리가 「구분」인 칸은 건너뜀). 숫자가 아니어도(예: 「주3)」)
+                    # 그 칸을 그대로 쓴다 — 옆 칸(전기)으로 넘어가면 지난 값이 이번 분기 값으로 둔갑한다.
+                    j = next((j for j in range(1, len(row)) if "구분" not in re.sub(r"\s+", "", head[j] if j < len(head) else "")), None)
                     if j is None:
                         continue
                     out.append(dict(metric=metric, value=row[j][0], col_header=head[j] if j < len(head) else "",
@@ -992,7 +1002,7 @@ def capital_rows(rc):
                     lab = re.sub(r"\s+", "", " ".join(c[0] for c in row[:2]))
                     if cols and ("지주" in lab or "합계" in lab or "지주회사" in lab):
                         j = cols[0]
-                        if _num(row[j][0]):
+                        if True:                                   # 숫자가 아니어도 그 칸 그대로(아래에서 표시)
                             out.append(dict(metric="원화유동성비율", value=row[j][0], col_header=hn[j],
                                             row_label=" ".join(c[0] for c in row[:2]), unit=t.get("unit_hint", ""),
                                             context=" / ".join(ctx[-3:])[:200],
@@ -1000,7 +1010,7 @@ def capital_rows(rc):
                                             head_text=" | ".join(hn), table=ti, holding=True))
                             break
                     elif not cols and re.search(r"유동성비율", lab):
-                        j = next((j for j in range(1, len(row)) if _num(row[j][0])), None)
+                        j = 1 if len(row) > 1 else None
                         if j is not None:
                             out.append(dict(metric="원화유동성비율", value=row[j][0],
                                             col_header=g[0][j][0], row_label=row[0][0],
@@ -1013,7 +1023,9 @@ def capital_rows(rc):
 
 def build_capital():
     """원문_비은행지주_자본지표.csv — 2021.1Q~최신 분기 분기·반기·사업보고서(정정본 포함) 각 본의 당기 값."""
-    t = [r for r in _targets() if r["group"] in ("B_비은행지주정기",)]
+    # B 그룹 목록 그대로(지주 사업보고서 묶음 A 와 겹치는 FY2023~25 사업보고서도 여기 포함)
+    t = [r for r in csv.DictReader(open(os.path.join(WORK, "DART_목록.csv"), encoding="utf-8-sig"))
+         if r["group"] == "B_비은행지주정기" and r["rcept_no"]]
     out = []
     for r in t:
         rc, lab = r["rcept_no"], r["corp_label"]
@@ -1029,6 +1041,10 @@ def build_capital():
                                 note="본문 XML 없음(첨부정정 등)"))
             continue
         rng = part_pages(rc, r"(II|Ⅱ)\.사업의내용", r"(III|Ⅲ)\.재무에관한사항")
+        import html as _h
+        xx = main_xml(rc) or ""
+        plain = re.sub(r"\s+", " ", _h.unescape(re.sub(r"<[^>]+>", " ", xx)))
+        narr = re.findall(r"[^.]*필요자본\s*대비\s*자기자본\s*비율은[^.]*?\d+\.\d+\s*%[^.]*\.", plain)[:3]
         got = {}
         for x in rows:
             got.setdefault(x["metric"], []).append(x)
@@ -1036,8 +1052,10 @@ def build_capital():
                  (["지급여력비율(보험 자회사)"] if lab == "메리츠금융지주" else []):
             xs = got.get(m, [])
             if not xs:
-                out.append(dict(base, metric=m, value="문서에 없음", unit="", page="", source_text="",
-                                note="Ⅱ 장 표에서 「%s」 행을 못 찾음(업계 현황표·자회사 표 제외)" % m))
+                why = "Ⅱ 장 표에서 「%s」 행을 못 찾음(업계 현황표·자회사 표 제외)" % m
+                if m == "이중레버리지비율":
+                    why += "; 같은 회사 2026.2Q 경영공시(dart_out/text/risk8/경영공시__*.txt)에도 「이중레버리지」 어휘 0건"
+                out.append(dict(base, metric=m, value="문서에 없음", unit="", page="", source_text="", note=why))
                 continue
             seen = set()
             for x in xs:
@@ -1045,11 +1063,20 @@ def build_capital():
                 if k in seen:
                     continue
                 seen.add(k)
+                val, extra = x["value"], ""
+                if not _num(val):                      # 당기 칸이 숫자가 아님 — 값은 비우고 원문 칸을 note 에
+                    extra = " · 당기 칸 원문 「%s」(숫자 아님 — 옆 칸 값은 옮기지 않음)" % val
+                    val = risk8.NOT_FOUND
                 pg = find_page(rc, x["row_label"], x["value"], within=rng)
-                note = "값 열 머리 「%s」(표의 첫 값 열) · 맥락: %s" % (x["col_header"], x["context"][:120])
+                note = "값 열 머리 「%s」(당기 칸) · 맥락: %s%s" % (x["col_header"], x["context"][:120], extra)
+                if m == "필요자본 대비 자기자본비율":     # 같은 본 서술문에 다른 값이 있으면 원문 그대로 적는다(판정 없음)
+                    for sent in narr:
+                        nums = re.findall(r"(\d+\.\d+)\s*%", sent)
+                        if nums and val not in nums:
+                            note += " · 같은 본 서술문(값 다름): 「%s」" % sent[:160]
                 if len(xs) > 1:
                     note += " · 같은 본에 이 지표 행이 %d개" % len(xs)
-                out.append(dict(base, metric=m, value=x["value"], unit=x["unit"], page=pg,
+                out.append(dict(base, metric=m, value=val, unit=x["unit"], page=pg,
                                 source_text="[머리] %s ‖ [행] %s" % (x["head_text"], x["row_text"]),
                                 note=note))
     for lab, (rc, sent) in NONBANK_EVIDENCE.items():
