@@ -1129,10 +1129,14 @@ def build_insurers():
             continue
         others = [r["rcept_no"] for r in lst if r["corp_label"] == o["corp_label"] and r["rcept_no"] != o["rcept_no_or_url"]]
         res = []
+        rnm = {r["rcept_no"]: r["report_nm"] for r in lst}
         for rc in others:
             P = pages_of(rc)
             if not P:
                 res.append("%s: 텍스트 없음" % rc)
+                continue
+            if "첨부정정" in rnm.get(rc, "") or main_xml(rc) is None:
+                res.append("%s %s: 본문 없는 정정(첨부만) — 대조 불가" % (rc, rnm.get(rc, "")))
                 continue
             res.append("%s: %s" % (rc, "같은 문구 있음" if any(risk8._nows(o["source_text"]) in t for t in P.values())
                                    else "같은 문구 없음"))
