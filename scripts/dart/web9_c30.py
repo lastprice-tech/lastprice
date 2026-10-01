@@ -20,6 +20,8 @@
   · 분기공시(보험업법 제111조 제4항 — 신용공여현황, 채권·주식 취득현황): 공시일 2025-10-01 이후
     = 2025.3Q 이후 기준분 (문서 안 「(…기준」 표기로 다시 확인해 fy 에 원문 그대로)
   · 수시공시(제111조 제3항 등 — 신용공여, 주식 취득, 의결권 행사, 공익법인 무상양도): 공시일 2025-07-01 이후
+  · 공익법인 무상양도 공시는 지난 거래까지 쌓아 싣는 누적 표라서 표의 마지막 행(같은 일자 포함)만 옮긴다
+    (이전 행은 원본·.pages.txt 에 그대로 있고 note 에 행 수를 적는다).
 PDF 는 pypdf 로 읽는다. 표 칸은 PDF 가 칸마다 거는 clip 사각형으로 묶어(같은 clip = 같은 칸) 칸 글자를 그대로
 ' | ' 로 잇는다. 칸 안 줄바꿈은 붙이고(원문 줄바꿈 위치의 공백은 그대로), 연속 공백만 하나로 줄인다.
 금액·날짜는 계산·환산하지 않는다.
@@ -365,7 +367,8 @@ def table_rows(pages, base, kind):
             nm = names[0]
             vals = [c for c in rc if c["x0"] >= name_h["x1"] - 1]
             kinds = [c for c in vals if "종류" in hdr(c).replace(" ", "")]
-            money = [c for c in vals if re.search(r"신용공여금액|취득현황", hdr(c)) and not blank(c["text"])]
+            money = [c for c in vals if re.search(r"신용공여금액|취득현황", hdr(c)) and "사유" not in hdr(c)
+                     and not blank(c["text"])]
             if kind == "7-2-2":
                 grp = [g for g in ("채권취득현황", "주식취득현황")
                        if any(g in hdr(c) and c["text"].strip() not in ("-",) for c in money)]
@@ -418,14 +421,15 @@ def susi_rows(pages, code):
     pg = ",".join(sorted({str(n) for _, _, n in pairs})) or "1"
     _, who = find(pairs, r"대주주명")
     bl, bod = find(pairs, r"이사회(결의|의결)")
-    kl, kval = find(pairs, r"(주식의종류|채권의종류|신용공여종류)$")
+    kl, kval = (None, None) if code == "제7-1-4호" else find(pairs, r"(주식의종류|채권의종류|신용공여종류)$")
     al, aval = find(pairs, r"(취득금액|신용공여금액|거래금액)")
     dl, dval = find(pairs, r"(취득일|신용공여일|주주총회일|거래일)")
     return [dict(fy="%s %s" % (dl, dval) if dval else NONE, counterparty=who or NONE,
                  deal_type=title + (" / %s: %s" % (kl, kval) if kval else ""),
                  amount="%s: %s" % (al, aval) if aval else NONE,
                  board_approval="%s: %s" % (bl, bod) if bod else NONE,
-                 source_text=src, page=pg, note_extra="")]
+                 source_text=src, page=pg,
+                 note_extra="의결권 행사 서식 — 금액 칸 없음" if code == "제7-1-4호" else "")]
 
 
 def gift_rows(pages):
@@ -458,9 +462,14 @@ def gift_rows(pages):
                                     board_approval=NONE, source_text=joinrow(rc2), page=str(p["no"]),
                                     note_extra="표 머리: %s; 거래상대방 = 「1. 공익법인등 현황」 명칭 칸"
                                     % joinrow(hdr)))
+    # 이 서식은 지난 거래까지 쌓아 싣는 누적 표 — 표의 마지막 행과 같은 일자의 행만 남긴다(나머지는 .pages.txt)
     n = len(out)
-    for k, r in enumerate(out, 1):
-        r["note_extra"] += "; 누적 표 %d행 중 %d번째(같은 행이 다른 무상양도 공시에도 실림)" % (n, k)
+    last = out[-1]["fy"] if out else None
+    keep = [(k, r) for k, r in enumerate(out, 1) if r["fy"] == last]
+    for k, r in keep:
+        r["note_extra"] += ("; 누적 표 %d행 중 %d번째 — 표 마지막 행(같은 일자 포함)만 옮김, 이전 일자 %d행은 "
+                            "원본 .pages.txt 에 있음(앞선 무상양도 공시에도 실림)" % (n, k, n - len(keep)))
+    out = [r for _, r in keep]
     return out or [dict(fy=NONE, counterparty=org or NONE, deal_type=doc_title(pages), amount=NONE,
                         board_approval=NONE, source_text=NONE, page="", note_extra="무상양도 표를 못 찾음")]
 

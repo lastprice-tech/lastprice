@@ -946,13 +946,16 @@ def capital_rows(rc):
     mt = re.search(r"<TITLE[^>]*>[^<]*재무건전성", sl)
     base = mt.start() if mt else 0
     # 「[지배회사에 관한 사항…]」 표제 중 뒤에 자본 지표가 이어지는 것(사업 개요의 같은 표제는 건너뜀)
-    for hb in re.finditer(r"\[\s*지배회사에\s*관한\s*사항", sl[base:]):
+    # 표제는 「[지배회사에 관한 사항…]」 또는 지주 이름 「[한국투자금융지주]」(옛 서식)
+    for hb in re.finditer(r"\[\s*(지배회사에\s*관한\s*사항|한국투자금융지주|한국금융지주|메리츠금융지주)", sl[base:]):
         nxt = re.sub(r"<[^>]+>", " ", sl[base + hb.start(): base + hb.start() + 3000])
         if re.search(r"필요자본|자본적정성|부채비율|자기자본", nxt):
             base = base + hb.start()
             break
-    m2 = re.search(r"\[\s*주요\s*(종속\s*회사|자회사)", sl[base:])
-    sub_at = base + m2.start() if m2 else None
+    # 자회사 구간 시작: 「[주요종속회사…]」·「[주요 자회사…]」 또는 자회사 이름 대괄호(옛 서식 「[한국투자증권]」 등)
+    m2 = re.search(r"\[\s*(주요\s*(종속\s*회사|자회사)|[^\]\[]{0,20}(증권|저축은행|캐피탈|화재|해상|자산운용|신탁|파트너스|생명)\s*\])",
+                   sl[base + 20:])                      # +20: 지주 표제 자신은 건너뛴다
+    sub_at = base + 20 + m2.start() if m2 else None
     out = []
     for s in secs:
         for ti, t in enumerate(s["tables"]):
