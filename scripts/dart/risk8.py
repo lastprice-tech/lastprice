@@ -606,6 +606,8 @@ def emit():
     idx = {r["doc_id"]: r for r in csv.DictReader(open(os.path.join(WORK, "텍스트목록.csv"),
                                                           encoding="utf-8-sig"))}
     log = list(csv.DictReader(open(os.path.join(WORK, "검색기록.csv"), encoding="utf-8-sig")))
+    rnm = {r["rcept_no"]: r["report_nm"] for r in csv.DictReader(
+        open(os.path.join(WORK, "DART_문서목록.csv"), encoding="utf-8-sig")) if r["rcept_no"]}
     texts = {}
 
     def nows_text(doc_id):
@@ -629,12 +631,19 @@ def emit():
                 for q in qs]
         amend_notes = []
         for a in amends:
+            name = a.split("__")[-1] + (" " + rnm[a.split("__")[-1]] if a.split("__")[-1] in rnm else "")
             t = nows_text(a)
             if t is None:
-                amend_notes.append("%s: 텍스트 없음(%s)" % (a.split("__")[-1], idx.get(a, {}).get("상태", "목록 없음")))
+                amend_notes.append("%s: 텍스트 없음(%s)" % (name, idx.get(a, {}).get("상태", "목록 없음")))
                 continue
-            same = sum(1 for _f, q in allq if _nows(q["quote"]) in t)
-            amend_notes.append("%s: 인용 %d개 중 %d개 같은 문구 있음" % (a.split("__")[-1], len(allq), same))
+            sec = next((x["section"] for x in log if x["doc_id"] == a), "")
+            if sec.startswith("절 못 찾음"):
+                amend_notes.append("%s: 이 본에는 위험관리 절이 없어 대조 불가(%s)" % (name, sec))
+                continue
+            diff = ["%s p.%d" % (f, int(q["page"])) for f, q in allq if _nows(q["quote"]) not in t]
+            amend_notes.append("%s: 인용 %d개 중 %d개 같은 문구 있음%s"
+                               % (name, len(allq), len(allq) - len(diff),
+                                  " (이 본에 없는 문구: %s)" % ", ".join(diff) if diff else ""))
         out = dict(corp_label=row["corp_label"], fy=fy, doc_kind=row["doc_kind"],
                    section_title=row["section_title"])
         src_text, pages = [], set()

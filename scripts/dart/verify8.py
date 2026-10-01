@@ -175,7 +175,7 @@ def main():
         s = open(p, encoding="utf-8", errors="replace").read()
         if any(k in s for k in secrets):
             leak.append(p + " (키 값)")
-        if re.search(r"OC=(?!\*\*\*)", s):
+        if re.search(r"OC=(?!\*\*\*)[A-Za-z0-9]", s):      # URL 값 노출(OC=*** 는 가린 것)
             leak.append(p + " (OC= 노출)")
     ok(not leak, "6b. 8차 파일 키 유출 0 — %d개 파일, 비밀값 %d종 + `OC=` 검사%s"
        % (len(scan), len(secrets), "" if not leak else " — %s" % leak))
