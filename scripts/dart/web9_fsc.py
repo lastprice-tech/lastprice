@@ -18,6 +18,10 @@
   · 최근회신사례 (PastReplyList.do) → POST /fsc_new/replyCase/selectReplyCasePastReplyList.do
       같은 낱말 → {idx, gubun, category, title, number(일련번호), regDate(등록일)}. 통합조회 응답에는
       일련번호가 없어 이것으로 붙인다(원문 md 파일명 = 일련번호).
+      두 목록은 같은 낱말에도 걸리는 건이 다르다(2026-10-01: 최근회신사례에만 84건, 통합조회에만 법령해석·
+      비조치 9건 + 2014 이전 28건). 그래서 두 목록의 합집합을 대상으로 삼는다.
+      ※ 법령해석 메뉴(LawreqList.do → selectReplyCaseLawreqList.do)도 점검했다: 「위험관리책임자」 36건, 1쪽
+        순서까지 최근회신사례의 법령해석 36건과 같아 따로 부르지 않는다(나머지 낱말은 접속 끊김으로 대조 못 함).
   · 상세 — 사이트 「URL 복사」 단추에 적힌 주소(GET, POST 로 열 때와 같은 응답임을 확인):
       LawreqDetail.do?stNo=11&muNo=117&muGpNo=75&lawreqIdx=…, OpinionDetail.do?…&opinionIdx=…
       2014 이전 건은 그 단추가 없어 화면 JS(goUrl)의 파라미터 그대로 PastReqDetail.do?…&pastreqIdx=…&actCd=R
@@ -31,8 +35,9 @@ AND 검색 — 「금융지주 낱말」(공백)·「금융지주+낱말」은 �
   dart_out/risk9/법령해석_검색기록.csv  낱말·목록별 사이트 총건수 ↔ 받은 행 수 대조
 
 옮기는 방식(글자는 바꾸지 않는다): 태그만 걷어내고 엔티티(&nbsp; 등)는 그 글자로 푼다.
-  태그 없는 칸은 원래 줄바꿈 그대로(앞뒤의 서식 공백만 뗌). 태그 있는 칸은 HTML 서식 줄바꿈을 공백으로 보고
-  <br> → 줄바꿈, <p>·<div> 등 문단 → 빈 줄, 칸 안의 표는 칸 사이 탭·행 사이 줄바꿈.
+  태그 없는 칸은 원래 줄바꿈·공백 그대로(앞뒤의 서식 공백만 뗌). 태그 있는 칸은 HTML 공백 규칙대로(소스 줄바꿈·
+  연속 공백 → 한 칸, 브라우저 표시와 같음) 두고 <br> → 줄바꿈, <p>·<div> 등 문단 → 빈 줄, 칸 안의 표는 칸 사이 탭·
+  행 사이 줄바꿈.
   answer_summary = 「회답」 칸의 첫 문단(태그 있는 칸은 첫 <p> 등 블록, 태그 없는 칸은 첫 줄). 사이트에
   회신 요지 칸은 없다. question = 「질의요지」 칸 전부(500자 넘으면 앞 500자 + note).
 """
@@ -244,12 +249,15 @@ def text(h):
     h = re.sub(r"<!--.*?-->", "", h, flags=re.S).replace("\r\n", "\n").replace("\r", "\n")
     if not TAG.search(h):                                     # 태그 없는 칸: 원래 줄바꿈 그대로
         return html.unescape(h).strip(" \t\n")
-    h = re.sub(r"[ \t]*\n[ \t\n]*", " ", h)                   # HTML 서식 줄바꿈 → 공백(브라우저와 같게)
+    # 태그 있는 칸은 HTML 공백 규칙대로 — 소스의 줄바꿈·탭·연속 공백(ASCII)은 한 칸(브라우저 표시와 같게).
+    # 워드·한글에서 붙여 넣은 칸은 문장 가운데서 소스 줄이 접혀 있어(예: "고객 정보\n파악") 줄바꿈이 아니다.
+    h = re.sub(r"[ \t\n]+", " ", h)
     h = re.sub(r"<br\b[^>]*>", "\n", h, flags=re.I)
     h = re.sub(r"</?(?:p|div|h\d|ul|ol|table|blockquote|pre|center|hr)\b[^>]*>", "\n\n", h, flags=re.I)
     h = re.sub(r"</?(?:li|tr)\b[^>]*>", "\n", h, flags=re.I)
     h = re.sub(r"</t[dh]>", "\t", h, flags=re.I)
     h = re.sub(r"<[^>]+>", "", h)                             # 나머지 태그
+    h = re.sub(r" {2,}", " ", h)                              # 태그 사이에 갈려 있던 공백 — &nbsp;(U+00A0)는 그대로
     h = html.unescape(h)
     lines = [ln.strip(" ") for ln in h.split("\n")]           # 서식 공백(ASCII 공백)만 뗀다 — &nbsp; 는 남는다
     h = re.sub(r"\n{3,}", "\n\n", "\n".join(lines))
@@ -454,6 +462,18 @@ def main():
                 note.append("answer_summary: 회답 첫 문단이 %d자 — 이어지는 회답은 상세 페이지·원문 md" % len(ans))
             if q_full and q_full == text(f["회답"][0]):
                 note.append("사이트의 질의요지 칸 글이 회답 칸과 같음(원문 그대로 둠)")
+        st = list(dict.fromkeys(text(x) for x in f.get("처리구분", [])))
+        if st and st != ["완료"]:
+            note.append("처리구분: %s" % "/".join(st))
+        if f.get("회신일") and not rd:
+            note.append("상세의 회신일 칸이 비어 있음")
+        if f.get("질의요지") and not q_full:
+            note.append("상세의 질의요지 칸이 비어 있음")
+        if d and (not q_full or not ans):
+            att = " / ".join(x.strip() for x in text(f["첨부파일"][0]).split("\n") if x.strip()) \
+                if f.get("첨부파일") else ""
+            if att:
+                note.append("첨부파일: %s" % att)
         if d and not f.get("질의요지"):
             note.append("상세에 질의요지 칸 없음")
         if d and not f.get("회답"):

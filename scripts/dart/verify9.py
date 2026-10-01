@@ -109,8 +109,13 @@ def main():
     # ── 작업 2·3 ───────────────────────────────────────────────────────────
     k = rd(os.path.join(H, "원문_비은행지주_자본지표.csv"))
     if k is not None:
-        bad = [x for x in k if x["page"] and not on_page(x["rcept_no_or_url"], x["page"],
-                                                         x["source_text"].split("[행] ")[-1].split(" | ")[0], x["value"])]
+        def cap_ok(x):
+            lab = x["source_text"].split("[행] ")[-1].split(" | ")[0]
+            if x["value"] == NF:                 # 당기 칸이 숫자가 아닌 행 — 행 이름과 원문 칸 글자로 대조
+                m = re.search(r"당기 칸 원문 「(.*?)」", x["note"])
+                return on_page(x["rcept_no_or_url"], x["page"], lab, m.group(1) if m else "")
+            return on_page(x["rcept_no_or_url"], x["page"], lab, x["value"])
+        bad = [x for x in k if x["page"] and not cap_ok(x)]
         ok(not bad, "작업2 자본지표 %d행 — 쪽에 행 이름·값 있음%s" % (len(k), "" if not bad else " — 불일치 %d" % len(bad)))
         nop = [x for x in k if x["value"] != NF and not x["page"]]
         ok(True, "작업2 값 있는데 쪽 못 찾은 행 %d" % len(nop))
