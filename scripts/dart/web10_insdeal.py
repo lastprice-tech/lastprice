@@ -47,6 +47,59 @@ def robots():
     write_csv(os.path.join(WORK, "보험자회사_robots.csv"), list(rows[0].keys()), rows)
 
 
+def _robots_for(w, base):
+    r = Robots(w, base, TASK)
+    return r
+
+
+def get(w, rob, url, name, referer="", data=None, headers=None, extra=None):
+    """robots 허용 URL 만 받아 save. 로그인·캡차·차단 화면이면 멈춘다."""
+    import re
+    if not rob.allowed(url):
+        raise SystemExit("robots.txt 가 막음 — 요청 안 함: %s" % url)
+    fu, st, hd, b = w.get(url, referer=referer, data=data, headers=headers)
+    meta = dict(출처URL=url, method="POST" if data is not None else "GET", 최종URL=fu, http_status=st,
+                content_type=hd.get("Content-Type", ""), fetched_at=now())
+    if data is not None:
+        meta["요청본문"] = dict(data) if not isinstance(data, bytes) else data.decode("utf-8", "replace")
+    meta.update(extra or {})
+    from web10 import save
+    p, meta = save(TASK, name, b, meta)
+    if "html" not in (hd.get("Content-Type", "") or "").lower():   # JS·JSON·PDF 안의 안내 문구는 차단 화면이 아님
+        return fu, st, hd, b, p, meta
+    low = b[:30000].decode("utf-8", "replace")
+    for wd in ("captcha", "CAPTCHA", "자동입력", "보안문자", "로그인이 필요", "로그인 후 이용", "Access Denied",
+               "Block URL List", "보안정책"):
+        if wd in low:
+            raise SystemExit("차단/로그인/캡차 신호 %r — %s (%s)" % (wd, url, p))
+    return fu, st, hd, b, p, meta
+
+
+def explore():
+    """첫 화면·사이트맵에서 공시실 링크를 찾는다(받은 화면은 원본 저장)."""
+    import re
+    w = Web()
+    targets = [("KB라이프", "https://www.kblife.co.kr", ["/sitemap/sitemap.xml"]),
+               ("KB손해보험", "https://www.kbinsure.co.kr", ["/"]),
+               ("메리츠화재", "https://www.meritzfire.com", ["/"])]
+    for label, base, paths in targets:
+        rob = _robots_for(w, base)
+        for pth in paths:
+            url = base + pth
+            try:
+                fu, st, hd, b, p, meta = get(w, rob, url, "%s_%s" % (label, re.sub(r"[^\w.]+", "_", pth).strip("_")
+                                                                     or "home"))
+            except Exception as e:                          # noqa: BLE001
+                print(label, url, "실패", repr(e)[:200], flush=True)
+                continue
+            t = b.decode("utf-8", "replace")
+            print(label, url, st, len(b), fu, flush=True)
+            for m in re.finditer(r'(?:href|loc)[=>"\s]+([^"<\s]+)[^>]*>?([^<]{0,60})', t):
+                s = m.group(0)
+                if re.search(r"공시|disclos|ir|notice", s, re.I) and re.search(r"공시|disclos", s, re.I):
+                    print("   ", m.group(1), "|", m.group(2).strip()[:60])
+
+
 if __name__ == "__main__":
     cmd = sys.argv[1] if len(sys.argv) > 1 else ""
-    {"robots": robots}.get(cmd, lambda: print(__doc__))()
+    {"robots": robots, "explore": explore}.get(cmd, lambda: print(__doc__))()
