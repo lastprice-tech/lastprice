@@ -715,6 +715,25 @@ def _pdf_pages(path):
     return [(i + 1, p.extract_text() or "") for i, p in enumerate(PdfReader(path).pages)]
 
 
+def cell_lines(raw_md):
+    """읽기용 변환(글자는 그대로): 별표 전체가 한 칸짜리 표라 hwp2md 가 한 줄(<br> 로 줄바꿈)로 낸다.
+    ① 칸 글만 꺼내고(앞뒤 「| 」·「 |」 떼기) ② <br> → 줄바꿈 ③ \\| → | ④ 표 구분줄 |---| 생략."""
+    lines = []
+    for l in raw_md.split("\n"):
+        st = l.strip()
+        if re.fullmatch(r"\|(\s*-+\s*\|)+", st):
+            continue
+        if st.startswith("|") and "<br>" in st:
+            cell = re.sub(r"^\|\s?", "", st)
+            cell = re.sub(r"\s?\|$", "", cell)
+            lines += [x.replace("\\|", "|") for x in cell.split("<br>")]
+        else:
+            lines.append(l)
+    while lines and not lines[-1].strip():
+        lines.pop()
+    return lines
+
+
 def annex37():
     import json
     import xml.etree.ElementTree as ET2
@@ -752,21 +771,7 @@ def annex37():
     full = os.path.join(RAW, "annex37", "세칙_별표37_hwp2md.md")
     subprocess.run([sys.executable, os.path.join(HERE, "hwp2md.py"), hwp["경로"], full], check=True)
     raw_md = open(full, encoding="utf-8").read().rstrip("\n")
-    # 읽기용 변환(글자는 그대로): 별표 전체가 한 칸짜리 표라 hwp2md 가 한 줄(<br> 로 줄바꿈)로 낸다.
-    #   ① 칸 글만 꺼내고(앞뒤 「| 」·「 |」 떼기) ② <br> → 줄바꿈 ③ \| → | ④ 표 구분줄 |---| 생략.
-    lines = []
-    for l in raw_md.split("\n"):
-        st = l.strip()
-        if re.fullmatch(r"\|(\s*-+\s*\|)+", st):
-            continue
-        if st.startswith("|") and "<br>" in st:
-            cell = re.sub(r"^\|\s?", "", st)
-            cell = re.sub(r"\s?\|$", "", cell)
-            lines += [x.replace("\\|", "|") for x in cell.split("<br>")]
-        else:
-            lines.append(l)
-    while lines and not lines[-1].strip():
-        lines.pop()
+    lines = cell_lines(raw_md)
     pages = _pdf_pages(got["PDF"]["경로"]) if got.get("PDF", {}).get("상태") == "OK" else []
     if pages:
         with open(os.path.join(RAW, "annex37", "세칙_별표37_pdf.txt"), "w", encoding="utf-8") as f:
