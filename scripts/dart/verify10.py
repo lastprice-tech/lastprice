@@ -10,6 +10,7 @@ B 별표37: 표시 CSV 의 source_text 가 세칙_별표37.md 「원문」에 �
 C 법령 md: 본문이 원문 XML 에서 다시 뽑은 글과 같은가, 머리말에 출처(OC=***)·sha256 이 있는가.
 D 웹 대조 CSV(제3자가이드라인·작성기준): 원문 열이 해당 md 에 그대로 있는가(「문서에 없음」·「확인 불가」 제외).
 E 법령해석_대주주거래: related 행의 body_md 파일이 있고, 폴더의 md 가 모두 목록에 있는가.
+  우선 질문(①②③) 인용 문장이 그 회신 원문 md 에 그대로 있는가.
 F 모든 CSV 행에 출처(URL/접수번호)와 수집일이 있는가.
 G 키 유출: DART_API_KEY·LAW_OC 값이 새 파일 어디에도 없고, 「OC=」 뒤는 늘 *** 인가.
 H 9차까지의 산출물(handoff/ 의 10차 폴더 밖)이 9차 마지막 커밋(25909e2)과 같은가.
@@ -222,6 +223,18 @@ def check_E():
     ok(bool(rr) and not missing and have <= listed,
        "E1 법령해석_대주주거래 목록 %d행 · 원문 md %d개 · 목록에 없는 md %d · 없는 파일 %d"
        % (len(rr), len(have), len(have - listed), len(missing)))
+
+
+    bad = n = 0
+    for r in rows(os.path.join(WORK, "법령해석_대주주거래_우선.csv")):
+        if r["source_text"] in NA:
+            continue
+        n += 1
+        md = os.path.join(d, "%s.md" % r["일련번호"])
+        if not (os.path.exists(md) and _in_md(r["source_text"], md)):
+            bad += 1
+            log.append("   불일치 우선 %s" % r["일련번호"])
+    ok(n > 0 and bad == 0, "E2 우선 질문 인용 %d건이 그 회신 원문 md 에 그대로 있음 (불일치 %d)" % (n, bad))
 
 
 # ── F 출처·수집일 ─────────────────────────────────────────────────────────

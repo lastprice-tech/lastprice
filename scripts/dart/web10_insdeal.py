@@ -61,6 +61,7 @@ HOSTS = [
     ("하나생명", "https://www.hanalife.co.kr"),
     ("생명보험협회 공시실", "https://pub.insure.or.kr"),
 ]
+SITE_OF = dict(HOSTS)                   # 회사 → 누리집 주소(「문서에 없음」 행의 출처)
 KBL = "https://www.kblife.co.kr"
 KBL_PAGE = KBL + "/customer-common/managementPublicNoticeOffice.do"
 KBL_API = KBL + "/customer-common/API/CUCO30390.do"
@@ -564,18 +565,21 @@ def collect():
         if why == "OK":
             n = sum(1 for r in all_rows if r["corp_label"] == corp and r.get("판정"))
             if n == 0:
-                out.append(none_row(corp, "고른 기간 공시에서 거래 상대방이 지주·지주 자회사(이름 일치)인 행 없음"))
+                out.append(none_row(corp, "고른 기간 공시에서 거래 상대방이 지주·지주 자회사(이름 일치)인 행 없음",
+                                    {"KB라이프": KBL_PAGE, "KB손해보험": KBI_LIST}.get(corp, SITE_OF.get(corp, ""))))
             continue
         if why is None:
             why = {"메리츠화재": "누리집 첫 화면이 JS(/common/index.js)로만 그려져 공시실 목록 주소를 화면 원본에서 "
                                  "확인하지 못함 — 미확인(시간)",
                    "신한라이프": "robots.txt 는 받았으나 공시실 목록 주소를 확인하지 않음 — 미확인(시간)",
                    "하나생명": hana_note()}.get(corp, "")
-        out.append(none_row(corp, why))
+        out.append(none_row(corp, why, (SITE_OF[corp] + ("/" if corp == "메리츠화재" else "/robots.txt"))
+                            if corp in SITE_OF else ""))
     out += [{k: r.get(k, "") for k in COLS} for r in all_rows if r.get("판정")]
-    out.append(none_row("(손해보험협회 공시실)", "다른 작업이 맡음 — 이번에 미확인(knia.or.kr 요청 안 함)"))
+    out.append(none_row("(손해보험협회 공시실)", "다른 작업이 맡음 — 이번에 미확인(knia.or.kr 요청 안 함)",
+                        "https://kpub.knia.or.kr/ (요청 안 함)"))
     out.append(none_row("(생명보험협회 공시실)", "robots.txt(pub.insure.or.kr) 가 User-agent:* Disallow:/ — 요청 안 함"
-                                           "(robots.txt 만 받음)"))
+                                           "(robots.txt 만 받음)", "https://pub.insure.or.kr/robots.txt"))
     write_csv(OUT_CSV, COLS, out)
     write_csv(ALL_CSV, COLS + ["판정"], [{k: r.get(k, "") for k in COLS + ["판정"]} for r in all_rows])
     print("handoff %d행 → %s · 전체 %d행 → %s" % (len(out), OUT_CSV, len(all_rows), ALL_CSV))
@@ -591,9 +595,10 @@ def hana_note():
     return "공시실 목록 주소를 확인하지 않음 — 미확인(시간)"
 
 
-def none_row(corp, why):
+def none_row(corp, why, url=""):
+    """「문서에 없음」 행 — url 은 찾아본(또는 robots 로 막혀 요청하지 않은) 곳."""
     return dict(corp_label=corp, 공시일=NONE, **{"거래 상대방": NONE, "거래 유형": NONE, "금액": NONE,
-                                                 "이사회 의결일": NONE}, url="", source_text=NONE, doc_name=NONE,
+                                                 "이사회 의결일": NONE}, url=url, source_text=NONE, doc_name=NONE,
                 page="", collected_at=now(), note=why)
 
 
