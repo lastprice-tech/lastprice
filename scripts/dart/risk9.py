@@ -406,13 +406,63 @@ def find_page(rc, *keys, within=None):
 
 
 def part_pages(rc, start_pat, end_pat):
-    """본문 PDF 에서 장 범위(쪽). 목차 쪽(줄표)은 건너뛴다."""
+    """본문 PDF 에서 장 범위(쪽). 장 제목 바로 뒤에 첫 절(「1.」·「가.」)이 이어지는 쪽을 시작으로 본다 —
+    목차(줄표)·정정본 앞머리·본문 속 참조(「… 'VI. 이사회 등 …' 참조」)는 그렇게 이어지지 않는다."""
     P = pages_of(rc)
-    s = next((n for n in sorted(P) if re.search(start_pat, P[n]) and "....." not in P[n]), None)
-    if s is None:
+    if not P:
         return None
-    e = next((n for n in sorted(P) if n > s and re.search(end_pat, P[n]) and "....." not in P[n]), max(P))
-    return (s, e)
+    head = re.compile("(%s)(1\\.|가\\.|\\(1\\))" % start_pat)
+    S = [n for n in sorted(P) if head.search(P[n]) and "....." not in P[n]]
+    if not S:                                     # 그런 쪽이 없으면 예전 방식(목차 제외 첫 쪽)
+        S = [n for n in sorted(P) if re.search(start_pat, P[n]) and "....." not in P[n]][:1]
+        if not S:
+            return None
+    s_ = S[-1] if len(S) > 1 else S[0]
+    endh = re.compile("(%s)(1\\.|가\\.|\\(1\\))" % end_pat)
+    e_ = next((n for n in sorted(P) if n > s_ and endh.search(P[n]) and "....." not in P[n]), None)
+    if e_ is None:
+        e_ = next((n for n in sorted(P) if n > s_ and re.search(end_pat, P[n]) and "....." not in P[n]), max(P))
+    return (s_, e_)
+
+
+MD_ROOT = os.path.join(risk8.HANDOFF, "원문텍스트_9차")
+
+
+def cited_md(task, rc, pages, title=""):
+    """인용한 쪽의 추출 텍스트 전문(뷰어 본문 PDF, pypdf, 글자 수정 없음)을 문서별 .md 로. 경로를 돌려준다."""
+    pages = sorted({int(p) for p in pages if str(p).strip().isdigit()})
+    if not pages:
+        return ""
+    p = os.path.join(TEXT, rc + ".txt")
+    if not os.path.exists(p):
+        return ""
+    P = dict(risk8.re_split_pages(open(p, encoding="utf-8").read()))
+    name, at = doc_meta(rc)
+    d = os.path.join(MD_ROOT, task)
+    os.makedirs(d, exist_ok=True)
+    out = os.path.join(d, rc + ".md")
+    lines = ["# %s · %s" % (title or rc, name), "", "- 접수번호: %s (DART 뷰어 본문 PDF)" % rc,
+             "- 수집일: %s" % at, "- 아래는 이 문서에서 인용한 쪽의 추출 텍스트 전문이다(글자 수정 없음).", ""]
+    for n in pages:
+        lines += ["## p.%d" % n, "", "```text", P.get(n, "(쪽 없음)").rstrip("\n"), "```", ""]
+    with open(out, "w", encoding="utf-8") as f:
+        f.write("\n".join(lines))
+    return out
+
+
+def _attach_md(task, rows, page_cols, rc_col="rcept_no"):
+    """행들이 인용한 쪽을 문서별로 모아 .md 를 만들고 각 행에 경로(원문_md)를 붙인다."""
+    by = {}
+    for o in rows:
+        for c in page_cols:
+            if str(o.get(c, "")).strip().isdigit():
+                by.setdefault(o[rc_col], set()).add(int(o[c]))
+    paths = {}
+    for rc, pg in by.items():
+        lab = next((o["corp_label"] for o in rows if o[rc_col] == rc), "")
+        paths[rc] = cited_md(task, rc, pg, lab)
+    for o in rows:
+        o["원문_md"] = paths.get(o[rc_col], "")
 
 
 def doc_meta(rc):
@@ -438,6 +488,24 @@ def _fy(report_nm):
     return m.group(1) if m else ""
 
 
+def activity_page(rc, date, agenda, rng):
+    """(쪽, 근거). 표 칸 글이 PDF 에서 줄로 갈라져도 찾도록 단계적으로 느슨하게 — 근거를 함께 남긴다."""
+    core = re.sub(r"^[\s\-·ㅇｏo•▶]*([<\[(（【][^>\])）】]{1,8}[>\])）】])?\s*(\d+[).]|[-·ㅇｏ])?\s*", "", agenda or "")
+    tail = (agenda or "").split(" | ")[-1]          # 의안이 두 칸(구분 | 내용)이면 PDF 에서 이어지지 않는다
+    for keys, why in (((date, agenda[:30]), "개최일+의안30자"), ((date, tail[:30]), "개최일+의안끝칸30자"),
+                      ((date, core[:12]), "개최일+의안핵심12자"), ((agenda[:30],), "의안30자"),
+                      ((tail[:30],), "의안끝칸30자"), ((core[:20],), "의안핵심20자")):
+        pg = find_page(rc, *keys, within=rng)
+        if pg:
+            return pg, why
+    P = pages_of(rc)
+    if rng and date:
+        hits = [n for n in range(rng[0], rng[1] + 1) if risk8._nows(date) in P.get(n, "")]
+        if len(hits) == 1:
+            return hits[0], "개최일(Ⅵ 장에서 유일)"
+    return "", ""
+
+
 # ── 작업 1 추가 산출물 ──────────────────────────────────────────────────────
 def build_activity():
     """원문_위험관리위원회_활동.csv — FY2023~FY2025 사업보고서(정정본 포함) Ⅵ 의 위험관리위원회 활동 전수."""
@@ -460,11 +528,10 @@ def build_activity():
                 m = re.search(r"제\s*\d+\s*차", x["agenda"])
                 if m:
                     sess, ssrc = m.group(0), "의안내용 칸 안의 표기"
-            pg = (find_page(rc, x["meeting_date"], x["agenda"][:30], within=rng)
-                  or find_page(rc, x["agenda"][:30], within=rng))
+            pg, basis = activity_page(rc, x["meeting_date"], x["agenda"], rng)
             out.append(dict(corp_label=r["corp_label"], fy=fy, meeting_date=x["meeting_date"], session=sess,
                             agenda=x["agenda"], resolution=x["resolution"], rcept_no=rc, doc_name=name,
-                            page=pg, collected_at=at, committee=x["committee"],
+                            page=pg, page_basis=basis, collected_at=at, committee=x["committee"],
                             committee_src=x["committee_src"], session_src=ssrc,
                             merged_cells=x["merged_cells"], table_section=x["table_section"],
                             table_index=x["table_index"], row_index=x["row_index"], header=x["header"],
@@ -480,9 +547,10 @@ def build_activity():
                 o["note"] = "같은 사업연도 다른 본(원본 %s) — %s" % (first, "같은 행 있음" if same else "원본에 없는 행")
             if not o["page"]:
                 o["note"] = (o["note"] + " / " if o["note"] else "") + "뷰어 PDF 에서 쪽을 못 찾음(텍스트 없음 또는 표기 차이)"
+    _attach_md("위험관리위원회_활동", out, ["page"])
     cols = ["corp_label", "fy", "meeting_date", "session", "agenda", "resolution", "rcept_no", "doc_name", "page",
-            "collected_at", "committee", "committee_src", "session_src", "merged_cells", "note", "table_section",
-            "table_index", "row_index", "header"]
+            "page_basis", "collected_at", "committee", "committee_src", "session_src", "merged_cells", "note", "원문_md",
+            "table_section", "table_index", "row_index", "header"]
     risk8._w(os.path.join(risk8.HANDOFF, "원문_위험관리위원회_활동.csv"), out, cols)
     risk8._w(os.path.join(WORK, "위원회활동_문서별.csv"), docs, list(docs[0].keys()))
     print("원문_위험관리위원회_활동.csv %d행 · 문서 %d(본문 없음 %d) · 쪽 못 찾음 %d"
@@ -581,11 +649,18 @@ def build_cro():
             if len(picks) > 1:
                 o["note"] += " / CRO 후보 %d명(기간 중 교체·표 중복 가능) — 모두 적음" % len(picks)
             o["page_cro"] = find_page(rc, picks[0]["성명"], picks[0]["담당업무"][:12], within=rngv)
+            if not o["page_cro"] and rngv:       # 담당업무 글이 PDF 에서 끊긴 경우 — Ⅷ 장에서 이름이 한 쪽뿐이면 그 쪽
+                hits = [n for n in range(rngv[0], rngv[1] + 1)
+                        if risk8._nows(picks[0]["성명"]) in pages_of(rc).get(n, "")]
+                if len(hits) == 1:
+                    o["page_cro"] = hits[0]
+                    o["note"] += " / CRO 쪽은 Ⅷ 장에서 성명이 나오는 유일한 쪽"
         o["note"] = o["note"].strip(" /")
         out.append(o)
+    _attach_md("지주조직_CRO", out, ["page_employees", "page_cro"])
     cols = ["corp_label", "fy", "employees", "cro_name", "cro_title", "cro_career", "cro_concurrent", "rcept_no",
             "doc_name", "page_employees", "page_cro", "collected_at", "cro_basis", "cro_duty",
-            "employees_source_text", "cro_source_text", "note", "source_5cha_sha256"]
+            "employees_source_text", "cro_source_text", "note", "원문_md", "source_5cha_sha256"]
     risk8._w(os.path.join(risk8.HANDOFF, "원문_지주조직_CRO.csv"), out, cols)
     print("원문_지주조직_CRO.csv %d행 · CRO 명시 %d · 담당업무 식별 %d · 없음 %d"
           % (len(out), sum(1 for o in out if o["cro_basis"].startswith("명시")),
@@ -631,7 +706,10 @@ def icfr_rows(rc):
             txt = " ".join(c[0] for row in g for c in row)
             if "내부회계" not in txt or "보수" in txt and "시간" in txt:
                 continue
-            first = next((i for i, row in enumerate(g) if any(rel_year(c[0]) is not None for c in row[:1])), None)
+            kisu = lambda cell: (int(re.search(r"제\s*(\d+)\s*(?:\(.{0,3}\))?\s*기", cell).group(1))
+                                 if re.search(r"제\s*(\d+)\s*(?:\(.{0,3}\))?\s*기", cell or "") else None)
+            first = next((i for i, row in enumerate(g)
+                          if rel_year(row[0][0]) is not None or kisu(row[0][0]) is not None), None)
             if first is None or first == 0:
                 continue
             head = [" ".join(dict.fromkeys(g[i][j][0] for i in range(first) if g[i][j][0])).strip()
@@ -643,14 +721,80 @@ def icfr_rows(rc):
                 continue
             c_kind, c_type = col("구분"), col("유형")
             fmt = "A" if c_kind is not None and c_type is not None else "B"
+            # 「당기·전기」 표시가 없고 「제14기」처럼 기수만 있으면, 표 안 가장 큰 기수를 당기로 보고 차이를 센다
+            ks = [kisu(row[0][0]) for row in g[first:] if kisu(row[0][0]) is not None]
             for row in g[first:]:
                 yr = row[0][0]
-                if rel_year(yr) is None:
+                rel = rel_year(yr)
+                if rel is None and kisu(yr) is not None and ks:
+                    rel = max(ks) - kisu(yr)
+                if rel is None:
                     continue
-                out.append(dict(yr=yr, kind=row[c_kind][0] if c_kind is not None else "",
+                out.append(dict(yr=yr, rel=rel, kind=row[c_kind][0] if c_kind is not None else "",
                                 auditor=row[c_aud][0], type=row[c_type][0] if c_type is not None else "",
                                 opinion=row[c_op][0], fmt=fmt, header=" | ".join(head),
                                 rowtext=" | ".join(dict.fromkeys(c[0] for c in row if c[0]))))
+    return out
+
+
+def _attach_text(pdf):
+    """첨부 PDF → {쪽: 글}(캐시 dart_out/text/risk9/첨부/). 실패하면 {}."""
+    import hashlib
+    import pypdf
+    if not pdf or not os.path.exists(pdf):
+        return {}
+    d = os.path.join(TEXT, "첨부")
+    os.makedirs(d, exist_ok=True)
+    h = hashlib.sha256(open(pdf, "rb").read()).hexdigest()
+    tp = os.path.join(d, h[:16] + ".txt")
+    if not os.path.exists(tp):
+        try:
+            parts = []
+            for i, pg in enumerate(pypdf.PdfReader(pdf).pages, 1):
+                try:
+                    parts.append("=== p.%d ===\n%s" % (i, pg.extract_text() or ""))
+                except Exception:                     # noqa: BLE001
+                    parts.append("=== p.%d === [추출 실패]" % i)
+            with open(tp, "w", encoding="utf-8") as f:
+                f.write("\n".join(parts) + "\n")
+        except Exception:                             # noqa: BLE001
+            return {}
+    return {n: t for n, t in risk8.re_split_pages(open(tp, encoding="utf-8").read())}
+
+
+def icfr_attach(rc):
+    """본문 Ⅴ 장에 의견 표가 없을 때 — 첨부 감사보고서(별도 _00760)·연결감사보고서(_00761)의
+    「내부회계관리제도 감사의견 또는 검토의견」 절에서 「우리의 의견으로는 … 내부회계관리제도는 …」 문장(원문 그대로)."""
+    import html as _h
+    import zipfile
+    zp = os.path.join(OUT, "raw", "document", rc + ".zip")
+    if not os.path.exists(zp):
+        return []
+    z = zipfile.ZipFile(zp)
+    adir = os.path.join(OUT, "doc", rc, "첨부")
+    files = os.listdir(adir) if os.path.isdir(adir) else []
+    out = []
+    for member, scope, pdf_pat in ((rc + "_00760.xml", "별도", r"^\d+_\[.*\](?!연결)감사보고서.*\.pdf$"),
+                                   (rc + "_00761.xml", "연결", r"^\d+_\[.*\]연결감사보고서.*\.pdf$")):
+        if member not in z.namelist():
+            continue
+        t = re.sub(r"\s+", " ", _h.unescape(re.sub(r"<[^>]+>", " ", z.read(member).decode("utf-8", "replace"))))
+        heads = [m.start() for m in re.finditer(r"내부회계관리제도\s*(감사의견|검토의견|감사보고서|검토보고서)", t)]
+        body = [h for h in heads if "‥" not in t[h:h + 80]]          # 목차 줄(‥‥ 쪽번호) 제외
+        if not body:
+            continue
+        seg = t[body[0]:]
+        m = re.search(r"우리의\s*의견으로는[^.]*?내부회계관리제도는[^.]*?(있습니다|않습니다|못합니다)\.", seg)
+        if not m:
+            continue
+        sent = m.group(0)
+        ty = ("감사" if re.search(r"내부회계관리제도\s*감사(보고서|의견)", seg[:3000]) else
+              "검토" if re.search(r"내부회계관리제도\s*검토(보고서|의견)", seg[:3000]) else "")
+        pdf = next((os.path.join(adir, f) for f in sorted(files) if re.match(pdf_pat, f)), "")
+        P = _attach_text(pdf)
+        pg = next((n for n in sorted(P) if risk8._nows(sent[:40]) in risk8._nows(P[n])), "")
+        out.append(dict(scope=scope, type=ty, opinion=sent, member=member,
+                        pdf=os.path.basename(pdf), page=pg))
     return out
 
 
@@ -682,13 +826,24 @@ def build_icfr():
         for x in rows:
             has_op = not NO_OPINION.match(re.sub(r"\s+", "", x["opinion"]))
             cons = has_op and ("연결" in x["kind"] if x["fmt"] == "A" else "연결" in x["opinion"])
-            seen_cons.setdefault(lab, []).append((int(fy) - rel_year(x["yr"]), cons, rc, x["yr"]))
-        cur = [x for x in rows if rel_year(x["yr"]) == 0]
+            seen_cons.setdefault(lab, []).append((int(fy) - x["rel"], cons, rc, x["yr"]))
+        cur = [x for x in rows if x["rel"] == 0]
         rng = part_pages(rc, r"(V|Ⅴ)\.회계감사인의감사의견등", r"(VI|Ⅵ)\.이사회등회사의기관에관한사항")
         if not cur:
-            out.append(dict(base, icfr_scope="문서에 없음", opinion_type="문서에 없음", opinion="문서에 없음",
-                            source_text="문서에 없음", page="",
-                            note="Ⅴ 장에서 감사인의 내부회계 의견 표(당기 행)를 못 찾음 — 찾은 표 %d행" % len(rows)))
+            att = icfr_attach(rc)
+            for a_ in att:
+                out.append(dict(base, icfr_scope=a_["scope"], opinion_type=a_["type"] or "문서에 없음",
+                                opinion=a_["opinion"], doc_name=base["doc_name"] + " 첨부 " + a_["pdf"],
+                                source_text="[첨부 %s · %s] %s" % (a_["pdf"], a_["member"], a_["opinion"]),
+                                page=a_["page"],
+                                note="본문 Ⅴ 장에 감사인 내부회계 의견 표 없음 — 첨부 %s 의 「내부회계관리제도 "
+                                     "감사의견 또는 검토의견」 절 문장(쪽은 첨부 PDF 쪽)" % a_["pdf"]))
+                seen_cons.setdefault(lab, []).append((int(fy), a_["scope"] == "연결", rc, "첨부 " + a_["scope"]))
+            if not att:
+                out.append(dict(base, icfr_scope="문서에 없음", opinion_type="문서에 없음", opinion="문서에 없음",
+                                source_text="문서에 없음", page="",
+                                note="Ⅴ 장에서 감사인의 내부회계 의견 표(당기 행)를 못 찾음 — 찾은 표 %d행, 첨부 감사보고서에도 "
+                                     "내부회계 의견 문장 없음" % len(rows)))
             continue
         for x in cur:
             if x["fmt"] == "A":
@@ -730,7 +885,7 @@ def build_icfr():
             f = firsts[0]
             prev = yrs.get(f - 1)
             # 근거는 그 사업연도 본의 「당기」 행을 먼저 든다
-            evs = sorted([(rel_year(cl), r, cl) for c, r, cl in yrs[f] if c])
+            evs = sorted([(rel_year(cl) if rel_year(cl) is not None else 9, r, cl) for c, r, cl in yrs[f] if c])
             ev = "%s 「%s」" % (evs[0][1], evs[0][2]) if evs else ""
             if prev and not any(c for c, _r, _cl in prev):
                 pev = "%s 「%s」" % (prev[0][1], prev[0][2])
@@ -740,8 +895,9 @@ def build_icfr():
         for o in out:
             if o["corp_label"] == lab:
                 o["first_consolidated_fy"] = val
+    _attach_md("지주내부회계", out, ["page"])
     cols = ["corp_label", "fy", "listed", "icfr_scope", "opinion_type", "opinion", "first_consolidated_fy",
-            "source_text", "rcept_no", "doc_name", "page", "collected_at", "note"]
+            "source_text", "rcept_no", "doc_name", "page", "collected_at", "note", "원문_md"]
     for o in out:
         o.setdefault("first_consolidated_fy", "문서에 없음")
     risk8._w(os.path.join(risk8.HANDOFF, "원문_지주내부회계.csv"), out, cols)
@@ -900,8 +1056,9 @@ def build_capital():
         for o in out:
             if o["corp_label"] == lab:
                 o["note"] = ("비은행지주 해당(원문 %s: 「%s」) / " % (rc, sent[:60] + "…")) + o["note"]
+    _attach_md("비은행지주_자본지표", out, ["page"], rc_col="rcept_no_or_url")
     cols = ["corp_label", "period", "metric", "value", "unit", "doc_kind", "rcept_no_or_url", "doc_name", "page",
-            "collected_at", "source_text", "note"]
+            "collected_at", "source_text", "note", "원문_md"]
     risk8._w(os.path.join(risk8.HANDOFF, "원문_비은행지주_자본지표.csv"), out, cols)
     import collections
     print("원문_비은행지주_자본지표.csv %d행 · 문서에 없음 %d · %s"
@@ -910,12 +1067,60 @@ def build_capital():
     return out
 
 
+# ── 작업 4 — 보험 자회사 ───────────────────────────────────────────────────
+INS_SELECTION = os.path.join(HERE, "data", "risk9_보험자회사_선별.json")
+
+
+def build_insurers():
+    """원문_보험자회사_지주연계.csv — 선별(risk9_보험자회사_선별.json: 원문 그대로 인용) → CSV. 제출 대상 확인은
+    OpenDART 목록(DART_목록.csv, C_보험자회사)."""
+    import json
+    sel = json.load(open(INS_SELECTION, encoding="utf-8"))["rows"]
+    lst = [r for r in _targets() if r["group"] == "C_보험자회사"]
+    nolist = [r for r in csv.DictReader(open(os.path.join(WORK, "DART_목록.csv"), encoding="utf-8-sig"))
+              if r["group"] == "C_보험자회사" and not r["rcept_no"]]
+    out = []
+    for x in sel:
+        rc = x.get("doc_id", "")
+        name, at = doc_meta(rc) if rc else ("", "")
+        out.append(dict(corp_label=x["corp_label"], parent=x.get("parent", ""), fy=x.get("fy", "FY2025"),
+                        topic=x.get("topic", ""), source_text=x["quote"], rcept_no_or_url=rc, doc_name=name,
+                        section=x.get("section", ""), page=x.get("page", ""), collected_at=at,
+                        note=x.get("note", "")))
+    for r in nolist:                 # 제출 없음(목록 확인) — 선별에 없으면 여기서 채운다
+        if not any(o["corp_label"] == r["corp_label"] for o in out):
+            out.append(dict(corp_label=r["corp_label"], parent=INSURERS.get(r["corp_label"], ("", ""))[1], fy="FY2025", topic="",
+                            source_text=risk8.NOT_FOUND, rcept_no_or_url="", doc_name="", section="", page="",
+                            collected_at=r.get("list_at", ""),
+                            note="사업보고서 제출 없음 — " + r["note"]))
+    # 정정본 대조(판정 없이): 같은 회사의 다른 본에도 같은 문구가 있는가
+    for o in out:
+        if o["source_text"] == risk8.NOT_FOUND or not o["rcept_no_or_url"]:
+            continue
+        others = [r["rcept_no"] for r in lst if r["corp_label"] == o["corp_label"] and r["rcept_no"] != o["rcept_no_or_url"]]
+        res = []
+        for rc in others:
+            P = pages_of(rc)
+            if not P:
+                res.append("%s: 텍스트 없음" % rc)
+                continue
+            res.append("%s: %s" % (rc, "같은 문구 있음" if any(risk8._nows(o["source_text"]) in t for t in P.values())
+                                   else "같은 문구 없음"))
+        if res:
+            o["note"] = (o["note"] + " / " if o["note"] else "") + "다른 본 대조(판정 없음): " + "; ".join(res)
+    _attach_md("보험자회사_지주연계", out, ["page"], rc_col="rcept_no_or_url")
+    cols = ["corp_label", "parent", "fy", "topic", "source_text", "rcept_no_or_url", "doc_name", "section", "page",
+            "collected_at", "note", "원문_md"]
+    risk8._w(os.path.join(risk8.HANDOFF, "원문_보험자회사_지주연계.csv"), out, cols)
+    print("원문_보험자회사_지주연계.csv %d행 · 문서에 없음 %d" % (len(out), sum(1 for o in out if o["source_text"] == risk8.NOT_FOUND)))
+
+
 def main(argv):
     cmd = argv[1] if len(argv) > 1 else ""
     fn = {"fetch-list": fetch_list, "fetch-doc": fetch_doc, "fetch-viewer": fetch_viewer,
           "fetch-conv-names": fetch_conv_names,
           "build-activity": build_activity, "build-cro": build_cro, "build-icfr": build_icfr,
-          "build-capital": build_capital,
+          "build-capital": build_capital, "build-insurers": build_insurers,
           "extract": lambda: extract(argv[2].split(",") if len(argv) > 2 else None)}.get(cmd)
     if not fn:
         print(__doc__)

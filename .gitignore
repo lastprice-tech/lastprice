@@ -108,6 +108,8 @@ __pycache__/
 !/handoff/목록_생보협회_자율규제.csv
 !/handoff/목록_법령해석.csv
 !/handoff/법령해석_원문/
+!/handoff/원문텍스트_9차/
+!/handoff/생보협회_자율규제_원문/
 
 # selftest 임시 산출물
 /dart_out/_selftest/
