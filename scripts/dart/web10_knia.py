@@ -7,6 +7,14 @@
     python3 scripts/dart/web10_knia.py posting   # 6-4 손보협회 공시실 지배구조공시 → dart_out/risk10/게시처_knia.csv
     python3 scripts/dart/web10_knia.py catalog   # 6-5 손보협회 규정목록 전체 + 관련 건 원문 → 목록_손보협회_자율규제.csv
     python3 scripts/dart/web10_knia.py all       # 위 순서대로 모두
+    python3 scripts/dart/web10_knia.py rulemd            # 받은 원본으로 6-3 md 만 다시 쓰기(요청 없음)
+    python3 scripts/dart/web10_knia.py catalog --offline # 받은 목록·원문으로 6-5 CSV·md 다시 쓰기(요청 없음)
+
+산출: handoff/원문_10차/손보협회_제3자가이드라인.md · 제3자가이드라인_대조.csv · 목록_손보협회_자율규제.csv ·
+      손보협회_자율규제_원문/<목록번호>_<규정명>.md, dart_out/risk10/게시처_knia.csv · knia_robots_약관.csv ·
+      knia_자율규제_변경공고.csv(보조: 변경공고 게시판 58건과 규정목록 이름 대조)
+이메일 주소: 손보협회 누리집의 「이메일무단수집거부」 고지를 존중해 handoff 산출물에는 이메일 주소를 「[이메일 주소 가림]」으로
+  적는다(그 밖의 글자는 그대로, 원본 파일에는 그대로 있음). 바꾼 건수는 각 md 머리에 적는다.
 
 게시처(2026-10-01 실측, 누리집 메뉴 그대로):
   · www.knia.or.kr  공시·자료실 > 손해보험협회 규정현황 > 규정목록       /data/regulation/regulation01
@@ -800,7 +808,7 @@ def compare():
     # 손보 원문이 handoff md 안에서 시작하는 줄(「<!-- 원문 시작: … -->」 다음 줄)
     md_lines = open(RULE_MD, encoding="utf-8").read().split("\n")
     mk = "<!-- 원문 시작: %s -->" % os.path.basename(sb["text"])
-    off = md_lines.index(mk) + 1 if mk in md_lines else None
+    off = md_lines.index(mk) + 1 if mk in md_lines else None   # 표지 줄의 1부터 줄 번호 — 텍스트 n줄 = off + n
     U_l, U_s = segment(lb_lines), segment(sb_lines)
     U_d = segment(open(draft[0]["text"], encoding="utf-8").read().split("\n")) if draft else []
     dl, ds, dd = ({u["key"]: u for u in U} for U in (U_l, U_s, U_d))
@@ -872,7 +880,7 @@ def compare():
                           a["end"], page_note) if a else "문서에 없음"),
             "손보_출처": ("%s · %s(손보협회 규정목록, 개정년월 %s) · %s · %s %s행 (텍스트화 파일 %s %d~%d행; %s)"
                        % (sm["출처URL"], sm.get("원파일명", ""), sm.get("개정년월", ""), b["조문"], RULE_MD,
-                          "%d~%d" % (b["start"] + off - 1, b["end"] + off - 1) if off else "?",
+                          "%d~%d" % (b["start"] + off, b["end"] + off) if off else "?",
                           sb["text"], b["start"], b["end"], page_note) if b else "문서에 없음"),
             "priority": pr, "note": " / ".join(note),
             "collected_at": sm["fetched_at"],
@@ -1040,8 +1048,29 @@ def cached(url):
 
 
 def ann_name(title):
-    """변경공고 제목 끝의 「… 제정/개정/폐지 … 공고」 를 떼어 규정명 부분만(대조용, 기계적)."""
-    return re.sub(r"\s*(제정|개정|폐지|전부개정|일부개정)?\s*(\(안\))?\s*(공고|예고)\s*$", "", title).strip()
+    """변경공고 제목에서 규정명 부분만(대조용, 기계적): 「…」(또는 ？…？) 안 글이 있으면 그것, 없으면 끝의
+    「제정/개정/폐지 (공고)」를 뗀 것."""
+    m = re.search(r"[「？](.+?)[」？]", title)
+    if m:
+        return m.group(1).strip()
+    return re.sub(r"\s*(제정|개정|폐지|전부개정|일부개정)\s*(\(안\))?\s*(공고|예고)?\s*$", "", title).strip()
+
+
+def walk_saved(tag, parse, pages_fn=None, total_fn=None):
+    """앞서 받은 목록 쪽 원본(dart_out/raw/web10/knia/<tag>_pNNN.html)만으로 walk 와 같은 결과(요청 없음)."""
+    allrows, pmeta, total, head = [], [], "", []
+    for k, p in enumerate(sorted(glob.glob(os.path.join(DIR, "%s_p[0-9][0-9][0-9].html" % tag))), 1):
+        m = json.load(open(p + ".meta.json", encoding="utf-8"))
+        t = open(p, "rb").read().decode("utf-8", "replace")
+        res = parse(t)
+        rows, head = res[0], res[1]
+        total = total or (total_fn or _total)(t)
+        page = int(re.search(r"_p(\d+)\.html$", p).group(1))
+        for j, r in enumerate(rows, 1):
+            r.update(_page=page, _row=j, _raw=p, _sha=m["sha256"], _at=m["fetched_at"])
+        allrows.extend(rows)
+        pmeta.append(dict(page=page, rows=len(rows), path=p, sha256=m["sha256"], at=m["fetched_at"]))
+    return allrows, pmeta, total, head, "" if pmeta else "저장된 목록 쪽 없음(%s)" % tag
 
 
 def to_text(path):
@@ -1077,10 +1106,14 @@ def write_cat_md(r, path, meta, tp, how, npg):
 def catalog():
     require_ok("www.knia.or.kr")
     from web9_klia import judge          # 9차 생보협회 목록과 같은 관련 판정(제목 낱말 일치)
-    rows, pm, tot, head, stop = walk(REG01, None, lambda n: {"keyword": "", "page": str(n)}, parse_reg01,
-                                     "규정목록", MENU01)
-    a6, pm6, tot6, head6, stop6 = walk(REG06, None, lambda n: {"keyword": "", "page": str(n)}, parse_reg06,
-                                       "변경공고목록", MENU06)
+    if "--offline" in sys.argv:                  # 받은 목록 원본만으로 다시 쓰기(요청 없음, 원문 파일은 받은 것 재사용)
+        rows, pm, tot, head, stop = walk_saved("규정목록", parse_reg01)
+        a6, pm6, tot6, head6, stop6 = walk_saved("변경공고목록", parse_reg06)
+    else:
+        rows, pm, tot, head, stop = walk(REG01, None, lambda n: {"keyword": "", "page": str(n)}, parse_reg01,
+                                         "규정목록", MENU01)
+        a6, pm6, tot6, head6, stop6 = walk(REG06, None, lambda n: {"keyword": "", "page": str(n)}, parse_reg06,
+                                           "변경공고목록", MENU06)
     nums = sorted(int(r["번호"]) for r in rows if r["번호"].isdigit())
     gaps = [i for i in range(1, (nums[-1] if nums else 0) + 1) if i not in set(nums)]
     cnt = "사이트 표시 총 %s건 vs 수집 %d행 (쪽 %d, 목록 번호 %s~%s%s)%s" % (
@@ -1103,7 +1136,8 @@ def catalog():
                 "다운로드 버튼 title 「%s」" % "·".join(r["버튼제목"]) if r["버튼제목"] else "다운로드 버튼 없음(칸 글 %r)" % r["칸글"]]
         if len(r["다운로드"]) > 1:
             note.append("다운로드 링크 %d개: %s" % (len(r["다운로드"]), " , ".join(r["다운로드"])))
-        note.append("자율규제 변경공고 게시글(제목에서 「제정/개정 공고」를 뗀 이름이 규정명과 공백 빼고 같은 것): %s" % (
+        note.append("자율규제 변경공고 게시글(제목의 규정명 부분 — 「」 안 또는 끝의 「제정/개정 공고」를 뗀 것 — 이 "
+                    "규정명과 공백 빼고 같은 것): %s" % (
             " , ".join("%s「%s」 %s %s" % (a["번호"], a["제목"], a["등록일"], a["url"]) for a in anns) if anns else "없음"))
         note.append("관련 판정: %s" % (why if why else "해당 낱말 없음"))
         o = dict(name=r["규정명"], enacted_or_amended=r["개정년월"], category="", url=r["다운로드"][0] if r["다운로드"] else "",
@@ -1151,7 +1185,8 @@ def catalog():
         arows.append(dict(번호=a["번호"], 제목=a["제목"], 등록일=a["등록일"], 조회=a["조회"], 첨부=a["첨부"], url=a["url"],
                           규정목록_일치=hit or "규정목록에 같은 이름 없음",
                           collected_at=a["_at"],
-                          note="%d쪽 %d행 · 대조 이름 「%s」(제목 끝 「제정/개정 … 공고」를 뗀 것, 공백 빼고 비교) · %s"
+                          note="%d쪽 %d행 · 대조 이름 「%s」(제목의 「」(또는 ？？) 안 글, 없으면 끝의 「제정/개정 (공고)」를 뗀 것 — "
+                               "공백만 빼고 글자 그대로 비교, 가운뎃점·띄어쓰기 외 표기 차이는 다른 이름으로 봄) · %s"
                                % (a["_page"], a["_row"], nm, cnt6)))
     write_csv(ANN_CSV, ANN_COLS, arows)
     nrel = sum(1 for o in out if o["related"])

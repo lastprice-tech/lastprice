@@ -21,7 +21,7 @@ OK  F 목록_연차보고서_게시처.csv 13행 — 출처 열 ['url'] · 수�
 OK  F 세칙_별표37_표시.csv 33행 — 출처 열 ['rcept_no_or_url'] · 수집일 열 ['collected_at'] · 빠진 행 0
 OK  F 작성기준_대조.csv 295행 — 출처 열 ['생보협회_출처'] · 수집일 열 ['collected_at'] · 빠진 행 0
 OK  F 제3자가이드라인_대조.csv 34행 — 출처 열 ['생보_출처', '손보_출처'] · 수집일 열 ['collected_at'] · 빠진 행 0
-OK  G 키 유출 검사 48개 파일(키 LAW_OC,DART_API_KEY) — 걸린 곳 0
+OK  G 키 유출 검사 50개 파일(키 LAW_OC,DART_API_KEY) — 걸린 곳 0
 OK  H 9차까지 산출물 변경 없음(25909e2 대비 커밋 변경 0 · 작업트리 변경 0)
 
 실패 1
