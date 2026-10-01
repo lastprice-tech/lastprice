@@ -75,6 +75,12 @@ HOLD_NAMES = {"KB금융": ["KB금융지주", "케이비금융지주"], "신한�
 BLOCK_WORDS = ("captcha", "CAPTCHA", "자동입력", "보안문자", "로그인이 필요", "로그인 후 이용", "Access Denied",
                "Block URL List", "보안정책")
 OFFLINE = "--offline" in sys.argv
+TERMS_NOTE = {   # `terms` 결과(dart_out/risk10/보험자회사_약관.csv) — 자동 수집 금지 문구 없음, 재배포 제한 문구는 있음
+    "KB라이프": "이용약관(/customer-center/termsOfUse.do): 자동 수집 금지 문구 없음 · 제11조 2) 「사전 승낙 없이 … 영리목적으로 "
+               "이용하거나 제3자에게 이용하게 하여서는 안됩니다」(재배포 때 유의)",
+    "KB손해보험": "이용약관(CU106000001.ec): 자동 수집 금지 문구 없음 · 제13조 ② 「사전 승낙없이 … 영리목적으로 이용하거나 "
+                "제3자에게 이용하게 하여서는 안됩니다」(재배포 때 유의)",
+}
 
 
 class Stop(Exception):
@@ -336,11 +342,12 @@ def form_code(bl):
 
 
 def doc_title(bl):
+    """서식 제목 줄(‘대주주’가 든 첫 줄, 라벨·법 조문 줄 제외) — 줄의 칸을 한 칸 띄어 잇는다."""
     for _, cs, _ in bl:
-        for c in cs:
-            t = c[2]
-            if "대주주" in t and not re.match(r"\d\.", t) and "보험업법" not in t and "대주주명" not in t.replace(" ", ""):
-                return t
+        t = " ".join(c[2] for c in cs)
+        if "대주주" in t and not re.match(r"\s*\d\.", t) and "보험업법" not in t \
+                and "대주주명" not in t.replace(" ", ""):
+            return t
     return ""
 
 
@@ -386,37 +393,47 @@ def susi_rows(bl, code, title):
 
 def table_rows(pages, code, title):
     """분기공시 표(제7-2-1호·제7-2-2호): 대주주 행마다. 값 칸은 머리 칸(전분기말 등)에 위치(가운데)로 붙인다."""
-    out, basis = [], ""
+    out, basis, unit = [], "", ""
     for p in pages:
         lines = p["lines"]
         for ln in lines:
             m = re.search(r"\(\s*(\d{4}\.\s*\d{1,2}\.\s*\d{1,2}\.?\s*기준)", ln)
             if m and not basis:
                 basis = m.group(1)
+            m = re.search(r"단위\s*:\s*([^)]+?)\s*\)", ln)
+            if m and not unit:
+                unit = re.sub(r"\s+", " ", m.group(1))
         hi = next((i for i, ln in enumerate(lines) if "전분기말" in ln), None)
         if hi is None:
             continue
         sub = cells_of(lines[hi])
         grp = cells_of(lines[hi - 1]) if hi > 0 else []
         name_col = next((c for c in grp if c[2].replace(" ", "") in ("대주주명", "대주주")), None)
-
-        def head(c):
-            mid = (c[0] + c[1]) / 2.0
-            s = min(sub, key=lambda h: abs((h[0] + h[1]) / 2.0 - mid))
-            g = [x for x in grp if x[0] <= (s[0] + s[1]) / 2.0 and x[2].replace(" ", "") not in ("계정구분", "대주주명")]
-            return ("%s %s" % (g[-1][2], s[2])) if g else s[2]
+        # 한글 머리 줄과 숫자 줄은 layout 글자 위치가 어긋나므로(한글 폭) 칸 위치는 숫자 줄끼리 맞춘다:
+        # 값 칸이 가장 많은 줄(소계 줄 등)의 칸 오른쪽 끝 = 열 기준, 열 이름 = 머리 줄 칸을 왼쪽부터 순서대로.
+        body = []
         for ln in lines[hi + 1:]:
             if re.search(r"총\s*계", ln) or re.match(r"\s*(\*|<|주\s*\d)", ln):
                 break
+            body.append(ln)
+        subl = [c[2] for c in sub]
+        groups = [c[2] for c in grp if c[2].replace(" ", "") not in ("계정구분", "대주주명", "대주주")]
+        per = len(subl) // len(groups) if groups and len(subl) % len(groups) == 0 else 0
+        labels = [("%s %s" % (groups[i // per], s)) if per else s for i, s in enumerate(subl)]
+        # 값 칸 수가 머리 칸 수와 같은 행만 순서대로 머리 이름을 붙인다. 회계식 음수(「-   1,300」)·빈 칸 때문에 칸 수가
+        # 다르면 어느 칸이 어느 열인지 글자 위치로는 확정할 수 없어(한글 머리와 숫자 줄의 layout 위치 어긋남) 행 원문 그대로.
+        for ln in body:
             cs = [c for c in cells_of(ln) if c[2] not in ("일반계정", "특별계정")]
             if not cs or re.search(r"(소계|합계)$", cs[0][2].replace(" ", "")) or re.fullmatch(r"[\d,.\-\s]+", cs[0][2]):
                 continue
-            if name_col and cs[0][1] > (sub[0][0] if sub else 10 ** 6):
-                continue
-            nm, vals = cs[0][2], cs[1:]
-            amount = "; ".join("%s: %s" % (head(c), c[2]) for c in vals if c[2].strip() not in ("-", ""))
+            nm, vals = cs[0][2], [c[2] for c in cs[1:]]
+            if labels and len(vals) == len(labels) and all(re.fullmatch(r"-|[\d,.]+", v) for v in vals):
+                amount = "; ".join("%s: %s" % (lab, v) for lab, v in zip(labels, vals) if v != "-")
+            else:
+                amount = "표 행 원문(칸 배치 모호 — 값 칸 %d개 · 머리 칸 %d개): %s" % (len(vals), len(labels),
+                                                                           " | ".join(vals))
             out.append(dict(fy=basis or NONE, counterparty=nm, deal_type=title or NONE,
-                            amount=(amount + " (단위: 백만원 — 표 머리 표기)") if amount else NONE,
+                            amount=(amount + " (단위: %s — 문서 표기)" % unit) if amount and unit else (amount or NONE),
                             board_approval=NONE, source_text=re.sub(r" {4,}", " | ", ln.strip()), page=str(p["no"]),
                             note_extra="표 머리: %s / %s" % (" | ".join(c[2] for c in grp), " | ".join(c[2] for c in sub))))
     if not out:
@@ -468,8 +485,19 @@ def collect():
                 why = rob.note or "robots.txt 가 / 를 막음"
                 cover.append((corp, why))
                 continue
-        else:
-            rob = type("R", (), {"allowed": lambda self, u: True})()
+        else:                                           # 받지 않음 — 마지막으로 저장된 robots.txt 로 판정
+            import urllib.robotparser
+            from web10 import UA
+            rp_path = os.path.join(DIR, "robots_%s.txt" % base.split("//")[1])
+            if not os.path.exists(rp_path):
+                cover.append((corp, "robots.txt 확인 실패(저장본 없음 — 온라인 실행에서 받지 못함) — 수집 안 함"))
+                continue
+            rp = urllib.robotparser.RobotFileParser()
+            rp.parse(open(rp_path, encoding="utf-8", errors="replace").read().splitlines())
+            if not rp.can_fetch(UA, base + "/"):
+                cover.append((corp, "robots.txt(저장본)가 / 를 막음"))
+                continue
+            rob = type("R", (), {"allowed": lambda self, u, _rp=rp: _rp.can_fetch(UA, u)})()
         try:
             if corp == "KB라이프":
                 items, scope = kblife_list(w, rob)
@@ -522,7 +550,7 @@ def collect():
                                                   it["date_txt"], (" 발생일 %s" % it["occ"]) if it.get("occ") else ""),
                         "문서 일자: %s" % r["fy"], "서식 %s" % (code or "번호 없음"), "PDF %d쪽" % npg,
                         "원본 %s (sha256 %s…, 쪽 글 %s.layout.txt)" % (p, meta.get("sha256", "")[:12], p),
-                        "텍스트화: " + how, "출처 화면·기간: " + scope]
+                        "텍스트화: " + how, "출처 화면·기간: " + scope, TERMS_NOTE.get(corp, "")]
                 if r.get("note_extra"):
                     note.insert(2, r["note_extra"])
                 note.insert(0, ("거래 상대방 판정: %s — %s" % (kind, why)) if kind else
@@ -541,9 +569,8 @@ def collect():
         if why is None:
             why = {"메리츠화재": "누리집 첫 화면이 JS(/common/index.js)로만 그려져 공시실 목록 주소를 화면 원본에서 "
                                  "확인하지 못함 — 미확인(시간)",
-                   "신한라이프": "robots.txt 확인 실패(응답 시간 초과) — RFC 9309 에 따라 받지 않음",
-                   "하나생명": "robots.txt 요청이 /index.html 로 넘어가 「시스템 점검」 화면(시스템 개선작업 중) — 공시실 "
-                               "받지 않음"}.get(corp, "")
+                   "신한라이프": "robots.txt 는 받았으나 공시실 목록 주소를 확인하지 않음 — 미확인(시간)",
+                   "하나생명": hana_note()}.get(corp, "")
         out.append(none_row(corp, why))
     out += [{k: r.get(k, "") for k in COLS} for r in all_rows if r.get("판정")]
     out.append(none_row("(손해보험협회 공시실)", "다른 작업이 맡음 — 이번에 미확인(knia.or.kr 요청 안 함)"))
@@ -554,12 +581,58 @@ def collect():
     print("handoff %d행 → %s · 전체 %d행 → %s" % (len(out), OUT_CSV, len(all_rows), ALL_CSV))
 
 
+def hana_note():
+    p = os.path.join(DIR, "robots_www.hanalife.co.kr.txt")
+    t = open(p, encoding="utf-8", errors="replace").read() if os.path.exists(p) else ""
+    if "시스템 점검" in t:
+        m = json.load(open(p + ".meta.json", encoding="utf-8"))
+        return ("robots.txt 요청이 %s 로 넘어가 「시스템 점검 | 하나생명」 화면(「시스템 개선작업 중입니다.」, %s) — 누리집 "
+                "점검 중이라 공시실 받지 않음(robots 규칙 없음)" % (m.get("최종URL"), m.get("fetched_at")))
+    return "공시실 목록 주소를 확인하지 않음 — 미확인(시간)"
+
+
 def none_row(corp, why):
     return dict(corp_label=corp, 공시일=NONE, **{"거래 상대방": NONE, "거래 유형": NONE, "금액": NONE,
                                                  "이사회 의결일": NONE}, url="", source_text=NONE, doc_name=NONE,
                 page="", collected_at=now(), note=why)
 
 
+BAN = re.compile(r"(자동|프로그램|크롤|스크래|스크랩|로봇|봇|기계적|매크로).{0,60}(수집|복제|추출|접근|이용)|"
+                 r"(수집|복제|추출).{0,60}(자동|프로그램|크롤|스크래|스크랩|로봇|기계적|매크로)")
+
+
+def terms():
+    """수집한 두 누리집의 이용약관 화면 — 자동 수집 금지 문구(이메일 주소 수집 금지는 해당 아님)."""
+    w = Web()
+    rows = []
+    for corp, base, path, enc in [("KB라이프", KBL, "/customer-center/termsOfUse.do", "utf-8"),
+                                  ("KB손해보험", KBI, "/CU106000001.ec?mdmn=0301", "euc-kr")]:
+        rob = _robots_for(w, base)
+        url = base + path
+        try:
+            fu, st, hd, b, p, meta = get(w, rob, url, "%s_이용약관.html" % corp)
+        except Exception as e:                           # noqa: BLE001
+            rows.append(dict(corp=corp, url=url, status="실패 %r" % e, 자동수집금지_문구="", 관련문장="", 원본="",
+                             checked_at=now()))
+            continue
+        t = b.decode(enc, "replace")
+        t = re.sub(r"<(script|style)\b.*?</\1>", "", t, flags=re.S | re.I)
+        t = re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", t))
+        import html as _h
+        t = _h.unescape(t)
+        sents = [s.strip() for s in re.split(r"(?<=[.다])\s+", t) if s.strip()]
+        ban = [s for s in sents if BAN.search(s) and not re.search(r"이메일|전자우편", s)]
+        rel = [s for s in sents if re.search(r"무단|수집|크롤|로봇|복제|저작권", s)]
+        rows.append(dict(corp=corp, url=url, status="HTTP %s · %d자" % (st, len(t)), 자동수집금지_문구=" / ".join(ban)[:2000],
+                         관련문장=" / ".join(rel)[:3000], 원본=p, checked_at=meta.get("fetched_at", "")))
+        print(corp, st, len(t), "금지 문구 %d" % len(ban), flush=True)
+        for s in ban[:5]:
+            print("   BAN:", s[:300])
+        for s in rel[:12]:
+            print("   REL:", s[:300])
+    write_csv(os.path.join(WORK, "보험자회사_약관.csv"), list(rows[0].keys()), rows)
+
+
 if __name__ == "__main__":
     cmd = sys.argv[1] if len(sys.argv) > 1 else ""
-    {"robots": robots, "explore": explore, "collect": collect}.get(cmd, lambda: print(__doc__))()
+    {"robots": robots, "explore": explore, "collect": collect, "terms": terms}.get(cmd, lambda: print(__doc__))()
