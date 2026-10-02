@@ -3,8 +3,17 @@
 지주 본체인 건(원문 행)과 지주의 다른 자회사인 건(건수만). 10차 web10_insdeal(C24·C30) 보완.
 
     python3 scripts/dart/web11_insdeal.py probe <url> <저장이름> [k=v ...]   # (점검) 한 화면 받기 — robots 확인·원본 저장
-    python3 scripts/dart/web11_insdeal.py collect            # 수집 → handoff/원문_11차/보험자회사_지주거래공시.csv
-    python3 scripts/dart/web11_insdeal.py collect --offline  # 받지 않고 저장된 원본만으로 CSV
+    python3 scripts/dart/web11_insdeal.py list [회사…]       # (점검) 목록만 받아 고른 공시 출력
+    python3 scripts/dart/web11_insdeal.py download [회사…]   # (점검) 고른 공시 원문 받기
+    python3 scripts/dart/web11_insdeal.py terms              # 회사 이용약관 → dart_out/risk11/보험자회사_약관.csv
+    python3 scripts/dart/web11_insdeal.py collect            # 전부 → handoff/원문_11차/보험자회사_지주거래공시.csv,
+                                                             #   dart_out/risk11/보험자회사_지주거래_전체행.csv·_robots.csv·_약관.csv
+    python3 scripts/dart/web11_insdeal.py collect --offline  # 받지 않고 저장된 원본만으로 CSV(robots 는 저장본으로 판정)
+
+출처(2026-10-02 실측): 손보협회 공시실 > 경영공시 > 수시경영공시(kpub.knia.or.kr/managementDisc/spot/spotDisclosure.do)는
+  회사별 누리집 링크 모음 — 손보사는 그 링크(메리츠화재·농협손보·신한EZ, 하나손보는 같은 경로의 현 주소 www.hanainsure.co.kr),
+  생보사는 각 사 누리집 공시실(NH농협생명 /ho/on/HOON0002M00.nhl, 하나생명 /home/publicAnn/listPublicAnn.do?gubun=A).
+  NH농협생명 원문 다운로드(/ho/zz/FileDwld.nhl)는 robots.txt 「Disallow: /ho/zz/」라 받지 않는다(목록만).
 
 규율(COMMON.md·AGENT_11_INS.md): web11.Web(=web10/web9 Web: UA 고정·1.2초 간격·3회 재시도)만 쓴다. 호스트마다 web11.Robots
 (RFC 9309 판정)로 확인하고 막힌 URL 은 요청하지 않는다. 로그인·캡차·보안장비 차단 화면이 나오면 우회하지 않고 멈춘다.

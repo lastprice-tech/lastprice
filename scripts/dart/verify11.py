@@ -192,7 +192,8 @@ def _allowed(x):
     if re.match(r"handoff/(원문_11차|법령원문_11차)/", x) or x in (
             "handoff/법령원문_저용량/00_목록.txt",
             # 저용량본 기록(10-02 에 dart_out/risk10 에 둠) — 저용량본이 늘면 같이 갱신되는 파일
-            "dart_out/risk10/법령원문_저용량_목록.csv", "dart_out/risk10/법령원문_저용량_지운표지.csv"):
+            "dart_out/risk10/법령원문_저용량_목록.csv", "dart_out/risk10/법령원문_저용량_지운표지.csv",
+            "dart_out/risk10/verify10.txt"):                      # 10차 검증을 다시 돌린 기록
         return True
     return x.startswith("handoff/법령원문_저용량/") and not _at_base(x)
 
