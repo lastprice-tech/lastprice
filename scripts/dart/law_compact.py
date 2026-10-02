@@ -36,6 +36,7 @@ from web10 import save, now, write_csv  # noqa: E402
 
 LIST9 = os.path.join("dart_out", "risk9", "법령원문_9차.csv")
 LIST10 = L.LIST_CSV
+LIST11 = os.path.join("dart_out", "risk11", "법령원문_11차.csv")        # 2026-10-02 11차 7-1·7-3
 RECHECK = os.path.join(L.WORK, "법령_현행재확인.csv")
 OUTDIR = os.path.join("handoff", "법령원문_저용량")
 SHORT = {  # 파일 이름(짧게)
@@ -46,15 +47,22 @@ SHORT = {  # 파일 이름(짧게)
     "주식회사 등의 외부감사에 관한 법률": "외감법", "주식회사 등의 외부감사에 관한 법률 시행령": "외감법시행령",
     "금융회사 지배구조 감독규정": "금융회사지배구조감독규정", "보험업감독규정": "보험업감독규정",
     "보험업감독업무시행세칙": "보험업감독업무시행세칙",
+    # 11차
+    "외부감사 및 회계 등에 관한 규정": "외부감사및회계등에관한규정", "금융복합기업집단의 감독에 관한 법률": "금융복합기업집단법",
+    "금융지주회사법": "금융지주회사법", "금융지주회사법 시행령": "금융지주회사법시행령",
+    "금융지주회사감독규정시행세칙": "금융지주회사감독규정시행세칙", "보험업법 시행령": "보험업법시행령",
+    "은행법 시행령": "은행법시행령", "은행법": "은행법",
 }
 KIND = {"법률": "law", "시행령": "decree", "행정규칙": "rule", "법령(시행령)": "decree"}
 LABEL = {"법령(시행령)": "시행령"}
 
 
 def entries():
-    """[(차수, 목록 행)] — 9·10차 목록의 현행 판(법률·시행령·행정규칙)만."""
+    """[(차수, 목록 행)] — 9·10·11차 목록의 현행 판(법률·시행령·행정규칙)만(별표 행·시행예정·7차 판 제외)."""
     out = []
-    for tag, path in (("9차", LIST9), ("10차", LIST10)):
+    for tag, path in (("9차", LIST9), ("10차", LIST10), ("11차", LIST11)):
+        if not os.path.exists(path):
+            continue
         for r in csv.DictReader(open(path, encoding="utf-8-sig")):
             if r["상태"] == "OK" and r["kind"] in KIND:
                 out.append((tag, r))
@@ -171,6 +179,44 @@ def annex_titles(xb):
     return ["".join(e.itertext()).strip() for e in root.iter("별표제목") if "".join(e.itertext()).strip()]
 
 
+ANNEX45_MD = os.path.join("handoff", "법령원문_11차", "금융지주회사법시행령_별표4·5.md")
+BOX = re.compile(r"[\u2500-\u257f]")
+
+
+def annex_body(xb, no):
+    root = ET.fromstring(xb)
+    u = next((b for b in root.iter("별표단위") if (b.findtext("별표번호") or "").strip() == no
+              and (b.findtext("별표가지번호") or "").strip() in ("", "00") and (b.findtext("별표구분") or "").strip() == "별표"),
+             None)
+    return ((u.findtext("별표제목") or "").strip(), u.findtext("별표내용") or "") if u is not None else ("", "")
+
+
+def annex45(dec):
+    """별표 4·5 저용량본: 테두리만 있는 줄(─┌┐ 등과 공백뿐)은 빼고, 칸 구분 │ 은 남기고, 공백만 정리. 글자는 그대로."""
+    xb = open(dec["원문XML"], "rb").read()
+    body, orig = [], []
+    for no in ("0004", "0005"):
+        title, t = annex_body(xb, no)
+        orig.append(t)
+        body.append("[별표 %d] %s" % (int(no), title))
+        for l in t.split("\n"):
+            if not re.sub(r"[\s\u2500-\u257f]", "", l):
+                continue
+            l = re.sub(r"[ \t\u3000]+", " ", l).strip()
+            if l:
+                body.append(l)
+    head = ["금융지주회사법 시행령 [별표 4]·[별표 5] | 시행령 일련번호 %s | 시행 %s | 출처 국가법령정보센터 Open API(law.go.kr) | 확인 %s"
+            % (dec["일련번호"], dec["시행일자"], dec["collected_at"][:10]),
+            "저용량본: 표 테두리만 있는 줄 생략, 칸 구분 │ 은 남김, 공백 정리. 글자는 그대로. 전체: %s" % ANNEX45_MD]
+    text = "\n".join(head + ["---"] + body) + "\n"
+    fn = "금융지주회사법시행령_별표4·5.txt"
+    with open(os.path.join(OUTDIR, fn), "w", encoding="utf-8", newline="\n") as f:
+        f.write(text)
+    strip = lambda x: BOX.sub("", re.sub(r"\s+", "", x))  # noqa: E731
+    ok = all(t.strip() and strip(t) in strip(text) for t in orig)          # 별표마다 따로
+    return fn, text, ok
+
+
 def compact():
     rc = {(r["name"], r["kind"]): r for r in csv.DictReader(open(RECHECK, encoding="utf-8-sig"))} \
         if os.path.exists(RECHECK) else {}
@@ -242,6 +288,17 @@ def compact():
                       시행일자="20260910(세칙)", 차수="10차", 바이트=len(text.encode("utf-8")),
                       원래_md_바이트=os.path.getsize(L.A37_MD), 조문수="", 원문XML_sha256="", 출처URL="별표 hwp: "
                       "https://www.law.go.kr/LSW/flDownload.do?flSeq=168886111", 확인일=now()[:10], 비고=""))
+    # 금융지주회사법 시행령 별표 4·5(11차) — 원문 XML 별표내용
+    if os.path.exists(LIST11):
+        r11 = {r["name"]: r for r in csv.DictReader(open(LIST11, encoding="utf-8-sig"))}
+        dec = r11.get("금융지주회사법 시행령")
+        if dec and dec["상태"] == "OK":
+            fn, text, ok45 = annex45(dec)
+            checks.append((fn, 2, [] if ok45 else ["별표4·5"]))
+            index.append(dict(파일=fn, 법령명="금융지주회사법 시행령 [별표 4]·[별표 5]", 종류="시행령 별표", 일련번호=dec["일련번호"],
+                              시행일자=dec["시행일자"], 차수="11차", 바이트=len(text.encode("utf-8")),
+                              원래_md_바이트=os.path.getsize(ANNEX45_MD) if os.path.exists(ANNEX45_MD) else 0, 조문수="",
+                              원문XML_sha256=dec["xml_sha256"], 출처URL=dec["출처URL"], 확인일=dec["collected_at"][:10], 비고=""))
     # 목록 파일
     lines = ["법령원문 저용량본 목록 | 만든 날 %s | UTF-8 텍스트, 법령마다 한 파일" % now()[:10],
              "줄인 것: 연혁 표지(<개정…>·<신설…>·[본조신설…]·(개정 …) 등)와 지난 부칙(그 판 부칙만 남김), 줄 앞뒤 공백·빈 줄. "
@@ -253,7 +310,7 @@ def compact():
             "%.0f%%" % (100.0 * x["바이트"] / x["원래_md_바이트"]) if x["원래_md_바이트"] else "-")
             + (" — " + x["비고"] if x["비고"] else ""))
     lines.append("넣지 않은 것: 금융지주회사감독규정 7차 판(2100000266376, 2026-10-02 부터 지난 판)·시행예정 판(공정거래법 4·보험업법 1, "
-                 "원본 XML 만 보관).")
+                 "원본 XML 만 보관; 보험업법 시행령 285553(시행 2027-01-01)은 일련번호·시행일만 기록).")
     with open(os.path.join(OUTDIR, "00_목록.txt"), "w", encoding="utf-8", newline="\n") as f:
         f.write("\n".join(lines) + "\n")
     write_csv(os.path.join(L.WORK, "법령원문_저용량_목록.csv"), list(index[0].keys()), index)
@@ -299,6 +356,21 @@ def check():
         for lab, lines in units_text(xb, KIND[r["kind"]]):
             if re.sub(r"\s+", "", strip_hist("\n".join(lines))) not in flat:
                 probs.append("조문 불일치 %s %s" % (fn, lab))
+    if os.path.exists(LIST11):
+        dec = {r["name"]: r for r in csv.DictReader(open(LIST11, encoding="utf-8-sig"))}.get("금융지주회사법 시행령")
+        fn = os.path.join(OUTDIR, "금융지주회사법시행령_별표4·5.txt")
+        if dec and dec["상태"] == "OK":
+            if not os.path.exists(fn):
+                probs.append("없음 " + fn)
+            else:
+                xb = open(dec["원문XML"], "rb").read()
+                strip = lambda x: BOX.sub("", re.sub(r"\s+", "", x))  # noqa: E731
+                got = strip(open(fn, encoding="utf-8").read())
+                for no in ("0004", "0005"):
+                    src = annex_body(xb, no)[1]
+                    if not src.strip() or strip(src) not in got:
+                        probs.append("별표 %d 불일치 %s" % (int(no), fn))
+                n += 1
     return n, probs
 
 
