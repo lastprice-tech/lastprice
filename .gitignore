@@ -116,6 +116,8 @@ __pycache__/
 # 10차(리스크부문 v0.7 작업 6, 9차 잔여 확인) — 새 폴더 두 개. 원본 PDF·HWP·XML 은 dart_out/raw/web10(무시)
 !/handoff/원문_10차/
 !/handoff/법령원문_10차/
+# 법령원문 저용량본(Claude 프로젝트 참고용 .txt, 2026-10-02)
+!/handoff/법령원문_저용량/
 
 # selftest 임시 산출물
 /dart_out/_selftest/

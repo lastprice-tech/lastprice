@@ -2,6 +2,7 @@
 """10차(리스크부문 v0.7 작업 6, 9차 잔여 확인) — 공용 도구와 법령·별표 수집.
 
     python3 scripts/dart/web10.py laws       # 6-1 금산법·시행령·금융지주회사감독규정 현행 → 법령원문_10차/
+    python3 scripts/dart/web10.py laws "주식회사 등의 외부감사에 관한 법률"   # 이름을 주면 그 법령만
     python3 scripts/dart/web10.py cite       # 6-1 금산법_인용대조.csv · 금산법_확인.csv
     python3 scripts/dart/web10.py define     # 6-6 계열회사_정의대조.csv (공정거래법·연결 조문)
     python3 scripts/dart/web10.py annex37    # 6-2 보험업감독업무시행세칙 별표37 → 원문_10차/세칙_별표37.md
@@ -110,7 +111,10 @@ def main(argv):
     if not fn:
         print(__doc__)
         return 1
-    fn()
+    if cmd == "laws" and len(argv) > 2:
+        fn(argv[2:])                                # 이름을 주면 그 법령만 받는다
+    else:
+        fn()
     return 0
 
 

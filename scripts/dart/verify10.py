@@ -14,6 +14,7 @@ E 법령해석_대주주거래: related 행의 body_md 파일이 있고, 폴더�
 F 모든 CSV 행에 출처(URL/접수번호)와 수집일이 있는가.
 G 키 유출: DART_API_KEY·LAW_OC 값이 새 파일 어디에도 없고, 「OC=」 뒤는 늘 *** 인가.
 H 9차까지의 산출물(handoff/ 의 10차 폴더 밖)이 9차 마지막 커밋(25909e2)과 같은가.
+K 법령원문 저용량본: 법령마다 파일이 있고 조문마다 연혁 표지만 뺀 원문 글이 그대로 들어 있는가.
 """
 from __future__ import annotations
 
@@ -256,8 +257,8 @@ def check_F():
 # ── G 키 유출 ─────────────────────────────────────────────────────────────
 def check_G():
     keys = leakscan.secrets()
-    files = [f for d in (OUT, LAWOUT, WORK) for f in glob.glob(os.path.join(d, "**", "*"), recursive=True)
-             if os.path.isfile(f)] + glob.glob(os.path.join("scripts", "dart", "web10*.py")) + [__file__]
+    files = [f for d in (OUT, LAWOUT, WORK, os.path.join("handoff", "법령원문_저용량")) for f in glob.glob(os.path.join(d, "**", "*"), recursive=True)
+             if os.path.isfile(f)] + glob.glob(os.path.join("scripts", "dart", "web10*.py")) + [os.path.join("scripts", "dart", "law_compact.py")] + [__file__]
     hits = []
     for f in files:
         b = open(f, "rb").read()
@@ -275,18 +276,28 @@ def check_G():
 def check_H():
     r = subprocess.run(["git", "-c", "core.quotepath=off", "diff", "--name-only", BASE9, "--", "handoff", "dart_out/risk9", "dart_out/risk8"],
                        capture_output=True, text=True, check=True)
-    changed = [x for x in r.stdout.splitlines() if not re.match(r"handoff/(원문_10차|법령원문_10차)/", x)]
+    changed = [x for x in r.stdout.splitlines() if not re.match(r"handoff/(원문_10차|법령원문_10차|법령원문_저용량)/", x)]
     r2 = subprocess.run(["git", "-c", "core.quotepath=off", "status", "--porcelain", "--", "handoff", "dart_out/risk9", "dart_out/risk8"],
                         capture_output=True, text=True, check=True)
-    dirty = [x for x in r2.stdout.splitlines() if not re.search(r"(원문_10차|법령원문_10차)", x)]
+    dirty = [x for x in r2.stdout.splitlines() if not re.search(r"(원문_10차|법령원문_10차|법령원문_저용량)", x)]
     ok(not changed and not dirty, "H 9차까지 산출물 변경 없음(%s 대비 커밋 변경 %d · 작업트리 변경 %d)"
        % (BASE9, len(changed), len(dirty)))
     for x in changed + dirty:
         log.append("   변경 %s" % x)
 
 
+# ── K 법령원문 저용량본(2026-10-02 추가) ──────────────────────────────────
+def check_K():
+    import law_compact
+    n, probs = law_compact.check()
+    ok(n >= 13 and not probs, "K 법령원문 저용량본 %d개: 조문마다 연혁 표지만 뺀 원문 글이 그대로, BOM·CRLF 없음 (문제 %d)"
+       % (n, len(probs)))
+    for x in probs[:20]:
+        log.append("   " + x)
+
+
 def main():
-    for f in (check_A, check_B, check_C, check_D, check_E, check_F, check_G, check_H):
+    for f in (check_A, check_B, check_C, check_D, check_E, check_F, check_G, check_H, check_K):
         try:
             f()
         except Exception as e:                       # noqa: BLE001

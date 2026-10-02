@@ -42,6 +42,8 @@ LAWS = [
     ("금융회사의 지배구조에 관한 법률", "law", "지배구조법.md"),
     ("금융회사의 지배구조에 관한 법률 시행령", "decree", "지배구조법시행령.md"),
     ("보험업법", "law", "보험업법.md"),
+    # 2026-10-02 사용자 추가 요청: 외감법(법률). 시행령은 9차 법령원문_9차 에 있다.
+    ("주식회사 등의 외부감사에 관한 법률", "law", "외감법.md"),
 ]
 LIST_CSV = os.path.join(WORK, "법령원문_10차.csv")
 LAW7 = os.path.join("law_archive", "00_manifest", "law_list.csv")
@@ -110,14 +112,20 @@ def md_text(xb, kind):
 
 
 # ── 6-1 laws ──────────────────────────────────────────────────────────────
-def laws():
+def laws(only=None):
+    """only(이름 목록)를 주면 그 법령만 받고, 목록 CSV 의 나머지 행은 그대로 둔다(다시 받지 않음)."""
     import render
     import resolve
     client = _client()
+    todo = [x for x in LAWS if not only or x[0] in only]
+    if only and len(todo) != len(only):
+        raise SystemExit("LAWS 에 없는 이름: %s" % sorted(set(only) - {x[0] for x in todo}))
+    kept = [r for r in csv.DictReader(open(LIST_CSV, encoding="utf-8-sig"))
+            if r["name"] not in {x[0] for x in todo}] if only and os.path.exists(LIST_CSV) else []
     prev = {r["정식명"]: r for r in csv.DictReader(open(LAW7, encoding="utf-8-sig"))} if os.path.exists(LAW7) else {}
     rows = []
     resolved = {}
-    for name, kind, mdname in LAWS:
+    for name, kind, mdname in todo:
         rec = dict(name=name, kind={"law": "법률", "decree": "시행령", "rule": "행정규칙"}[kind], 상태="",
                    법령ID="", 일련번호="", 시행일자="", 발령_공포일자="", 소관="", 시행예정판="",
                    원문XML="", xml_sha256="", 텍스트="", 텍스트_sha256="", PDF="", pdf_sha256="", 쪽수="",
@@ -204,9 +212,9 @@ def laws():
             rows.append(rec)
     # 감독규정: API 가 「현행」으로 준 판의 시행일이 수집일 뒤면(실측: 발령 2026-09-29·시행 2026-10-02),
     # 수집일에 시행 중인 판(7차 일련번호)도 받아 둔다. 어느 판이 맞는지 판정하지 않고 둘 다 남긴다.
-    cur = next(r for r in rows if r["name"] == FHC_RULE)
+    cur = next((r for r in rows if r["name"] == FHC_RULE), None)
     pv = prev.get(FHC_RULE, {})
-    if cur["상태"] == "OK" and pv and pv.get("법령일련번호") and pv["법령일련번호"] != cur["일련번호"]:
+    if cur and cur["상태"] == "OK" and pv and pv.get("법령일련번호") and pv["법령일련번호"] != cur["일련번호"]:
         rec = dict(cur, kind="행정규칙(7차 판)", 상태="", 일련번호=pv["법령일련번호"], 시행일자=pv.get("시행일자", ""),
                    발령_공포일자=pv.get("공포일자", ""), 시행예정판="", note="")
         try:
@@ -234,8 +242,9 @@ def laws():
             rec.update(상태="실패", note=client.mask("%s: %s" % (type(e).__name__, e))[:300])
         print("  %-28s %s %s %s" % (FHC_RULE + "(7차 판)", rec["상태"], rec["일련번호"], rec["note"][:60]))
         rows.append(rec)
-    write_csv(LIST_CSV, list(rows[0].keys()), rows)
-    print("법령 %d건 · OK %d · API 호출 %d" % (len(rows), sum(r["상태"] == "OK" for r in rows), client.n_calls))
+    write_csv(LIST_CSV, list(rows[0].keys()), kept + rows)
+    print("법령 %d건 받음(목록 전체 %d행) · OK %d · API 호출 %d" % (
+        len(rows), len(kept) + len(rows), sum(r["상태"] == "OK" for r in rows), client.n_calls))
 
 
 def _listed():
