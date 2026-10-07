@@ -123,6 +123,9 @@ __pycache__/
 !/handoff/원문_11차/
 !/handoff/법령원문_11차/
 
+# 13차(리스크부문 작업 9, 모범규준 조항 기준 표 보강) — md 산출물. 원본은 dart_out/raw/web13(무시)
+!/handoff/13차_산출물/
+
 # selftest 임시 산출물
 /dart_out/_selftest/
 
