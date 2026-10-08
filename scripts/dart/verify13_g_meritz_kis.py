@@ -522,7 +522,7 @@ def check_quotes(R, co, path):
         fet = [x for x in parts if x.startswith("원본 수집 ")]
         if not fet or fet[0] != "원본 수집 " + d["fetched"][:10]:
             errs.append(f"원본 수집일(기대 {d['fetched'][:10]})")
-        if f"옮김 {TODAY}" not in parts:
+        if not any(x in parts for x in MOVED_OK):
             errs.append("옮김 날짜")
         pl = [x for x in parts if PAGE_LAB_RE.match(x)]
         if not pl:
@@ -583,9 +583,10 @@ def check_mobeom_quote(R, q, parts):
         errs.append("출처(행정지도 첨부·URL) 표기")
     if f"원본 sha256 {meta['sha256'][:16]}" not in parts:
         errs.append("원본 sha256")
-    if f"수집 2026-10-07(UTC; .meta.json fetched_at {meta['fetched_at']})" not in parts:
+    if not any(x in parts for x in (f"수집 2026-10-07(UTC; .meta.json fetched_at {meta['fetched_at']})",
+                                    f"수집 {meta['fetched_at'][:10]}(KST; .meta.json fetched_at {meta['fetched_at']})")):
         errs.append("수집일")
-    if f"옮김 {TODAY}" not in parts:
+    if not any(x in parts for x in MOVED_OK):
         errs.append("옮김 날짜")
     flat = mobeom_flat(ver)
     pos = 0
@@ -633,7 +634,7 @@ def check_titles(R, co, lines):
         if ln.startswith("```"):
             incode = not incode
             continue
-        if incode or sec == VREC:
+        if incode or sec in VREC_OK:
             continue
         if sec.startswith("## 7.") and ln.startswith("| "):
             c = ln.split("|")
@@ -763,6 +764,12 @@ REQ_ITEMS = [
 ]
 SEC7 = "## 7. 지시서 항목별 대조(검증 2026-10-07 추가)"
 VREC = "## 검증 기록(2026-10-07)"
+# 13차 정합성 보정(scripts/dart/fix13_A.py, 2026-10-08 KST)이 고친 판도 받아들임 — 대조 규칙은 그대로, 받아들이는 글만 넓힘:
+#   R5 절 제목 날짜 KST(7장·검증 기록), 인용 줄 옮김 날짜 KST 라벨, 모범규준 인용 수집 라벨 KST;
+#   R1 7장 상태 칸은 상태 CSV 와 같은 글로 두고 찾은 방법은 같은 행 「받은 글」 칸에 적음 → 찾은 방법은 그 행(받은 글+상태)에서 찾음.
+SEC7_OK = (SEC7, "## 7. 지시서 항목별 대조(검증 2026-10-08 KST 추가)")
+VREC_OK = (VREC, "## 검증 기록(2026-10-08 KST)")
+MOVED_OK = (f"옮김 {TODAY}", "옮김 2026-10-07~08(KST)", "옮김 2026-10-08(KST)")
 TRAIL = ("검색어", "찾은 범위", "찾은 파일", "찾은 곳", "찾은 방법", "6장", "검색 기록", "검증 기록", "정규식", "p.1~", "같은 범위", "전 범위")
 
 
@@ -771,8 +778,8 @@ def check_request(R, co, lines, quotes):
     req = open(REQ, encoding="utf-8").read()
     ids = {q["id"] for q in quotes}
     try:
-        a = lines.index(SEC7)
-    except ValueError:
+        a = next(i for i, ln in enumerate(lines) if ln in SEC7_OK)
+    except StopIteration:
         R.bad(f"{CO[co]}: 「{SEC7}」 절 없음")
         return
     rows = []
@@ -799,7 +806,7 @@ def check_request(R, co, lines, quotes):
         for x in refs:
             if x not in ids:
                 R.bad(f"{CO[co]}: 7장 「{item}」 가 가리킨 인용 [{x}] 가 md 에 없음")
-        if "추출 범위에 없음" in state and not any(t in state for t in TRAIL):
+        if "추출 범위에 없음" in state and not any(t in got + " " + state for t in TRAIL):
             R.bad(f"{CO[co]}: 7장 「{item}」 추출 범위에 없음인데 찾은 방법이 없음")
         if "추출 범위에 없음" not in state and not refs and "해당 없음" not in state:
             R.bad(f"{CO[co]}: 7장 「{item}」 받은 글 인용 번호 없음")
@@ -818,7 +825,7 @@ def check_notfound(R, co, lines):
         if ln.startswith("```"):
             incode = not incode
             continue
-        if incode or "추출 범위에 없음" not in ln or sec == VREC:
+        if incode or "추출 범위에 없음" not in ln or sec in VREC_OK:
             continue
         n += 1
         # 같은 줄, 또는 바로 다음 note: 줄, 또는 표 아래 note 를 가리키는 표시
@@ -865,7 +872,7 @@ def check_misc(R, mds):
         R.bad(f"산출 폴더에 PDF {len(pdfs)}개: {pdfs[:3]}")
     R.p(f"  산출 폴더 PDF {len(pdfs)}개")
     for co, lines in mds.items():
-        hs = [i for i, ln in enumerate(lines) if ln.strip() == VREC]
+        hs = [i for i, ln in enumerate(lines) if ln.strip() in VREC_OK]
         h2 = [i for i, ln in enumerate(lines) if ln.startswith("## ")]
         if len(hs) != 1:
             R.bad(f"{CO[co]}: 「{VREC}」 절이 {len(hs)}개")

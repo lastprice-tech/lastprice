@@ -49,6 +49,9 @@ ROOT = os.path.dirname(os.path.dirname(HERE))
 os.chdir(ROOT)
 
 TODAY = "2026-10-07"
+# 13차 정합성 보정(scripts/dart/fix13_B.py, R5 날짜 라벨) 뒤의 꼴도 받음 — 절 제목 「## 검증 기록(2026-10-08 KST)」, 검증 때 더한 인용의 인용일 2026-10-08.
+FIX13_VREC = "## 검증 기록(2026-10-08 KST)"
+FIX13_QD = "2026-10-08"
 TXT8 = os.path.join("dart_out", "text", "risk8")
 TXT9 = os.path.join("dart_out", "text", "risk9")
 OUTD = os.path.join("handoff", "13차_산출물")
@@ -328,7 +331,7 @@ def check_quote(co, b, probs, detail):
         probs.append((where, f"URL/접수번호 다름: {m.group('loc')} / 메타 {sorted(d['locs_ok'])}"))
     if m.group("fetched") != d["fetched"][:10]:
         probs.append((where, f"원본 수집일 다름: {m.group('fetched')} / 메타 {d['fetched']}"))
-    if m.group("qd") != TODAY:
+    if m.group("qd") not in (TODAY, FIX13_QD):
         probs.append((where, f"인용일 다름: {m.group('qd')}"))
     t = T(key)
     l1, l2 = int(m.group("l1")), int(m.group("l2"))
@@ -881,13 +884,14 @@ def run_check(write=True, md_override=None, quiet=False):
         st["notfound_lines"] = check_notfound(co, lines, probs)
         # 검증 기록 절
         nrec = sum(1 for ln in lines if ln.startswith("## 검증 기록"))
-        if nrec != 1 or not any(ln == f"## 검증 기록({TODAY})" for ln in lines):
-            probs.append((f"{CO[co]} md", f"「## 검증 기록({TODAY})」 절 수 {nrec}"))
+        vrec = FIX13_VREC if FIX13_VREC in lines else f"## 검증 기록({TODAY})"
+        if nrec != 1 or not any(ln == vrec for ln in lines):
+            probs.append((f"{CO[co]} md", f"「{vrec}」 절 수 {nrec}"))
         else:
             last_h2 = [ln for ln in lines if ln.startswith("## ")][-1]
-            if last_h2 != f"## 검증 기록({TODAY})":
+            if last_h2 != vrec:
                 probs.append((f"{CO[co]} md", "검증 기록 절이 맨 끝이 아님"))
-            rec_txt = "\n".join(lines[lines.index(f"## 검증 기록({TODAY})"):])
+            rec_txt = "\n".join(lines[lines.index(vrec):])
             for jo in ("3조", "4·5조", "17조", "21조", "22조", "24조", "27조", "34조", "53조", "55조"):
                 if jo not in rec_txt:
                     probs.append((f"{CO[co]} 검증 기록", f"반박 시도 기록에 {jo} 없음"))

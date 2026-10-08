@@ -70,6 +70,11 @@ TOC = {k: os.path.join(WORK, f"9-4_{v}_조문목차.csv") for k, v in CO.items()
 PAGE_RE = re.compile(r"^=== p\.(\d+) ===\s*$")
 MARK_RE = re.compile(r"^\s*\[(표 깨짐|추출 깨짐|줄임|생략)[:：]")
 VREC = f"## 검증 기록({TODAY})"
+# 13차 정합성 보정(scripts/dart/fix13_A.py, 2026-10-08 KST)이 고친 판도 받아들임 — 대조 규칙은 그대로, 받아들이는 글만 넓힘:
+#   R5 검증 기록 절 제목 KST·인용 줄 옮김 날짜 KST 라벨, R2 조 태그 줄의 「9-4 조문 대조(대조표 A~C)」 표지,
+#   R1 7장 찾은 방법은 같은 행 「받은 글」 칸에서도 찾음, 검증 기록의 「### 정합성 보정」 소절은 「고친 곳」 소절처럼 조각·제목 대조에서 넘김.
+VREC_OK = (VREC, "## 검증 기록(2026-10-08 KST)")
+MOVED_OK = (f"옮김 {TODAY}", "옮김 2026-10-07~08(KST)", "옮김 2026-10-08(KST)")
 # 지시서(REQUEST13 9-4)에 적힌 모범규준 조 번호 — 이 밖의 번호는 「(판단)」. iM 은 28·30 도 지시서에 적힘.
 REQ_ARTS = {"I": {3, 4, 5, 17, 21, 22, 24, 27, 28, 30, 34, 53, 55}, "N": {3, 4, 5, 17, 21, 22, 24, 27, 34, 53, 55}}
 
@@ -626,7 +631,7 @@ def check_quotes(R, c, text, label, record=True):
         fet = [x for x in parts if x.startswith("원본 수집 ")]
         if not fet or fet[0] != "원본 수집 " + d["fetched"][:10]:
             errs.append(f"원본 수집일(기대 {d['fetched'][:10]})")
-        if f"옮김 {TODAY}" not in parts:
+        if not any(x in parts for x in MOVED_OK):
             errs.append("옮김 날짜")
         pl = [x for x in parts if PAGE_LAB_RE.match(x)]
         if not pl:
@@ -956,7 +961,7 @@ def fixed_lines(lines):
     out = set()
     on = False
     for i, ln in enumerate(lines):
-        if ln.startswith("### 고친 곳"):
+        if ln.startswith("### 고친 곳") or ln.startswith("### 정합성 보정"):
             on = True
             continue
         if on and (ln.startswith("### ") or ln.startswith("## ")):
@@ -1049,7 +1054,7 @@ def check_tags(R, c, quotes):
             if need and not m.group(3):
                 R.bad(f"{CO[c]} [{q['id']}] 조 태그 「{m.group(0)}」 — 지시서에 없는 조인데 「(판단)」 없음")
                 bad += 1
-        rest = re.sub(r"\d{1,2}조\([^()]*\)(\(판단\))?|조문 목차\(지시서 9-4 1\.\)|[,·\s]", "", body)
+        rest = re.sub(r"\d{1,2}조\([^()]*\)(\(판단\))?|조문 목차\(지시서 9-4 1\.\)|9-4 조문 대조\(대조표 A~C\)|[,·\s]", "", body)
         if rest:
             R.bad(f"{CO[c]} [{q['id']}] 조 태그 줄에 읽지 못한 글 「{rest}」")
             bad += 1
@@ -1104,7 +1109,7 @@ def check_request(R, c, lines, quotes):
         st = r[4]
         if not (st.startswith("받은 글") or st.startswith("일부") or st.startswith("추출 범위에 없음") or st.startswith("해당 없음")):
             R.bad(f"{CO[c]} 7절 「{item}」 상태 칸 「{st[:20]}」")
-        if "추출 범위에 없음" in st and "찾은 방법" not in st:
+        if "추출 범위에 없음" in st and "찾은 방법" not in r[3] + " " + st:
             R.bad(f"{CO[c]} 7절 「{item}」: 「추출 범위에 없음」에 찾은 방법 없음")
         for x in re.findall(r"\[([A-Z]+-[A-Z]?\d+[a-z]?)\]", r[3] + r[4]):
             if x not in ids:
@@ -1118,7 +1123,7 @@ NF_METHOD = re.compile(r"찾은 방법|찾은 범위|찾은 파일|검색어|6�
 def check_notfound(R, c, lines):
     n = bad = 0
     try:
-        vrec = next(i for i, ln in enumerate(lines) if ln.startswith(VREC))
+        vrec = next(i for i, ln in enumerate(lines) if ln.startswith(VREC_OK))
     except StopIteration:
         vrec = len(lines)
     for i, ln in enumerate(lines[:vrec]):
@@ -1162,11 +1167,12 @@ def check_misc(R, paths, texts):
     if pdfs:
         R.bad(f"산출 폴더에 PDF {pdfs}")
     for c, s in texts.items():
-        n = s.count("\n" + VREC)
+        vr = next((v for v in VREC_OK if "\n" + v in s), VREC)
+        n = sum(s.count("\n" + v) for v in VREC_OK)
         if n != 1:
             R.bad(f"{CO[c]}: 「{VREC}」 절이 {n}개(1개여야 함)")
         else:
-            tail = s.split("\n" + VREC, 1)[1]
+            tail = s.split("\n" + vr, 1)[1]
             if re.search(r"^## ", tail, re.M):
                 R.bad(f"{CO[c]}: 「{VREC}」 절이 맨 끝이 아님")
     R.p(f"  인증값 {len(vals)}종 대조(값은 출력 안 함), 산출 폴더 PDF {len(pdfs)}개")

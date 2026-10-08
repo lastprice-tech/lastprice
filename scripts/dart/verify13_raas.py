@@ -61,6 +61,11 @@ BASE_COMMIT = "ec4a426"
 BASE_SHA = {"md": "bdf23d52179aead8b9698a588419c9ad292ad0a8ad8aa629624742a2ff42d4b0",
             "csv": "b0835433b28a7058a0e591629925d908b1d9209b0a87121ec0c685f0ee2e329e"}
 VERIFY_HEAD = "## 검증 기록(2026-10-07)"
+# 13차 정합성 보정(scripts/dart/fix13_D.py, 2026-10-08 KST)이 고친 판도 받아들임 — 대조 규칙은 그대로, 받아들이는 글만 넓힘:
+#   R5 절 제목 「검증 기록(2026-10-08 KST)」은 옛 제목과 같은 절로 읽음(대조 때만 — fix 모드가 쓰는 제목은 그대로),
+#   R2 자료 묶음 조 줄은 fix13_D fix_log 의 「후」이면 그 「전」을 스크립트 대응표와 견줌. 재생성 순서: fix → fix13_D.py.
+VERIFY_HEAD_KST = "## 검증 기록(2026-10-08 KST)"
+FIXD_LOG = os.path.join("dart_out", "raw", "web13", "fix13_D", "fix_log.json")
 PUA = "\U000f02b1\U000f02b2\U000f02b3\U000f02b4\U000f02b5\U000f02b6\U000f02b7"  # 한글 원문자 ①~⑦(사용자 정의 영역)
 CIRC = "①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳➀➁➂➃➄➅➆➇➈➉"
 MARK = re.compile(r"\[글자겹침 ([^\]]+)\]")
@@ -991,6 +996,13 @@ def csv_art(n, T):
     return "33조(%s) ①1호(판단 — 대주주와의 거래)" % T[33]
 
 
+def fixd_before():
+    """fix13_D 가 이 md 에서 고친 줄 「후」 → 「전」."""
+    if not os.path.exists(FIXD_LOG):
+        return {}
+    return {x["후"]: x["전"] for x in json.load(open(FIXD_LOG, encoding="utf-8"))["보정"] if x["파일"] == MD and isinstance(x["후"], str)}
+
+
 def check_articles(R, md):
     S = source()
     T = S["T"]
@@ -1023,7 +1035,7 @@ def check_articles(R, md):
         al = [x for x in lines[i + 1:j] if x.startswith("- 모범규준 조(판단")]
         if not al:
             R.ng("「%s」 자료 묶음에 모범규준 조(판단) 줄 없음" % h[:30])
-        elif al[0] != art_line(spec, none_txt, T):
+        elif al[0] != art_line(spec, none_txt, T) and fixd_before().get(al[0]) != art_line(spec, none_txt, T):
             R.ng("「%s」 조 줄이 스크립트 대응표와 다름" % h[:30])
     R.ok("자료 묶음 %d곳의 「모범규준 조(판단 …)」 줄 확인" % len(SEC_ART))
 
@@ -1237,6 +1249,7 @@ def verify(md=None, csv_rows=None, write=True, quiet=False, label_="대상"):
     R.lines.append("  sha256 %s  %s" % (sha_bytes(md.encode("utf-8")), MD))
     if os.path.exists(CSV_P):
         R.lines.append("  sha256 %s  %s" % (sha_file(CSV_P), CSV_P))
+    md = "\n".join(VERIFY_HEAD if ln == VERIFY_HEAD_KST else ln for ln in md.split("\n"))   # fix13_D 절 제목(KST)
     check_source(R, md)
     st = check_quotes(R, md)
     tb = check_tables(R, md)

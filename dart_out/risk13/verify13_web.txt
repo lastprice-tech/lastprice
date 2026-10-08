@@ -1,8 +1,8 @@
 verify13_web — 13차 9-2-4·9-5 산출물 검증(2026-10-07, scripts/dart/verify13_web.py)
 대상: handoff/13차_산출물/9-2-4_ORSA_보도자료.md · handoff/13차_산출물/9-5_금감원_검사결과.md · dart_out/risk13/9-5_검사결과_목록.csv
-  sha256 4e46197d7ee09dfb25a2abd70a7547e0cb76446e78555eda0abcf65ac08a0295  handoff/13차_산출물/9-2-4_ORSA_보도자료.md
-  sha256 4a3627809830f18eb6c3eef1f97dfd316cee9836551588b58a988ad1684acc8e  handoff/13차_산출물/9-5_금감원_검사결과.md
-  sha256 f9b1ee38e33c913e43a868cae7362e8a48dbfc5cf77f968e14a4e9ba6be89e2d  dart_out/risk13/9-5_검사결과_목록.csv
+  sha256 d637f87e94bce54b70b632e574b6772a5c08920016027fcf495eb72075e8df1d  handoff/13차_산출물/9-2-4_ORSA_보도자료.md
+  sha256 59ae04ba428deed5cfe00343f4d7530bd49c18ae2a1d613dbd3638c369f9f5cf  handoff/13차_산출물/9-5_금감원_검사결과.md
+  sha256 7e99ab80984602246affaa9baf755e5bbf1654e36e5cc169be2c3f32933db719  dart_out/risk13/9-5_검사결과_목록.csv
 
 == 9-2-4 인용 대조 — handoff/13차_산출물/9-2-4_ORSA_보도자료.md (인용 블록 34개)
   ok  원본 글 일치 34/34
@@ -48,8 +48,8 @@ verify13_web — 13차 9-2-4·9-5 산출물 검증(2026-10-07, scripts/dart/veri
 == 인증값·PDF·검증 기록 절
   ok  인증값 값 2개·꼴 4개로 5개 파일 확인
   ok  산출 폴더(handoff/13차_산출물)에 PDF 없음
-  ok  9-2-4_ORSA_보도자료.md: 맨 끝 「## 검증 기록(2026-10-07)」
-  ok  9-5_금감원_검사결과.md: 맨 끝 「## 검증 기록(2026-10-07)」
+  ok  9-2-4_ORSA_보도자료.md: 맨 끝 「## 검증 기록(2026-10-08 KST)」
+  ok  9-5_금감원_검사결과.md: 맨 끝 「## 검증 기록(2026-10-08 KST)」
 
 문제 0
 

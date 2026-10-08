@@ -57,6 +57,9 @@ MD24 = os.path.join(OUT, "9-2-4_ORSA_보도자료.md")
 REQUEST = "/tmp/claude-0/-home-user-lastprice/c4bd4cae-f7c6-585d-b437-41528ddfc94a/scratchpad/curate13/REQUEST13.md"
 TODAY = "2026-10-07"
 SREC = "## 검증 기록(2026-10-07)"
+# 13차 정합성 보정(scripts/dart/fix13_C.py): 절 제목 날짜 KST(R5)·연혁·출처 묶음의 조 번호 칸(R2)도 대조가 받도록
+SREC_ANY = (SREC, "## 검증 기록(2026-10-08 KST)")
+NOART = "조 번호 해당 없음(연혁·출처 자료)"
 
 REG, SEC = P.REG, P.SEC
 XML_DIRS = [os.path.join("dart_out", "raw", w, "law") for w in ("web9", "web10", "web11")] + [
@@ -696,7 +699,7 @@ def resolve(lines, b, cl, cline, seg):
 
 def check_quotes(md):
     lines = open(md, encoding="utf-8").read().split("\n")
-    srec = [i for i, ln in enumerate(lines) if ln.startswith(SREC)]
+    srec = [i for i, ln in enumerate(lines) if ln.startswith(SREC_ANY)]
     lim = srec[0] if srec else len(lines)
     res = []
     for b in md_blocks(lines):
@@ -1057,7 +1060,7 @@ def check_mobeom(probs, info, md, bundle_pats, table_heads):
     lines = open(md, encoding="utf-8").read().split("\n")
     titles = mobeom_titles()
     heads = [i for i, ln in enumerate(lines) if ln.startswith("#")]
-    srec = [i for i, ln in enumerate(lines) if ln.startswith(SREC)]
+    srec = [i for i, ln in enumerate(lines) if ln.startswith(SREC_ANY)]
     lim = srec[0] if srec else len(lines)
     nb = 0
     for pat in bundle_pats:
@@ -1073,7 +1076,7 @@ def check_mobeom(probs, info, md, bundle_pats, table_heads):
             if not tag:
                 probs.append("%s 자료 묶음 「%s」: 「- 모범규준 조」 줄 없음" % (os.path.basename(md), lines[h][:40]))
             for ln in tag:
-                if "(판단" not in ln:
+                if "(판단" not in ln and NOART not in ln:  # NOART: 연혁·출처 묶음(13차 정합성 보정 R2)
                     probs.append("%s 「%s」: 모범규준 조 줄에 (판단) 표시 없음" % (os.path.basename(md), lines[h][:30]))
     nt = 0
     for i, ln in enumerate(lines[:lim]):
@@ -1113,7 +1116,7 @@ def _secrets():
 
 def check_notfound(probs, info, md):
     lines = open(md, encoding="utf-8").read().split("\n")
-    srec = [i for i, ln in enumerate(lines) if ln.startswith(SREC)]
+    srec = [i for i, ln in enumerate(lines) if ln.startswith(SREC_ANY)]
     lines = lines[:srec[0]] if srec else lines
     inblock = False
     n = 0
@@ -1212,8 +1215,9 @@ def check(write=True):
     info.append("지시서 9-2 항목 %d개 → md 절·글 확인(4번 보도자료는 9-2-4_ORSA_보도자료.md 몫 — 파일 있음 %s)" % (
         len(req), os.path.exists(MD24)))
     # 검증 보충·검증 기록 절
-    for md, t, need in ((MD1, t1, [r"^## 6\. 검증 보충\(2026-10-07\)", r"^## 검증 기록\(2026-10-07\)"]),
-                        (MD2, t2, [r"^## 5\. 검증 보충\(2026-10-07\)", r"^## 검증 기록\(2026-10-07\)"])):
+    # 「2026-10-08 KST」: 13차 정합성 보정(fix13_C.py, R5) 뒤 제목
+    for md, t, need in ((MD1, t1, [r"^## 6\. 검증 보충\(2026-10-0(?:7|8 KST)\)", r"^## 검증 기록\(2026-10-0(?:7|8 KST)\)"]),
+                        (MD2, t2, [r"^## 5\. 검증 보충\(2026-10-0(?:7|8 KST)\)", r"^## 검증 기록\(2026-10-0(?:7|8 KST)\)"])):
         for pat in need:
             if not re.search(pat, t, flags=re.M):
                 probs.append("%s: 「%s」 절 없음" % (os.path.basename(md), pat.strip("^")))

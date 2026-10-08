@@ -717,8 +717,8 @@ def check(write=True):
     # 「」 조각(모범규준 조 줄·6절 표 행)이 원문(9-1 원문 XML 6개 + 모범규준 원문 md)에 있는지
     U = _union_text()
     n_frag = 0
-    srec = [i for i, ln in enumerate(lines) if ln.startswith(SREC)]
-    s8i = [i for i, ln in enumerate(lines) if ln.startswith(S8)]
+    srec = [i for i, ln in enumerate(lines) if ln.startswith(SREC_ANY)]
+    s8i = [i for i, ln in enumerate(lines) if ln.startswith(S8_ANY)]
     s8r = range(s8i[0], srec[0] if srec else len(lines)) if s8i else range(0)
     for i, ln in enumerate(lines):
         if ln.startswith("- 모범규준 조(") or (ln.startswith("| 제") and JUDGE in ln) or (i in s8r and ln.startswith("- note")):
@@ -802,7 +802,7 @@ def check(write=True):
     pdfs = [f for f in os.listdir(OUT) if f.lower().endswith(".pdf")]
     if pdfs:
         probs.append("산출 폴더에 PDF: %s" % pdfs)
-    if not re.search(r"^## 검증 기록\(2026-10-07\)", text, flags=re.M):
+    if not re.search(r"^## 검증 기록\(2026-10-0(?:7|8 KST)\)", text, flags=re.M):  # 8 KST: 13차 정합성 보정(fix13_C) 뒤 제목
         probs.append("「## 검증 기록(2026-10-07)」 절 없음")
     if write:
         out = ["# 13차 9-1 검증 결과 — scripts/dart/verify13_law91.py (실행 %s)" % now(), "",
@@ -840,6 +840,9 @@ BAK_MD = os.path.join(VDIR, "_검증전_9-1_법령원문.md")
 BAK_CSV = os.path.join(VDIR, "_검증전_9-1_법령판.csv")
 S8 = "## 8. 검증 보충(2026-10-07)"
 SREC = "## 검증 기록(2026-10-07)"
+# 13차 정합성 보정(scripts/dart/fix13_C.py, R5): 절 제목 날짜를 KST 로 고친 뒤에도 대조(check)가 앵커를 찾도록 두 제목을 다 받음
+S8_ANY = (S8, "## 8. 검증 보충(2026-10-08 KST)")
+SREC_ANY = (SREC, "## 검증 기록(2026-10-08 KST)")
 JUDGE = "(판단)"
 
 # 자료 묶음마다 붙일 「모범규준 조」 줄 — 조 제목은 dart_out/risk13/모범규준_조목록.csv(2016.8.1 판). 9-1 지시서에는 조 번호가 없어 전부 판단.

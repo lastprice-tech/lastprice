@@ -54,6 +54,9 @@ SANC_LIST = os.path.join(WORK, "9-5_검사결과제재_지주목록.csv")
 CAND_CSV = os.path.join(WORK, "9-2-4_보도자료_후보.csv")
 REQLOG = os.path.join(WORK, "9-2-4_9-5_요청기록.csv")
 VERIFY_HEAD = "## 검증 기록(2026-10-07)"
+# 13차 정합성 보정(scripts/dart/fix13_D.py, 2026-10-08 KST)이 고친 판도 받아들임 — 대조 규칙은 그대로, 받아들이는 글만 넓힘:
+#   R5 절 제목 날짜 KST(「## 검증 기록(2026-10-08 KST)」). fix 모드가 쓰는 제목은 그대로(VERIFY_HEAD) — 재생성 순서: fix → fix13_D.py.
+VERIFY_HEADS = (VERIFY_HEAD, "## 검증 기록(2026-10-08 KST)")
 FOOT_RE = re.compile(r"^(?:-\s*\d+\s*-|\d{1,3})$")
 NEW_CSV_COLS = ["모범규준_조제목(2016.8.1판)", "넓혀찾은_조문표기(검증)", "PDF문서정보_작성일(참고·공개일아님)", "검증메모"]
 
@@ -669,10 +672,10 @@ def check_common(R, files):
         R.ok("산출 폴더(handoff/13차_산출물)에 PDF 없음")
     for md in (MD_P, MD_E):
         heads = [ln for ln in read_now(md).split("\n") if ln.startswith("## ")]
-        if not heads or heads[-1] != VERIFY_HEAD:
+        if not heads or heads[-1] not in VERIFY_HEADS:
             R.ng("%s: 맨 끝 절이 「%s」 아님" % (md, VERIFY_HEAD))
         else:
-            R.ok("%s: 맨 끝 「%s」" % (os.path.basename(md), VERIFY_HEAD))
+            R.ok("%s: 맨 끝 「%s」" % (os.path.basename(md), heads[-1]))
 
 
 def check_urls(R):
@@ -699,7 +702,8 @@ def check_coverage(R):
     R.h("지시서 항목 대조 표(「받은 글」 또는 「추출 범위에 없음 + 찾은 방법」)")
     for md, req in ((MD_P, REQ_P), (MD_E, REQ_E)):
         t = read_now(md)
-        sec = t.split(VERIFY_HEAD)[-1] if VERIFY_HEAD in t else ""
+        vh = next((h for h in VERIFY_HEADS if h in t), None)
+        sec = t.split(vh)[-1] if vh else ""
         quotes = ns("\n".join(b for _, _, b in code_blocks(t.split("\n"))))
         for item in req:
             m = re.search(r"^\| %s \| ([^|]+) \| ([^|]+) \|$" % re.escape(item), sec, re.M)

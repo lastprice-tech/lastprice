@@ -66,6 +66,13 @@ PRE_MD = os.path.join(VD, "9-4_모범규준_원문.검증전.md")    # 그 md �
 REQ13 = "/tmp/claude-0/-home-user-lastprice/c4bd4cae-f7c6-585d-b437-41528ddfc94a/scratchpad/curate13/REQUEST13.md"
 VERIFY_HEAD = "## 검증 기록(2026-10-07)"
 SEC10_HEAD = "## 10. 지시서 항목별 대조(검증 2026-10-07 추가)"
+# 13차 정합성 보정(scripts/dart/fix13_D.py, 2026-10-08 KST)이 고친 판도 받아들임 — 대조 규칙은 그대로, 받아들이는 글만 넓힘:
+#   R5 절 제목(10장·검증 기록)·「검증(…) 반박 시도[N…]」 표지·인용 머리 수집 라벨의 KST 판, 검증 전 사본 보존 대조에서 fix13_D fix_log 「전」 줄.
+#   fix 모드가 쓰는 글은 그대로(이 보정 뒤의 md 에 fix 를 다시 돌리지 말 것) — 재생성 순서: fix → fix13_D.py.
+VERIFY_HEADS = (VERIFY_HEAD, "## 검증 기록(2026-10-08 KST)")
+SEC10_HEADS = (SEC10_HEAD, "## 10. 지시서 항목별 대조(검증 2026-10-08 KST 추가)")
+REFUTE_TAG_KST = "검증(2026-10-08 KST) 반박 시도[%s]"
+FIXD_LOG = os.path.join("dart_out", "raw", "web13", "fix13_D", "fix_log.json")
 T8 = os.path.join("dart_out", "text", "risk8")
 T9 = os.path.join("dart_out", "text", "risk9")
 
@@ -460,7 +467,7 @@ def check_labels(R, per_label):
         if kind in ("press", "view", "full", "art", "sup"):
             if "https://" not in head:
                 miss.append("URL")
-            if not re.search(r"수집 %s\(UTC; \.meta\.json fetched_at [0-9T:+-]+\)" % TODAY, head):
+            if not re.search(r"수집 (?:%s\(UTC|2026-10-08\(KST); \.meta\.json fetched_at [0-9T:+-]+\)" % TODAY, head):
                 miss.append("수집일(fetched_at)")
         if kind == "press":
             p, ntt, vp = PRESS[re.search(r"첨부 `([^`]+)`", head).group(1)]
@@ -803,7 +810,7 @@ def check_request(R, lines):
         R.info("REQUEST13.md 가 없어(세션 임시 폴더) 항목 글 대조는 건너뜀 — 스크립트 상수로 10장 표만 봄")
     sec = [(i, ln) for i, ln in enumerate(lines, 1)]
     try:
-        a = next(i for i, ln in sec if ln.startswith(SEC10_HEAD))
+        a = next(i for i, ln in sec if ln.startswith(SEC10_HEADS))
     except StopIteration:
         R.ng("10장(지시서 항목별 대조) 절이 없음")
         return
@@ -843,8 +850,8 @@ def check_notfound(R, lines):
     R.h("6. 「추출 범위에 없음」 — 찾은 방법·반박 시도")
     occ = [(i, ln) for i, ln in outside_code(lines) if "추출 범위에 없음" in ln and not ln.startswith(("- 한계", "| 「추출 범위에 없음」"))]
     # 검증 기록 절 안의 줄은 빼고 셈
-    vh = next((i for i, ln in enumerate(lines, 1) if ln.startswith(VERIFY_HEAD)), len(lines) + 1)
-    s10 = next((i for i, ln in enumerate(lines, 1) if ln.startswith(SEC10_HEAD)), len(lines) + 1)
+    vh = next((i for i, ln in enumerate(lines, 1) if ln.startswith(VERIFY_HEADS)), len(lines) + 1)
+    s10 = next((i for i, ln in enumerate(lines, 1) if ln.startswith(SEC10_HEADS)), len(lines) + 1)
     occ = [(i, ln) for i, ln in occ if i < min(vh, s10)]
     for i, ln in occ:
         if not HOW.search(ln.replace("추출 범위에 없음", "")):
@@ -857,7 +864,7 @@ def check_notfound(R, lines):
     md = "\n".join(lines)
     for c in build_claims(rf):
         tag = "검증(2026-10-07) 반박 시도[%s]" % c["id"]
-        if tag not in md:
+        if tag not in md and REFUTE_TAG_KST % c["id"] not in md:
             R.ng("반박 시도 [%s] 결과가 md 에 없음" % c["id"])
         else:
             R.ok("반박 시도 [%s] %s — md 에 덧붙임" % (c["id"], c["결과"]))
@@ -899,7 +906,7 @@ def check_common(R, lines):
     pdfs = [os.path.join(dp, f) for dp, _, fs in os.walk(OUT) for f in fs if f.lower().endswith(".pdf")]
     (R.ng if pdfs else R.ok)("산출 폴더에 PDF: %s" % pdfs if pdfs else "산출 폴더(handoff/13차_산출물)에 PDF 없음")
     heads = [ln for ln in lines if ln.startswith("## ")]
-    if not heads or heads[-1] != VERIFY_HEAD:
+    if not heads or heads[-1] not in VERIFY_HEADS:
         R.ng("md 맨 끝 절이 「%s」 아님" % VERIFY_HEAD)
     else:
         R.ok("md 맨 끝 「%s」" % VERIFY_HEAD)
@@ -933,7 +940,7 @@ def check_inline(R, lines):
         srcs.append(read(REQ13))
     ALL = ns("\n".join(srcs))
     tot, nf = 0, []
-    vh = next((i for i, ln in enumerate(lines, 1) if ln.startswith(VERIFY_HEAD)), len(lines) + 1)
+    vh = next((i for i, ln in enumerate(lines, 1) if ln.startswith(VERIFY_HEADS)), len(lines) + 1)
     for i, ln in outside_code(lines):
         if i >= vh:
             break
@@ -973,6 +980,8 @@ def check_preserved(R, lines):
     now_ = set(lines)
     log = json.load(open(FIXLOG, encoding="utf-8")) if os.path.exists(FIXLOG) else []
     befores = set(x for e in log for x in e["전"].split("\n"))
+    if os.path.exists(FIXD_LOG):   # 13차 정합성 보정(fix13_D)이 고친 줄의 「전」
+        befores |= set(x["전"] for x in json.load(open(FIXD_LOG, encoding="utf-8"))["보정"] if x["파일"] == MD and isinstance(x["전"], str))
     gone = [(i + 1, x) for i, x in enumerate(pre.split("\n")) if x.strip() and x not in now_]
     unl = [(i, x) for i, x in gone if x not in befores]
     if unl:
