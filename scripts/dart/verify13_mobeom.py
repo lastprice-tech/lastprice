@@ -12,7 +12,9 @@
       .meta.json(sha256·URL·fetched_at), 요청기록 dart_out/risk13/9-4_모범규준_요청기록.csv. 로컬 공시 텍스트 dart_out/text/risk8·risk9.
 
 대조(인자 없이):
-  1. 원문 인용(코드 블록·> 블록) 전부를 출처와 공백만 무시하고 대조 — 보도자료 hwp2md(<br>→줄바꿈), 행정지도 화면(태그 뺀 글),
+  0. 검증 전 md(커밋 ec4a426 — 사본 dart_out/raw/web13/verify13_mobeom/9-4_모범규준_원문.검증전.md, 없으면 git show 로 만듦)의 줄이
+     지금 md 에 글자 그대로 있는지 — 바뀐 줄은 모두 보정 기록(fix13_log.json)의 「전」이어야 함(내용을 지우지 않음).
+  1. 원문 인용(코드 블록·> 블록) 전부를 출처와 공백만 무시하고 대조(로컬 인용은 글머리 목록 중간에서 끊겼는지도 봄) — 보도자료 hwp2md(<br>→줄바꿈), 행정지도 화면(태그 뺀 글),
      모범규준 판별 조문(조 머리부터 다음 조 머리 앞까지 — 조 전체인지도 봄), 전문(파일 전체), 로컬 텍스트(줄 번호·쪽 표지 「=== p.N ===」·
      인쇄 쪽). 「[생략: …]」 자리는 원본에서 담당 직원 이름·연락처 줄만 빠졌는지(빠진 글자 수·자리)만 보고 내용은 찍지 않는다.
      hwp 변환본은 hwp2md 를 다시 돌린 결과와 바이트 대조하고, hwp 안 미리보기 글(PrvText) 조각이 변환본에 있는지도 본다.
@@ -59,6 +61,8 @@ PRESS_CSV = os.path.join(WORK, "9-4_모범규준_보도자료검색.csv")
 LAW_CSV = os.path.join(WORK, "9-4_모범규준_법제처검색.csv")
 KOFIA_CSV = os.path.join(WORK, "9-4_모범규준_kofia검색.csv")
 REFUTE_JSON = os.path.join(VD, "refute13.json")
+PRE_COMMIT = "ec4a426"                                    # 수집 에이전트가 만든 md(검증 전)가 든 커밋
+PRE_MD = os.path.join(VD, "9-4_모범규준_원문.검증전.md")    # 그 md 사본(git show 로 만듦, 원문 보존 대조용)
 REQ13 = "/tmp/claude-0/-home-user-lastprice/c4bd4cae-f7c6-585d-b437-41528ddfc94a/scratchpad/curate13/REQUEST13.md"
 VERIFY_HEAD = "## 검증 기록(2026-10-07)"
 SEC10_HEAD = "## 10. 지시서 항목별 대조(검증 2026-10-07 추가)"
@@ -427,6 +431,11 @@ def check_quotes(R, lines):
                 exact = src[i - 1:j] == b["lines"]
                 ok = exact or ns("\n".join(src[i - 1:j])) == ns(txt)
                 inf = "줄 %d-%d %s" % (i, j, "글자까지 같음" if exact else "공백만 다름") if ok else "줄 %d-%d 원본과 다름" % (i, j)
+                # 목록 끊김 — 인용 끝 줄이 글머리(ㆍ·•-○◦□①…)로 시작하고 원본 다음 줄(빈 줄 건너뜀)도 같은 글머리면 목록 중간에서 끊긴 것
+                bul = re.match(r"^\s*([ㆍ·•\-○◦□▪])\s", b["lines"][-1]) if b["lines"] else None
+                nxt = next((x for x in src[j:j + 3] if x.strip()), "")
+                if ok and bul and re.match(r"^\s*%s\s" % re.escape(bul.group(1)), nxt) and not nxt.startswith("=== p."):
+                    ok, inf = False, "줄 %d-%d 글은 같으나 목록 중간에서 끊김(원본 다음 줄 「%s」)" % (i, j, nxt.strip()[:40])
                 res = ("로컬 %s" % os.path.basename(path), ok, inf)
                 per_label.append((b, "local", (path, i, j)))
         if res is None:
@@ -942,9 +951,42 @@ def check_inline(R, lines):
     return tot, nf
 
 
+def pre_md():
+    """검증 전 md 사본(PRE_COMMIT 의 MD). 없으면 git show 로 만든다(원본 폴더 VD — git 무시)."""
+    if not os.path.exists(PRE_MD):
+        r = subprocess.run(["git", "show", "%s:%s" % (PRE_COMMIT, MD)], capture_output=True)
+        if r.returncode != 0:
+            return None
+        os.makedirs(VD, exist_ok=True)
+        with open(PRE_MD, "wb") as f:
+            f.write(r.stdout)
+    return read_now(PRE_MD)
+
+
+def check_preserved(R, lines):
+    """검증 전 md 의 줄이 지금 md 에 그대로 있는지 — 없어진 줄은 모두 보정 기록(fix13_log.json)의 「전」이어야 함(내용을 지우지 않음)."""
+    R.h("0. 검증 전 사본(커밋 %s) 보존 — 바뀐 줄은 모두 「고친 곳」 기록에 있어야 함" % PRE_COMMIT)
+    pre = pre_md()
+    if pre is None:
+        R.info("검증 전 사본을 만들 수 없음(git show 실패) — 건너뜀")
+        return
+    now_ = set(lines)
+    log = json.load(open(FIXLOG, encoding="utf-8")) if os.path.exists(FIXLOG) else []
+    befores = set(x for e in log for x in e["전"].split("\n"))
+    gone = [(i + 1, x) for i, x in enumerate(pre.split("\n")) if x.strip() and x not in now_]
+    unl = [(i, x) for i, x in gone if x not in befores]
+    if unl:
+        for i, x in unl[:20]:
+            R.ng("검증 전 md %d줄이 지금 md 에 없고 보정 기록에도 없음: 「%s」" % (i, x[:80]))
+    else:
+        R.ok("검증 전 md %d줄 가운데 바뀐 %d줄은 모두 보정 기록(전→후)에 있음, 나머지는 글자 그대로 남음 — 사본 `%s`" % (
+            len(pre.split("\n")), len(gone), PRE_MD))
+
+
 def run_checks():
     R = Report()
     lines = read_now(MD).split("\n")
+    check_preserved(R, lines)
     blocks, per_label = check_quotes(R, lines)
     check_conversion(R)
     check_labels(R, per_label)
@@ -1387,8 +1429,11 @@ def fix():
     # (2) 인용 머리 — 수집 시각·조 번호
     sec, sub, art = "", "", None
     tag2 = {
-        "2-1": " — 모범규준 조: 전체(추진 배경) ; (판단) 실태조사 4개 영역 = 제2장 %s~%s · 제4장 %s~%s · 제5장 %s~%s · %s·%s"
-               % (jo(7, T), jo(13, T), jo(18, T), jo(35, T), jo(36, T), jo(49, T), jo(16, T), jo(56, T)),
+        # 실태조사 4개 영역(보도자료 내부표) ↔ 장: ① 지배구조(조직의 권한·책임 = 제2장, 지주·자회사 업무분장 = 제3장) ② 통합 리스크 평가 = 제4장
+        # ③ 자본적정성 관리 = 제5장 ④ 모니터링·보고체계(Stress test·보고체계) = 16조·56조. 검증(2026-10-07)에서 ①에 제3장을 더함
+        "2-1": " — 모범규준 조: 전체(추진 배경) ; (판단) 실태조사 4개 영역 = ① 리스크 지배구조: 제2장 %s~%s·제3장 %s~%s(지주·자회사 업무분장) · "
+               "② 통합 리스크 평가: 제4장 %s~%s · ③ 자본적정성 관리: 제5장 %s~%s · ④ 모니터링·보고체계: %s·%s"
+               % (jo(7, T), jo(13, T), jo(14, T), jo(17, T), jo(18, T), jo(35, T), jo(36, T), jo(49, T), jo(16, T), jo(56, T)),
         "2-2": " — 모범규준 조: (판단) %s(사외이사 과반수·위원장 전문성 — 2012판 ①) · %s②(M&A 등 사전 심의) · %s(CRO 해임 제한 — 2012판 ①·⑤) · "
                "%s(협의회) · %s~%s(역할과 책임) · %s(자회사간 신용공여 검토) · %s · %s · %s · %s · %s" % (
                    jo(9, T), jo(10, T), jo(11, T), jo(12, T), jo(14, T), jo(17, T), jo(33, T), jo(4, T), jo(5, T), jo(55, T),
@@ -1460,6 +1505,7 @@ def fix():
                                                       "`dart_out/risk8/DART_문서목록.csv` — 수집 시각 기록 없음) · 텍스트화 8차]")
             new = new.replace("쪽 p.16  · 줄 405-409", "쪽 p.16 (인쇄 쪽 14) · 줄 405-410")
             new = new.replace("(인쇄 「Page 787」 다음 쪽)", "(인쇄 「Page 788」 — 그 쪽 바닥글)")
+            new = new.replace("· 줄 71721-71730 ·", "· 줄 71721-71731 ·")      # 원칙 목록 7개 끝까지(아래 (3-2))
             new = new.replace("쪽 p.89  · 줄 2931-2934", "쪽 p.89 (인쇄 쪽 번호 텍스트에 없음) · 줄 2931-2934")
             tags = {
                 "모범규준 조: 7·9·14·19·37조(판단)": None,
@@ -1493,6 +1539,27 @@ def fix():
                 if ("7장 신한 p.16 인용 줄 405-409 → 405-410", old) not in seen:
                     log.append(dict(무엇="7장 신한 p.16 인용 줄 405-409 → 405-410", 줄=j + 2, 전=old.split("\n")[-1],
                                     후=want[-1], 차이="문장 중간(「그룹리스크협의회는 2009년 11월부터」)에서 끊긴 인용을 문장 끝 줄 410 「%s」까지 늘림" % want[-1].strip()))
+            break
+    # (3-2) 신한 사업보고서 p.792 인용 — 「그룹 위험관리 원칙」 글머리 목록 7개 끝까지(줄 71731). 대조의 「목록 끊김」 검사로 찾음
+    what32 = "7장 신한 사업보고서 p.792 인용 줄 71721-71730 → 71721-71731"
+    for i, ln in enumerate(lines):
+        if ln.startswith("[신한금융지주 사업보고서(2025.12) · 접수번호 20260318000826") and "줄 71721-71731" in ln:
+            j = i + 2
+            assert lines[j] == "```text"
+            k = j + 1
+            while not lines[k].startswith("```"):
+                k += 1
+            src = read(os.path.join(T8, "사업보고서__신한금융지주__20260318000826.txt")).split("\n")
+            want = src[71720:71731]
+            assert not any(x.startswith("=== p.") for x in want) and want[0].startswith("1) 그룹 위험관리 원칙")
+            if lines[j + 1:k] != want:
+                old = "\n".join(lines[j + 1:k])
+                assert want[:len(lines[j + 1:k])] == lines[j + 1:k]          # 앞 10줄은 그대로, 뒤에 덧붙이기만
+                lines[j + 1:k] = want
+                if (what32, old) not in seen:
+                    log.append(dict(무엇=what32, 줄=j + 2, 전=old.split("\n")[-1], 후=want[-1],
+                                    차이="글머리 「ㆍ」 원칙 7개 가운데 6번째(「%s」)에서 끊긴 인용을 7번째 줄 71731 「%s」까지 늘림(같은 쪽 p.792)" % (
+                                        old.split("\n")[-1].strip(), want[-1].strip())))
             break
     # (4) note·표의 「…」 조각 — 원문과 다른 것
     rep = [
@@ -1678,7 +1745,7 @@ def fix():
             uniq.append(x)
     log[:] = uniq
     for x in log:
-        if x["차이"] != "채움" and not x["무엇"].startswith("7장 신한 p.16"):
+        if x["차이"] != "채움" and not x["무엇"].startswith(("7장 신한 p.16", "7장 신한 사업보고서")):
             x["차이"] = _diff(x["전"], x["후"])
     for x in log:                                                    # 줄 번호는 마지막 md 기준으로 다시 셈
         if x["줄"] and "\n" not in x["후"]:
@@ -1714,6 +1781,10 @@ def verify_section(log, claims):
            "- 대조한 인용: 코드 블록 %d개(%s) — 전부 원문과 같음(공백만 무시; 전문 2개·로컬 7개는 글자까지 같음). 「[생략: …]」 자리는 원본에서 담당 직원 "
            "이름·연락처 줄만 빠졌는지 글자 수로 확인(내용은 적지 않음). hwp 6개는 sha256 = .meta.json, `hwp2md.py` 를 다시 돌린 결과와 변환본이 바이트까지 같고, "
            "hwp 미리보기 글(PrvText) 조각이 변환본에 모두 있음." % (len(blocks), ", ".join("%s %d" % kv for kv in sorted(kinds.items()))),
+           "- 이어서 한 검증(컨테이너 재시작 뒤, 2026-10-07 표기 유지): ① 로컬 인용이 글머리 목록 중간에서 끊겼는지 — 원본 다음 줄이 같은 글머리(「ㆍ」 등)면 "
+           "문제로 셈 — 를 더해 신한 사업보고서 p.792 「그룹 위험관리 원칙」 인용(원칙 7개 중 6개까지)을 찾아 7번째 줄까지 늘림(아래). ② 검증 전 md "
+           "(커밋 %s, 사본 `%s`)의 줄이 지금 md 에 글자 그대로 있는지 대조 — 바뀐 줄은 모두 아래 「고친 곳」의 「전」(내용을 지운 곳 없음). "
+           "③ 조 목록 CSV·인용 39개를 이 스크립트와 따로 짠 확인으로도 다시 대조(같은 결과)." % (PRE_COMMIT, PRE_MD),
            "- note·표 줄의 「…」 조각 %d개를 원본 글과 대조 — 원문과 다르게 옮긴 3곳(+같은 글 1곳)을 원문 글자대로 고침(아래). 원본에서 못 찾은 나머지 %d개는 "
            "표 이름·검색어·스크립트 표기·다른 사이트 이름(대상 아님) 등이라 그대로 둠(결과 파일 「참고」 절에 목록)." % (tot, max(0, len(nf))),
            "- 조 목록 CSV 재확인: 2016.8.1 판 변환본의 조 머리 1~59조 — 시트 범위 3~58조 56개 포함 — 와 번호·제목·장·절이 하나도 빠짐없이 같음. 삭제·개정 표시: "
@@ -1733,6 +1804,8 @@ def verify_section(log, claims):
         elif x["무엇"].startswith("CSV 1~59조 출처"):
             out.append("- %s: 원래 글은 그대로 두고 앞에 「2016.8.1판: 」, 뒤에 게시 URL·sha256·fetched_at 과 2012 제정판·2016.7 예고안 출처(URL·sha256·"
                        "fetched_at)·대조 스크립트를 덧붙임. 전 「%s」" % (x["무엇"], x["전"]))
+        elif x["무엇"].startswith(("7장 신한 p.16", "7장 신한 사업보고서")):       # 인용 끝 줄을 늘린 곳 — 줄 바꿈이 아니라 덧붙임
+            out.append("- %s (md %s줄): %s — 전 끝 줄 「%s」 → 후 끝 줄 「%s」" % (x["무엇"], x["줄"] or "—", x["차이"], x["전"].strip(), x["후"].strip()))
         else:
             out.append("- %s (md %s줄): %s" % (x["무엇"], x["줄"] or "—", _diff(x["전"], x["후"])))
     if g4:
@@ -1746,6 +1819,8 @@ def verify_section(log, claims):
             "- 10장 「지시서 항목별 대조」(지시서 9-4 항목·배경·끝에 낼 것 14행 — 모범규준 조(조 제목)·5장 줄 번호·상태).",
             "- 9장 「받지 못한 것」에 빠져 있던 2행(법제처 행정규칙 등록, 조 번호 인용 공시 문장 — 수집 보고 not_got 에만 있었음).",
             "- 2장 인용 머리 7곳·7장 인용 머리 7곳에 「모범규준 조: N조(제목)」, 4장 인용 머리 %d곳에 문서명·게시 URL·조문·수집 시각, 9장 표 조 칸에 조 제목." % len(g4),
+            "- 7장 인용 2곳의 끊긴 끝을 원문으로 채움: 신한 연차보고서 p.16(문장 끝 줄 410), 신한 사업보고서 p.792(원칙 목록 7번째 줄 71731).",
+            "- 2-1 인용 머리의 (판단) 조: 실태조사 영역 ① 리스크 지배구조의 「지주회사와 자회사간 리스크관리 업무분장」에 제3장 14조~17조를 더함(영역 번호 ①~④ 표시).",
             "- 지시서 항목마다 받은 글이 있음(10장) — 「추출 범위에 없음」으로 남은 지시서 항목은 없음(이 파일 범위). 타사 규정·서술은 9-4 회사별 md 몫.",
             "", "### 「추출 범위에 없음」 반박 시도", ""]
     for c in claims:
