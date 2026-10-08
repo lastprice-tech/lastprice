@@ -2,7 +2,7 @@
 """13차(리스크부문 작업 9) 마무리 대조 — 00_목록.md · 00_종합표.csv 와 13차 산출물 전체.
 
     python3 scripts/dart/verify13.py          # 대조 ①~⑥ → 문제 0 이면 exit 0, 아니면 exit 1. 결과 dart_out/risk13/verify13.txt
-    python3 scripts/dart/verify13.py build    # 00_목록.md 의 생성 칸(<!-- build13:begin:… --> 표지 사이: 2-2·2-4·3절·4-1·4-2)과
+    python3 scripts/dart/verify13.py build    # 00_목록.md 의 생성 칸(<!-- build13:begin:… --> 표지 사이: 머리 R4 줄·2-2·2-4·3절·4-1·4-2)과
                                               #   00_종합표.csv(utf-8-sig)를 각 md·상태 CSV 에서 다시 씀. 손으로 쓴 1절·2-1·2-3·4-3 은 그대로.
 
 대조(인자 없이):
@@ -15,6 +15,9 @@
  ⑤ 00_목록.md 1절 파일 목록 = 폴더 실제 파일. 2절(2-1·2-3 손 정리 표의 조 번호·R2 표지·9-4-1 상태, 2-2·2-4 생성 표)·3절·00_종합표.csv 의
     조 번호·상태가 각 md·상태 CSV 와 같음(생성 칸은 build 결과와 한 글자도 같아야 하고, 따로 다시 읽어 맞대기도 함).
  ⑥ 00_목록.md·00_종합표.csv 의 원문 인용(「」 안 글, 코드 블록·> 줄)이 13차 md 에 글자 그대로(공백 무시) 있음.
+ ⑦ (재비평 critic13_2 new_issues 7·10) R4 — 13차 md 인용 블록마다 출처 줄이 바로 앞·블록 첫 줄 뒤·블록 머리 묶음(출처 줄 → 조 태그 줄 →
+    정정판 대조 줄 → 블록) 가운데 하나이고 묶음 사이 줄이 허용 꼴; 00_목록 머리 「출처 줄(R4)」 줄은 build 가 이 셈으로 씀(⑤ 생성 칸 대조).
+    R3 — 00_목록.md 우리 글의 「없음」이 허용 꼴(추출 범위에 없음·해당 없음·일치 없음(기계 분류)·판단 표시 없음(색인 분류)·「」/‘’ 안) 밖 0.
 웹 요청 없음. API 키·OC 값은 화면·파일에 찍지 않는다.
 """
 from __future__ import annotations
@@ -776,6 +779,128 @@ def gen_42(hrows, gen22_rows):
     return '\n'.join(dict.fromkeys(out))
 
 
+# ───────────────────────── R4 블록 머리 묶음(00_목록 머리 「출처 줄(R4)」 · 대조 ⑦) ─────────────────────────
+# 재비평 dart_out/risk13/critic13_2.json new_issues 10: 출처 줄이 블록 「바로 앞」이 아니라 3~6줄 위(출처 줄 → 조 태그 줄 → 정정판 대조 줄 → 블록).
+# 블록은 옮기지 않고, 그 순서(블록 머리 묶음)를 00_목록 머리에 밝히고 여기서 다시 셈. 블록·출처 줄을 찾는 잣대는 critic13_2 의
+# dart_out/raw/web13/critic13_2/r4_check.py 와 같음(코드 블록·> 블록, 위로 빈 줄 2개·8줄까지, 출처 줄 꼴 = [ ] 또는 「인용」 + 자리 + 출처 + 날짜).
+R4_LOC = re.compile(r'p\.\s?\d|쪽|제\s?\d+\s?조|\d+조|줄 \d|줄\d|별표|항목|조문|화면|본문|전문|md 줄|행')
+R4_SRCW = re.compile(r'접수번호|https?://|`[^`]+\.(?:txt|md|hwp|pdf|html|xml|csv)`|\d{14}|seqno|nttId|일련번호|MST|lawService|행정지도|보도자료|'
+                     r'연차보고서|사업보고서|경영공시|매뉴얼|별표')
+R4_WHEN = re.compile(r'수집|옮김|인용 \d{4}|인용일|받음|\d{4}-\d{2}-\d{2}')
+R4_MID = [('조 태그 줄', re.compile(r'^(?:-\s*)?(?:note:\s*)?(?:이 글이 닿는 )?모범규준 (?:조|대응)')),
+          ('추가공시·정정판(재공시판) 대조 줄', re.compile(r'^-\s*(?:추가공시|정정판|재공시)')),
+          ('원본 파일 링크 줄', re.compile(r'^-\s*원본 파일')),
+          ('주제1 표 칸 줄', re.compile(r'^-\s*주제1 표')),
+          ('note 줄', re.compile(r'^(?:-\s*)?note'))]
+
+
+def r4_is_src(l):
+    s = l.strip()
+    if not s:
+        return False
+    has_br = '[' in s and ']' in s
+    return bool((has_br or s.startswith('인용') or s.startswith('- 인용')) and R4_LOC.search(s) and R4_SRCW.search(s) and R4_WHEN.search(s))
+
+
+def r4_scan():
+    """13차 md(00_목록 빼고)의 인용 블록마다 출처 줄 자리 — immediate(바로 앞)·head(블록 머리 묶음)·first(블록 첫 줄 뒤)·
+    head_bad(묶음 사이에 허용 꼴 밖 줄)·missing(출처 줄 못 찾음)."""
+    res = []
+    for fn in sorted(f for f in os.listdir(OUT) if f.endswith('.md') and not f.startswith('00_')):
+        L = lines_of(OUT + '/' + fn)
+        i = 0
+        while i < len(L):
+            l = L[i]
+            if l.startswith('```'):
+                start, j = i, i + 1
+                while j < len(L) and not L[j].startswith('```'):
+                    j += 1
+                first = L[i + 1] if i + 1 < len(L) else ''
+                i = j + 1
+            elif l.startswith('>') and (i == 0 or not L[i - 1].startswith('>')):
+                start, j = i, i
+                while j < len(L) and L[j].startswith('>'):
+                    j += 1
+                first = ''
+                i = j
+            else:
+                i += 1
+                continue
+            prev, k, blanks = [], start - 1, 0
+            while k >= 0 and len(prev) < 8:
+                t = L[k]
+                if t.startswith('#') or t.startswith('```') or t.startswith('>'):
+                    break
+                if not t.strip():
+                    blanks += 1
+                    if blanks > 2:
+                        break
+                    k -= 1
+                    continue
+                prev.append((k, t))
+                k -= 1
+            srcs = [q for q, (_, t) in enumerate(prev) if r4_is_src(t)]
+            en = dict(file=fn, line=start + 1, kind='missing', gap=0, mids=[])
+            if srcs and srcs[0] == 0:
+                en.update(kind='immediate', gap=start - prev[0][0])
+            elif srcs:
+                q = srcs[0]
+                mids = []
+                for _, t in prev[:q]:
+                    lab = next((nm for nm, rx in R4_MID if rx.match(t.strip())), None)
+                    mids.append(lab or 'BAD: ' + t.strip()[:60])
+                en.update(kind='head_bad' if any(x.startswith('BAD') for x in mids) else 'head', gap=start - prev[q][0], mids=mids)
+            elif r4_is_src(first):
+                en.update(kind='first')
+            res.append(en)
+    return res
+
+
+def gen_r4():
+    res = r4_scan()
+    short = {k: v[1] for k, v in MD.items()}
+    c = collections.Counter(e['kind'] for e in res)
+    head = [e for e in res if e['kind'] == 'head']
+    byf = collections.Counter(short.get(e['file'], e['file']) for e in head)
+    mids = collections.Counter(m for e in head for m in e['mids'])
+    gaps = [e['gap'] for e in head]
+    nfile = len({e['file'] for e in res})
+    return ('- 표기(출처 줄 R4 — 블록 머리 묶음, 스크립트 생성): 13차 md %d개(00_목록 빼고)의 원문 인용 블록(코드 블록·> 블록) %d개 가운데 '
+            '출처 줄 [문서명 · 접수번호 또는 URL · 쪽/조문/줄 · 수집일]이 블록 바로 앞(빈 줄 건너뜀)인 것 %d개, 블록 첫 줄 뒤인 것 %d개, '
+            '‘블록 머리 묶음’ 끝에 놓인 것 %d개(%s). 블록 머리 묶음 = 출처 줄 → 조 태그 줄(‘이 글이 닿는 모범규준 조 …’·‘모범규준 조(판단) …’·‘note: 모범규준 대응 …’) '
+            '→ (있으면) 추가공시·정정판(재공시판) 대조 줄·원본 파일 링크 줄·note 줄 → 블록. 묶음은 출처 줄에서 시작해 블록 바로 앞에서 끝나고 그 사이에 다른 블록·절 머리가 '
+            '없어(사이 줄: %s) 묶음 첫 줄의 출처가 바로 아래 블록 하나의 출처임 — R4 ‘블록마다 바로 앞에 출처 줄’을 묶음 단위로 충족하는 꼴로 봄(블록은 옮기지 않음; '
+            '출처 줄은 블록 %s줄 위). 묶음 사이에 허용 꼴 밖 줄이 낀 블록 %d개, 출처 줄을 찾지 못한 블록 %d개(대조 ⑦ 이 다시 셈 — 블록·출처 줄 잣대는 '
+            '`dart_out/raw/web13/critic13_2/r4_check.py` 와 같음).' % (
+                nfile, len(res), c['immediate'], c['first'], c['head'],
+                ' · '.join('%s %d' % kv for kv in sorted(byf.items(), key=lambda kv: (-kv[1], kv[0]))) or '-',
+                ' · '.join('%s %d' % kv for kv in mids.most_common()) or '-',
+                ('%d~%d' % (min(gaps), max(gaps)) if gaps and min(gaps) != max(gaps) else (str(gaps[0]) if gaps else '-')),
+                c['head_bad'], c['missing']))
+
+
+# R3(재비평 new_issues 7) — 00_목록.md 우리 글의 「없음」: 코드 블록·> 줄·「」·‘’ 안 말고, 허용 꼴 밖이면 문제.
+R3_OK = [r'추출 범위에 없음', r'해당 없음', r'일치 없음(?=\s*\d|\(기계|$|[ ·|)])', r'판단 표시 없음']
+
+
+def r3_list_md():
+    L = lines_of(LIST_MD)
+    mask = code_mask(L)
+    out = []
+    for i, l in enumerate(L):
+        if mask[i] or l.startswith('>') or '없음' not in l:
+            continue
+        s = l
+        for fr in frag_list(s):
+            s = s.replace(fr, '')
+        s = re.sub(r'‘[^’]*’', '', s)
+        for pat in R3_OK:
+            s = re.sub(pat, '', s)
+        if '없음' in s:
+            out.append((i + 1, s.count('없음'), l))
+    return out
+
+
 def replace_block(text, name, body):
     pat = re.compile(r'(<!-- build13:begin:%s -->\n)(.*?)(<!-- build13:end:%s -->)' % (re.escape(name), re.escape(name)), re.S)
     if not pat.search(text):
@@ -792,6 +917,7 @@ def built_md(entries, states):
     g22 = [table_cells(l) for l in gen_22(states).split('\n')[2:]]
     text = replace_block(text, '4-1', gen_41(hrows, states))
     text = replace_block(text, '4-2', gen_42(hrows, g22))
+    text = replace_block(text, 'r4', gen_r4())
     return text
 
 
@@ -878,7 +1004,7 @@ def build():
     with open(SUM_CSV, 'w', encoding='utf-8', newline='') as f:
         f.write(csvtext)
     c = collections.Counter(en['jlabel'] for en in entries)
-    print('build: 00_목록.md 생성 칸 5개, 00_종합표.csv %d행, 조 태그 %d개 (%s)' % (
+    print('build: 00_목록.md 생성 칸 6개(2-2·2-4·3절·4-1·4-2·머리 R4), 00_종합표.csv %d행, 조 태그 %d개 (%s)' % (
         csvtext.count('\r\n') - 1, len(entries), ' · '.join('%s %d' % kv for kv in sorted(c.items()))))
 
 
@@ -1270,6 +1396,22 @@ def check_6(rep):
     rep.ok('「」 글 %d개(겹침 빼고 %d개)·인용 줄 %d개 대조 — 문제 %d' % (len(frags), len(uniq), len(blocks), nb))
 
 
+def check_7(rep):
+    rep.h('⑦ R4 블록 머리 묶음(13차 md 인용 블록마다 출처 줄) · R3 00_목록.md 우리 글 「없음」')
+    res = r4_scan()
+    c = collections.Counter(e['kind'] for e in res)
+    for e in res:
+        if e['kind'] in ('missing', 'head_bad'):
+            rep.bad('%s %d줄 인용 블록: %s' % (e['file'], e['line'], '출처 줄을 찾지 못함' if e['kind'] == 'missing'
+                                               else '블록 머리 묶음 사이에 허용 꼴 밖 줄 — ' + '; '.join(m for m in e['mids'] if m.startswith('BAD'))))
+    rep.ok('인용 블록 %d개 — 바로 앞 %d · 블록 머리 묶음 %d · 블록 첫 줄 뒤 %d · 묶음 꼴 밖 %d · 출처 줄 못 찾음 %d (00_목록 머리 R4 줄은 ⑤ 생성 칸 대조)' % (
+        len(res), c['immediate'], c['head'], c['first'], c['head_bad'], c['missing']))
+    bad = r3_list_md()
+    for ln, k, l in bad:
+        rep.bad('00_목록.md %d줄: 허용 꼴(추출 범위에 없음·해당 없음·일치 없음(기계 분류)·판단 표시 없음(색인 분류)·「」/‘’ 안) 밖 「없음」 %d곳 — %s' % (ln, k, l[:80]))
+    rep.ok('00_목록.md 우리 글 「없음」 — 허용 꼴 밖 %d줄' % len(bad))
+
+
 def verify():
     rep = Rep()
     rep.lines.append('# verify13 — 13차 마무리 대조(00_목록.md · 00_종합표.csv · 13차 산출물 전체)')
@@ -1281,6 +1423,7 @@ def verify():
     check_4(rep)
     check_5(rep, states, entries)
     check_6(rep)
+    check_7(rep)
     rep.lines.append('')
     rep.lines.append('## 결과')
     rep.lines.append('문제 %d건 — exit %d' % (len(rep.problems), 1 if rep.problems else 0))

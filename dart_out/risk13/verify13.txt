@@ -11,16 +11,16 @@
   python3 scripts/dart/verify13_mobeom.py              exit 0 — 문제 0, 통과 139 → dart_out/risk13/verify13_mobeom.txt
   python3 -I scripts/dart/verify13_raas.py             exit 0 — 문제 0 → dart_out/risk13/verify13_raas.txt
   python3 scripts/dart/verify13_web.py                 exit 0 — 문제 0 → dart_out/risk13/verify13_web.txt
-  python3 scripts/dart/fix13_A.py check                exit 0 — fix13_A check: fix_log 477곳, 상태 CSV 44행 — 문제 0건
-  python3 scripts/dart/fix13_B.py check                exit 0 — check: fix_log 911개·상태 CSV 44행·md 4개 — 문제 0개
+  python3 scripts/dart/fix13_A.py check                exit 0 — fix13_A check: fix_log 529곳, 상태 CSV 44행 — 문제 0건
+  python3 scripts/dart/fix13_B.py check                exit 0 — check: fix_log 1018개·상태 CSV 44행·md 4개 — 문제 0개
   python3 -I scripts/dart/fix13_C.py check             exit 0 — fix_log 193건 · 줄 「후」 140곳 · 원문 인용 줄 2221줄 대조 · 문제 0건
-  python3 -I scripts/dart/fix13_D.py check             exit 0 — fix13_D check: fix_log 618곳 · md 4개 · CSV 235행 — 문제 0건
+  python3 -I scripts/dart/fix13_D.py check             exit 0 — fix13_D check: fix_log 652곳 · md 4개 · CSV 235행 — 문제 0건
   스크립트 14개
 
 ## ② API 키·OC 값 문자열(값은 찍지 않음)
-  DART_API_KEY(환경변수 에서 읽음): 파일 94개에 없음
-  LAW_OC(.env 에서 읽음): 파일 94개에 없음
-  가리지 않은 「OC=…」·「crtfc_key=…」 꼴 0곳(파일 94개)
+  DART_API_KEY(환경변수 에서 읽음): 파일 95개에 없음
+  LAW_OC(.env 에서 읽음): 파일 95개에 없음
+  가리지 않은 「OC=…」·「crtfc_key=…」 꼴 0곳(파일 95개)
 
 ## ③ handoff/13차_산출물 에 PDF·HWP·HWPX 없음
   파일 18개 — PDF·HWP·HWPX 0개
@@ -32,17 +32,21 @@
 ## ⑤ 00_목록.md·00_종합표.csv ↔ 각 md·상태 CSV
   1절 파일 목록 18개 = 폴더 실제 파일 18개
   00_목록.md 생성 칸(2-2·2-4·3절·4-1·4-2) = 다시 만든 것
-  00_종합표.csv = 다시 만든 것(2576행)
+  00_종합표.csv = 다시 만든 것(2572행)
   2-4 표 88칸 상태 = 상태 CSV A·B(88행)
   2-2 표 11행 — 조별 받은 글/일부/추출 범위에 없음 회사 = 상태 CSV
   2-1·2-3 손 정리 행 34개 · 조 칸 표지 210개 대조
-  00_종합표.csv 2576행 가운데 색인 행 1378개를 md 태그 줄과 다시 맞댐 — 문제 0
-  00_종합표.csv 상태 행 161개 = 상태 CSV 「상태」
+  00_종합표.csv 2572행 가운데 색인 행 1378개를 md 태그 줄과 다시 맞댐 — 문제 0
+  00_종합표.csv 상태 행 157개 = 상태 CSV 「상태」
   참고: 9-4 파일의 지시서 밖 조인데 태그 줄에 (판단)이 없는 곳 0개(md 표기 그대로 — 문제로 세지 않음)
 
 ## ⑥ 00_목록.md·00_종합표.csv 의 원문 인용(「」·코드 블록·> 줄)이 13차 md 에 글자 그대로
   참고: 상태 CSV 에서 그대로 옮긴 칸(찾은_방법 등)의 「」 글 3개는 md 에는 같은 글자로 없고 상태 CSV 에 있음(문서 이름 줄임 등 — 원문 인용 아님)
-  「」 글 4618개(겹침 빼고 399개)·인용 줄 0개 대조 — 문제 0
+  「」 글 4705개(겹침 빼고 445개)·인용 줄 0개 대조 — 문제 0
+
+## ⑦ R4 블록 머리 묶음(13차 md 인용 블록마다 출처 줄) · R3 00_목록.md 우리 글 「없음」
+  인용 블록 661개 — 바로 앞 483 · 블록 머리 묶음 178 · 블록 첫 줄 뒤 0 · 묶음 꼴 밖 0 · 출처 줄 못 찾음 0 (00_목록 머리 R4 줄은 ⑤ 생성 칸 대조)
+  00_목록.md 우리 글 「없음」 — 허용 꼴 밖 0줄
 
 ## 결과
 문제 0건 — exit 0

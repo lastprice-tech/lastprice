@@ -56,6 +56,8 @@ REQLOG = os.path.join(WORK, "9-2-4_9-5_요청기록.csv")
 VERIFY_HEAD = "## 검증 기록(2026-10-07)"
 # 13차 정합성 보정(scripts/dart/fix13_D.py, 2026-10-08 KST)이 고친 판도 받아들임 — 대조 규칙은 그대로, 받아들이는 글만 넓힘:
 #   R5 절 제목 날짜 KST(「## 검증 기록(2026-10-08 KST)」). fix 모드가 쓰는 제목은 그대로(VERIFY_HEAD) — 재생성 순서: fix → fix13_D.py.
+#   재비평 보정(critic13_2): 지시서 항목 상태 칸 「일부(…)」(R1 세 단계)를 받아들이고, 상태 칸에 「추출 범위에 없음」이 들면 근거 칸에 「찾은 방법」 요구,
+#   CSV 조제목 칸(art_title_cell)은 「조 번호 해당 없음(판단: …)」 꼴(R2).
 VERIFY_HEADS = (VERIFY_HEAD, "## 검증 기록(2026-10-08 KST)")
 FOOT_RE = re.compile(r"^(?:-\s*\d+\s*-|\d{1,3})$")
 NEW_CSV_COLS = ["모범규준_조제목(2016.8.1판)", "넓혀찾은_조문표기(검증)", "PDF문서정보_작성일(참고·공개일아님)", "검증메모"]
@@ -138,7 +140,7 @@ def art_label(spec, T):
     return "·".join("%d조(%s)" % (a, T[a]) for a in art_list(spec))
 
 
-CH5 = "37~49조(제5장) 주제"                                              # 규제자본비율 산출 등 — 제5장(36~49조) 안 특정 조 없음(판단)
+CH5 = "37~49조(제5장) 주제"                                              # 규제자본비율 산출 등 — 제5장(36~49조) 안 한 조에 바로 닿지 않음(판단)
 CH5_OLD = "제5장(37~49) 주제"
 
 
@@ -146,8 +148,8 @@ def art_title_cell(spec, T):
     """CSV 「모범규준_조제목(2016.8.1판)」 칸."""
     if not spec:
         return ""
-    if "제5장" in spec:
-        return "제5장 내부자본 적정성 평가 및 관리(36조~49조) 가운데 37~49조 주제 — 특정 조 없음(판단)"
+    if "제5장" in spec:   # 13차 재비평 보정(fix13_D.py, R2 꼴): 전 「… 주제 — 특정 조 없음(판단)」 → 「조 번호 해당 없음(판단: 이유)」
+        return "제5장 내부자본 적정성 평가 및 관리(36조~49조) 가운데 37~49조 주제 — 조 번호 해당 없음(판단: 규제자본비율 산출 등 — 제5장 주제이나 한 조에 바로 닿지 않음)"
     return art_label(spec, T)
 
 
@@ -711,9 +713,9 @@ def check_coverage(R):
                 R.ng("%s: 지시서 항목 「%s」 행 없음" % (os.path.basename(md), item))
                 continue
             st, ev = m.group(1).strip(), m.group(2)
-            if not (st.startswith("받은 글") or st.startswith("추출 범위에 없음") or st.startswith("판단")):
+            if not (st.startswith("받은 글") or st.startswith("일부(") or st.startswith("추출 범위에 없음") or st.startswith("판단")):   # 「일부(」: 13차 재비평 R1
                 R.ng("%s: 「%s」 상태 칸 %r" % (os.path.basename(md), item, st))
-            if st.startswith("추출 범위에 없음") and "찾은 방법" not in ev:
+            if "추출 범위에 없음" in st and "찾은 방법" not in ev:
                 R.ng("%s: 「%s」 추출 범위에 없음인데 찾은 방법 없음" % (os.path.basename(md), item))
             if md == MD_P and st.startswith("받은 글"):
                 for ph in re.findall(r"「([^」]{4,})」", ev):

@@ -985,10 +985,11 @@ def art_line(spec, none_txt, T):
 
 
 def csv_art(n, T):
+    # 13차 재비평 보정(fix13_D.py, R2 꼴): 전 「대응 조 없음(판단 — …)」 → md 와 같은 꼴 「조 번호 해당 없음(판단: 이유)」(fix 모드도 이 글을 씀)
     if n in (1015, 1023, 1033):
-        return "대응 조 없음(판단 — 󰊱-가-1 대주주의 적정성: 지원 가능성·비전)"
+        return "조 번호 해당 없음(판단: 󰊱-가-1 대주주의 적정성 — 대주주 지원 가능성·비전은 모범규준 조 주제와 겹치지 않음)"
     if n in (1449, 1462):
-        return "대응 조 없음(판단 — 별첨 보험업감독규정: 경영개선 계획 가운데 금융지주회사 자회사 편입)"
+        return "조 번호 해당 없음(판단: 별첨 보험업감독규정 — 경영개선 계획 가운데 금융지주회사 자회사 편입은 모범규준 조 주제와 겹치지 않음)"
     if n == 1073:
         return "33조(%s) ①1호(판단 — 대주주·계열회사와의 구매·용역 계약)" % T[33]
     if n == 1180:
@@ -1177,15 +1178,18 @@ def check_req(R, md, cov, found):
     rows = req_rows(md, cov, found)
     t = md.split(VERIFY_HEAD)[-1] if VERIFY_HEAD in md else ""
     tl = t.split("\n")
+    # 13차 재비평 보정(fix13_D.py, R1 세 단계): 스크립트가 만든 행이 md 에 없으면 fix13_D fix_log 「후」 → 「전」으로 견주고, 상태 칸은 md 에 있는 행에서 봄
+    bef = fixd_before()
     for x in rows[2:]:
-        c = md_cells(x)
-        if not (c[1].startswith("받은 글") or c[1].startswith("추출 범위에 없음") or c[1].startswith("판단")):
+        a = x if x in tl else next((y for y in tl if bef.get(y) == x), None)
+        c = md_cells(a or x)
+        if not (c[1].startswith("받은 글") or c[1].startswith("일부(") or c[1].startswith("추출 범위에 없음") or c[1].startswith("판단")):
             R.ng("지시서 항목 상태 칸 꼴이 다름: %s" % c[0])
         if "추출 범위에 없음" in c[1] and "찾은 방법" not in c[2]:
             R.ng("지시서 항목 「%s」: 추출 범위에 없음인데 찾은 방법 없음" % c[0])
-        if x not in tl:
+        if a is None:
             R.ng("검증 기록에 지시서 항목 행이 없거나 다름: %s" % c[0])
-    R.ok("지시서 항목 %d개 — 모두 「받은 글」 또는 「추출 범위에 없음 + 찾은 방법」 또는 「판단」" % (len(rows) - 2))
+    R.ok("지시서 항목 %d개 — 모두 「받은 글」 또는 「일부(…)」 또는 「추출 범위에 없음 + 찾은 방법」(또는 fix 모드 글 「판단」)" % (len(rows) - 2))
 
 
 def secrets():

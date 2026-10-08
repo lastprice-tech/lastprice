@@ -27,6 +27,8 @@
  ⑥ 낱말·절 — R5(「작성일: 2026-10-07」 라벨 없음), R3(코드 블록·정합성 보정 소절 밖 우리 글의 「없음」 — 허용 꼴 밖 0),
     R2(회사 인용 태그 줄: 「9-4 조문 대조(대조표 …)」 표지, 지시서 조에는 (판단) 없음·그 밖의 조에는 (판단)),
     「## 검증 기록」이 끝 절이고 「### 정합성 보정(2026-10-08)」 소절이 있음.
+    R4(재비평 critic13_2 new_issues 10): 코드 블록마다 블록 머리 묶음(출처 줄 → 조 태그 줄·note 줄 → 블록)의 첫 줄이 출처 줄 꼴,
+    머리 「- 출처 줄(R4 …)」 줄의 블록 수 = 다시 센 수.
 웹 요청·API 키·OC 를 쓰지 않는다(로컬 파일만).
 """
 from __future__ import annotations
@@ -803,6 +805,35 @@ def check_words(R, M, MDS):
             if n not in listed and "판단" not in suf:
                 R.bad(f"md {k + 1}행: 지시서 밖 조 {n}조에 (판단) 없음(R2)")
     R.p(f"  회사 인용 태그 줄 {nt}개 R2 확인")
+    # R4(재비평 critic13_2 new_issues 10) — 코드 블록마다 블록 머리 묶음: 위로 빈 줄·조 태그 줄·note 줄만 지나 출처 줄
+    # 「- 인용…: [ … ]」(쪽·조·장 표기와 수집·옮김 날짜가 있는 줄)에 닿아야 함. 머리 「- 출처 줄(R4」 줄의 수 = 다시 센 수.
+    on, nb, nh, ni, gaps = False, 0, 0, 0, []
+    for k, l in enumerate(M):
+        if not l.startswith("```"):
+            continue
+        on = not on
+        if not on:
+            continue
+        nb += 1
+        j, mid = k - 1, 0
+        while j >= 0 and (not M[j].strip() or M[j].startswith("- 이 글이 닿는 모범규준 조") or M[j].startswith("note:")):
+            mid += 1 if M[j].strip() else 0
+            j -= 1
+        s = M[j] if j >= 0 else ""
+        if not (re.match(r"^- 인용(?:\([^)]*\))?: ", s) and "[" in s and re.search(r"p\.\d|전문|제\d+조|장", s)
+                and re.search(r"(?:수집|옮김) 20\d\d-\d\d-\d\d", s)):
+            R.bad(f"md {k + 1}행 코드 블록: 블록 머리 묶음 첫 줄이 출처 줄 꼴이 아님(R4) — 「{s[:70]}」")
+            continue
+        nh += 1 if mid else 0
+        ni += 0 if mid else 1
+        gaps.append(k - j)
+    hl = next((l for l in M if l.startswith("- 출처 줄(R4")), "")
+    m = re.search(r"코드 블록\) (\d+)개.*블록 머리 묶음 (\d+)개 · 출처 줄 바로 앞 (\d+)개 · 묶음 꼴 밖 (\d+)개", hl)
+    if not m:
+        R.bad("머리 「- 출처 줄(R4 …)」 줄이 없거나 꼴이 다름")
+    elif tuple(int(x) for x in m.groups()) != (nb, nh, ni, nb - nh - ni):
+        R.bad(f"머리 R4 줄의 수 {m.groups()} ≠ 다시 센 수 {(nb, nh, ni, nb - nh - ni)}")
+    R.p(f"  R4 코드 블록 {nb}개 — 블록 머리 묶음 {nh} · 출처 줄 바로 앞 {ni} · 꼴 밖 {nb - nh - ni}, 출처 줄 거리 {sorted(set(gaps))}줄")
 
 
 # ───────────────────────────── main

@@ -651,7 +651,11 @@ def check_art_lines(co, lines, probs):
         if sec and sec.startswith("## 3.") and re.match(r"^### \d", ln):    # 3장 머리
             targets.append((ln[4:].split(" — ")[0], False))
         if sub and sub.startswith("### 1-2 ") and ln.startswith("| ") and not ln.startswith("| 규정명") and not ln.startswith("|---"):
-            targets.append((ln.strip().strip("|").split("|")[5], True))   # 1-2 표 마지막 칸 — 모두 판단
+            # 1-2 표 마지막 칸 — 정합성 보정(2026-10-08 KST, 재비평 R2): 지시서 조는 (판단) 없이, 그 밖 조만 (판단)
+            targets.append((ln.strip().strip("|").split("|")[5], False))
+            for m in ART_TOKEN_RE.finditer(ln.strip().strip("|").split("|")[5]):
+                if int(m.group(1)) in REQ_ARTS and m.group(4):
+                    probs.append((f"{CO[co]} md {i + 1}줄", f"1-2 표 지시서 조 {m.group(1)}조에 「(판단)」(재비평 R2 — 지시서 조는 표지 없이)"))
         for s, all_judg in targets:
             n += 1
             bare = re.findall(r"(?<![\d(제])(\d{1,2}(?:·\d{1,2})*)조(?:\(판단\)|(?!\())", s)

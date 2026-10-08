@@ -1,7 +1,7 @@
 verify13_raas — 13차 9-3 RAAS 산출물 검증(2026-10-07, scripts/dart/verify13_raas.py)
 대상: handoff/13차_산출물/9-3_RAAS.md · dart_out/risk13/9-3_RAAS_낱말문장.csv
-  sha256 25b47c37d717a7c0e35f5b14ee0405aa32239fb3604e49651a9f299716c78e8f  handoff/13차_산출물/9-3_RAAS.md
-  sha256 57489f68d58bbe6e4ae89db670a91733962cf00ecf7d9f67f2d08f31347d1717  dart_out/risk13/9-3_RAAS_낱말문장.csv
+  sha256 94f2e6fd79cecae4aed96e79124d9a848173117a2818395e699a4a7f7c399a89  handoff/13차_산출물/9-3_RAAS.md
+  sha256 2239d0e01ec5afa92dcf20ce08bd318a9e813341c46696f84c05f512e7e0b293  dart_out/risk13/9-3_RAAS_낱말문장.csv
 
 == 1. 원본 사슬(hwp → hwp2md → 전체 md) · md 머리 값
   ok  hwp sha256 3d248fab83e25031d9d0c3a593e391dfb389119e861aee86fcf0363c6510ce38 · 448512바이트 = 9차 meta
@@ -45,7 +45,7 @@ verify13_raas — 13차 9-3 RAAS 산출물 검증(2026-10-07, scripts/dart/verif
   ok  본문의 「추출 범위에 없음」 줄마다 찾은 방법·검색어가 있음
 
 == 8-1. 지시서(REQUEST13 9-3) 항목 대조 표
-  ok  지시서 항목 17개 — 모두 「받은 글」 또는 「추출 범위에 없음 + 찾은 방법」 또는 「판단」
+  ok  지시서 항목 17개 — 모두 「받은 글」 또는 「일부(…)」 또는 「추출 범위에 없음 + 찾은 방법」(또는 fix 모드 글 「판단」)
 
 == 8-2. 인증값·PDF·검증 기록 절
   ok  인증값 값 2개·꼴 4개로 4개 파일 확인(값은 적지 않음)

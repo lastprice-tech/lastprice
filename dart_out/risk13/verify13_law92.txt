@@ -1,4 +1,4 @@
-# 13차 9-2(1·2·3·5번) 검증 결과 — scripts/dart/verify13_law92.py (실행 2026-10-08T15:26:18+09:00)
+# 13차 9-2(1·2·3·5번) 검증 결과 — scripts/dart/verify13_law92.py (실행 2026-10-08T17:20:45+09:00)
 
 대상: handoff/13차_산출물/9-2-1_2_ORSA_연혁.md · handoff/13차_산출물/9-2-3_5_별표37_별표22.md · dart_out/risk13/9-2-1_2_판목록.csv · dart_out/risk13/9-2-3_별표37_항목대조.csv · dart_out/risk13/9-2-3_별표37_줄대조.csv · dart_out/risk13/9-2-5_별표22_제목줄.csv
 

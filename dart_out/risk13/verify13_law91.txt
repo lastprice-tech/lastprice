@@ -1,4 +1,4 @@
-# 13차 9-1 검증 결과 — scripts/dart/verify13_law91.py (실행 2026-10-08T15:26:13+09:00)
+# 13차 9-1 검증 결과 — scripts/dart/verify13_law91.py (실행 2026-10-08T17:20:39+09:00)
 
 대상: handoff/13차_산출물/9-1_법령원문.md · dart_out/risk13/9-1_법령판.csv
 
