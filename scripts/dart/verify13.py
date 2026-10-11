@@ -18,6 +18,9 @@
  ⑦ (재비평 critic13_2 new_issues 7·10) R4 — 13차 md 인용 블록마다 출처 줄이 바로 앞·블록 첫 줄 뒤·블록 머리 묶음(출처 줄 → 조 태그 줄 →
     정정판 대조 줄 → 블록) 가운데 하나이고 묶음 사이 줄이 허용 꼴; 00_목록 머리 「출처 줄(R4)」 줄은 build 가 이 셈으로 씀(⑤ 생성 칸 대조).
     R3 — 00_목록.md 우리 글의 「없음」이 허용 꼴(추출 범위에 없음·해당 없음·일치 없음(기계 분류)·판단 표시 없음(색인 분류)·「」/‘’ 안) 밖 0.
+    (재비평 3 critic13_3 — R3 공통 꼴) 「없는·없어·없던·없었·없이·없고·없다」 꼴도 같은 범위에서 셈(허용: 추출 범위에 없…·「」/‘’ 안·‘인자 없이’).
+    R2 (5) — 3절 색인: 9-4-1 지시서 조(메리츠 9·57조, iM 28·30조)는 9-4-1 항목 자체(태그 줄 「9-4 조문 대조」, 출처 줄 「지시서가 든」,
+    iM [I-R7] 「제28조~제30조」 묶음)에만 ‘지시서 조’; 원문이 그 조 번호를 직접 든 묶음(md 표기 「(원문이 든 …)」)은 ‘모범규준 원문’.
 웹 요청 없음. API 키·OC 값은 화면·파일에 찍지 않는다.
 """
 from __future__ import annotations
@@ -392,7 +395,7 @@ def extract_index():
             heading = re.sub(r'^#+\s*', '', hs[hk][2]).strip()
             for kind2, val, title, j in parts:
                 entries.append(dict(file=fname, task=task, short=short, alljudged=alljudged, sec=sid, line=i + 1,
-                                    heading=heading, kind=kind2, val=val, title=title, judged=bool(j),
+                                    heading=heading, tagline=l, kind=kind2, val=val, title=title, judged=bool(j),
                                     src=src_c or file_dates.get(fname, ('', ''))[0], date=date))
         # 같은 절에 태그 줄이 여럿이면 묶음 이름에 줄 번호를 붙임
         multi = {s for s, c in seen_sec.items() if c > 1}
@@ -409,6 +412,18 @@ def extract_index():
 MOBEOM_SRC = re.compile(r'^(?:금감원 행정지도|「금융지주회사 통합(?:위험|리스크)관리 모범규준」)')
 
 
+def is_941(en):
+    """R2 (5): 9-4-1 지시서 조(메리츠 9·57, iM 28·30)는 9-4-1 항목 자체에만 표지 없이 — 조문 대조 자료(태그 줄 「9-4 조문 대조」),
+    지시서가 든 인용 위치(출처 줄 「지시서가 든」), iM 리스크관리규정 제28조~제30조 묶음([I-R7] 머리)."""
+    return ('9-4 조문 대조' in en.get('tagline', '') or '지시서가 든' in (en.get('src') or '')
+            or '제28조~제30조' in en.get('heading', ''))
+
+
+def src_named(en):
+    """md 가 「N조(제목)(원문이 든 …)」로 적은 조 — 원문(모범규준 개정 예고 등)이 그 조 번호를 직접 듦(조 대응 판단 아님)."""
+    return en['kind'] == 'art' and bool(re.search(r'(?<![\d])%d조\([^()]*\)\(원문이 든' % en['val'], en.get('tagline', '')))
+
+
 def judge_label(en):
     if en['kind'] == 'label':
         v = en['val']
@@ -419,9 +434,11 @@ def judge_label(en):
         return '모범규준 원문(전체)'
     if en['judged']:
         return '판단'
-    if MOBEOM_SRC.match(en['src'] or ''):
+    if MOBEOM_SRC.match(en['src'] or '') or src_named(en):
         return '모범규준 원문(그 조 글)'
-    if en['kind'] == 'art' and en['val'] in jisi_set(en['short']):
+    if en['kind'] == 'art' and en['val'] in JISI:
+        return '지시서 조'
+    if en['kind'] == 'art' and en['val'] in JISI_EXTRA.get(en['short'], set()) and is_941(en):
         return '지시서 조'
     return '판단 표시 없음'
 
@@ -645,7 +662,7 @@ def art_scope(n):
         return '지시서 조(9-4-1 iM)'
     if n in (9, 57):
         return '지시서 조(9-4-1 메리츠)'
-    return '지시서에 없는 조'
+    return '지시서에 적히지 않은 조'
 
 
 def fmt_ids(ens):
@@ -869,7 +886,7 @@ def gen_r4():
             '출처 줄 [문서명 · 접수번호 또는 URL · 쪽/조문/줄 · 수집일]이 블록 바로 앞(빈 줄 건너뜀)인 것 %d개, 블록 첫 줄 뒤인 것 %d개, '
             '‘블록 머리 묶음’ 끝에 놓인 것 %d개(%s). 블록 머리 묶음 = 출처 줄 → 조 태그 줄(‘이 글이 닿는 모범규준 조 …’·‘모범규준 조(판단) …’·‘note: 모범규준 대응 …’) '
             '→ (있으면) 추가공시·정정판(재공시판) 대조 줄·원본 파일 링크 줄·note 줄 → 블록. 묶음은 출처 줄에서 시작해 블록 바로 앞에서 끝나고 그 사이에 다른 블록·절 머리가 '
-            '없어(사이 줄: %s) 묶음 첫 줄의 출처가 바로 아래 블록 하나의 출처임 — R4 ‘블록마다 바로 앞에 출처 줄’을 묶음 단위로 충족하는 꼴로 봄(블록은 옮기지 않음; '
+            '끼지 않아(사이 줄: %s) 묶음 첫 줄의 출처가 바로 아래 블록 하나의 출처임 — R4 ‘블록마다 바로 앞에 출처 줄’을 묶음 단위로 충족하는 꼴로 봄(블록은 옮기지 않음; '
             '출처 줄은 블록 %s줄 위). 묶음 사이에 허용 꼴 밖 줄이 낀 블록 %d개, 출처 줄을 찾지 못한 블록 %d개(대조 ⑦ 이 다시 셈 — 블록·출처 줄 잣대는 '
             '`dart_out/raw/web13/critic13_2/r4_check.py` 와 같음).' % (
                 nfile, len(res), c['immediate'], c['first'], c['head'],
@@ -881,6 +898,9 @@ def gen_r4():
 
 # R3(재비평 new_issues 7) — 00_목록.md 우리 글의 「없음」: 코드 블록·> 줄·「」·‘’ 안 말고, 허용 꼴 밖이면 문제.
 R3_OK = [r'추출 범위에 없음', r'해당 없음', r'일치 없음(?=\s*\d|\(기계|$|[ ·|)])', r'판단 표시 없음']
+# 재비평 3(critic13_3) — R3 공통 꼴: 「없음」 밖의 끝 꼴도 셈. 허용: 추출 범위에 없…(①), 「」/‘’ 안, 실행 방법 설명 ‘인자 없이’(④).
+NONE_FORMS = re.compile(r'없(?:는|어|던|었|이|고|다)')
+OK_FORMS = [r'추출\s*범위(?:에서는|에서|에)?\s*없(?:는|어|던|었|이|고|다)', r'인자 없이']
 
 
 def r3_list_md():
@@ -888,7 +908,7 @@ def r3_list_md():
     mask = code_mask(L)
     out = []
     for i, l in enumerate(L):
-        if mask[i] or l.startswith('>') or '없음' not in l:
+        if mask[i] or l.startswith('>') or '없' not in l:
             continue
         s = l
         for fr in frag_list(s):
@@ -896,8 +916,11 @@ def r3_list_md():
         s = re.sub(r'‘[^’]*’', '', s)
         for pat in R3_OK:
             s = re.sub(pat, '', s)
-        if '없음' in s:
-            out.append((i + 1, s.count('없음'), l))
+        for pat in OK_FORMS:
+            s = re.sub(pat, '', s)
+        k = s.count('없음') + len(NONE_FORMS.findall(s))
+        if k:
+            out.append((i + 1, k, l))
     return out
 
 
@@ -1290,6 +1313,7 @@ def check_5(rep, states, entries):
         rep.bad('00_종합표.csv 행이 없거나 열 ≠ %s' % CSV_COLS)
     cache = {}
     nidx = nbad = 0
+    n941 = nsrc = 0
     for r in crow:
         jo = r['모범규준_조']
         if re.fullmatch(r'\d{1,2}', jo) and r['조_제목'] != ARTS[int(jo)][0]:
@@ -1317,6 +1341,16 @@ def check_5(rep, states, entries):
                 ok = False
             if ok and r['판단여부'] == '지시서 조' and n not in jisi_set(MD[fname][1]):
                 ok = False
+            if ok and r['판단여부'] == '지시서 조' and n not in JISI:      # R2 (5) — 9-4-1 지시서 조는 9-4-1 항목 자체에만
+                k0 = int(m.group(1)) - 1
+                head = next((cache[f][q] for q in range(k0, -1, -1) if cache[f][q].startswith('#')), '')
+                n941 += 1
+                if not ('9-4 조문 대조' in line or '지시서가 든' in line or '제28조~제30조' in head):
+                    ok = False
+            if ok and r['판단여부'] == '모범규준 원문(그 조 글)':
+                nsrc += 1
+                if not (MOBEOM_SRC.match(r['출처'] or '') or re.search(r'(?<![\d])%d조\([^()]*\)\(원문이 든' % n, line)):
+                    ok = False
         elif re.match(r'^\d{1,2}~\d{1,2}', jo):
             a, b = re.match(r'^(\d{1,2})~(\d{1,2})', jo).groups()
             ok = bool(re.search(r'%s\D{0,30}[~∼]\s*제?%s' % (a, b), line))
@@ -1325,7 +1359,8 @@ def check_5(rep, states, entries):
         if not ok:
             nbad += 1
             rep.bad('00_종합표.csv 색인 행 %s 줄 %s: 조 「%s」·판단 「%s」 가 그 태그 줄과 맞지 않음' % (fname, m.group(1), jo, r['판단여부']))
-    rep.ok('00_종합표.csv %d행 가운데 색인 행 %d개를 md 태그 줄과 다시 맞댐 — 문제 %d' % (len(crow), nidx, nbad))
+    rep.ok('00_종합표.csv %d행 가운데 색인 행 %d개를 md 태그 줄과 다시 맞댐 — 문제 %d (R2 (5) 9-4-1 지시서 조 행 %d개는 9-4-1 항목 자체 태그 줄인지, '
+           '‘모범규준 원문’ 행 %d개는 출처가 모범규준 원문이거나 md 가 「(원문이 든 …)」로 적었는지도 봄)' % (len(crow), nidx, nbad, n941, nsrc))
     # (g) CSV 상태 행 ↔ 상태 CSV
     nst = 0
     for r in crow:
@@ -1408,8 +1443,8 @@ def check_7(rep):
         len(res), c['immediate'], c['head'], c['first'], c['head_bad'], c['missing']))
     bad = r3_list_md()
     for ln, k, l in bad:
-        rep.bad('00_목록.md %d줄: 허용 꼴(추출 범위에 없음·해당 없음·일치 없음(기계 분류)·판단 표시 없음(색인 분류)·「」/‘’ 안) 밖 「없음」 %d곳 — %s' % (ln, k, l[:80]))
-    rep.ok('00_목록.md 우리 글 「없음」 — 허용 꼴 밖 %d줄' % len(bad))
+        rep.bad('00_목록.md %d줄: 허용 꼴(추출 범위에 없…·해당 없음·일치 없음(기계 분류)·판단 표시 없음(색인 분류)·‘인자 없이’·「」/‘’ 안) 밖 「없음·없는·없어·없던·없이…」 %d곳 — %s' % (ln, k, l[:80]))
+    rep.ok('00_목록.md 우리 글 「없음」·「없는/없어/없던/없었/없이/없고/없다」 — 허용 꼴 밖 %d줄' % len(bad))
 
 
 def verify():

@@ -15,6 +15,9 @@
 바꿀 글이 예상 횟수만큼 나오지 않으면 멈춘다. 웹 요청·API 키·OC 를 쓰지 않는다(로컬 파일만).
 재비평(dart_out/risk13/critic13_2.json new_issues 1~7) 대응(2026-10-08 KST) — 8개사 잣대 통일(fix13_A.py 와 같은 잣대·낱말): STATUS·APPEND0·NOTE_AFTER,
   r2b()(6장 9-4-1 목차 조 칸·하나·우리 6장 조 칸·1-2 표 지시서 조 (판단) 뗌·CSV 같은 칸), section2()(바뀐 칸 전·후 — 전 = 9e367d8 상태 CSV 사본 prev_9e367d8/).
+재비평 3(dart_out/risk13/critic13_3.json new_issues 1·2) 대응(2026-10-08 KST, fix13_A.py 와 같은 잣대·낱말): STATUS 24조 (c) 있는 핵심·APPEND0(22조 괄호 뗌,
+  잣대 (b)·자회사별 0장 가까운 글(판단) NEAR0B·NEAR0S), round3()(R3 공통 꼴 R3_3, 신한 6-1 표 위 계산 칸 뜻 note), section3()(전 = df16402 사본 prev_df16402/),
+  core_check()(check — 상태 CSV 지시서_핵심·있는_핵심·빠진_핵심 낱말 기계 점검).
 재생성 순서: verify13_g_kb_shinhan.py fix → verify13_g_hana_woori.py fix → fix13_B.py
              (verify 의 fix 는 커밋 8c118c8 사본에서 다시 만들어 이 보정을 지운다 — 결과는 496ddc4 의 파일과 같음).
 """
@@ -116,7 +119,7 @@ STATUS = {
         22: (S_REL, f"{KM} — 시장리스크 내부자본 한도·계열사 시스템 산출 후 그룹 포트폴리오 관리(K-17), 바젤Ⅲ 표준방법(K-19·K-23)", KC,
              ZB + "「연결실체의 종속기업은 '23.1월부터 바젤Ⅲ 표준방법」·「시장리스크를 측정 및 포트폴리오 차원에서 관리」(K-23 — 측정 주체가 종속기업, 포트폴리오 차원), "
              "「그룹은 일반적으로 트레이딩 포지션에서 발생하는 시장리스크를 포트폴리오 수준에서 관리」(K-17)"),
-        24: (S_PART, f"{KM} — △EVE·△NII·Historical-Simulation·금리리스크 내부자본 한도(K-18·K-24) · {KC}(비은행 계열사 넷) — 단순합(K-27)", f"{KC}(지주 전체 기준)",
+        24: (S_PART, f"{KM} — △EVE·△NII·Historical-Simulation·금리리스크 내부자본 한도(K-18·K-24)", f"{KC}(지주 전체 기준)",
              ZC + "「KB증권, KB국민카드, KB캐피탈, KB저축은행의 IRRBB 시나리오별 △EVE/△NII 단순합임」(K-27 — 비은행 계열사 넷만) — 은행 포함 지주 전체 기준 연결 측정·합산은 추출 범위에 없음; 보험계열사는 K-ICS(K-22·K-27)"),
         27: (S27N, NEAR, "관리 체제 · 측정이나 평가 수단",
              "가까운 글(판단): 중요 리스크(전략·평판 포함)를 내부자본 또는 VaR 형태로 계량화한다는 공통 서술(K-15·K-20)"),
@@ -142,7 +145,7 @@ STATUS = {
         22: (S_REL, f"{KM} — 그룹 시장리스크측정시스템 표준방법·신한투자증권 역사적 시뮬레이션 VaR(S-21), 그룹 BIS 시장리스크 위험가중자산(S-31)", KC,
              ZB + "「VaR는 그룹 시장리스크측정시스템을 이용하여 표준방법 시장리스크량을 산출」(S-21 — 그룹 시스템). 「연결」 측정 한 벌에 닿는 p.796 조각 "
              "「연결실체가 보유중인 트레이딩 포지션에 대한 바젤III 신표준방법 시장리스크 규제자본」은 S-21 note 에만 옮긴 표 머리 글이고 원문 인용(코드 블록)으로는 옮기지 않음 — 원문 인용으로는 연결 측정 여부 추출 범위에 없음"),
-        24: (S_PART, f"{KM} — 자회사별 측정·그룹 IRRBB 표준방법(S-22), △EVE·△NII(S-26) · {KC}(은행 자회사 둘) — 단순합(S-26)", f"{KC}(지주 전체 기준)",
+        24: (S_PART, f"{KM} — 자회사별 측정·그룹 IRRBB 표준방법(S-22), △EVE·△NII(S-26)", f"{KC}(지주 전체 기준)",
              ZC + "「IRRBB의 규제를 적용 받는 신한은행과 제주은행의 단순합으로 공시함」(S-26 — 은행 자회사 둘만) — 비은행 회사 값의 합산 방식·지주 전체 기준 연결 측정은 추출 범위에 없음"),
         27: (S27N, NEAR, "관리 체제 · 측정이나 평가 수단",
              "가까운 글(판단): 위험관리위원회 운영실적 보고 때 사외이사의 평판리스크 관리 방법 제언(S-16)"),
@@ -208,15 +211,22 @@ STATUS = {
 
 # 0장 요지에 덧붙이는 글(R1 — 연결 측정 판정)
 _A = " 정합성 보정(2026-10-08 KST, 8사 공통 잣대 (a)): "
+# 재비평 3(critic13_3 new_issues 1) — 잣대 (b)·자회사별 칸의 0장 가까운 글(판단) 표지(그룹 A 0장과 같은 꼴)
+NEAR0B = " 정합성 보정(2026-10-08 KST): 가까운 글(판단) — 8사 공통 잣대 (b), 연결 측정 여부 판정 원문 조각은 3장 note·상태 CSV 비고."
+NEAR0S = " 정합성 보정(2026-10-08 KST): 가까운 글(판단) — 자회사별 측정(측정 단위가 자회사), 연결 측정 여부 판정 원문 조각은 3장 note·상태 CSV 비고."
 APPEND0 = {
     "K": {21: _A + "「연결실체는 난내 및 난외거래를 포함한 신용위험관리 대상자산에 대해 예상손실(Expected Loss)및 경제적자본(Economic Capital)을 측정하여 관리지표로 사용」(K-21 — 측정 주체 연결실체)으로 연결 측정 여부 있음 — 앞 글의 ‘직접 적은 글은 추출 범위에 없음’은 연결 기준과 단순 합산을 가르는 글이 따로 나오지 않는다는 관찰.",
-          22: " 연결 측정 여부(연결 기준 측정/단순 합산)는 추출 범위에 없음 — 찾은 방법은 3장 22조 찾은 범위 줄·6장 21·22·24 행. 가까운 글(판단): 「연결실체의 종속기업은 '23.1월부터 바젤Ⅲ 표준방법」(측정 주체가 종속기업)·「시장리스크를 측정 및 포트폴리오 차원에서 관리」(K-23 — 8사 공통 잣대 (b)).",
+          22: " 연결 측정 여부는 추출 범위에 없음(연결 기준 측정·지주 전체 단순 합산 어느 쪽 글도) — 찾은 방법은 3장 22조 찾은 범위 줄·6장 21·22·24 행. 가까운 글(판단): 「연결실체의 종속기업은 '23.1월부터 바젤Ⅲ 표준방법」(측정 주체가 종속기업)·「시장리스크를 측정 및 포트폴리오 차원에서 관리」(K-23 — 8사 공통 잣대 (b)).",
           24: " 은행 포함 그룹 전체의 연결 측정 여부는 추출 범위에 없음(단순합은 비은행 계열사 값, K-27 — 일부 자회사만의 합산, 8사 공통 잣대 (c)) — 찾은 방법은 3장 24조 찾은 범위 줄·6장 21·22·24 행."},
-    "S": {22: " 연결 측정 여부(연결 기준 측정/단순 합산)는 원문 인용으로는 추출 범위에 없음 — 찾은 방법은 3장 22조 찾은 범위 줄·6장 21·22·24 행. 가까운 글(판단): p.796 표 머리 「연결실체가 보유중인 트레이딩 포지션에 대한 바젤III 신표준방법 시장리스크 규제자본」은 S-21 note 에만 옮김(코드 블록 인용 밖).",
+    "S": {21: NEAR0B,
+          22: " 연결 측정 여부는 원문 인용으로는 추출 범위에 없음(연결 기준 측정·지주 전체 단순 합산 어느 쪽 글도) — 찾은 방법은 3장 22조 찾은 범위 줄·6장 21·22·24 행. 가까운 글(판단): p.796 표 머리 「연결실체가 보유중인 트레이딩 포지션에 대한 바젤III 신표준방법 시장리스크 규제자본」은 S-21 note 에만 옮김(코드 블록 인용 밖).",
           24: " 비은행 회사 값의 합산 방식과 그룹 전체 연결 측정 여부는 추출 범위에 없음(단순합은 은행 자회사 값, S-26 — 일부 자회사만의 합산, 8사 공통 잣대 (c)) — 찾은 방법은 3장 24조 찾은 범위 줄·6장 21·22·24 행."},
     "H": {21: _A + "「연결기업은 신용위험 측정시 예상손실과 미예상손실로 구분하고 있습니다」(H-22 — 측정 주체 연결기업)로 연결 측정 여부 있음 — 앞 글의 ‘적은 글은 추출 범위에 없음’은 연결 기준과 단순 합산을 가르는 글이 따로 나오지 않는다는 관찰.",
-          22: _A + "「연결기업은 시장위험관리를 위해 정기적으로 위험량을 측정」(H-23 — 측정 주체 연결기업)으로 연결 측정 여부 있음; 「그룹차원의 시장위험을 일관된 방법으로 산출」만으로는 잣대 (b)."},
-    "W": {22: _A + "「연결회사는 트레이딩 포지션에 대한 시장위험의 측정방법으로 표준방법과 내부모형(은행)을 이용」(W-26 — 측정 주체 연결회사)으로 연결 측정 여부 있음."},
+          22: _A + "「연결기업은 시장위험관리를 위해 정기적으로 위험량을 측정」(H-23 — 측정 주체 연결기업)으로 연결 측정 여부 있음; 「그룹차원의 시장위험을 일관된 방법으로 산출」만으로는 잣대 (b).",
+          24: NEAR0S},
+    "W": {21: NEAR0B,
+          22: _A + "「연결회사는 트레이딩 포지션에 대한 시장위험의 측정방법으로 표준방법과 내부모형(은행)을 이용」(W-26 — 측정 주체 연결회사)으로 연결 측정 여부 있음.",
+          24: NEAR0S},
 }
 # 인용 묶음 끝에 끼우는 note(R1 — 상태가 바뀐 칸·판정 근거): {회사: [(인용 번호, note)]}
 NOTE_AFTER = {
@@ -740,7 +750,8 @@ def section(co, tagrep, nblocks, r5s, r3done, words_n, verify_script):
     a(f"- R3 「없음」 → 「추출 범위에 없음」(+찾은 방법)·인용 관찰 낱말 — {sum(n for *_, n in r3done)}곳:")
     for old, new, why, n in r3done:
         a(f"  - 「{old}」 → 「{new}」 ({n}곳 — {why.split(' — ', 1)[1]})")
-    a("  - 그대로 둔 「없음」: 방법·도구 설명(「웹 요청·API 키 없음」), 검증 기록의 대조 문제 수·전 상태(「(행 없음)」·「조 제목 없음 56」 꼴), 「지시서에 없는 조」·「만들 수 없음」 — 자료가 없다는 단정이 아님.")
+    a("  - 그대로 둔 「없음」: 방법·도구 설명(「웹 요청·API 키 없음」·「만들 수 없음」), 검증 기록의 대조 문제 수·전 상태(「(행 없음)」·「조 제목 없음 56」 꼴 — 대조 스크립트가 검증 전 사본에서 센 문제 분류 이름) — 자료가 없다는 단정이 아님"
+      "(「지시서에 없는 조」는 재비평 3 대응에서 「지시서에 적히지 않은 조」로 고침 — 아래).")
     a(f"- R4 출처 줄: 코드 블록 인용 {r5s['blocks']}개 모두 바로 앞에 출처 줄(문서·URL/접수번호·쪽·줄·텍스트 파일·원본 수집·인용일)이 있음(대조 스크립트 1번 대조) — 더할 것 없음.")
     a(f"- R5 날짜: 출처 줄 인용일 {r5s['cite_first']}곳 「인용 2026-10-07」 → 「인용 2026-10-07~08(KST)」(1차 정리 — 커밋 ec4a426, UTC 2026-10-07 14:36~16:44), "
       f"{r5s['cite_added']}곳 → 「인용 2026-10-08(KST)」(검증 때 더한 인용); 경영공시 출처 줄 원본 수집 {r5s['md_fetched']}곳 「2026-09-30」 → 「2026-09-30(UTC — KST 2026-10-01)」; "
@@ -882,6 +893,193 @@ def notes_after(co, path, lines):
         log(path, nl, "", t, "R1", R1X + f" — {qid} 판정 근거 note")
         n += 1
     return n
+
+
+# ───────────────────────────── 재비평 3(critic13_3 new_issues 1·2, R3 공통 꼴) 대응 ─────────────────────────────
+R3Y = ("재비평3 R3 공통 꼴 — ① 자료 부재는 추출 범위에 없음(찾은 범위), ② 옮긴(전문을 가진) 글 안 관찰은 나오지 않음·적히지 않음, "
+       "③ 조 대응은 찾지 못함(판단), ④ 방법 설명·고친 곳 기록·스크립트 계산 칸은 그대로(뜻 note)")
+R3_3 = {
+    "K": [("「내부통제규정」은 연차보고서 첨부(첨부 1~14)에 없어 조문·문서 형식은 추출 범위에 없음.",
+           "「내부통제규정」은 연차보고서 첨부(첨부 1~14, 1-1 표)에서 추출 범위에 없어 조문·문서 형식도 추출 범위에 없음.", 1)],
+    "S": [("note: [표 깨짐 없음 — 바로 뒤의", "note: [표 깨짐 0곳 — 바로 뒤의", 1)],
+    "H": [("지시서에 없는 조는 (판단)", "지시서에 적히지 않은 조는 (판단)", 1),
+          (" — 고칠 인용 글자·출처 표기는 없었음.", " — 고칠 인용 글자·출처 표기 0곳.", 1)],
+    "W": [("지시서에 없는 조는 (판단)", "지시서에 적히지 않은 조는 (판단)", 1),
+          (" — 고칠 인용 글자·출처 표기는 없었음.", " — 고칠 인용 글자·출처 표기 0곳.", 1),
+          ("정정판은 risk8·risk9 어디에도 텍스트가 없어 대조하지 않음(",
+           "정정판 텍스트는 찾은 범위(`dart_out/text/risk8/`·`dart_out/text/risk9/`)에서 추출 범위에 없어 대조하지 않음(", 1)],
+}
+NOTE61 = ("note: (정합성 보정 2026-10-08 KST) 표의 ‘(모범규준에 없는 번호)’는 대조 스크립트(`scripts/dart/verify13_g_kb_shinhan.py`)가 "
+          "`dart_out/risk13/모범규준_조목록.csv` 로 다시 계산해 쓰는 칸 값 — 그 조 번호가 모범규준(2016.8.1 판) 조 목록에 나오지 않는다는 뜻(같은 번호 조를 찾지 못함, 판단)이며, "
+          "칸 글은 스크립트가 다시 쓰므로 그대로 둠.")
+
+
+def fixed_set(lines):
+    """검증 기록 「### 고친 곳」·「### 정합성 보정」 소절 줄(그때 기록 — 이번 R3 에서 바꾸지 않음)."""
+    out, on = set(), False
+    for ln in lines:
+        if ln.t.startswith("### 고친 곳") or ln.t.startswith("### 정합성 보정"):
+            on = True
+            continue
+        if on and (ln.t.startswith("### ") or ln.t.startswith("## ")):
+            on = False
+        if on:
+            out.add(id(ln))
+    return out
+
+
+def round3(co, path, lines):
+    fx = fixed_set(lines)
+    done = []
+    for old, new, n in R3_3[co]:
+        sub_count(path, lines, old, new, n, "R3", R3Y, pred=lambda ln, sec: id(ln) not in fx)
+        done.append((old, new, n))
+    n61 = 0
+    if co == "S":
+        i6 = [i for i, ln in enumerate(lines) if ln.t.startswith("### 6-1 ")]
+        if len(i6) != 1:
+            die(f"{path}: 6-1 절 {len(i6)}")
+        ih = next(i for i in range(i6[0], len(lines)) if lines[i].t.startswith("| 규정 | 조(제목) |"))
+        if lines[ih - 1].t != "" or not any("(모범규준에 없는 번호)" in ln.t for ln in lines[ih:ih + 40]):
+            die(f"{path}: 6-1 표 위 꼴")
+        for off, t in enumerate([NOTE61, ""]):
+            nl = Ln(t)
+            lines.insert(ih + off, nl)
+            if t:
+                log(path, nl, "", t, "R3", R3Y + " — ④ 스크립트 계산 칸 ‘(모범규준에 없는 번호)’ 뜻 note(칸 글은 그대로)")
+        n61 = 1
+    return done, n61
+
+
+def section3(co, pv3, r3s, n61):
+    st = STATUS[co]
+    A = []
+    a = A.append
+    a("- 재비평 3(`dart_out/risk13/critic13_3.json` new_issues 1·2) 대응·R3 낱말 공통 꼴(정합성 보정 2026-10-08 KST, `scripts/dart/fix13_A.py` 와 같은 잣대·낱말; "
+      "고친 곳은 fix_log.json 이유 「재비평3 …」, 바뀐 칸 전 = 커밋 df16402 의 상태 CSV `dart_out/raw/web13/fix13_B/prev_df16402/`):")
+    a("  - 3장 note(그룹 A 도 같은 꼴로 더함): 조마다 「note: (정합성 보정 2026-10-08 KST) 있는 핵심: …. 빠진 핵심: …. 비고: ….」 — 상태 CSV 있는_핵심·빠진_핵심·비고와 같은 글. "
+      "21·22·24조 잣대 (b)·자회사별 칸은 비고가 「가까운 글(판단) — 판정 원문 조각(…): 「…」(인용 번호)」.")
+    add = [x for x in (21, 22, 24) if APPEND0.get(co, {}).get(x) in (NEAR0B, NEAR0S)]
+    a("  - 0장 잣대 (b)·자회사별 칸 요지 끝에 가까운 글(판단) 표지: " + ("·".join(f"{x}조" for x in add) if add else "더한 칸 0개(이미 표지가 있거나 해당 칸 없음)")
+      + ". KB·신한 22조 요지의 「연결 측정 여부(연결 기준 측정/단순 합산)」 → 「연결 측정 여부는 … 추출 범위에 없음(연결 기준 측정·지주 전체 단순 합산 어느 쪽 글도)」(괄호 보충은 (지주 전체 기준)만)." if co in ("K", "S") else
+      "  - 0장 잣대 (b)·자회사별 칸 요지 끝에 가까운 글(판단) 표지: " + ("·".join(f"{x}조" for x in add) if add else "더한 칸 0개(이미 표지가 있거나 해당 칸 없음)") + ".")
+    a("  - 핵심 이름 괄호 — 21·22·24조 「연결 측정 여부」 뒤 괄호는 잣대 (c) 「(지주 전체 기준)」만"
+      + ("; 상태가 「지주 차원의 유형별 측정 방법 있음」뿐인 24조 (c) 칸의 있는_핵심에서 「연결 측정 여부(…자회사…) — 단순합」을 떼어 있는 핵심 = 상태 글로 맞춤"
+         "(일부 자회사만의 단순합은 비고의 판정 원문 조각(잣대 (c))에 그대로)" if co in ("K", "S") else "")
+      + ". 바뀐 칸(상태 CSV, 전 → 후):")
+    k = 0
+    for x in REQ_ARTS:
+        r = pv3.get((CO[co], x), {})
+        for col, now in (("있는_핵심", st[x][1]), ("빠진_핵심", st[x][2]), ("비고", st[x][3])):
+            before = r.get(col, "-")
+            if before != now:
+                a(f"    - {x}조 {col}: " + (f"끝에 더함 「{now[len(before):].lstrip('; ')}」" if before and now.startswith(before)
+                                           else f"「{before[:200]}」 → 「{now[:200]}」"))
+                k += 1
+        if r.get("상태", "-") != st[x][0]:
+            a(f"    - {x}조 상태: {r.get('상태')} → {st[x][0]}")
+            k += 1
+    if not k:
+        a("    - 바뀐 칸 0개")
+    a(f"  - R3 공통 꼴(이번에 메인이 정함 — 모든 파일 같은 잣대) {sum(n for *_, n in r3s) + n61}곳: ① 자료 부재 → 추출 범위에 없음(찾은 범위) ② 옮긴(전문을 가진) 글 안 관찰 → "
+      "「(그 글에) 나오지 않음」·「적히지 않음」 ③ 조 대응 → 찾지 못함(판단: 근거) ④ 그대로 — 원문 인용 안, 검증 기록 「고친 곳(전 → 후)」 소절 안, 방법 설명(「웹 요청·API 키 없음」「만들 수 없음」「인자 없이」), "
+      "대조 스크립트가 다시 계산해 쓰는 칸, 대조 문제 분류 이름(「조 제목 없음 56」 꼴 — 검증 전 사본에서 대조 스크립트가 센 문제 분류 이름, 그 칸·표지가 검증 전 사본에 빠져 있었다는 뜻)"
+      + ("; 이번에 고친 것: " + "; ".join(f"「{o_}」 → 「{n_}」" for o_, n_, _ in r3s) if r3s else "")
+      + ("; 6-1 표 위에 ‘(모범규준에 없는 번호)’(스크립트 계산 칸) 뜻 note 를 더함(칸 글은 그대로)" if n61 else "") + ".")
+    a("  - 확인: `python3 scripts/dart/fix13_B.py check` 가 상태 CSV 44칸의 지시서_핵심·있는_핵심·빠진_핵심 낱말(지시서 낱말, 괄호 보충은 (지주 전체 기준)·위험 하위 구분만, 있는/빠진 이름 = 상태 글)도 기계 점검.")
+    return A
+
+
+# 지시서 낱말 기계 점검 — fix13_A.py core_check 와 같은 규칙
+CORE_NAMES = {3: [K3], 4: [K45], 5: [K45], 17: [K17], 21: [KM, KC], 22: [KM, KC], 24: [KM, KC],
+              27: ["관리 체제", "측정이나 평가 수단"], 34: ["총괄", "사전 검토", "정기 점검·보고"], 53: ["구성", "전환 요건"], 55: ["지표 목록", "발령 단계"]}
+SUB_OK = {"전략위험", "평판위험", "지주 차원", "은행 자회사", "경미 판정 기준", "경미한 자회사 측정 제외 문구", "적용 배제 조문"}
+K45B_SUB = {"원칙", "철학", "내규 이름"}
+
+
+def name_ok(a, tok):
+    tok = tok.strip()
+    for base in sorted(CORE_NAMES[a], key=len, reverse=True):
+        if tok == base:
+            return base, None
+        if tok.startswith(base + "(") and tok.endswith(")"):
+            sub = tok[len(base) + 1:-1]
+            if base == KC:
+                return base, None if sub == "지주 전체 기준" else f"「{tok}」 — 연결 측정 여부 괄호는 (지주 전체 기준)만"
+            return base, None if sub in SUB_OK else f"「{tok}」 — 괄호 보충이 하위 구분 목록 밖"
+    if a in (4, 5) and tok.startswith(K45B + "(") and tok.endswith(")"):
+        sub = tok[len(K45B) + 1:-1]
+        return K45, None if sub in K45B_SUB else f"「{tok}」 — 괄호 보충이 하위 구분 목록 밖"
+    return None, f"「{tok}」 — 지시서 낱말이 아님"
+
+
+def state_parts(stt):
+    if stt == GOT:
+        return None, []
+    m = re.fullmatch(r"일부\(가까운 글만, (.+) 추출 범위에 없음\)", stt)
+    if m:
+        return [], [m.group(1)]
+    m = re.fullmatch(r"일부\((.+?) 있음, (.+) 추출 범위에 없음\)", stt)
+    if m:
+        return [m.group(1)], [m.group(2)]
+    return None, None
+
+
+def core_check(rows):
+    probs = []
+    nz = lambda x: re.sub(r"\s+", "", x.replace(" · ", "·"))
+    for r in rows:
+        a, co = int(r["모범규준_조"]), r["회사"]
+        if r["지시서_핵심"] != CORE[a]:
+            probs.append(f"{co} {a}조 지시서_핵심 「{r['지시서_핵심']}」 ≠ 「{CORE[a]}」")
+        have_names = []
+        for seg in r["있는_핵심"].split(" · "):
+            head = seg.split(" — ")[0].strip()
+            if any(head == b or head.startswith(b + "(") for b in CORE_NAMES[a]) or (a in (4, 5) and head.startswith(K45B + "(")):
+                _, p = name_ok(a, head)
+                if p:
+                    probs.append(f"{co} {a}조 있는_핵심 {p}")
+                have_names.append(head)
+        miss = r["빠진_핵심"]
+        if miss != "-":
+            for tok in miss.split(" · "):
+                _, p = name_ok(a, tok)
+                if p:
+                    probs.append(f"{co} {a}조 빠진_핵심 {p}")
+        hv, ms = state_parts(r["상태"])
+        if ms is None:
+            probs.append(f"{co} {a}조 상태 꼴 「{r['상태'][:30]}」")
+            continue
+        if hv is None:
+            if miss != "-":
+                probs.append(f"{co} {a}조 받은 글인데 빠진_핵심 「{miss}」")
+            if sorted(set(nm for nm in (name_ok(a, h)[0] for h in have_names) if nm)) != sorted(set(CORE_NAMES[a])):
+                probs.append(f"{co} {a}조 받은 글인데 있는_핵심 이름 {have_names} ≠ 지시서 핵심 {CORE_NAMES[a]}")
+            continue
+        if nz(miss) != nz(ms[0]):
+            probs.append(f"{co} {a}조 빠진_핵심 「{miss}」 ≠ 상태의 빠진 것 「{ms[0]}」")
+        if hv == []:
+            if r["있는_핵심"] != NEAR:
+                probs.append(f"{co} {a}조 가까운 글만인데 있는_핵심 「{r['있는_핵심'][:30]}」")
+        elif nz("·".join(have_names)) != nz(hv[0]):
+            probs.append(f"{co} {a}조 있는_핵심 이름 「{'·'.join(have_names)}」 ≠ 상태의 있는 것 「{hv[0]}」")
+        for x in re.findall(r"연결 측정 여부\(([^()]*)\)", r["상태"]):
+            if x != "지주 전체 기준":
+                probs.append(f"{co} {a}조 상태 「연결 측정 여부({x})」")
+    return probs
+
+
+PREV3 = os.path.join(FD, "prev_df16402")
+
+
+def prev_states3():
+    os.makedirs(PREV3, exist_ok=True)
+    q = os.path.join(PREV3, os.path.basename(STATE_CSV))
+    if not os.path.exists(q):
+        data = subprocess.run(["git", "show", f"df16402:{STATE_CSV}"], capture_output=True, check=True).stdout
+        open(q, "wb").write(data)
+    with open(q, encoding="utf-8-sig") as f:
+        return {(r["회사"], int(r["모범규준_조"])): r for r in csv.DictReader(f)}
 
 
 PREV = os.path.join(FD, "prev_9e367d8")
@@ -1030,6 +1228,7 @@ def fix():
     LOGS.clear()
     allrows, summary = [], {}
     PV = prev_states()
+    PV3 = prev_states3()
     for co in ("K", "S", "H", "W"):
         path = MD[co]
         pre_text = ensure_pre(path)
@@ -1057,7 +1256,8 @@ def fix():
             sub_count(path, lines, old, new, cnt, "R3", R3X)
             r2s["r3"].append((old, new, cnt))
         nn = notes_after(co, path, lines)
-        sec = section(co, tagrep, nblocks, r5s, r3done, wn, VERIFY[co]) + section2(co, r2s, nn, PV)
+        r3s, n61 = round3(co, path, lines)
+        sec = section(co, tagrep, nblocks, r5s, r3done, wn, VERIFY[co]) + section2(co, r2s, nn, PV) + section3(co, PV3, r3s, n61)
         while lines and lines[-1].t == "" and not lines[-1].q:     # 원본 끝 빈 줄 → 소절 뒤로
             lines.pop()
         for t in sec + [""]:
@@ -1225,6 +1425,7 @@ def check():
             for p in list(cur) + [STATE_CSV, LOG, __file__]:
                 if v in open(p, encoding="utf-8-sig").read():
                     probs.append(f"인증값 문자열이 {p} 에 있음")
+    probs += core_check(rows)
     print(f"check: fix_log {len(lg['edits'])}개·상태 CSV {len(rows)}행·md 4개 — 문제 {len(probs)}개")
     for p in probs[:30]:
         print("  -", p)

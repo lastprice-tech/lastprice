@@ -63,7 +63,7 @@ BASE_SHA = {"md": "bdf23d52179aead8b9698a588419c9ad292ad0a8ad8aa629624742a2ff42d
 VERIFY_HEAD = "## 검증 기록(2026-10-07)"
 # 13차 정합성 보정(scripts/dart/fix13_D.py, 2026-10-08 KST)이 고친 판도 받아들임 — 대조 규칙은 그대로, 받아들이는 글만 넓힘:
 #   R5 절 제목 「검증 기록(2026-10-08 KST)」은 옛 제목과 같은 절로 읽음(대조 때만 — fix 모드가 쓰는 제목은 그대로),
-#   R2 자료 묶음 조 줄은 fix13_D fix_log 의 「후」이면 그 「전」을 스크립트 대응표와 견줌. 재생성 순서: fix → fix13_D.py.
+#   R2 자료 묶음 조 줄은 fix13_D fix_log 의 「후」이면 그 「전」을 스크립트 대응표와 견줌(최종 비평 critic13_3 대응 뒤: 「후」→「전」 사슬을 끝까지). 재생성 순서: fix → fix13_D.py.
 VERIFY_HEAD_KST = "## 검증 기록(2026-10-08 KST)"
 FIXD_LOG = os.path.join("dart_out", "raw", "web13", "fix13_D", "fix_log.json")
 PUA = "\U000f02b1\U000f02b2\U000f02b3\U000f02b4\U000f02b5\U000f02b6\U000f02b7"  # 한글 원문자 ①~⑦(사용자 정의 영역)
@@ -1001,7 +1001,15 @@ def fixd_before():
     """fix13_D 가 이 md 에서 고친 줄 「후」 → 「전」."""
     if not os.path.exists(FIXD_LOG):
         return {}
-    return {x["후"]: x["전"] for x in json.load(open(FIXD_LOG, encoding="utf-8"))["보정"] if x["파일"] == MD and isinstance(x["후"], str)}
+    m = {x["후"]: x["전"] for x in json.load(open(FIXD_LOG, encoding="utf-8"))["보정"] if x["파일"] == MD and isinstance(x["후"], str)}
+    out = {}
+    for a, b in m.items():          # 13차 최종 비평(critic13_3) 대응: 한 줄을 두 번 고친 사슬(전→중→후)은 맨 처음 「전」까지 따라감
+        seen = {a}
+        while b in m and b not in seen:
+            seen.add(b)
+            b = m[b]
+        out[a] = b
+    return out
 
 
 def check_articles(R, md):

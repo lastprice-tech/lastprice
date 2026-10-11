@@ -1,8 +1,8 @@
 verify13_web — 13차 9-2-4·9-5 산출물 검증(2026-10-07, scripts/dart/verify13_web.py)
 대상: handoff/13차_산출물/9-2-4_ORSA_보도자료.md · handoff/13차_산출물/9-5_금감원_검사결과.md · dart_out/risk13/9-5_검사결과_목록.csv
-  sha256 290fddd4d005abffce1e4eb60a0ddc88c0ce97deda27f2153b54ddef5486576e  handoff/13차_산출물/9-2-4_ORSA_보도자료.md
-  sha256 e6a7388d3b8a7b52b34f981cab642ca814e2fee25412718f1747adafd7844f18  handoff/13차_산출물/9-5_금감원_검사결과.md
-  sha256 dfb8beccbed2cdb637416dcead3bfb20405e2fdfedd47fa608ab3478b0f2bb74  dart_out/risk13/9-5_검사결과_목록.csv
+  sha256 38d0833207f16b1265cc617f3871a26b807ca98bc5791d6d2ead0ce868172797  handoff/13차_산출물/9-2-4_ORSA_보도자료.md
+  sha256 b63ffa25e5bbb6499f37e388b95223bc756f328023e45a472b1c602246983a7a  handoff/13차_산출물/9-5_금감원_검사결과.md
+  sha256 6159009d75b15ae7fa55d7fdfb1f3ac30b9161f537838ede9c248567add3b091  dart_out/risk13/9-5_검사결과_목록.csv
 
 == 9-2-4 인용 대조 — handoff/13차_산출물/9-2-4_ORSA_보도자료.md (인용 블록 34개)
   ok  원본 글 일치 34/34
