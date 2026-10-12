@@ -1,0 +1,65 @@
+[
+  {
+    "id": "why_half_missing",
+    "question": "why is half of the colosseum missing",
+    "object": "Colosseum",
+    "signals": {"Q": 2, "F": 2, "V": 2, "M": 2, "G": 2, "S": 2, "H": 2, "outlier_bonus": false},
+    "note": "채택작. 결정 변수: 이상이 실루엣에 보임(V2) + 자동완성 verbatim(Q2: 'have a chunk missing' 실재) + 쇼츠 공백(G2). 1349 지진 + 남측 연약지반 + 철 클램프 채석"
+  },
+  {
+    "id": "holes_in_walls",
+    "question": "why does the colosseum have holes in the walls",
+    "object": "Colosseum",
+    "signals": {"Q": 2, "F": 2, "V": 1, "M": 2, "G": 2, "S": 2, "H": 1, "outlier_bonus": false},
+    "note": "철 클램프 약탈. autocomplete 'holes in the walls' 실재. 훅 자산 약간 열세 — 2순위권"
+  },
+  {
+    "id": "hypogeum_lifts",
+    "question": "how did the colosseum underground lifts work",
+    "object": "Colosseum",
+    "signals": {"Q": 2, "F": 2, "V": 2, "M": 2, "G": 0, "S": 1, "H": 1, "outlier_bonus": false},
+    "note": "지하 승강기 28대 — Zack D. Films/Deconstructed류 기존 커버로 G=0, 게이트 탈락"
+  },
+  {
+    "id": "naumachia_water",
+    "question": "did the colosseum really fill with water",
+    "object": "Colosseum",
+    "signals": {"Q": 1, "F": 2, "V": 1, "M": 1, "G": 0, "S": 0, "H": 1, "outlier_bonus": false},
+    "note": "모의해전 — 학계 논쟁(메커니즘 불확실 M1) + TED-Ed 108만 롱폼 유명"
+  },
+  {
+    "id": "eight_year_build",
+    "question": "how was the colosseum built in eight years",
+    "object": "Colosseum",
+    "signals": {"Q": 1, "F": 2, "V": 0, "M": 1, "G": 1, "S": 1, "H": 1, "outlier_bonus": false},
+    "note": "건설 속도 — 이상이 화면에 안 보임(V0), 통과하되 하위"
+  },
+  {
+    "id": "earthquake_survival",
+    "question": "how did the colosseum survive earthquakes",
+    "object": "Colosseum",
+    "signals": {"Q": 0, "F": 2, "V": 1, "M": 2, "G": 1, "S": 1, "H": 2, "outlier_bonus": false},
+    "note": "수요 신호 부재(Q0) — 게이트 탈락. '절반 소실'과 소재가 겹치기도 함"
+  },
+  {
+    "id": "velarium_awning",
+    "question": "how did the colosseum awning work",
+    "object": "Colosseum",
+    "signals": {"Q": 1, "F": 2, "V": 1, "M": 2, "G": 2, "S": 1, "H": 1, "outlier_bonus": false},
+    "note": "벨라리움 차양 삭구 — 3.7만 쇼츠 1편뿐, 사실상 공백. C2 후보"
+  },
+  {
+    "id": "exit_design_15min",
+    "question": "how did 50000 people leave the colosseum in 15 minutes",
+    "object": "Colosseum",
+    "signals": {"Q": 1, "F": 2, "V": 1, "M": 2, "G": 2, "S": 1, "H": 1, "outlier_bonus": false},
+    "note": "보미토리아 출구 설계 — 선행 쇼츠 없음"
+  },
+  {
+    "id": "free_entry_econ",
+    "question": "why was the colosseum free to enter",
+    "object": "Colosseum",
+    "signals": {"Q": 1, "F": 2, "V": 0, "M": 0, "G": 2, "S": 1, "H": 0, "outlier_bonus": false},
+    "note": "무료입장 경제학 — 물리 메커니즘 없음(M0), 비물리 소재는 이 포맷이 아님"
+  }
+]

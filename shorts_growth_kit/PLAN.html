@@ -1,0 +1,254 @@
+<title>역사공학 성장 플레이북</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Noto+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --ink:#17150F; --ink2:#3A362D; --paper:#F1EADB; --paper2:#E4DBC6;
+  --acc:#D55E00; --acc2:#A64700; --ok:#2F6F4E; --warn:#8A6D1A;
+  --rule:#CFC4AA; --mute:#6E6857; --bg:#F7F3E9; --card:#FBF9F4; --tbl:#FFFFFF;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ink:#F1EADB; --ink2:#CFC6B2; --paper:#23211B; --paper2:#2E2B23;
+    --acc:#F0813A; --acc2:#FFA36B; --ok:#7FC9A0; --warn:#D6B45C;
+    --rule:#4A463B; --mute:#A39C88; --bg:#151410; --card:#1E1C17; --tbl:#1B1915;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"]{
+  --ink:#F1EADB; --ink2:#CFC6B2; --paper:#23211B; --paper2:#2E2B23;
+  --acc:#F0813A; --acc2:#FFA36B; --ok:#7FC9A0; --warn:#D6B45C;
+  --rule:#4A463B; --mute:#A39C88; --bg:#151410; --card:#1E1C17; --tbl:#1B1915;
+  color-scheme: dark;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans KR",-apple-system,system-ui,sans-serif;font-size:15.5px;line-height:1.72;padding-block:0 80px;padding-inline:clamp(16px,4vw,40px)}
+.wrap{max-width:1000px;margin:0 auto}
+h1,h2,h3{font-family:Oswald,"Noto Sans KR",sans-serif;text-wrap:balance;line-height:1.15}
+h1{font-size:clamp(34px,6.2vw,56px);font-weight:700;margin:44px 0 8px}
+h2{font-size:clamp(22px,3.3vw,30px);font-weight:700;margin:60px 0 14px;padding-top:14px;border-top:3px solid var(--ink)}
+h3{font-size:17.5px;font-weight:500;margin:28px 0 8px;color:var(--ink2)}
+p{max-width:70ch}
+.eyebrow{font-family:Oswald,sans-serif;text-transform:uppercase;letter-spacing:.14em;font-size:12px;color:var(--acc)}
+.lead{font-size:17.5px;max-width:66ch;color:var(--ink2)}
+.meta{color:var(--mute);font-size:13px}
+.thesis{background:var(--paper);border-left:4px solid var(--acc);padding:16px 20px;margin:22px 0;max-width:76ch}
+.thesis p{margin:6px 0}
+.statrow{display:flex;flex-wrap:wrap;gap:12px;margin:26px 0}
+.stat{flex:1 1 190px;background:var(--card);border:1px solid var(--rule);padding:14px 16px}
+.stat b{display:block;font-family:Oswald,sans-serif;font-size:30px;font-weight:700;color:var(--acc);font-variant-numeric:tabular-nums}
+.stat span{font-size:13px;color:var(--mute)}
+table{border-collapse:collapse;width:100%;font-size:14px;background:var(--tbl)}
+th{font-family:Oswald,"Noto Sans KR",sans-serif;font-weight:500;text-align:left;font-size:12.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--mute);border-bottom:2px solid var(--ink);padding:8px 10px}
+td{border-bottom:1px solid var(--rule);padding:9px 10px;vertical-align:top}
+.tblwrap{overflow-x:auto;margin:14px 0;border:1px solid var(--rule)}
+.conf{display:inline-block;font-family:"IBM Plex Mono",monospace;font-size:11px;padding:1px 7px;border-radius:2px;white-space:nowrap;vertical-align:1px}
+.conf.hi{background:var(--ok);color:var(--bg)}
+.conf.md{background:var(--paper2);color:var(--ink2);border:1px solid var(--rule)}
+.conf.lo{background:none;color:var(--mute);border:1px dashed var(--rule)}
+.k{font-family:"IBM Plex Mono",monospace;font-size:.88em;background:var(--paper);padding:1px 5px;border-radius:2px;white-space:nowrap}
+.rank{list-style:none;padding:0;margin:18px 0;counter-reset:r}
+.rank li{counter-increment:r;display:flex;gap:14px;padding:13px 0;border-bottom:1px solid var(--rule);max-width:80ch}
+.rank li::before{content:counter(r);font-family:Oswald,sans-serif;font-weight:700;font-size:26px;color:var(--acc);min-width:34px;line-height:1.1}
+.rank b{display:block}
+.card{background:var(--card);border:1px solid var(--rule);padding:16px 18px;margin:14px 0}
+.card h4{margin:0 0 6px;font-family:Oswald,"Noto Sans KR",sans-serif;font-weight:500;font-size:15.5px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;margin:16px 0}
+.grid2 .card{margin:0}
+.gate{display:flex;flex-wrap:wrap;align-items:stretch;gap:0;margin:20px 0}
+.gate .g{flex:1 1 180px;background:var(--card);border:1.5px solid var(--ink);padding:14px 16px;position:relative}
+.gate .op{display:flex;align-items:center;padding:0 10px;font-family:Oswald,sans-serif;font-weight:700;color:var(--acc);font-size:18px}
+.gate .g b{font-family:Oswald,"Noto Sans KR",sans-serif;font-weight:700;display:block;margin-bottom:4px}
+.gate .g small{color:var(--mute);display:block;line-height:1.5}
+.gate .out{flex:1 1 150px;background:var(--ink);color:var(--bg);padding:14px 16px;display:flex;flex-direction:column;justify-content:center}
+.gate .out b{font-family:Oswald,"Noto Sans KR",sans-serif}
+ul{padding-left:20px;max-width:76ch}
+li{margin:5px 0}
+.ex{font-family:"IBM Plex Mono",monospace;font-size:13px;color:var(--acc2);display:block;margin-top:3px}
+.x{color:var(--acc);font-weight:700}
+.footer{margin-top:70px;padding-top:16px;border-top:3px solid var(--ink);color:var(--mute);font-size:13px}
+.legend{display:flex;gap:14px;flex-wrap:wrap;align-items:center;font-size:13px;color:var(--mute);margin:10px 0 0}
+@media (max-width:640px){ .gate{flex-direction:column} .gate .op{padding:6px 0} }
+</style>
+
+<div class="wrap">
+<p class="eyebrow">History-Engineering Shorts · Growth Playbook</p>
+<h1>역사공학 성장 플레이북</h1>
+<p class="meta">2026-09-23 · 리서치 렌즈 8개 + 적대적 비평 1회 통과분만 수록 · 구현 코드: <span class="k">shorts_growth_kit/</span></p>
+<p class="lead">벤치마크는 문법의 하한선일 뿐이다. 조회수는 <b>아이템 삼각측량 → 자기 채널 계측 → 훅 엔지니어링</b>의 서열로 자라며, 이 셋은 전부 코드가 된다. 이 문서는 그 규칙과 임계값, 그리고 이미 구현된 모듈의 지도를 담는다.</p>
+
+<div class="statrow">
+  <div class="stat"><b>94</b><span>리서치 인사이트 (8렌즈, 비평 검증)</span></div>
+  <div class="stat"><b>3×AND</b><span>아이템 판정: 수요·인지도·공백 동시 충족</span></div>
+  <div class="stat"><b>15+10</b><span>훅 템플릿 + 자동 채점 루브릭 항목</span></div>
+  <div class="stat"><b>20편</b><span>외부 임계값을 자기 분위수로 교체하는 기준</span></div>
+</div>
+<div class="legend">근거 표기: <span class="conf hi">강</span> 공식 발표·RCT·학술 <span class="conf md">중</span> 업계 실측·교차 확인 <span class="conf lo">약</span> 벤더 집계·방향성만 — 모든 수치 임계값은 초기값이며 20편 누적 후 자기 채널 median±MAD로 교체한다.</div>
+
+<h2>0. 직답 — 벤치마크만으로는 왜 안 되는가</h2>
+<div class="thesis">
+<p><b>한계 1.</b> 벤치마크는 결과(포맷 문법)만 주고 메커니즘(몇 초에서 왜 붙잡는가)을 주지 않는다. 남의 리텐션 커브는 볼 수 없다 — 원리적으로 복제 불가능한 정보다.</p>
+<p><b>한계 2.</b> 벤치마크 채널의 업로드 목록은 "이미 공급된 주제"의 목록이다. 따라가면 수요-공급 공백을 정의상 놓친다.</p>
+<p><b>전환.</b> 그래서 벤치마크를 버리는 게 아니라 용도를 바꾼다: <b>문법 교본 → 수요 센서</b>(아웃라이어 마이닝 대상). 형식 복제 자체는 천장이 아니다 — Zack D. Films 문법을 역사 도메인으로 옮겨 4년 1,455편을 쏟은 His Story는 600만 구독을 만들었다. 천장은 형식·도메인·속도가 전부 겹칠 때 온다. <span class="conf hi">강</span></p>
+</div>
+<h3>벤치마크를 넘어서는 우위의 서열 (기대 효과 × 복제 불가능성)</h3>
+<ol class="rank">
+<li><div><b>아이템 발굴 삼각측량</b>아이디어가 조회수 상한을 정한다. 수요×인지도×공백 교집합은 벤치마크 업로드 목록에 없다. §2</div></li>
+<li><div><b>자기 채널 계측 루프</b>슬롯 단위 리텐션 귀속 + 훅 유형 태깅. 벤치마크가 물리적으로 줄 수 없는 유일한 데이터이며, 변형 재렌더 ~$1인 이 파이프라인에서만 복리로 쌓인다. §6</div></li>
+<li><div><b>훅 엔지니어링</b>단기 효과 최대 — 단, 2번의 자기 데이터 없이는 캘리브레이션이 안 되는 종속 활동. §1</div></li>
+<li><div><b>복제 비용 높은 시각 자산</b>장식이 아닌 진짜 도면 문법(단면·하중 경로·해칭). 카피캣 포화 시점의 방어벽. §4</div></li>
+<li><div><b>패키징·유통</b>각각 한 자릿수 % 이득. 자동화라 비용 0이니 전부 하되 기대는 낮게. §5</div></li>
+</ol>
+
+<h2>1. 훅 설계 — 감이 아니라 공식</h2>
+<div class="grid2">
+<div class="card"><h4>확신 50% 법칙 <span class="conf hi">강</span></h4>궁금함은 시청자의 정답 확신이 약 50%일 때 최대(fMRI, 역U자). 훅 = 친숙한 물건 + 통념이 틀렸다는 신호.<span class="ex">Everyone thinks earthquakes did this. The stone says otherwise.</span></div>
+<div class="card"><h4>구체성도 역U자 <span class="conf hi">강</span></h4>Upworthy 8,977건 A/B 재분석: 훅 실패 다수가 "너무 구체적이라 격차가 닫힌" 경우. 숫자·고유명사는 1–2개만, <b>원인(메커니즘)은 은폐</b>. SOLUTION 키워드가 훅·제목에 있으면 반려.</div>
+<div class="card"><h4>부정 어휘의 인과 효과 <span class="conf hi">강</span></h4>10.5만 헤드라인 RCT(Nature Human Behaviour): 부정 단어가 클릭을 인과적으로 올림. 가점 렉시콘 {missing, killed, banned, collapsed, shouldn't…} / 감점 {amazing, incredible}.</div>
+<div class="card"><h4>병적 호기심 = 인간 행위 <span class="conf hi">강</span></h4>"인간이 만든 위험"만 중립보다 선호됨(자연재해·순수 사고는 아님). 같은 붕괴도 <b>알고도 방치·도둑질·금지된 공법</b> 각도를 선택.</div>
+</div>
+<h3>운영 규칙</h3>
+<ul>
+<li><b>아이데이션 순서 역전:</b> 주제→대본이 아니라 <b>훅 5개 생성 → 최강 훅 선택 → 에피소드 각도 역산</b>. 훅-SOLUTION 정합성 셀프체크(훅의 명사가 SOLUTION에 문자 그대로 재등장, 불일치 반려). <span class="conf md">중</span></li>
+<li><b>발화 제약:</b> 첫 문장 ≤8단어(2.5초 내 격차 개방), 12단어 내 페이오프. TTS 렌더 후 첫 문장 &gt;2.6초면 재생성. 5초 지점까지 SOLUTION의 존재를 예고하는 반문장 의무.</li>
+<li><b>첫 프레임 = 썸네일:</b> 결정 창 ~2초. 프레임 0에 훅 텍스트(≤5단어)와 오브젝트(화면 40%+)가 t=0부터 존재, 도면 선은 0.3–0.5초부터 <b>그려지기 시작</b>(완성 팝업·페이드인 금지). 프레임 0 PNG 단독 심사 게이트.</li>
+<li><b>도메인 앵커:</b> 12단어 안에 구조물명·연도·공학 명사 ≥1 — LLM 기반 추천이 텍스트로 클러스터를 정하므로 무도메인 미스터리 훅은 오배포됨.</li>
+</ul>
+<h3>훅 템플릿 15종 (발췌 — 전체는 <span class="k">growth/hooks.py</span>)</h3>
+<div class="tblwrap"><table>
+<tr><th>ID</th><th>메커니즘</th><th>템플릿</th><th>예시</th></tr>
+<tr><td>T01</td><td>결손 제시+부정성</td><td>{fraction} of {object} is missing.</td><td>Half of the Colosseum is missing.</td></tr>
+<tr><td>T02</td><td>기대 위반</td><td>{object} shouldn't {stand/work}.</td><td>This bridge shouldn't be standing.</td></tr>
+<tr><td>T03</td><td>금지된 지식</td><td>{authority} banned {this}.</td><td>Rome banned this machine. Twice.</td></tr>
+<tr><td>T04</td><td>비반올림 수치</td><td>{object} killed {exact N} people…</td><td>This staircase killed 47 people before anyone asked why.</td></tr>
+<tr><td>T05</td><td>스케일 충돌</td><td>This {tiny} holds {huge}.</td><td>This 2-gram pin holds a 40,000-ton bridge.</td></tr>
+<tr><td>T07</td><td>오답 선제(확신 50%)</td><td>Everyone thinks {X}. {evidence} says otherwise.</td><td>Everyone thinks earthquakes did this.</td></tr>
+<tr><td>T10</td><td>탐정형(도면 궁합)</td><td>Look at {detail}. It's a {scar}.</td><td>Look at the diagonal line on this wall. It's a scar.</td></tr>
+<tr><td>T14</td><td>의도성 반전</td><td>These {flaws} were made on purpose.</td><td>These holes were drilled on purpose.</td></tr>
+<tr><td>T15</td><td>대명사 제로 단언</td><td>{object} has been {lying} for {N} years.</td><td>This dome has been cheating gravity for 1,900 years.</td></tr>
+</table></div>
+<h3>자동 채점 루브릭 (100점, 70+ 통과 / 50–69 재생성 / &lt;50 반려)</h3>
+<div class="tblwrap"><table>
+<tr><th>항목</th><th>배점</th><th>판정</th></tr>
+<tr><td>R01 격차 개방</td><td>+20</td><td>친숙한 물건 + 보이는 이상·결손·위반. 순수 사실 진술이면 반려</td></tr>
+<tr><td>R02 개방 속도</td><td>+15</td><td>첫 8단어 내 +15 / 9–12단어 +8 / 13+ 0</td></tr>
+<tr><td>R03 구체성 밴드</td><td>+10</td><td>숫자·날짜·고유명사 1–2개 +10 / 0개 0 / 3개+ −5</td></tr>
+<tr><td>R04 부정 렉시콘</td><td>+10</td><td>1개당 +5 최대 +10, 3개+ −5 / 긍정 렉시콘 −5</td></tr>
+<tr><td>R05 확신 조작</td><td>+10</td><td>통념 명시+부정 또는 상식 역행 단언</td></tr>
+<tr><td>R06 자기관련성</td><td>+10</td><td>you/친숙 오브젝트 +10 / 첫 문장 1인칭 = 반려</td></tr>
+<tr><td>R07 도메인 앵커</td><td>+5</td><td>12단어 내 역사·공학 토큰 ≥1</td></tr>
+<tr><td>R08 페이오프 계약</td><td>+10</td><td>훅 핵심 명사가 SOLUTION 슬롯에 재등장 — 불일치 반려</td></tr>
+<tr><td>R09 첫 프레임 계약</td><td>+10</td><td>훅 명사 시각 존재 + 오버레이 0.5초 내 드로잉 시작 + 에코 일치</td></tr>
+<tr><td>R10 수치 정밀성</td><td>+5</td><td>비반올림 검증값 보너스 <span class="conf lo">약</span> — 실측 재보정 1순위</td></tr>
+</table></div>
+
+<h2>2. 아이템 발굴 — 삼각측량 AND 게이트</h2>
+<p>핵심은 소스 다변화가 아니라 신호의 교차다. OR로 묶으면 "유명하지만 포화" 또는 "참신하지만 무명"이 올라와 결국 벤치마크 모방과 같아진다.</p>
+<div class="gate">
+  <div class="g"><b>수요 Q</b><small>Google·YouTube 자동완성 verbatim 존재<br>실측: "why does the colosseum have a chunk missing" 서제스트 실재 확인</small></div>
+  <div class="op">AND</div>
+  <div class="g"><b>인지도 F</b><small>Wikipedia pageviews ≥5k/월 (하드게이트)<br>실측: Colosseum 130k vs 무명 수도교 9.6k — 13배 변별</small></div>
+  <div class="op">AND</div>
+  <div class="g"><b>공급 공백 G</b><small>24개월 내 1M+ 쇼츠 부재<br>+ 소형채널(&lt;10만) 5x 아웃라이어 존재 시 보너스</small></div>
+  <div class="op">→</div>
+  <div class="out"><b>통과 후보만 순위화</b><small>총점은 통과자 간 정렬용</small></div>
+</div>
+<h3>소스별 접근성 (2026-09 실측)</h3>
+<div class="tblwrap"><table>
+<tr><th>소스</th><th>상태</th><th>용도</th></tr>
+<tr><td>Google/YT 자동완성 <span class="k">suggestqueries</span></td><td>무인증 즉시 동작 — 단 비공식 엔드포인트, 폴백 필수</td><td>수요 verbatim 검증 + A–Z 롱테일 하베스트</td></tr>
+<tr><td>Wikipedia Pageviews API</td><td>무인증 즉시 동작, 학술 검증된 attention proxy</td><td>인지도 하드게이트 + top-viewed 역발굴</td></tr>
+<tr><td>YouTube Data API</td><td>키 필요, 일 10,000 units (검색 100u / 댓글 1u)</td><td>아웃라이어 스캔(<span class="k">조회수÷채널 90일 중앙값</span> ≥3x가 2채널 이상 교차), 공백 검사, 벤치 댓글 질문 채굴</td></tr>
+<tr><td>StackExchange History API</td><td>무인증 즉시 동작 (votes·view_count)</td><td>보조 수요 신호</td></tr>
+<tr><td>Reddit</td><td><span class="x">무인증 차단 확인(403/429)</span> — OAuth 수동 승인 2–4주</td><td>지금 신청, 승인 후 AskHistorians·TIL top</td></tr>
+<tr><td>Google Trends 공식 API</td><td>alpha 신청제</td><td>지금 신청, 승인 전엔 3원 신호로 대체</td></tr>
+</table></div>
+<h3>주간 퍼널 (게이트 0 신설)</h3>
+<p><b>자동 수집 ≥100후보/주</b> → 루브릭 자동 채점(Q수요 25% · F인지도 15% · V시각화 15% · M공학 메커니즘 15% · G공백 15% · S시리즈 확장성 10% · H훅 자산 5%) → <b>상위 10개만 사람에게</b>(주 1회 10분, 서제스트 증거·경쟁작 링크 첨부) → 5편 제작. 재구성 백테스트에서 이 루브릭은 콜로세움 9후보 중 채택작을 1위로 뽑았다 — 결정 변수는 "이상(異常)이 실루엣에 이미 보이는가"와 "자동완성 verbatim 존재".</p>
+<ul>
+<li><b>와일드카드 쿼터:</b> 주 5편 중 1편은 인접 도메인(never-built, 폐기된 교통수단, 재난 구조물). 우주 채널 Primal Space의 채널 최고작은 모노레일(11M)이었다 — 채널 정체성은 소재가 아니라 형식이 지킨다. <span class="conf hi">강</span></li>
+<li><b>50편 테스트:</b> 새 소재군은 "이 질문형으로 50편 뽑을 수 있는가" 통과 시에만.</li>
+<li><b>뉴스 RSS</b>는 신규 발굴이 아니라 기존 고득점 후보의 시의성 부스트 용도로만(뉴스發 아이템은 인지도 게이트를 통과 못 함).</li>
+</ul>
+
+<h2>3. 대본 — 12슬롯 v2</h2>
+<p>진단: 이탈 위험 3곳 — EASY PART(긴장을 푸는 교과서 구간), SUMMARY(반복 = 문서화된 이탈 원인), CLOSING(완결감이 루프를 죽임). 2025-03-31부터 리플레이 1회 = 조회수 1회이므로 루프는 지표에 직결된다. <span class="conf hi">강</span></p>
+<div class="tblwrap"><table>
+<tr><th>#</th><th>슬롯 (65초 기준)</th><th>규칙</th></tr>
+<tr><td>1</td><td>HERE IS <span class="k">0–4s</span></td><td>≤12단어 내 페이오프, 정밀 숫자·날짜 1개, SOLUTION 키워드 금지</td></tr>
+<tr><td>2</td><td>NOT BECAUSE <span class="k">4–9s</span></td><td>오해 부정 = 열린 루프 #1</td></tr>
+<tr><td>3</td><td>OR ELSE <span class="k">9–14s</span></td><td>위험을 2인칭으로 — you 투입 1/2</td></tr>
+<tr><td>4</td><td><span class="x">TRAP</span> (구 EASY PART) <span class="k">14–20s</span></td><td>쉬운 부분을 함정으로 프레이밍. 끝문장 ≤6단어 + X 동기화</td></tr>
+<tr><td>5</td><td>PROBLEM 1 <span class="k">20–27s</span></td><td><b>재훅 #1</b>: 의문문/반전 접속 + 미등장 명사 1개</td></tr>
+<tr><td>6</td><td>WHAT IF→NO <span class="k">27–33s</span></td><td>런타임 45–55% 지점, 에피소드 최대 시각 이벤트(풀 X)</td></tr>
+<tr><td>7</td><td>PROBLEM 2 <span class="k">33–40s</span></td><td><b>재훅 #2</b>: 문제 1보다 스테이크가 커야 함</td></tr>
+<tr><td>8</td><td><span class="x">STAKES</span> (구 SUMMARY) <span class="k">40–44s</span></td><td>요약 금지. 3항 압축 ≤12단어 <span class="ex">Three failures. One winter. Zero room for error.</span></td></tr>
+<tr><td>9</td><td>PIVOT <span class="k">44–48s</span></td><td><b>재훅 #3</b></td></tr>
+<tr><td>10</td><td>SOLUTION <span class="k">48–57s</span></td><td>최저 속도(0.95x), 정밀 숫자+치수선 1:1, you 금지</td></tr>
+<tr><td>11</td><td>EFFECT + SEED <span class="k">57–63s</span></td><td>방어 가능한 최상급 단정 1개(반례 댓글 유발), you 투입 2/2</td></tr>
+<tr><td>12</td><td><span class="x">CLOSING LOOP</span> <span class="k">63–68s</span></td><td>"That is the ___" 발화 종료 <b>즉시 컷</b>(트레일링 무음 ≤0.3s, 아웃트로·CTA 금지) + 마지막 프레임 = 첫 프레임 구도</td></tr>
+</table></div>
+<ul>
+<li><b>워드버짓 축소:</b> 120–190 → <b>145–170단어</b>(≈135–155 WPM). 190단어/60초는 명백한 과속. <span class="conf md">중</span></li>
+<li><b>정밀 숫자 2–4개, 반올림 금지</b> — "측정해본 사람"이라는 신뢰 신호. 각 숫자 ↔ 오버레이 라벨 1:1 매핑 린트.</li>
+<li><b>TTS 구조 변경:</b> break 태그 남용은 ElevenLabs 공식 아티팩트 경고 → 슬롯별 개별 생성 + ffmpeg concat에서 무음 갭(0.3–0.8s) 코드 삽입. 오버레이와 프레임 동기화, KR/JP 길이 차는 갭 조정으로 흡수. <span class="conf hi">강</span></li>
+<li><b>리듬 린트:</b> 연속 3문장 ±3단어 균일 시 경고, 각 슬롯 끝 ≤6단어 펀치 문장(오버레이 비트와 동기).</li>
+<li><b>불가침 축</b>(변주 금지): 데드팬 2인칭, 시그니처, 오브젝트 주인공, 에코 원칙. <b>변주 축</b>(4–6주 주기): 훅 문형, 전환 스타일, 오버레이 리듬 — "벤치마크 천장"은 이 표면층에서만 온다.</li>
+</ul>
+
+<h2>4. 영상 — 컷은 그대로, 컷 안을 채운다</h2>
+<ul>
+<li><b>12컷×5초 유지:</b> 60초당 ~12샷이 몰입 역U의 실측 정점(Reels 1,200편 계산모델)과 이미 일치 <span class="conf md">중</span> — 대신 각 5초 클립 안에 <b>오버레이 이벤트 ≥2개(2.0–2.5초 간격)</b>: 치수선 드로잉·라벨·존·X. 화면 정지 2.5초 초과 = QC 실패.</li>
+<li><b>완성 상태 즉시 표시 금지:</b> 만족감의 기제는 예측→확인 도파민 루프 + 자이가르닉 효과. 오버레이는 <b>그어지고·채워지고·조립되는 과정</b>일 때만 가치가 있다. 치수선 0.7–1.2초 드로잉, X 두 획 순차, 재조립은 스냅+오버슈트. <span class="conf hi">강</span></li>
+<li><b>리빌 예산:</b> 최대 리빌(분해도→재조립)은 SOLUTION에만. HERE IS는 봉인된 외형(내부 노출 금지), TRAP에 첫 단면, WHAT IF에 고스트 X-ray, EFFECT에 전/후. 분해도가 SOLUTION 이전에 나오면 린트 반려.</li>
+<li><b>진행 장치:</b> 타임바 대신 하단 <b>미니 블루프린트 누적기</b> — 슬롯마다 도면이 채워지되 시작 시 외곽선은 기채움(빈 진행 바는 이탈을 늘림, 32연구 메타분석). PROBLEM 슬롯만 1/2 카운터 허용.</li>
+<li><b>AI 이질감 방어:</b> 언캐니 처벌은 실사에 가까울수록 크다 → "시네마틱 일러스트·기술 도해 룩"으로 장르 재정의(코드 도면 오버레이가 그 장치, 커버리지 70%+). 후처리 고정: 그레이드 LUT → 미세 블러 → 그레인 8–15%(에피소드 동일 시드).</li>
+<li><b>사운드(비평가가 잡은 공백):</b> 오버레이 이벤트와 1:1 SFX — 치수선=펜 스크래치, X=스탬프, 재조립=스냅. Zack D. Films의 실제 차별 요소 중 하나가 SFX 밀도다. BGM은 자작/라이선스 프리, −14 LUFS + 덕킹.</li>
+</ul>
+
+<h2>5. 패키징·배포 — 기대는 낮게, 전부 자동화</h2>
+<div class="tblwrap"><table>
+<tr><th>항목</th><th>규칙</th></tr>
+<tr><td>제목</td><td>40자 이내 완결형 질문 = 훅 문장 그대로. 고유명사·연도·공법명 의무(LLM 추천 매칭 표면적). 해시태그 3개 고정 — 그 이상은 non-goal</td></tr>
+<tr><td>클릭 경로</td><td>쇼츠 설명·댓글 링크는 클릭 불가(2023-08~) → 공식 <b>Related video</b>만. 업로드 후 자동 설정(컴필레이션 생기면 그쪽으로)</td></tr>
+<tr><td>고정댓글</td><td>PIVOT 파생 양자택일 질문 + 다음 편 티저 자동 생성. 주 1회 댓글 질문 채굴 → 아이템 백로그로 회수</td></tr>
+<tr><td>현지화</td><td><b>별도 채널 금지.</b> 1단계 = KR/JP TTS 트랙만 MLA 업로드(재렌더 0원, 단 신생 채널 권한 선확인). 그 전에라도 번역 자막(SRT)은 즉시 무료 — 단어 타임스탬프가 이미 있다. 비주언어 워치타임 &gt;15% 4주 지속 시 2단계(오버레이 재렌더+별도 채널)</td></tr>
+<tr><td>컴필레이션</td><td>월 1회, 주제군 상위 8–10편 + 에피소드 간 15–20초 브리지 내레이션(재사용 정책 방어) + 16:9 리프레임. 쇼츠 RPM은 롱폼의 3–14% — 수익 회수는 이 경로뿐</td></tr>
+<tr><td>3플랫폼</td><td>클린 마스터 3벌 동시 출력(재업로드 금지 — 워터마크는 조용히 추천 제외). 오버레이는 세이프존 교집합 <span class="k">1080×1920 중앙 880×1216</span> 안에만</td></tr>
+<tr><td>케이던스</td><td>평일 매일 고정 슬롯, 결번 없음(월 12편+ 채널 성장률 중앙값 4.1배 <span class="conf md">중</span>). 백로그 버퍼 &lt;5편이면 실험보다 본편 우선</td></tr>
+</table></div>
+
+<h2>6. 실험 시스템 — 벤치마크를 넘는 실제 수단</h2>
+<ul>
+<li><b>제작 시점 메타데이터는 그 순간에만 기록 가능하다.</b> SQLite 2테이블: <span class="k">episodes</span>(훅 유형·소재 카테고리·12슬롯 타임스탬프·루프 설계·프롬프트 버전) + <span class="k">snapshots</span>(48h/7d/28d별 views·engagedViews·리텐션 100pt·슬롯 낙차).</li>
+<li><b>슬롯 단위 리텐션 귀속:</b> Analytics API 리텐션 커브는 영상당 100포인트 = 65초에서 0.65초 해상도, 슬롯당 7–8포인트. <span class="conf hi">강</span> 커브 자동 분류: 3초 절벽형=훅 책임 / 특정 슬롯 낙차 2배=그 슬롯 압축 / 70% 고원+1초 스파이크=성공 패턴 태깅(단, 중반 스파이크는 "되감기 혼란" 가설 먼저 — 오버레이 싱크 점검).</li>
+<li><b>지표는 조회수가 아니라 비율:</b> 2025-03-31부터 조회수는 재생 시작마다 집계되는 허영 지표. 핵심은 <span class="k">stay_rate = engagedViews/views</span>(스와이프 프록시 — 루프 성공작일수록 낮아 보이는 왜곡이 있어 루프 지표와 함께 읽는다), APV, 슬롯 낙차. Studio의 Viewed-vs-Swiped는 API로 못 뽑으므로 주 1회 수동 대조만.</li>
+<li><b>표본 규율:</b> 판정은 engagedViews ≥500 이후, 비율 지표로만. 10%p 차 감지에 변형당 ~350뷰, 5%p 차 ~1,100+. 훅 "유형" 결론은 유형당 ≥8편. 에피소드 1쌍의 조회수 비교는 순차 배포의 운 분산 때문에 n=1이다. 에피소드 비교는 반드시 같은 나이끼리(48h-vs-48h).</li>
+<li><b>훅 A/B는 본채널 재업로드 금지</b>(반복 콘텐츠 정책 리스크) → TikTok 선행 테스트(24h 순위만, 절대값 비교 금지) 또는 IG Trial Reels(비팔로워 노출 공식 실험 표면).</li>
+<li><b>4주 캘린더:</b> W1 계측(베이스라인) → W2 훅 축(오프너 3종 로테이션) → W3 구조 축(루프 on/off + 최다 이탈 슬롯 압축) → W4 소재 축(아웃라이어 큐 3 + 탐색 2). 불변 룰: <b>에피소드당 실험 변수 1개 — 고정 12슬롯 포맷이 곧 교란 통제 장치다.</b></li>
+</ul>
+
+<h2>7. 놓치기 쉬운 것 (적대적 비평이 추가한 영역)</h2>
+<div class="grid2">
+<div class="card"><h4>콜드스타트 생존</h4>신생 채널 48h 50–500뷰는 정상. 첫 20편은 비율 지표로만 판정(성급한 포맷 폐기 방지), 주제 이탈 금지(시드 학습기), 채널명·설명·키워드도 클러스터 신호로. 초기엔 관련 커뮤니티 사람 손 시딩 주 1–2회.</div>
+<div class="card"><h4>사실 오류 프로토콜</h4>역사 채널의 자산은 신뢰. 수치·연도 출처 필드 의무화(저장 스키마로), 정정 절차(고정댓글+설명란) 사전 정의, AI 합성 공개 라벨 판정을 업로드 자동화에 포함.</div>
+<div class="card"><h4>팬덤 장치</h4>업로드 후 첫 60분 댓글 운영(자동 초안+휴먼 승인). 좋은 질문은 다음 에피소드로 회수해 "당신의 질문으로 만들었다" 명시 — 발굴 파이프라인과 커뮤니티를 잇는 루프.</div>
+<div class="card"><h4>지식의 유통기한</h4>이 문서 자체가 부패한다. YouTube 공식 변경 로그를 주간 크론으로 수집해 하드코딩 임계값과 대조하는 "룰셋 유통기한" 리포트. 자기 지표 급변은 "내 실력"보다 "플랫폼 변경" 가설 먼저.</div>
+</div>
+
+<h2>8. 구현 지도 — shorts_growth_kit</h2>
+<p>아래 모듈이 저장소 <span class="k">shorts_growth_kit/</span>에 구현되어 있다. 통째로 로컬 <span class="k">~/video_studio/growth</span>로 복사하면 이어서 작업할 수 있다(표준 라이브러리만 사용, 의존성 0).</p>
+<div class="tblwrap"><table>
+<tr><th>모듈</th><th>역할</th><th>비고</th></tr>
+<tr><td><span class="k">growth/sources/</span></td><td>자동완성 하베스터 · Wikipedia pageviews · StackExchange · YouTube Data API(아웃라이어·공백·댓글)</td><td>YT는 <span class="k">YT_API_KEY</span> 필요, 나머지 무인증</td></tr>
+<tr><td><span class="k">growth/item_rubric.py</span></td><td>Q/F/V/M/G/S/H 채점 + AND 게이트</td><td>콜로세움 9후보 백테스트 포함</td></tr>
+<tr><td><span class="k">growth/scout.py</span></td><td>주간 퍼널: 수집→채점→게이트 0 리포트</td><td>V·M 등 판단 항목은 Claude가 채움</td></tr>
+<tr><td><span class="k">growth/hooks.py</span></td><td>템플릿 15종 + 루브릭 R01–R10 자동 채점</td><td>렉시콘은 <span class="k">lexicons.py</span></td></tr>
+<tr><td><span class="k">growth/script_lint.py</span></td><td>12슬롯 v2 린터(워드버짓·재훅·펀치·계약·제목 40자)</td><td>script.json 스키마 동봉</td></tr>
+<tr><td><span class="k">growth/db.py</span> · <span class="k">analytics.py</span></td><td>episodes/snapshots 스키마 · 리텐션 100pt→슬롯 귀속 · 커브 분류기</td><td>API 수집은 토큰 주입식, 오프라인 JSON도 지원</td></tr>
+<tr><td><span class="k">growth/config.py</span></td><td>모든 임계값 + 출처 주석 + 세이프존 상수</td><td>20편 후 자기 분위수로 교체</td></tr>
+</table></div>
+
+<div class="footer">
+근거 등급은 리서치 원문 기준: <b>강</b>=공식 발표·RCT·학술 / <b>중</b>=업계 실측 교차 확인 / <b>약</b>=벤더 집계. 모든 외부 임계값은 초기값이며 자기 채널 데이터(20편)로 교체하는 것이 이 시스템의 요점이다. · 함께 보기: 「역사공학 쇼츠 자동화 제안서」 · 지금 신청할 것: Reddit OAuth, Google Trends API alpha, 채널 Advanced features(MLA·Related video 전제)
+</div>
+</div>
