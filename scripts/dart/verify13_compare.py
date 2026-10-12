@@ -30,6 +30,10 @@
     「## 검증 기록」이 끝 절이고 「### 정합성 보정(2026-10-08)」 소절이 있음.
     R4(재비평 critic13_2 new_issues 10): 코드 블록마다 블록 머리 묶음(출처 줄 → 조 태그 줄·note 줄 → 블록)의 첫 줄이 출처 줄 꼴,
     머리 「- 출처 줄(R4 …)」 줄의 블록 수 = 다시 센 수.
+ ⑦ 재비평 4(critic13_4) — 「재비평 3」 소절 = 커밋 47ceddd 판의 그 소절(그때 기록 고정 — dart_out/raw/web13/compare94/pre_47ceddd/,
+    없으면 git show), 「재비평 4」 소절이 끝 소절이고 그 소절의 입력·행렬·조번호대조 바뀐 수 = 47ceddd 사본과 다시 견준 수;
+    머리 「상태 표기」 줄에 핵심 이름 괄호 규칙 문구(fix13_A.py·fix13_B.py 의 BRACKET_RULE — ast 로 읽음, 두 글이 같아야 함);
+    머리 작성일 줄의 「스크립트 실행 <시각>」은 1차 실행 하나뿐(재생성 시각을 md 에 쓰지 않음 — 멱등).
 웹 요청·API 키·OC 를 쓰지 않는다(로컬 파일만).
 """
 from __future__ import annotations
@@ -858,6 +862,94 @@ def check_words(R, M, MDS):
     R.p(f"  R4 코드 블록 {nb}개 — 블록 머리 묶음 {nh} · 출처 줄 바로 앞 {ni} · 꼴 밖 {nb - nh - ni}, 출처 줄 거리 {sorted(set(gaps))}줄")
 
 
+# ───────────────────────────── ⑦ 재비평 4(critic13_4)
+BASE4 = "47ceddd"
+H3 = "#### 재비평 3(critic13_3) 대응 — 다시 만듦(2026-10-08 KST)"
+H4 = "#### 재비평 4(critic13_4) 대응 — 다시 만듦(2026-10-08 KST)"
+FIX_AB = ["scripts/dart/fix13_A.py", "scripts/dart/fix13_B.py"]
+
+
+def pre4_text(rel):
+    """커밋 47ceddd 판 파일 — 중간 기록 사본(pre_47ceddd/)이 있으면 그것, 없으면 git show(읽기만)."""
+    import subprocess
+    pth = os.path.join(ROOT, RAW_DIR, "pre_" + BASE4, os.path.basename(rel))
+    if os.path.exists(pth):
+        with open(pth, encoding="utf-8-sig") as f:
+            return f.read()
+    return subprocess.run(["git", "show", f"{BASE4}:{rel}"], cwd=ROOT, capture_output=True, check=True).stdout.decode("utf-8-sig")
+
+
+def sub_of(L, h):
+    i = L.index(h)
+    j = next((k for k in range(i + 1, len(L)) if L[k].startswith("#### ") or L[k].startswith("## ") or L[k].startswith("### ")), len(L))
+    while j > i and not L[j - 1].strip():
+        j -= 1
+    return L[i:j]
+
+
+def ast_const(rel, name):
+    import ast
+    for nd in ast.parse(rd(rel)).body:
+        if isinstance(nd, ast.Assign) and any(isinstance(t, ast.Name) and t.id == name for t in nd.targets):
+            if isinstance(nd.value, ast.Constant) and isinstance(nd.value.value, str):
+                return nd.value.value
+    return None
+
+
+def check_round4(R, M):
+    import io
+    R.head("⑦ 재비평 4(critic13_4) — 재비평 3 소절 고정·재비평 4 소절·괄호 규칙 문구·작성일 줄")
+    P = pre4_text(OUT_MD).split("\n")
+    if H3 not in M or H3 not in P:
+        R.bad("「재비평 3(critic13_3)」 소절 머리를 찾지 못함(지금 파일 또는 47ceddd 판)")
+    else:
+        a, b = sub_of(P, H3), sub_of(M, H3)
+        if a != b:
+            k = next((t for t, (x, y) in enumerate(zip(a, b)) if x != y), min(len(a), len(b)))
+            R.bad(f"「재비평 3」 소절이 47ceddd 판과 다름(그때 기록 고정이어야 함) — {k + 1}번째 줄부터 다름(줄 수 {len(a)} → {len(b)})")
+        else:
+            R.p(f"  「재비평 3」 소절 {len(b)}줄 = 커밋 {BASE4} 판 그 소절(고정)")
+    h4 = [k for k, l in enumerate(M) if l == H4]
+    heads = [k for k, l in enumerate(M) if l.startswith("#### ")]
+    if len(h4) != 1 or heads[-1] != h4[0] or (H3 in M and M.index(H3) > h4[0]):
+        R.bad("「재비평 4(critic13_4)」 소절이 하나가 아니거나 끝 소절이 아님(재비평 3 소절 뒤)")
+        return
+    S = M[h4[0]:]
+    # 입력 sha256 — 47ceddd 판 표 ↔ 지금 표
+    pin = dict(re.findall(r"^\| `([^`]+)` \| `([0-9a-f]{64})` \|$", "\n".join(P), re.M))
+    now_in = re.findall(r"^\| `([^`]+)` \| `([0-9a-f]{64})` \|$", "\n".join(M), re.M)
+    n_inp = sum(1 for rel, h in now_in if pin.get(rel) != h)
+    m = next((re.search(r"입력 sha256 이 그 판과 다른 파일 (\d+)개", l) for l in S if "입력 sha256 이 그 판과 다른 파일" in l), None)
+    if not m or int(m.group(1)) != n_inp:
+        R.bad(f"재비평 4 소절 입력 줄의 수 {m.group(1) if m else '-'} ≠ 다시 센 수 {n_inp}")
+    # 행렬·조번호대조 — 47ceddd 사본과 지금 CSV 다시 견줌
+    res = {}
+    for rel, lab in ((OUT_MATRIX, "D 행렬 CSV"), (OUT_MAP, "조번호대조 CSV")):
+        old = list(csv.DictReader(io.StringIO(pre4_text(rel))))
+        new = rcsv(rel)
+        n = sum(1 for x, y in zip(old, new) for k in x if x[k] != y.get(k, ""))
+        res[lab] = n
+        m = next((re.search(r"바뀐 칸 (\d+)개", l) for l in S if l.startswith(f"- {lab}(행 ")), None)
+        if not m or int(m.group(1)) != n:
+            R.bad(f"재비평 4 소절 「{lab}」 바뀐 칸 수 {m.group(1) if m else '-'} ≠ 다시 센 수 {n}")
+    R.p(f"  「재비평 4」 소절 — 입력 바뀐 파일 {n_inp} · " + " · ".join(f"{k} 바뀐 칸 {v}" for k, v in res.items()) + " (47ceddd 사본과 다시 견줌)")
+    # 괄호 규칙 문구
+    rules = [ast_const(rel, "BRACKET_RULE") for rel in FIX_AB]
+    if not rules[0] or rules[0] != rules[1]:
+        R.bad("fix13_A.py·fix13_B.py 의 BRACKET_RULE 이 없거나 서로 다름")
+    else:
+        hd = next((l for l in M if l.startswith("- 상태 표기(")), "")
+        if rules[0] not in hd:
+            R.bad("머리 「상태 표기」 줄에 BRACKET_RULE(회사 md 머리와 같은 괄호 규칙 문구)이 없음")
+        else:
+            R.p("  머리 「상태 표기」 줄에 BRACKET_RULE 있음(fix13_A·B 같은 글)")
+    # 작성일 줄 — 재생성 시각을 쓰지 않음(1차 실행 시각 하나)
+    head = next((l for l in M if l.startswith("- 작성일:")), "")
+    nt = len(re.findall(r"스크립트 실행 20\d\d-\d\d-\d\dT", head))
+    if nt != 1:
+        R.bad(f"작성일 줄의 「스크립트 실행 <시각>」 {nt}개 — 1차 실행 하나여야 함(재생성 시각은 compare94_parse.json)")
+
+
 # ───────────────────────────── main
 def main():
     os.chdir(ROOT)
@@ -892,6 +984,7 @@ def main():
     check_quotes(R, M, MDS, MOBT)
     check_inputs(R, M)
     check_words(R, M, MDS)
+    check_round4(R, M)
     check_secrets(R, "\n".join(R.lines))
     R.head("결과")
     R.p(f"문제 {len(R.probs)}건" + (" — exit 1" if R.probs else " — exit 0"))

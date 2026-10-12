@@ -14,6 +14,9 @@
  ④ 9~11차 산출물(handoff/원문_10차 등 9~11차 폴더·파일)이 커밋 2688274 와 같음(git diff --quiet + 추적 안 된 파일 없음).
  ⑤ 00_목록.md 1절 파일 목록 = 폴더 실제 파일. 2절(2-1·2-3 손 정리 표의 조 번호·R2 표지·9-4-1 상태, 2-2·2-4 생성 표)·3절·00_종합표.csv 의
     조 번호·상태가 각 md·상태 CSV 와 같음(생성 칸은 build 결과와 한 글자도 같아야 하고, 따로 다시 읽어 맞대기도 함).
+    (재비평 4 critic13_4) 머리 표기 줄에 핵심 이름 괄호 규칙 문구(fix13_A.py·fix13_B.py 의 BRACKET_RULE — ast 로 읽고 두 글이 같아야 함),
+    옛 문구 「보충은 핵심 이름 뒤 괄호」는 검증 기록 밖 0; 4-3 판단 줄의 ‘<회사> <N>조는 … → 받은 글/일부’ = 상태 CSV;
+    2-2 아래 note — 8개사 21·22·24조 상태 CSV 비고의 「」 조각이 회사 md 3장 note 줄에 있음.
  ⑥ 00_목록.md·00_종합표.csv 의 원문 인용(「」 안 글, 코드 블록·> 줄)이 13차 md 에 글자 그대로(공백 무시) 있음.
  ⑦ (재비평 critic13_2 new_issues 7·10) R4 — 13차 md 인용 블록마다 출처 줄이 바로 앞·블록 첫 줄 뒤·블록 머리 묶음(출처 줄 → 조 태그 줄 →
     정정판 대조 줄 → 블록) 가운데 하나이고 묶음 사이 줄이 허용 꼴; 00_목록 머리 「출처 줄(R4)」 줄은 build 가 이 셈으로 씀(⑤ 생성 칸 대조).
@@ -1375,6 +1378,72 @@ def check_5(rep, states, entries):
     nomark = [e for e in entries if e['jlabel'] == '판단 표시 없음']
     rep.ok('참고: 9-4 파일의 지시서 밖 조인데 태그 줄에 (판단)이 없는 곳 %d개(md 표기 그대로 — 문제로 세지 않음)%s' % (
         len(nomark), (': ' + ', '.join(sorted({'%s:%d(%s조)' % (e['short'], e['line'], e['val']) for e in nomark})[:12])) if nomark else ''))
+    check_5_round4(rep, L, st)
+
+
+FIX_AB = ['scripts/dart/fix13_A.py', 'scripts/dart/fix13_B.py']
+HEAD_RULE_OLD = '보충은 핵심 이름 뒤 괄호'
+
+
+def ast_const(path, name):
+    """스크립트를 실행하지 않고 모듈 맨 위 「name = '…'」 문자열을 읽음."""
+    import ast
+    for nd in ast.parse(read(path)).body:
+        if isinstance(nd, ast.Assign) and any(isinstance(t, ast.Name) and t.id == name for t in nd.targets):
+            if isinstance(nd.value, ast.Constant) and isinstance(nd.value.value, str):
+                return nd.value.value
+    return None
+
+
+def check_5_round4(rep, L, st):
+    """(재비평 4 critic13_4) (i) 머리 표기 줄 괄호 규칙 문구 (j) 4-3 판단 줄의 ‘<회사> <N>조는 … → 받은 글/일부’ = 상태 CSV
+    (k) 2-2 아래 note ‘판정을 가른 원문 조각’ — 8개사 21·22·24조 상태 CSV 비고의 「」 조각이 회사 md 3장 note 줄에 있음."""
+    vk = next((i for i, l in enumerate(L) if l.startswith('## 검증 기록')), len(L))
+    # (i)
+    rules = [ast_const(p, 'BRACKET_RULE') for p in FIX_AB]
+    head = next((l for l in L[:vk] if l.startswith('- 표기: 상태는 R1 세 단계')), '')
+    if not rules[0] or rules[0] != rules[1]:
+        rep.bad('fix13_A.py·fix13_B.py 의 BRACKET_RULE 이 없거나 서로 다름')
+    elif rules[0] not in head:
+        rep.bad('00_목록.md 머리 표기 줄에 핵심 이름 괄호 규칙 문구(BRACKET_RULE — 회사 md 머리 상태 표기 줄과 같은 글)가 없음')
+    old = [i + 1 for i, l in enumerate(L[:vk]) if HEAD_RULE_OLD in l]
+    for i in old:
+        rep.bad('00_목록.md %d줄: 옛 괄호 규칙 문구 ‘%s’ 가 검증 기록 밖에 남음' % (i, HEAD_RULE_OLD))
+    if rules[0] and rules[0] == rules[1] and rules[0] in head and not old:
+        rep.ok('머리 표기 줄 괄호 규칙 문구 = fix13_A·B BRACKET_RULE(ast) — 옛 문구 ‘%s’ 검증 기록 밖 0' % HEAD_RULE_OLD)
+    # (j)
+    short = {v[1]: v[3] for v in MD.values() if v[3]}
+    jl = next((l for l in L[:vk] if l.startswith('- 9-4 상태 가운데 판단이 들어간 곳:')), '')
+    hits = re.findall(r'(%s) (\d+)조는 .*?→ (받은 글|일부)' % '|'.join(map(re.escape, short)), jl)
+    nclause = len(re.findall(r'(?:%s) \d+조는 ' % '|'.join(map(re.escape, short)), jl))
+    if not jl or not hits or len(hits) != nclause:
+        rep.bad('4-3 판단 줄에서 ‘<회사> <N>조는 … → 받은 글/일부’ 꼴 %d곳 / ‘<회사> <N>조는’ %d곳 — 꼴을 맞출 것' % (len(hits), nclause))
+    for co, n, kind in hits:
+        s = st.get((short[co], int(n)), '')
+        want = '받은 글' if s == '받은 글' else ('일부' if s.startswith('일부') else s)
+        if kind != want:
+            rep.bad('4-3 판단 줄 %s %s조 ‘→ %s’ ≠ 상태 CSV 「%s」' % (co, n, kind, s[:60]))
+    if hits and len(hits) == nclause and all((('받은 글' if st.get((short[c], int(n)), '') == '받은 글' else '일부') == k) for c, n, k in hits):
+        rep.ok('4-3 판단 줄 %d곳(%s) = 상태 CSV' % (len(hits), ', '.join('%s %s조 %s' % h for h in hits)))
+    # (k)
+    rows = []
+    for p in STATE_CSVS:
+        with open(p, encoding='utf-8-sig', newline='') as f:
+            rows += [r for r in csv.DictReader(f) if r['모범규준_조'] in ('21', '22', '24')]
+    miss, nfr = [], 0
+    for r in rows:
+        LL = lines_of(OUT + '/' + COMPANY_MD[r['회사']])
+        s = next((i for i, l in enumerate(LL) if l.startswith('## 3')), None)
+        e = next((i for i in range(s + 1, len(LL)) if LL[i].startswith('## ')), len(LL)) if s is not None else None
+        notes = [l for l in LL[s:e] if 'note' in l] if s is not None else []
+        for fr in frag_list(r.get('비고', '')):
+            nfr += 1
+            if not any(fr[1:-1] in l for l in notes):
+                miss.append('%s %s조 %s' % (r['회사'], r['모범규준_조'], fr[:40]))
+    for m in miss:
+        rep.bad('2-2 아래 note — 상태 CSV 비고 조각이 회사 md 3장 note 줄에 없음: %s' % m)
+    if not miss:
+        rep.ok('2-2 아래 note — 8개사 21·22·24조 %d칸 상태 CSV 비고 「」 조각 %d개가 모두 회사 md 3장 note 줄에 있음' % (len(rows), nfr))
 
 
 def frag_list(text):

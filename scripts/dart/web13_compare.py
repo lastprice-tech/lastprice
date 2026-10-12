@@ -32,6 +32,11 @@
   evidence() 가 iM md 1-3 칸의 새 꼴(「대응하는 리스크관리규정 조를 찾지 못함(판단: …)」)도 받음, 21·22·24조 note 가 잣대 (c) 꼴
   (「연결 측정 여부(지주 전체 기준) 추출 범위에 없음」)을 따로 세고 8개사 공통 잣대 note 를 씀, 머리에 R4 「블록 머리 묶음」 줄(r4_heads() —
   코드 블록마다 출처 줄 → 조 태그 줄 → 블록 꼴이 아니면 멈춤), 정합성 보정 소절 끝에 「재비평(critic13_2) 대응」 묶음.
+재비평 4(dart_out/risk13/critic13_4.json new_issues 2·3) 뒤(2026-10-08 KST):
+  「재비평 3」 소절의 전·후는 커밋 df16402 사본 ↔ 커밋 47ceddd 사본(dart_out/raw/web13/compare94/pre_47ceddd/)으로 고정(c3_record —
+  그때 기록 그대로), 그 뒤에 「재비평 4(critic13_4) 대응」 소절(c4_record·c4_body — 47ceddd 사본 ↔ 지금: 입력 sha256, 행렬·조번호대조 칸,
+  「## 검증 기록」 앞 본문 줄 전·후). 머리 「상태 표기」 줄에 회사 md 와 같은 핵심 이름 괄호 규칙 문구(fix13_B.py BRACKET_RULE, ast 로 읽음).
+  머리 작성일 줄의 실행 시각(now())은 빼고 compare94_parse.json 「생성」에만 둠(같은 입력이면 md 바이트가 같게 — 멱등).
 """
 from __future__ import annotations
 
@@ -55,6 +60,9 @@ BASE = "496ddc4"
 PRE_DIR = os.path.join("dart_out", "raw", "web13", TASK, "pre")
 BASE3 = "df16402"                                   # 재비평 2 대응 판(커밋) — 재비평 3(critic13_3) 대응 소절의 「전」
 PRE3_DIR = os.path.join("dart_out", "raw", "web13", TASK, "pre_" + BASE3)
+BASE4 = "47ceddd"                                   # 재비평 3 대응 판(커밋) — 재비평 3 소절의 「후」(고정)·재비평 4(critic13_4) 소절의 「전」
+PRE4_DIR = os.path.join("dart_out", "raw", "web13", TASK, "pre_" + BASE4)
+FIX_B = "scripts/dart/fix13_B.py"                   # 핵심 이름 괄호 규칙 문구(BRACKET_RULE)를 읽는 곳 — fix13_A.py 와 같은 글(fix13_A/B check)
 STATE_A = "dart_out/risk13/9-4_지시서항목_상태_A.csv"
 STATE_B = "dart_out/risk13/9-4_지시서항목_상태_B.csv"
 TOCLAB = "9-4 조문 대조(대조표 A~C)"
@@ -938,18 +946,66 @@ def ensure_pre():
     return out
 
 
-def ensure_pre3():
-    """재비평 2 대응 판(커밋 df16402)의 산출물 3개 — 없으면 git show 로 만듦(재비평 3 소절의 「전」, 멱등)."""
-    os.makedirs(PRE3_DIR, exist_ok=True)
+def ensure_pre_at(base, d):
+    """커밋 base 판의 산출물 3개(이 파일·행렬 CSV·조번호대조 CSV) — 없으면 git show 로 d 에 만듦(멱등)."""
+    os.makedirs(d, exist_ok=True)
     out = {}
     for rel in (OUT_MD, OUT_MATRIX, OUT_MAP):
-        dst = os.path.join(PRE3_DIR, os.path.basename(rel))
+        dst = os.path.join(d, os.path.basename(rel))
         if not os.path.exists(dst):
-            data = subprocess.run(["git", "show", f"{BASE3}:{rel}"], cwd=ROOT, capture_output=True, check=True).stdout
+            data = subprocess.run(["git", "show", f"{base}:{rel}"], cwd=ROOT, capture_output=True, check=True).stdout
             with open(dst, "wb") as f:
                 f.write(data)
         out[rel] = dst
     return out
+
+
+def ensure_pre3():
+    """재비평 2 대응 판(커밋 df16402)의 산출물 3개(재비평 3 소절의 「전」, 멱등)."""
+    return ensure_pre_at(BASE3, PRE3_DIR)
+
+
+def ensure_pre4():
+    """재비평 3 대응 판(커밋 47ceddd)의 산출물 3개(재비평 3 소절의 「후」 — 고정, 재비평 4 소절의 「전」, 멱등)."""
+    return ensure_pre_at(BASE4, PRE4_DIR)
+
+
+def bracket_rule():
+    """회사 md 머리 「상태 표기」 줄의 핵심 이름 괄호 규칙 문구 — fix13_B.py 의 BRACKET_RULE 을 ast 로 읽음(실행하지 않음)."""
+    import ast
+    tree = ast.parse(rd(FIX_B))
+    for nd in tree.body:
+        if isinstance(nd, ast.Assign) and any(isinstance(t, ast.Name) and t.id == "BRACKET_RULE" for t in nd.targets):
+            if isinstance(nd.value, ast.Constant) and isinstance(nd.value.value, str):
+                return nd.value.value
+    raise SystemExit(f"[web13_compare] {FIX_B} 에서 BRACKET_RULE 문자열을 찾지 못함")
+
+
+def read_sha_table(md_text):
+    """「입력 파일(읽은 판)」 표(64자) — [(경로, sha256)] 표 순서 그대로."""
+    return re.findall(r"^\| `([^`]+)` \| `([0-9a-f]{64})` \|$", md_text, re.M)
+
+
+def round_diff(pre_old, after_inputs, after_rows, after_map):
+    """그 판(pre_old)과 견준 입력 sha256·행렬 칸·조번호대조 칸의 전·후(기계 셈). after_* 는 견줄 판(다음 판 사본 또는 지금 만든 것)."""
+    pmd = open(pre_old[OUT_MD], encoding="utf-8").read()
+    pin = dict(read_sha_table(pmd))
+    inp = [(rel, pin.get(rel, "(그 판 입력 아님)")[:16], h[:16]) for rel, h in after_inputs if pin.get(rel) != h]
+    with open(pre_old[OUT_MATRIX], encoding="utf-8-sig") as f:
+        pm = list(csv.DictReader(f))
+    mat = []
+    for a, b in zip(pm, after_rows):
+        for k in a:
+            if str(a[k]) != str(b.get(k, "")):
+                mat.append((a["조"], k, a[k], str(b.get(k, ""))))
+    with open(pre_old[OUT_MAP], encoding="utf-8-sig") as f:
+        pp = list(csv.DictReader(f))
+    mp = []
+    for a, b in zip(pp, after_map):
+        for k in a:
+            if str(a[k]) != str(b.get(k, "")):
+                mp.append((a.get("회사", ""), a.get("규정명", ""), a.get("회사_조", ""), k, a[k], str(b.get(k, ""))))
+    return {"inputs": inp, "n_rows": (len(pm), len(after_rows)), "matrix": mat, "map_n": (len(pp), len(after_map)), "map": mp}
 
 
 def diffwin(a, b, n=70):
@@ -963,31 +1019,53 @@ def diffwin(a, b, n=70):
     return pre + a[st:st + n] + ("…" if len(a) > st + n else ""), pre + b[st:st + n] + ("…" if len(b) > st + n else "")
 
 
-def c3_record(D, maprows, inputs):
-    """재비평 3(critic13_3) 대응 — 커밋 df16402 판과 견준 입력·행렬·조번호대조 칸의 전·후(기계 셈)."""
-    pre = ensure_pre3()
-    pmd = open(pre[OUT_MD], encoding="utf-8").read()
-    pin = dict(re.findall(r"^\| `([^`]+)` \| `([0-9a-f]{64})` \|$", pmd, re.M))
-    inp = [(rel, pin.get(rel, "(그 판 입력 아님)")[:16], h[:16]) for rel, h in inputs if pin.get(rel) != h]
-    with open(pre[OUT_MATRIX], encoding="utf-8-sig") as f:
-        pm = list(csv.DictReader(f))
-    mat = []
-    for a, b in zip(pm, D["rows"]):
-        for k in a:
-            if str(a[k]) != str(b.get(k, "")):
-                mat.append((a["조"], k, a[k], str(b.get(k, ""))))
-    with open(pre[OUT_MAP], encoding="utf-8-sig") as f:
-        pp = list(csv.DictReader(f))
-    mp = []
-    for a, b in zip(pp, maprows):
-        for k in a:
-            if str(a[k]) != str(b.get(k, "")):
-                mp.append((a.get("회사", ""), a.get("규정명", ""), a.get("회사_조", ""), k, a[k], str(b.get(k, ""))))
-    words = []
-    for where, x, y, kind in C3_WORDS:
-        words.append((where, x, y, kind))
-    return {"pre3_dir": PRE3_DIR, "inputs": inp, "n_rows": (len(pm), len(D["rows"])), "matrix": mat,
-            "map_n": (len(pp), len(maprows)), "map": mp, "words": words}
+def c3_record():
+    """재비평 3(critic13_3) 대응 — 커밋 df16402 판과 커밋 47ceddd 판(재비평 3 대응으로 만든 판)을 견준 전·후(기계 셈).
+    재비평 4 뒤로는 「후」를 지금 파일이 아니라 47ceddd 사본으로 고정 — 그 소절은 그때 기록 그대로 남음(재비평 4 의 전·후는 c4_record)."""
+    pre3, pre4 = ensure_pre3(), ensure_pre4()
+    a_inp = read_sha_table(open(pre4[OUT_MD], encoding="utf-8").read())
+    with open(pre4[OUT_MATRIX], encoding="utf-8-sig") as f:
+        a_rows = list(csv.DictReader(f))
+    with open(pre4[OUT_MAP], encoding="utf-8-sig") as f:
+        a_map = list(csv.DictReader(f))
+    r = round_diff(pre3, a_inp, a_rows, a_map)
+    r.update({"pre3_dir": PRE3_DIR, "words": [(where, x, y, kind) for where, x, y, kind in C3_WORDS]})
+    return r
+
+
+def c4_record(D, maprows, inputs):
+    """재비평 4(critic13_4) 대응 — 커밋 47ceddd 판과 지금 만든 판의 입력·행렬·조번호대조 칸 전·후(기계 셈).
+    본문 줄 전·후(body)는 write_md 끝에서 c4_body() 로 채움."""
+    pre4 = ensure_pre4()
+    r = round_diff(pre4, inputs, D["rows"], maprows)
+    r.update({"pre4_dir": PRE4_DIR, "pre4": pre4})
+    return r
+
+
+def c4_body(pre4_md, o):
+    """47ceddd 판 md 와 지금 md(o)의 「## 검증 기록」 앞 본문을 줄 단위로 견줌 — 입력 sha256 표 줄은 빼고(입력 줄에서 셈).
+    [(절 머리, 전, 후)] — 전·후는 다른 곳 둘레만(diffwin)."""
+    import difflib
+    def body(L):
+        k = next((i for i, l in enumerate(L) if l.strip() == "## 검증 기록"), len(L))
+        return [l for l in L[:k] if not re.match(r"^\| `[^`]+` \| `[0-9a-f]{64}` \|$", l)]
+    a, b = body(open(pre4_md, encoding="utf-8").read().split("\n")), body(o)
+    heads, cur = [], ""
+    for l in b:
+        if re.match(r"^#{1,4} ", l):
+            cur = l.lstrip("#").strip()
+        heads.append(cur)
+    out = []
+    for tag, i1, i2, j1, j2 in difflib.SequenceMatcher(None, a, b, autojunk=False).get_opcodes():
+        if tag == "equal":
+            continue
+        n = max(i2 - i1, j2 - j1)
+        for t in range(n):
+            x = a[i1 + t] if i1 + t < i2 else ""
+            y = b[j1 + t] if j1 + t < j2 else ""
+            h = heads[j1 + t] if j1 + t < j2 else (heads[j1 - 1] if j1 else "")
+            out.append((h, x, y))
+    return out
 
 
 def head_of(s):
@@ -1040,7 +1118,8 @@ def fix_record(mob, D, maprows, inputs):
     pmapt = open(pre[OUT_MAP], encoding="utf-8-sig").read()
     rec["r3"] = [(a, b, pmd.count(a) + pmapt.count(a)) for a, b in R3_WORDS]
     rec["cats_before"] = [" / ".join(x.strip() for x in l.strip().strip("|").split("|")[1:]) for l in pL if l.startswith("| 회사 | 찾은 글")]
-    rec["c3"] = c3_record(D, maprows, inputs)
+    rec["c3"] = c3_record()
+    rec["c4"] = c4_record(D, maprows, inputs)
     return rec
 
 
@@ -1142,6 +1221,57 @@ def write_fix_record(w, rec, D, mob):
     w("- 대조: verify13_compare ⑥ R3 를 넓힘 — 정합성 보정 소절 밖 우리 글에서 「없음」뿐 아니라 「없는·없어·없던·없었·없이·없고·없다」 꼴도 셈(허용: 추출 범위에 없…·일치 없음·「」 안·‘인자 없이’), "
       "위 표 ‘전’ 글이 소절 밖에 남아 있으면 문제.")
     w("")
+    # 재비평 4(critic13_4) 뒤 다시 만듦 — 커밋 47ceddd 판과 견준 전·후(c4_record·c4_body, 기계 셈)
+    c4 = rec["c4"]
+    w("#### 재비평 4(critic13_4) 대응 — 다시 만듦(2026-10-08 KST)")
+    w("")
+    w(f"- 기준(전) = 커밋 {BASE4}(재비평 3 대응 판)의 이 파일·행렬 CSV·조번호대조 CSV(`{c4['pre4_dir']}/`). 바로 위 ‘재비평 3’ 소절은 이번부터 「후」를 커밋 {BASE4} 사본으로 고정해 "
+      "그때 기록 그대로 남김(전에는 지금 파일과 견줘 다시 셌음). 입력: 그룹 B 재비평 4 보정(`fix13_B.py` — new_issues 3: 신한 사업보고서 20260318000826 p.796 줄 71939–71944 를 새 인용 S-34 로 옮기고 "
+      "잣대 (a)로 22조를 다시 판정 — 일부 → 받은 글; new_issues 2: 괄호 규칙 문구)·그룹 A 재비평 4 보정(`fix13_A.py` — new_issues 2: 괄호 규칙 문구, 판정·괄호 84곳은 그대로)·"
+      "그룹 D 보정(`fix13_D.py` — new_issues 4: 모범규준 원문 md 10장 「끝 표」·「끝 조 번호」 행 상태 칸) 뒤의 회사 md·상태 CSV·모범규준 원문 md 를 다시 읽음.")
+    w(f"- 입력 sha256 이 그 판과 다른 파일 {len(c4['inputs'])}개(앞 16자 전 → 후): " + ("; ".join(f"`{r}` `{a}` → `{b}`" for r, a, b in c4["inputs"]) or "0개") + ".")
+    w(f"- D 행렬 CSV(행 {c4['n_rows'][0]} → {c4['n_rows'][1]}): 바뀐 칸 {len(c4['matrix'])}개" + (" — " + "; ".join("%s조 %s: ‘%s’ → ‘%s’" % ((n, k) + diffwin(a, b)) for n, k, a, b in c4["matrix"][:12]) if c4["matrix"] else "")
+      + ". D 지시서 조 칸은 상태 CSV 「상태」 글을 옮기고 인용 칸은 회사 md 의 그 조 태그 인용(앞 3개 + 「외 N」)이라, 상태 CSV B 신한 22조 「상태」 변경과 S-34 태그 줄이 이 두 칸에 닿음(r1 대조는 ①).")
+    w(f"- 조번호대조 CSV(행 {c4['map_n'][0]} → {c4['map_n'][1]}): 바뀐 칸 {len(c4['map'])}개" + (" — " + "; ".join("%s %s %s %s: ‘%s’ → ‘%s’" % ((SHORT.get(co, co), reg, no, k) + diffwin(a, b)) for co, reg, no, k, a, b in c4["map"]) if c4["map"] else "")
+      + ". 회사 조문목차 CSV 는 이번 보정에서 바뀌지 않음.")
+    w(f"- 지적 2(괄호 규칙 문구): D 칸·조별 상태 모음의 핵심 이름 괄호는 상태 CSV 글 그대로라 바뀌지 않음. 머리 「상태 표기」 줄에 회사 md 머리 상태 표기 줄과 같은 괄호 규칙 문구(`{FIX_B}` 의 BRACKET_RULE — ast 로 읽음, "
+      "fix13_A.py 와 같은 글인지는 fix13_A/B check 가 봄)를 더함 — 이 파일이 옮기는 상태 글의 괄호가 어떤 꼴인지 밝히려는 것(판정은 그대로). 지적 1(9-3·9-5 조 번호 칸)·4(모범규준 원문 md 10장)는 이 파일이 옮기는 글에 닿지 않음(모범규준 원문 md 는 입력 sha256 만 바뀜).")
+    w("- 머리 작성일 줄: 재생성 때마다 바뀌던 ‘(스크립트 실행 <시각>)’를 빼고 실행 시각은 중간 기록 `dart_out/raw/web13/compare94/compare94_parse.json` 「생성」에만 둠 — 같은 입력이면 이 파일이 바이트까지 같게 다시 만들어지도록(멱등).")
+    w(C4_BODY_PLACEHOLDER)     # 끝에서 c4_body() 결과로 바꿈(본문 줄 전·후 표)
+    w("")
+
+
+C4_BODY_PLACEHOLDER = "@@C4_BODY@@"
+
+
+def c4_fix_lines(pre4_md, o, c4):
+    """첫 「### 정합성 보정(2026-10-08)」 소절(그 아래 「####」 앞까지)에서 47ceddd 판과 다른 줄 — 그 소절 표의 ‘후’는 지금 판을 보임."""
+    import difflib
+    def part(L):
+        i = next(k for k, l in enumerate(L) if l.strip() == "### 정합성 보정(2026-10-08)")
+        j = next(k for k in range(i + 1, len(L)) if L[k].startswith("#### "))
+        return L[i:j]
+    a, b = part(open(pre4_md, encoding="utf-8").read().split("\n")), part(o)
+    new = [y for t, i1, i2, j1, j2 in difflib.SequenceMatcher(None, a, b, autojunk=False).get_opcodes() if t != "equal" for y in b[j1:j2]]
+    n_sha = sum(1 for y in new if y.startswith("- `"))
+    rows = [y for y in new if y.startswith("| ")]
+    other = [y for y in new if not y.startswith("- `") and not y.startswith("| ")]
+    cells = [(n, k, a_, b_) for n, k, a_, b_ in c4["matrix"] if k in SHORT.values()]
+    trans = "; ".join(f"{n}{k} 칸 ‘{r1_kind(a_)}’ → ‘{r1_kind(b_)}’" for n, k, a_, b_ in cells) or "-"
+    return [f"- 위 ‘정합성 보정(2026-10-08)’ 소절은 ‘전’ = 1차 판(커밋 {BASE}) 그대로, ‘후’ = 지금 판이라 이번 재생성으로 그 소절에서 바뀐 줄 {len(new)}개 — "
+            f"입력 sha256 전 → 후 목록 {n_sha}줄, 표 행 {len(rows)}개(" + ("; ".join(cell(" | ".join(x.strip() for x in r.strip().strip("|").split("|")[:2])) for r in rows) or "-")
+            + f"), 그 밖의 줄 {len(other)}개(" + ("; ".join("‘" + cell(re.split(r"[(:]", x)[0].strip()) + "’ 줄" for x in other) or "-")
+            + f"). D 지시서 조 칸 범주(R1)가 47ceddd 판과 달라진 칸: {trans}."]
+
+
+def c4_body_lines(rows):
+    """재비평 4 소절의 본문 줄 전·후 표(c4_body 결과)."""
+    out = [f"- 「## 검증 기록」 앞 본문에서 그 판과 다른 줄 {len(rows)}개(입력 sha256 표 줄은 위 입력 줄에서 셈 — 다른 곳 둘레만, 기계 셈):", "",
+           f"| 절 | 전(커밋 {BASE4}) | 후 |", "|---|---|---|"]
+    for h, x, y in rows:
+        a, b = diffwin(x, y, 110)
+        out.append(f"| {cell(h)} | {cell(a) or '(그 판에 이 줄이 나오지 않음 — 새 줄)'} | {cell(b) or '(뺀 줄)'} |")
+    return out
 
 
 # ───────────────────────────── md 쓰기
@@ -1154,12 +1284,13 @@ def write_md(mob, A, B, C, D, inputs, maprows, regsum, rec):
     w = o.append
     w("# 9-4 모범규준 대조표 — 회사 규정 조 번호·제목 ↔ 「금융지주회사 통합위험관리 모범규준」")
     w("")
-    w(f"- 작성일: {DATE} — 1차 작성 2026-10-08(KST)(스크립트 실행 {FIRST_RUN}, 커밋 {BASE}), 정합성 보정 재생성 2026-10-08(KST)(스크립트 실행 {now()}). "
+    w(f"- 작성일: {DATE} — 1차 작성 2026-10-08(KST)(스크립트 실행 {FIRST_RUN}, 커밋 {BASE}), 정합성 보정 재생성 2026-10-08(KST)(마지막 재생성은 재비평 4(critic13_4) 대응 — 실행 시각은 `dart_out/raw/web13/compare94/compare94_parse.json` 「생성」). "
       "**새로 받은 자료 0건(네트워크 요청 0건)** — 이미 만든 13차 산출물(모범규준 원문 md·조 목록 CSV, 8개사 조문 목차 CSV·회사 md, 지시서 항목 상태 CSV 2개)만 읽어 맞댐.")
     w("- 날짜 기준: 이 파일의 날짜는 KST. 옮겨 붙인 출처 줄의 수집·옮김 날짜는 각 원본 md 의 라벨 그대로(그 md 들의 정합성 보정 뒤 KST 라벨; 법제처·DART 원장은 UTC).")
     w("- 스크립트: `scripts/dart/web13_compare.py` (`python3 -I scripts/dart/web13_compare.py`), 대조 `scripts/dart/verify13_compare.py`(인자 없이 → exit 0/1, 결과 `dart_out/risk13/verify13_compare.txt`). 중간 기록(파싱 결과·점검·기준 사본 pre/): `dart_out/raw/web13/compare94/`.")
     w("- 산출: 이 파일, 행렬 CSV `dart_out/risk13/9-4_모범규준_대조표.csv`(모범규준 3~58조 × 8개사, 칸마다 인용·근거 열), 조 대조 CSV `dart_out/risk13/9-4_조번호대조.csv`(8개사 조문 목차 CSV 의 모든 행 ↔ 모범규준 같은 번호 조, 기계 비교, R2 조 번호 표지 열).")
-    w("- 상태 표기(R1 세 단계 — 정합성 보정 2026-10-08 KST): 지시서 9-4-2·9-4-3 항목의 조(3·4·5·17·21·22·24·27·34·53·55)와 9-4-1 항목의 조(iM 28·30, 메리츠 9·57)는 「받은 글」(지시서 핵심이 모두 원문 인용으로 있음) / 「일부(있는 것, 빠진 핵심 추출 범위에 없음)」 / 「추출 범위에 없음」(+ 찾은 방법)만 씀. 「찾은 글」 낱말은 쓰지 않음.")
+    w("- 상태 표기(R1 세 단계 — 정합성 보정 2026-10-08 KST): 지시서 9-4-2·9-4-3 항목의 조(3·4·5·17·21·22·24·27·34·53·55)와 9-4-1 항목의 조(iM 28·30, 메리츠 9·57)는 「받은 글」(지시서 핵심이 모두 원문 인용으로 있음) / 「일부(있는 것, 빠진 핵심 추출 범위에 없음)」 / 「추출 범위에 없음」(+ 찾은 방법)만 씀. 「찾은 글」 낱말은 쓰지 않음. "
+      "핵심 이름은 지시서 낱말, " + bracket_rule() + "(회사 md 머리 상태 표기 줄·상태 CSV 와 같은 꼴 — 이 파일은 그 글을 그대로 옮김).")
     w(f"- 조 번호 칸(R2): 조문 대조 자료(규정 조 목록·조 머리 줄)는 「{TOCLAB}」, 지시서에 적힌 조(위 R1 조)는 그대로, 그 밖의 조는 「(판단)」.")
     w("- 모범규준 원문(출처): " + MOB_MD + " 5장 2016.8.1 판 전문 " + mob.e16["cite"] + " / 6장 2012.3.13 제정판 전문 " + mob.e12["cite"] + " — 조 제목 목록 `dart_out/risk13/모범규준_조목록.csv`.")
     w("- 회사 원문(출처): 각 회사의 연차보고서·사업보고서·경영공시 글은 `handoff/13차_산출물/9-4_<회사>.md` 인용 블록에서 그대로 가져옴(문서명·URL 또는 접수번호·쪽·수집일은 인용마다 그 md 의 출처 줄을 그대로 붙임). 공시 원본 PDF 는 배포하지 않음.")
@@ -1519,6 +1650,10 @@ def write_md(mob, A, B, C, D, inputs, maprows, regsum, rec):
             f"(출처 줄은 블록 {r4['span']}줄 위). 묶음 안에는 다른 블록·절 머리·표가 끼지 않아 묶음 첫 줄의 출처가 바로 아래 블록 하나의 출처임 — "
             "R4 ‘블록마다 바로 앞에 출처 줄’을 묶음 단위로 충족하는 꼴로 봄(블록은 옮기지 않음; 회사 md 그룹 A·9-1·9-2-4 의 인용 블록과 같은 꼴 — 00_목록 머리 ‘출처 줄(R4)’). "
             f"블록 머리 묶음 {r4['head']}개 · 출처 줄 바로 앞 {r4['immediate']}개 · 묶음 꼴 밖 {len(r4['bad'])}개(verify13_compare ⑥ 이 다시 셈).")
+    # 재비평 4 소절의 본문 줄 전·후 — R4 줄까지 채운 뒤 47ceddd 판과 견줌
+    k = o.index(C4_BODY_PLACEHOLDER)
+    o[k:k + 1] = (c4_fix_lines(rec["c4"]["pre4"][OUT_MD], o, rec["c4"])
+                  + c4_body_lines(c4_body(rec["c4"]["pre4"][OUT_MD], o)))
     with open(p(OUT_MD), "w", encoding="utf-8") as f:
         f.write("\n".join(o) + "\n")
 
