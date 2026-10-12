@@ -23,6 +23,9 @@
   round3()(3장 판정 줄 뒤 그룹 B 꼴 note — 있는 핵심·빠진 핵심·비고 = 상태 CSV, 5장 항목 이름 지시서 낱말, iM·NH 21조 잣대 (a) 판정 글, R3 공통 꼴 SUB3),
   STATUS 핵심 이름 괄호(연결 측정 여부는 (지주 전체 기준)만, 뗀 보충은 비고 끝 MV), 0장 21·22·24 가까운 글(판단) 표지(NEAR0), core_check()(check — 지시서 낱말 기계 점검),
   record3()(바뀐 칸 전·후 — 전 = 커밋 df16402 상태 CSV 사본 dart_out/raw/web13/fix13_A/prev_df16402/).
+재비평 4(dart_out/risk13/critic13_4.json new_issues 2) 대응(2026-10-08 KST): 핵심 이름 괄호 규칙 문구 BRACKET_RULE(fix13_B.py 와 같은 글 — 머리 상태 표기 줄·
+  재비평 소절·재비평 3 소절 확인 줄; 판정·괄호는 그대로), record4()(전 → 후), check_round4()(문구의 예 ⊂ core_check 허용 목록, fix13_B.py 와 같은 글).
+  지적 3(신한 22조)은 fix13_B.py.
 """
 from __future__ import annotations
 
@@ -81,6 +84,12 @@ ZS = "가까운 글(판단) — 판정 원문 조각(자회사별 측정 — 측
 ZC = "판정 원문 조각(8사 공통 잣대 (c) — 일부 자회사만의 합산): "
 # 재비평 3(critic13_3 new_issues 2) — 핵심 이름 뒤 괄호 보충은 (c) 「(지주 전체 기준)」과 위험 하위 구분만; 뗀 보충은 비고 끝으로 옮김(MV)
 MV = "; 빠진 핵심 보충(괄호에서 옮김): "
+# 재비평 4(critic13_4 new_issues 2) — 핵심 이름 괄호 규칙 문구를 실제 꼴로(판정·괄호 84곳은 그대로). fix13_B.py 의 BRACKET_RULE 과 한 글자도 같아야 함(check 가 봄).
+BRACKET_RULE = ("핵심 이름 뒤 괄호는 (지주 전체 기준)(잣대 (c))과 하위 구분(위험·대상·문구 종류 — 예: (평판위험)·(지주 차원)·(은행 자회사)·(경미 판정 기준)·"
+                "(내규 이름)·(원칙)·(철학))")
+RULE_OLD = "보충은 핵심 이름 뒤 괄호"
+RULE3_OLD = "괄호 보충은 (지주 전체 기준)·위험 하위 구분만"
+R4X = "재비평4"
 MV_KC = "연결기준 통합 측정 또는 지주 전체 단순 합산을 적은 문장"
 RJ_A = "재판정(8사 공통 잣대 (a)만, 정합성 보정 2026-10-08 KST): "
 NEAR0 = "가까운 글(판단) — 연결 측정 여부 판정 원문 조각은 3장 note·상태 CSV 비고; "
@@ -411,7 +420,8 @@ def head_lines(d):
     v = VERIFY[c]
     return [
         "- 상태 표기(정합성 보정 2026-10-08 KST, R1): 0장 판정 칸·3장 판정·7장 상태 칸은 세 단계 — 받은 글(지시서 그 항목의 핵심이 모두 원문 인용으로 있음) / "
-        "일부(<있는 핵심> 있음, <빠진 핵심> 추출 범위에 없음 — 가까운 글만 있으면 일부(가까운 글만, <빠진 핵심> 추출 범위에 없음)이고 note·인용 칸·상태 CSV 비고에 가까운 글(판단); 핵심 이름은 지시서 낱말, 보충은 핵심 이름 뒤 괄호) / "
+        "일부(<있는 핵심> 있음, <빠진 핵심> 추출 범위에 없음 — 가까운 글만 있으면 일부(가까운 글만, <빠진 핵심> 추출 범위에 없음)이고 note·인용 칸·상태 CSV 비고에 가까운 글(판단); 핵심 이름은 지시서 낱말, "
+        + BRACKET_RULE + ") / "
         "추출 범위에 없음(관련 원문을 찾지 못함 — 찾은 파일·쪽 범위·검색어는 6장 검색어 줄·검증 기록 반박 검색). "
         "조별 상태 글은 `dart_out/risk13/9-4_지시서항목_상태_A.csv` 상태 칸과 같은 글(찾은 방법은 7장 받은 글 칸·0장 인용 칸).",
         f"- 조 번호 칸(R2): 규정 조 목록 자체(조문 목차 자료)는 {ROW}, 특정 조에 닿지 않는 연혁·출처 자료는 {NOART}. "
@@ -1111,6 +1121,7 @@ def record(d, nlog, extra):
           + ". 다른 대조 규칙은 그대로이며 보정 뒤 인자 없이 돌려 문제 0건(exit 0)."]
     o += record2(d, extra)
     o += record3(d, extra)
+    o += record4(d)
     return o
 
 
@@ -1142,7 +1153,7 @@ def record2(d, extra):
          "(c) 일부 자회사만의 합산 → 일부(…, 연결 측정 여부(지주 전체 기준) 추출 범위에 없음). 판정을 가른 원문 조각은 상태 CSV 비고에 「」 글자 그대로.",
          "  - 잣대 — 상태 낱말 꼴: 일부(가까운 글만, <빠진 핵심> 추출 범위에 없음) / 일부(<있는 핵심> 있음, <빠진 핵심> 추출 범위에 없음). 핵심 이름은 지시서 낱말 — "
          f"3조 「{K3}」, 4·5조 「{K45}」(일부일 때는 괄호 안을 보충 — 철학·원칙·내규 이름), 17조 「{K17}」, 21·22·24조 「{KM}」「{KC}」, 27조 「관리 체제」「측정이나 평가 수단」, "
-         "34조 「총괄」「사전 검토」「정기 점검·보고」, 53조 「구성」「전환 요건」, 55조 「지표 목록」「발령 단계」; 보충은 핵심 이름 뒤 괄호. 상태 CSV 지시서_핵심 칸도 이 이름.",
+         "34조 「총괄」「사전 검토」「정기 점검·보고」, 53조 「구성」「전환 요건」, 55조 「지표 목록」「발령 단계」; " + BRACKET_RULE + ". 상태 CSV 지시서_핵심 칸도 이 이름.",
          "  - 바뀐 상태 칸(전 → 후 — 0장 판정 칸·3장 판정·7장 상태 칸·상태 CSV 가 같이 바뀜):"]
     k = 0
     for a in ARTS:
@@ -1217,8 +1228,54 @@ def record3(d, extra):
              "대조 스크립트가 다시 계산해 쓰는 칸(정정판 대조 「이 글 없음(그 판에 이 부분이 실려 있지 않음)」 — 머리 사업보고서 줄에 뜻 note)."
              + (" 조문목차 CSV 비고 「6조(문서화) ①~③항뿐(5항 없음)」 → 「6조(문서화) — 5항은 모범규준 6조 글에 나오지 않음(①~③항)」(md 1-2-1 소표 같은 칸도)." if c == "M" else "")
              + (" 조 태그 줄 끝 「(지시서 9-4 에 없는 조 번호는 …)」 → 「(지시서 9-4 에 적히지 않은 조 번호는 …)」." if c in ("I", "N") else ""))
-    o.append("  - 확인: `python3 scripts/dart/fix13_A.py check` 가 상태 CSV 44칸의 지시서_핵심·있는_핵심·빠진_핵심 낱말(지시서 낱말, 괄호 보충은 (지주 전체 기준)·위험 하위 구분만, 있는/빠진 이름 = 상태 글)도 기계 점검.")
+    o.append("  - 확인: `python3 scripts/dart/fix13_A.py check` 가 상태 CSV 44칸의 지시서_핵심·있는_핵심·빠진_핵심 낱말(지시서 낱말, " + BRACKET_RULE + ", 있는/빠진 이름 = 상태 글)도 기계 점검.")
     return o
+
+
+SUB_KIND = {"전략위험": "위험", "평판위험": "위험", "지주 차원": "대상", "은행 자회사": "대상",
+            "경미 판정 기준": "문구 종류", "경미한 자회사 측정 제외 문구": "문구 종류", "적용 배제 조문": "문구 종류",
+            "내규 이름": "문구 종류", "원칙": "문구 종류", "철학": "문구 종류"}
+
+
+def record4(d):
+    """재비평 4(critic13_4 new_issues 2) — 괄호 규칙 문구(전 → 후). 지적 3(신한 22조)은 fix13_B.py."""
+    kinds = {}
+    for w_, k_ in SUB_KIND.items():
+        kinds.setdefault(k_, []).append(w_)
+    return ["- 재비평 4(`dart_out/risk13/critic13_4.json` new_issues 2·3) 대응(정합성 보정 2026-10-08 KST, 괄호 규칙 문구는 `scripts/dart/fix13_B.py` 와 같은 글; "
+            "고친 곳은 fix_log.json 이유 「재비평4 …」):",
+            "  - 지적 2 — 핵심 이름 괄호 규칙 문구: 판정과 괄호 보충(8사 상태 CSV·회사 md — critic13_4 셈 84곳)은 그대로 두고 규칙 문구만 실제 꼴에 맞춤 — 머리 「상태 표기」 줄 "
+            "「핵심 이름은 지시서 낱말, " + RULE_OLD + "」 → 「핵심 이름은 지시서 낱말, " + BRACKET_RULE + "」, 위 재비평 소절 「잣대 — 상태 낱말 꼴」 줄 「" + RULE_OLD
+            + "」·재비평 3 소절 「확인」 줄 「" + RULE3_OLD + "」 → 「" + BRACKET_RULE + "」.",
+            "  - 확인: check 의 core_check 허용 목록 = 이 문구 — (지주 전체 기준)은 연결 측정 여부 뒤만, 하위 구분은 "
+            + "; ".join(f"{k_} {'·'.join(v_)}" for k_, v_ in kinds.items())
+            + "(`scripts/dart/fix13_B.py` 와 같은 SUB_OK·K45B_SUB). `python3 scripts/dart/fix13_A.py check` 가 문구의 예가 허용 목록 안인지, 허용 목록 낱말이 문구의 세 갈래(위험·대상·문구 종류)로 "
+            "다 나뉘는지, 머리 상태 표기 줄에 이 문구가 있는지, `scripts/dart/fix13_B.py` 의 문구와 한 글자도 같은지도 봄.",
+            "  - 지적 3(신한 22조 — 사업보고서 p.796 연결실체 규제자본 문장을 새 인용 S-34 로 옮겨 받은 글로 다시 판정)은 `scripts/dart/fix13_B.py` 몫 — 이 파일 바뀐 칸 0개."]
+
+
+def check_round4(cur, probs):
+    import ast
+    ex = re.search(r"예: (.+)\)$", BRACKET_RULE)
+    eg = re.findall(r"\(([^()]+)\)", ex.group(1)) if ex else []
+    if not eg or not set(eg) <= set(SUB_KIND):
+        probs.append(f"괄호 규칙 문구의 예 {eg} 가 허용 목록 밖")
+    if set(SUB_KIND) != SUB_OK | K45B_SUB:
+        probs.append("SUB_KIND 열쇠 ≠ core_check 허용 목록(SUB_OK ∪ K45B_SUB)")
+    if "(지주 전체 기준)" not in BRACKET_RULE or not all(k in BRACKET_RULE for k in set(SUB_KIND.values())):
+        probs.append("괄호 규칙 문구에 (지주 전체 기준) 또는 하위 구분 갈래가 빠짐")
+    tree = ast.parse(open(os.path.join(HERE, "fix13_B.py"), encoding="utf-8").read())
+    vb = [ast.literal_eval(n.value) for n in tree.body if isinstance(n, ast.Assign) and any(getattr(t, "id", "") == "BRACKET_RULE" for t in n.targets)]
+    if vb != [BRACKET_RULE]:
+        probs.append("fix13_B.py 의 BRACKET_RULE 이 이 스크립트와 다름")
+    for c, p in MD.items():
+        L = cur[p]
+        hd = [t for t in L if t.startswith("- 상태 표기(")]
+        if len(hd) != 1 or ("핵심 이름은 지시서 낱말, " + BRACKET_RULE) not in hd[0]:
+            probs.append(f"{CO[c]} 머리 상태 표기 줄에 괄호 규칙 문구 없음")
+        stale = [t for t in L if (RULE_OLD in t or RULE3_OLD in t) and "지적 2 — 핵심 이름 괄호 규칙 문구" not in t]
+        if stale:
+            probs.append(f"{CO[c]} 옛 괄호 규칙 문구가 남음: {stale[0][:60]}")
 
 
 # ───────────────────────────── 상태 CSV ─────────────────────────────
@@ -1387,7 +1444,10 @@ def fix():
         N3[c] = round3(d)
         sec7_intro(d)
         ti = d.idx(lambda i, ln: ln.startswith("- 조 태그("), "머리 조 태그 줄")
-        d.insert_after(ti, head_lines(d), "R1·R2·R5", "머리에 상태 표기·조 번호 칸·날짜 기준 안내")
+        hl = head_lines(d)
+        d.insert_after(ti, hl, "R1·R2·R5", "머리에 상태 표기·조 번호 칸·날짜 기준 안내")
+        LOG.append(dict(파일=d.path, 줄_기준사본=f"{ti + 1} 뒤에 끼운 머리 상태 표기 줄(재비평4)", 전=hl[0].replace(BRACKET_RULE, RULE_OLD), 후=hl[0], 규칙="R1",
+                        이유=R4X + " 지적 2 — 머리 상태 표기 줄의 핵심 이름 괄호 규칙 문구를 실제 꼴로(판정·괄호는 그대로)"))
         docs[c] = (d, nq, only)
     tocs = {c: fix_toc(c) for c in CO}
     PV = prev_states()
@@ -1471,6 +1531,7 @@ def check():
         if r["상태"] != "받은 글" and (r["찾은_방법"] in ("", "-") or r["빠진_핵심"] in ("", "-")):
             probs.append(f"상태 CSV {r['회사']} {r['모범규준_조']}조 빠진 핵심·찾은 방법 없음")
     probs += core_check(rows)
+    check_round4(cur, probs)
     print(f"fix13_A check: fix_log {len(log)}곳, 상태 CSV {len(rows)}행 — 문제 {len(probs)}건")
     for x in probs[:40]:
         print("  ✗", x)

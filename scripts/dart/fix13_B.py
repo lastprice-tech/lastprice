@@ -18,11 +18,17 @@
 재비평 3(dart_out/risk13/critic13_3.json new_issues 1·2) 대응(2026-10-08 KST, fix13_A.py 와 같은 잣대·낱말): STATUS 24조 (c) 있는 핵심·APPEND0(22조 괄호 뗌,
   잣대 (b)·자회사별 0장 가까운 글(판단) NEAR0B·NEAR0S), round3()(R3 공통 꼴 R3_3, 신한 6-1 표 위 계산 칸 뜻 note), section3()(전 = df16402 사본 prev_df16402/),
   core_check()(check — 상태 CSV 지시서_핵심·있는_핵심·빠진_핵심 낱말 기계 점검).
+재비평 4(dart_out/risk13/critic13_4.json new_issues 2·3) 대응(2026-10-08 KST): round4()·section4() — 지적 3 신한 22조: 사업보고서 p.796
+  「연결실체가 보유중인 트레이딩 포지션에 대한 바젤III 신표준방법 시장리스크 규제자본의 내역은 …」을 새 인용 S-34(ADD_BLOCKS — 원본 텍스트 줄을 글자 그대로
+  읽어 끼움)로 옮기고 8사 공통 잣대 (a)로 다시 판정(STATUS·APPEND0 의 신한 22조 — 재비평·재비평 3 소절의 전 → 후 기록은 STATUS_R3·APPEND0_R3 그대로),
+  0장·3장·6장 색인과 S-21 note 두 줄(SUB4_S·S21_NOTE_R4); 지적 2 핵심 이름 괄호 규칙 문구 BRACKET_RULE(fix13_A.py 와 같은 글 — 머리 상태 표기 줄·
+  재비평 소절·재비평 3 소절 확인 줄). check 는 새 블록을 원본 줄과 따로 대조하고 빼서 기준 사본 인용 줄과 대조(strip_added), 괄호 규칙 문구·허용 목록(check_round4).
 재생성 순서: verify13_g_kb_shinhan.py fix → verify13_g_hana_woori.py fix → fix13_B.py
              (verify 의 fix 는 커밋 8c118c8 사본에서 다시 만들어 이 보정을 지운다 — 결과는 496ddc4 의 파일과 같음).
 """
 from __future__ import annotations
 
+import copy
 import csv
 import io
 import json
@@ -237,6 +243,63 @@ NOTE_AFTER = {
     "W": [("W-26", "note: (정합성 보정 2026-10-08 KST — 8사 공통 잣대 (a)) 22조 상태 받은 글 — 「연결회사는 트레이딩 포지션에 대한 시장위험의 측정방법으로 표준방법과 내부모형(은행)을 이용」처럼 시장위험 측정 주체를 연결회사로 글자로 밝힘(iM [I-B3]·NH [N-B3] 와 같은 잣대). 24조는 「비트레이딩 부문의 금리리스크 관리는 은행의 경우, 2019년말부터 은행외 자회사의 경우 2021년부터」로 은행·은행외 자회사별이라 일부."),
           ("W-23", "note: (정합성 보정 2026-10-08 KST — 8사 공통 잣대) 22조 상태는 W-26 의 연결회사 측정 문장으로 받은 글 — 바로 위 note 의 ‘연결 기준 통합 측정 여부’는 연결 기준과 단순 합산을 가르는 글이 따로 나오지 않는다는 관찰로 그대로 둠.")],
 }
+
+# ───────────────────────────── 재비평 4(critic13_4 new_issues 2·3) 대응 — 값 ─────────────────────────────
+# 재비평·재비평 3 소절(section2·section3)의 전 → 후 기록은 그때 판정 그대로 두고(STATUS_R3·APPEND0_R3), 이번에 바뀐 칸은 section4 에 따로 적는다.
+STATUS_R3 = copy.deepcopy(STATUS)
+APPEND0_R3 = copy.deepcopy(APPEND0)
+R4X = "재비평4"
+# 지적 2 — 핵심 이름 괄호 규칙 문구(판정·괄호 84곳은 그대로, 문구만 실제 꼴로). fix13_A.py 의 BRACKET_RULE 과 한 글자도 같아야 함(check 가 봄).
+BRACKET_RULE = ("핵심 이름 뒤 괄호는 (지주 전체 기준)(잣대 (c))과 하위 구분(위험·대상·문구 종류 — 예: (평판위험)·(지주 차원)·(은행 자회사)·(경미 판정 기준)·"
+                "(내규 이름)·(원칙)·(철학))")
+HEAD_RULE_OLD = "보충은 핵심 이름 뒤 괄호(9-4 여덟 회사 같은 꼴)"
+HEAD_RULE_NEW = BRACKET_RULE + "(9-4 여덟 회사 같은 꼴)"
+SEC2_RULE_OLD = "보충은 핵심 이름 뒤 괄호"
+SEC3_RULE_OLD = "괄호 보충은 (지주 전체 기준)·위험 하위 구분만"
+# 허용 목록 낱말 → 문구의 갈래(위험·대상·문구 종류). check: 이 표의 열쇠 = SUB_OK ∪ K45B_SUB, 문구의 예 ⊂ 열쇠, 갈래 = 문구의 세 갈래.
+SUB_KIND = {"전략위험": "위험", "평판위험": "위험", "지주 차원": "대상", "은행 자회사": "대상",
+            "경미 판정 기준": "문구 종류", "경미한 자회사 측정 제외 문구": "문구 종류", "적용 배제 조문": "문구 종류",
+            "내규 이름": "문구 종류", "원칙": "문구 종류", "철학": "문구 종류"}
+# 지적 3 — 신한 22조: 사업보고서 p.796 표 머리 문장을 새 인용 S-34(원본 텍스트 줄 그대로)로 옮기고 8사 공통 잣대 (a)로 다시 판정.
+S34_TXT = os.path.join("dart_out", "text", "risk8", "사업보고서__신한금융지주__20260318000826.txt")
+S34_SENT = "연결실체가 보유중인 트레이딩 포지션에 대한 바젤III 신표준방법 시장리스크 규제자본의 내역은 다음과 같습니다"
+ADD_BLOCKS = {"S": [dict(
+    qid="S-34", after="S-21", path=S34_TXT, l1=71939, l2=71944, page=796,
+    first="연결실체가 보유중인 트레이딩 포지션에 대한 바젤III 신표준방법 시장리스크 규제자본의 내",
+    title="### S-34 (3) 시장위험 1-2) 관리방법 끝 — 연결실체 트레이딩 포지션의 바젤III 신표준방법 시장리스크 규제자본 내역(표 머리, 정합성 보정 때 추가)",
+    art="모범규준 조: 22조(시장위험)",
+    notes=[
+        "note: (정합성 보정 2026-10-08 KST — 재비평 4, 8사 공통 잣대 (a)) 22조 상태 받은 글 — 표 머리 문장 「" + S34_SENT + "」는 "
+        "시장위험(트레이딩 포지션 시장리스크 규제자본)의 측정 기준을 연결실체로 글자로 밝힌 연결실체 규제자본 한 벌(iM [I-B3]·NH [N-B3] 와 같은 꼴). "
+        "측정 방법(그룹 시장리스크측정시스템 표준방법·자회사 시스템)은 바로 위 S-21. 전에는 이 문장을 S-21 note 에만 조각으로 옮겨 연결 측정 여부를 가까운 글(판단)로 두었음.",
+        "note: [표 깨짐: 표의 행(GIRR ~ 합계)은 p.797 에 이어지나 텍스트 뽑기에서 다음 절 머리 「1-3) 신한은행」·「신한은행이 보유중인 트레이딩 포지션에 대한 바젤III 신표준방법 "
+        "시장리스크 규제자본의 내」 줄 뒤에 놓임 — 그 행 묶음 뒤에 신한은행 표 머리 「(단위: 백만원)」이 따로 나오므로 연결실체 표의 행으로 읽음(판단). "
+        "22조 판정에 쓰는 글은 표 머리 문장이라 수치 행은 옮기지 않음. 앞 문단(p.796 줄 71913–71937)은 신한은행·신한투자증권 측정 서술이라 넣지 않음]",
+    ])]}
+STATUS["S"][22] = (
+    GOT,
+    f"{KM} — 그룹 시장리스크측정시스템 표준방법·신한투자증권 역사적 시뮬레이션 VaR(S-21), 그룹 BIS 시장리스크 위험가중자산(S-31), 바젤III 신표준방법 시장리스크 규제자본(S-34)"
+    f" · {KC} — 연결실체 측정 문장·연결실체 시장리스크 규제자본 한 벌(S-34)",
+    "-",
+    ZA + "「" + S34_SENT + "」(S-34 — 측정 기준 연결실체, iM [I-B3]·NH [N-B3] 와 같은 꼴). "
+    "「VaR는 그룹 시장리스크측정시스템을 이용하여 표준방법 시장리스크량을 산출」(S-21 — 그룹 시스템)만으로는 잣대 (b)")
+APPEND0["S"][22] = (_A + "「" + S34_SENT + "」(S-34 — 측정 기준 연결실체, 재비평 4 에서 원문 인용으로 옮김)로 연결 측정 여부 있음; "
+                    "「VaR는 그룹 시장리스크측정시스템을 이용하여 표준방법 시장리스크량을 산출」(S-21)만으로는 잣대 (b).")
+# 2장 S-21 묶음 note 두 줄(수집 note 끝말·재비평 판정 근거 note)과 색인(0장·3장·6장) — (전, 후, 예상 횟수, 절 머리)
+S21_NOTE_R4 = ("note: (정합성 보정 2026-10-08 KST — 8사 공통 잣대, 재비평 4 고침) 위 p.796 조각 「연결실체가 보유중인 트레이딩 포지션에 대한 바젤III 신표준방법 시장리스크 규제자본」은 "
+               "바로 아래 S-34 에 원문 인용(코드 블록)으로 옮김 — 22조 상태 받은 글(잣대 (a), 판정 근거는 S-34 note). 이 묶음의 "
+               "「VaR는 그룹 시장리스크측정시스템을 이용하여 표준방법 시장리스크량을 산출」은 그룹 시스템 서술(잣대 (b)).")
+SUB4_S = [
+    ("— 그룹 시스템으로 연결 기준 산출.",
+     "— 그룹 시스템 산출(S-21 — 잣대 (b))·연결실체 기준 규제자본 표 머리(아래 S-34 에 원문 인용으로 옮김 — 잣대 (a))"
+     "(정합성 보정 2026-10-08 KST, 재비평 4 — 옛 끝말 ‘그룹 시스템으로 연결 기준 산출’을 판정 잣대대로 나눔).", 1, "## 2.", "2장 S-21 수집 note 끝말"),
+    ("사업 p.796 (S-21); ", "사업 p.796 (S-21); 사업 p.796 (S-34); ", 1, "## 0.", "0장 22조 행 문서·쪽 칸"),
+    ("S-21(사업 p.796), S-23(사업 p.798)", "S-21(사업 p.796), S-34(사업 p.796), S-23(사업 p.798)", 1, "## 3.", "3장 22조 관련 인용 목록"),
+    ("S-21(사업 p.796), S-23(사업 p.798)", "S-21(사업 p.796), S-34(사업 p.796), S-23(사업 p.798)", 1, "## 6.", "6장 9-4-2 21·22·24 행 관련 인용 칸"),
+    ("신용·시장위험의 연결 기준 측정/단순 합산 여부(",
+     "신용위험의 연결 기준 측정/단순 합산 여부(시장위험은 연결실체 규제자본 표 머리 S-34 로 받은 글 — 정합성 보정 2026-10-08 KST 재비평 4; ", 1, "## 6.",
+     "6장 9-4-2 21·22·24 행 추출 범위 칸"),
+]
 
 # ───────────────────────────── R3 「없음」 → 「추출 범위에 없음」(+찾은 방법) / 인용 글 관찰 ─────────────────────────────
 # (전, 후, 예상 횟수, 이유). 원문 인용 줄 밖에서만 바꿈.
@@ -952,14 +1015,14 @@ def round3(co, path, lines):
 
 
 def section3(co, pv3, r3s, n61):
-    st = STATUS[co]
+    st = STATUS_R3[co]          # 재비평 3(critic13_3) 때 판정 그대로 — 재비평 4 에서 바뀐 칸은 section4
     A = []
     a = A.append
     a("- 재비평 3(`dart_out/risk13/critic13_3.json` new_issues 1·2) 대응·R3 낱말 공통 꼴(정합성 보정 2026-10-08 KST, `scripts/dart/fix13_A.py` 와 같은 잣대·낱말; "
       "고친 곳은 fix_log.json 이유 「재비평3 …」, 바뀐 칸 전 = 커밋 df16402 의 상태 CSV `dart_out/raw/web13/fix13_B/prev_df16402/`):")
     a("  - 3장 note(그룹 A 도 같은 꼴로 더함): 조마다 「note: (정합성 보정 2026-10-08 KST) 있는 핵심: …. 빠진 핵심: …. 비고: ….」 — 상태 CSV 있는_핵심·빠진_핵심·비고와 같은 글. "
       "21·22·24조 잣대 (b)·자회사별 칸은 비고가 「가까운 글(판단) — 판정 원문 조각(…): 「…」(인용 번호)」.")
-    add = [x for x in (21, 22, 24) if APPEND0.get(co, {}).get(x) in (NEAR0B, NEAR0S)]
+    add = [x for x in (21, 22, 24) if APPEND0_R3.get(co, {}).get(x) in (NEAR0B, NEAR0S)]
     a("  - 0장 잣대 (b)·자회사별 칸 요지 끝에 가까운 글(판단) 표지: " + ("·".join(f"{x}조" for x in add) if add else "더한 칸 0개(이미 표지가 있거나 해당 칸 없음)")
       + ". KB·신한 22조 요지의 「연결 측정 여부(연결 기준 측정/단순 합산)」 → 「연결 측정 여부는 … 추출 범위에 없음(연결 기준 측정·지주 전체 단순 합산 어느 쪽 글도)」(괄호 보충은 (지주 전체 기준)만)." if co in ("K", "S") else
       "  - 0장 잣대 (b)·자회사별 칸 요지 끝에 가까운 글(판단) 표지: " + ("·".join(f"{x}조" for x in add) if add else "더한 칸 0개(이미 표지가 있거나 해당 칸 없음)") + ".")
@@ -986,8 +1049,165 @@ def section3(co, pv3, r3s, n61):
       "대조 스크립트가 다시 계산해 쓰는 칸, 대조 문제 분류 이름(「조 제목 없음 56」 꼴 — 검증 전 사본에서 대조 스크립트가 센 문제 분류 이름, 그 칸·표지가 검증 전 사본에 빠져 있었다는 뜻)"
       + ("; 이번에 고친 것: " + "; ".join(f"「{o_}」 → 「{n_}」" for o_, n_, _ in r3s) if r3s else "")
       + ("; 6-1 표 위에 ‘(모범규준에 없는 번호)’(스크립트 계산 칸) 뜻 note 를 더함(칸 글은 그대로)" if n61 else "") + ".")
-    a("  - 확인: `python3 scripts/dart/fix13_B.py check` 가 상태 CSV 44칸의 지시서_핵심·있는_핵심·빠진_핵심 낱말(지시서 낱말, 괄호 보충은 (지주 전체 기준)·위험 하위 구분만, 있는/빠진 이름 = 상태 글)도 기계 점검.")
+    a("  - 확인: `python3 scripts/dart/fix13_B.py check` 가 상태 CSV 44칸의 지시서_핵심·있는_핵심·빠진_핵심 낱말(지시서 낱말, " + BRACKET_RULE + ", 있는/빠진 이름 = 상태 글)도 기계 점검.")
     return A
+
+
+# ───────────────────────────── 재비평 4(critic13_4 new_issues 2·3) 대응 ─────────────────────────────
+PAGE_MARK = re.compile(r"^=== p\.(\d+) ===\s*$")
+
+
+def add_src(b):
+    """새 인용 블록 본문 = 원본 텍스트 줄 l1~l2(줄 끝 공백만 지움). 쪽·첫 줄·판정 문장이 기대와 다르면 멈춤."""
+    L = open(b["path"], encoding="utf-8").read().split("\n")
+    pg = 0
+    for t in L[:b["l1"]]:
+        m = PAGE_MARK.match(t.strip())
+        if m:
+            pg = int(m.group(1))
+    body = [t.rstrip() for t in L[b["l1"] - 1:b["l2"]]]
+    if pg != b["page"] or any(PAGE_MARK.match(t.strip()) for t in body):
+        die(f"{b['qid']}: 원본 줄 {b['l1']}–{b['l2']} 쪽이 p.{b['page']} 한 쪽이 아님(p.{pg})")
+    if body[0] != b["first"] or re.sub(r"\s+", "", S34_SENT) not in re.sub(r"\s+", "", "".join(body)):
+        die(f"{b['qid']}: 원본 첫 줄·판정 문장이 기대와 다름")
+    return body
+
+
+def add_cite(b, lines):
+    """새 인용 출처 줄 — 같은 문서 인용(b['after'])의 출처 줄에서 문서명·접수번호·원본 수집을 그대로 가져옴."""
+    h = [i for i, ln in enumerate(lines) if qid_of_head(ln.t) == b["after"]]
+    if len(h) != 1:
+        die(f"{b['after']} 머리 {len(h)}")
+    c = next(ln.t for ln in lines[h[0] + 1:] if ln.t.startswith("[") and " · 쪽 p." in ln.t)
+    m = re.match(r"^\[(?P<doc>.+?) · (?P<loc>접수번호 \d{14}) · 쪽 p\.\d+(?:–p\.\d+)? · 줄 \d+–\d+ · `(?P<path>[^`]+)` · 원본 수집 (?P<f>[^·]+?) · 인용 ", c)
+    if not m or os.path.normpath(m.group("path")) != os.path.normpath(b["path"]):
+        die(f"{b['after']} 출처 줄 꼴·파일이 기대와 다름")
+    return (f"[{m.group('doc')} · {m.group('loc')} · 쪽 p.{b['page']} · 줄 {b['l1']}–{b['l2']} · `{m.group('path')}` · 원본 수집 {m.group('f')} · "
+            f"인용 {FIXD}(KST) (정합성 보정 때 추가)]")
+
+
+def add_block_lines(b, cite):
+    return ([b["title"], "", b["art"], "", cite, "", "```text"], add_src(b), ["```", ""] + b["notes"] + [""])
+
+
+def round4(co, path, lines):
+    """지적 2(머리 상태 표기 줄 괄호 규칙 문구 — 네 회사) · 지적 3(신한 22조 — 새 인용 S-34·색인·note)."""
+    r4 = dict(cite=None, notes=[], subs=[])
+    sub_count(path, lines, HEAD_RULE_OLD, HEAD_RULE_NEW, 1, "R1", R4X + " 지적 2 — 머리 상태 표기 줄의 핵심 이름 괄호 규칙 문구를 실제 꼴로(판정·괄호는 그대로)",
+              pred=lambda ln, sec: sec is None and ln.t.startswith("- 상태 표기("))
+    for b in ADD_BLOCKS.get(co, []):
+        why = R4X + f" 지적 3 — 22조 연결 측정 여부 판정 문장(p.{b['page']})을 새 인용 {b['qid']}(원본 텍스트 줄 그대로)로 옮김"
+        cite = add_cite(b, lines)
+        head, body, tail = add_block_lines(b, cite)
+        h = [i for i, ln in enumerate(lines) if qid_of_head(ln.t) == b["after"]][0]
+        e = next(i for i in range(h + 1, len(lines)) if not lines[i].q and (lines[i].t.startswith("### ") or lines[i].t.startswith("## ")))
+        if lines[e - 1].t != "":
+            die(f"{path}: {b['after']} 묶음 끝 꼴")
+        new = [Ln(t) for t in head[:-1]] + [Ln(head[-1], None, True)] + [Ln(t, None, True) for t in body] + [Ln(tail[0], None, True)] + [Ln(t) for t in tail[1:]]
+        for off, nl in enumerate(new):
+            lines.insert(e + off, nl)
+            if nl.t:
+                log(path, nl, "", nl.t, "R1+R4", why)
+        r4["cite"] = cite
+        # S-21 판정 근거 note(재비평 때 더함) — 새 판정에 맞게
+        old = dict(NOTE_AFTER.get(co, [])).get(b["after"])
+        hit = [ln for ln in lines if ln.t == old and not ln.q]
+        if len(hit) != 1:
+            die(f"{path}: {b['after']} 판정 근거 note {len(hit)}줄")
+        hit[0].t = S21_NOTE_R4
+        log(path, hit[0], old, S21_NOTE_R4, "R1", R4X + " 지적 3 — S-21 판정 근거 note 를 새 판정(22조 받은 글, S-34)에 맞게")
+        r4["notes"].append((old, S21_NOTE_R4))
+        for old_, new_, n_, secp, lab in SUB4_S:
+            sub_count(path, lines, old_, new_, n_, "R1", R4X + f" 지적 3 — {lab}(22조 새 인용 S-34·새 판정)",
+                      pred=lambda ln, sec, secp=secp: bool(sec) and sec.startswith(secp))
+            r4["subs"].append((old_, new_, lab))
+    return r4
+
+
+def section4(co, r4):
+    A = []
+    a = A.append
+    a("- 재비평 4(`dart_out/risk13/critic13_4.json` new_issues 2·3) 대응(정합성 보정 2026-10-08 KST, 괄호 규칙 문구는 `scripts/dart/fix13_A.py` 와 같은 글; "
+      "고친 곳은 fix_log.json 이유 「재비평4 …」, 바뀐 칸 전 = 재비평 3 까지의 판정(위 두 소절의 후)):")
+    if co in ADD_BLOCKS:
+        for b in ADD_BLOCKS[co]:
+            a(f"  - 지적 3 — 22조 연결 측정 여부: 사업보고서 p.{b['page']} 표 머리 문장을 새 인용 {b['qid']}(2장, {b['after']} 묶음 바로 뒤)로 옮김 — 출처 줄 {r4['cite']} → "
+              f"「{b['art']}」 → 코드 블록(원본 텍스트 줄 {b['l1']}–{b['l2']}, 쪽 표지 「=== p.{b['page']} ===」 안, 글자 그대로·줄 끝 공백만 지움 — 문장과 표 머리까지). "
+              "인용 번호는 이 파일 체계(S-01~S-33, b 붙은 번호)를 이어 붙임. 4장 대조판 행: 이 파일 대조판은 연차보고서 인용(추가공시)뿐이고 사업보고서 인용은 대조판 행이 없어("
+              f"{b['after']} 와 같음) 더하지 않음. 표 행(p.797)이 다음 절 머리 뒤에 놓인 자리는 블록 아래 [표 깨짐] note.")
+        a("  - 다시 판정(8사 공통 잣대 (a) — 한 문장이 그 위험의 측정 주체·기준을 연결실체·연결기업·연결회사·연결기준으로 글자로 밝힘): 「" + S34_SENT + "」 → 22조 받은 글. "
+          "0장 판정 칸·3장 상태 줄·6장 상태 칸·상태 CSV B 신한 22조 행이 같이 바뀜(전 → 후):")
+        o_, n_ = STATUS_R3[co][22], STATUS[co][22]
+        for nm, i in (("상태", 0), ("있는_핵심", 1), ("빠진_핵심", 2), ("비고", 3)):
+            if o_[i] != n_[i]:
+                a(f"    - {nm}: 「{o_[i]}」 → 「{n_[i]}」")
+        a(f"    - 0장 22조 요지 덧붙임: 「{APPEND0_R3[co][22].strip()}」 → 「{APPEND0[co][22].strip()}」")
+        for ob, nb in r4["notes"]:
+            a(f"    - 2장 S-21 판정 근거 note: 「{ob}」 → 「{nb}」")
+        for ob, nb, lab in r4["subs"]:
+            a(f"    - {lab}: 「{ob}」 → 「{nb}」")
+        a("    - 3장 22조 note(있는 핵심·빠진 핵심·비고)는 상태 CSV 와 같은 글로 다시 만듦. 옛 판정 글(「연결 측정 여부는 원문 인용으로는 추출 범위에 없음」 — 0장·3장·S-21 note·상태 CSV 비고)은 이 판정으로 모두 바뀜.")
+    else:
+        a("  - 지적 3(신한 22조)은 신한 파일만 — 이 파일 바뀐 칸 0개.")
+    a("  - 지적 2 — 핵심 이름 괄호 규칙 문구: 판정과 괄호 보충(8사 상태 CSV·회사 md — critic13_4 셈 84곳)은 그대로 두고 규칙 문구만 실제 꼴에 맞춤 — 머리 「상태 표기」 줄 "
+      "「" + HEAD_RULE_OLD + "」 → 「" + HEAD_RULE_NEW + "」, 위 재비평 소절 「잣대 — 상태 낱말 꼴」 줄 「" + SEC2_RULE_OLD + "」·재비평 3 소절 「확인」 줄 「"
+      + SEC3_RULE_OLD + "」 → 「" + BRACKET_RULE + "」.")
+    kinds = {}
+    for w_, k_ in SUB_KIND.items():
+        kinds.setdefault(k_, []).append(w_)
+    a("  - 확인: check 의 core_check 허용 목록 = 이 문구 — (지주 전체 기준)은 연결 측정 여부 뒤만, 하위 구분은 "
+      + "; ".join(f"{k_} {'·'.join(v_)}" for k_, v_ in kinds.items())
+      + "(`scripts/dart/fix13_A.py` 와 같은 SUB_OK·K45B_SUB). `python3 scripts/dart/fix13_B.py check` 가 문구의 예가 허용 목록 안인지, 허용 목록 낱말이 문구의 세 갈래(위험·대상·문구 종류)로 "
+      "다 나뉘는지, 머리 상태 표기 줄에 이 문구가 있는지, `scripts/dart/fix13_A.py` 의 문구와 한 글자도 같은지도 봄.")
+    if co in ADD_BLOCKS:
+        a("  - 원문 인용 줄 대조(check): 기준 사본(496ddc4)의 인용 줄과는 이번에 더한 S-34 블록만 빼고 대조하고, S-34 블록(출처 줄·울타리·본문)은 원본 텍스트 줄과 따로 대조. "
+          "`scripts/dart/verify13_g_kb_shinhan.py`(인자 없이)도 이 블록을 원본과 대조(출처 줄 꼬리 ‘(정합성 보정 때 추가)’는 ‘(검증 때 추가)’처럼 꼬리로 읽음) — 그 스크립트 고칠 것 0곳.")
+    return A
+
+
+def check_round4(cur, probs):
+    """재비평 4 — 괄호 규칙 문구(머리 줄·허용 목록·fix13_A 와 같은 글), 새 인용 블록(원본 줄 그대로·출처 줄)."""
+    import ast
+    ex = re.search(r"예: (.+)\)$", BRACKET_RULE)
+    eg = re.findall(r"\(([^()]+)\)", ex.group(1)) if ex else []
+    if not eg or not set(eg) <= set(SUB_KIND):
+        probs.append(f"괄호 규칙 문구의 예 {eg} 가 허용 목록 밖")
+    if set(SUB_KIND) != SUB_OK | K45B_SUB:
+        probs.append("SUB_KIND 열쇠 ≠ core_check 허용 목록(SUB_OK ∪ K45B_SUB)")
+    if "(지주 전체 기준)" not in BRACKET_RULE or not all(k in BRACKET_RULE for k in set(SUB_KIND.values())):
+        probs.append("괄호 규칙 문구에 (지주 전체 기준) 또는 하위 구분 갈래가 빠짐")
+    tree = ast.parse(open(os.path.join(HERE, "fix13_A.py"), encoding="utf-8").read())
+    va = [ast.literal_eval(n.value) for n in tree.body if isinstance(n, ast.Assign) and any(getattr(t, "id", "") == "BRACKET_RULE" for t in n.targets)]
+    if va != [BRACKET_RULE]:
+        probs.append("fix13_A.py 의 BRACKET_RULE 이 이 스크립트와 다름")
+    for co in CO:
+        L = cur[MD[co]]
+        hd = [t for t in L if t.startswith("- 상태 표기(")]
+        if len(hd) != 1 or HEAD_RULE_NEW not in hd[0]:
+            probs.append(f"{CO[co]} 머리 상태 표기 줄에 괄호 규칙 문구 없음")
+        stale = [t for t in L if (SEC2_RULE_OLD in t or SEC3_RULE_OLD in t) and "지적 2 — 핵심 이름 괄호 규칙 문구" not in t]
+        if stale:
+            probs.append(f"{CO[co]} 옛 괄호 규칙 문구가 남음: {stale[0][:60]}")
+
+
+def strip_added(co, L, probs):
+    """새 인용 블록을 원본 줄과 대조하고, 기준 사본 대조용으로 그 묶음을 뺀 줄 목록을 돌려줌."""
+    out = list(L)
+    for b in ADD_BLOCKS.get(co, []):
+        h = [i for i, t in enumerate(out) if t.startswith(f"### {b['qid']} ")]
+        if len(h) != 1:
+            probs.append(f"{CO[co]} 새 인용 {b['qid']} 머리 {len(h)}줄")
+            continue
+        lns = load_lines("\n".join(out))
+        e = next((i for i in range(h[0] + 1, len(out)) if not lns[i].q and (out[i].startswith("### ") or out[i].startswith("## "))), len(out))
+        seg = lns[h[0]:e]
+        head, body, tail = add_block_lines(b, add_cite(b, [Ln(t) for t in out]))
+        if [x.t for x in seg if x.q] != [head[-1]] + body + [tail[0]]:
+            probs.append(f"{CO[co]} 새 인용 {b['qid']} 블록이 원본 텍스트 줄과 다름")
+        if [x.t for x in seg if not x.q][:6] != head[:-1] or seg[-1].t != "":
+            probs.append(f"{CO[co]} 새 인용 {b['qid']} 머리·조 줄·출처 줄 꼴이 다름")
+        del out[h[0]:e]
+    return out
 
 
 # 지시서 낱말 기계 점검 — fix13_A.py core_check 와 같은 규칙
@@ -1096,7 +1316,7 @@ def prev_states():
 
 
 def section2(co, r2s, nnotes, pv):
-    st = STATUS[co]
+    st = STATUS_R3[co]          # 재비평(critic13_2) 때 판정 그대로 — 재비평 4 에서 바뀐 칸은 section4
     A = []
     a = A.append
     a("- 재비평(`dart_out/risk13/critic13_2.json` new_issues 1~7) 대응 — 8개사 잣대 통일(정합성 보정 2026-10-08 KST, `scripts/dart/fix13_A.py` 와 같은 잣대·낱말; "
@@ -1107,7 +1327,7 @@ def section2(co, r2s, nnotes, pv):
       "(c) 일부 자회사만의 합산 → 일부(…, 연결 측정 여부(지주 전체 기준) 추출 범위에 없음). 판정을 가른 원문 조각은 상태 CSV 비고와 3장 note 에 「」 글자 그대로.")
     a("  - 잣대 — 상태 낱말 꼴: 일부(가까운 글만, <빠진 핵심> 추출 범위에 없음)(전 「일부(가까운 글 있음, …)」) / 일부(<있는 핵심> 있음, <빠진 핵심> 추출 범위에 없음). "
       f"핵심 이름은 지시서 낱말 — 3조 「{K3}」, 4·5조 「{K45}」(일부일 때는 괄호 안을 보충 — 철학·원칙·내규 이름), 17조 「{K17}」, 21·22·24조 「{KM}」「{KC}」, 27조 「관리 체제」「측정이나 평가 수단」, "
-      "34조 「총괄」「사전 검토」「정기 점검·보고」, 53조 「구성」「전환 요건」, 55조 「지표 목록」「발령 단계」; 보충은 핵심 이름 뒤 괄호. 상태 CSV 지시서_핵심·있는_핵심·빠진_핵심 칸도 이 이름.")
+      "34조 「총괄」「사전 검토」「정기 점검·보고」, 53조 「구성」「전환 요건」, 55조 「지표 목록」「발령 단계」; " + BRACKET_RULE + ". 상태 CSV 지시서_핵심·있는_핵심·빠진_핵심 칸도 이 이름.")
     a("  - 바뀐 상태 칸(전 → 후 — 0장 판정 칸·3장 상태 줄·6장 상태 칸·상태 CSV 가 같이 바뀜):")
     k = 0
     for x in REQ_ARTS:
@@ -1257,7 +1477,9 @@ def fix():
             r2s["r3"].append((old, new, cnt))
         nn = notes_after(co, path, lines)
         r3s, n61 = round3(co, path, lines)
-        sec = section(co, tagrep, nblocks, r5s, r3done, wn, VERIFY[co]) + section2(co, r2s, nn, PV) + section3(co, PV3, r3s, n61)
+        r4 = round4(co, path, lines)
+        sec = (section(co, tagrep, nblocks, r5s, r3done, wn, VERIFY[co]) + section2(co, r2s, nn, PV) + section3(co, PV3, r3s, n61)
+               + section4(co, r4))
         while lines and lines[-1].t == "" and not lines[-1].q:     # 원본 끝 빈 줄 → 소절 뒤로
             lines.pop()
         for t in sec + [""]:
@@ -1335,12 +1557,13 @@ def check():
         if not ln or ln > len(L) or L[ln - 1] != e["after"]:
             if e["after"] not in L:
                 probs.append(f"{e['file']}:{ln} 「후」 없음: {e['after'][:80]}")
-    # 원문 인용 줄
+    # 원문 인용 줄 — 재비평 4 에서 더한 블록(ADD_BLOCKS)은 원본 텍스트 줄과 따로 대조하고 빼서 기준 사본과 대조
     for co in CO:
         pre_q = quote_lines(open(os.path.join(PRE, MD[co]), encoding="utf-8").read())
-        now_q = quote_lines("\n".join(cur[MD[co]]))
+        now_q = quote_lines("\n".join(strip_added(co, cur[MD[co]], probs)))
         if pre_q != now_q:
             probs.append(f"{MD[co]}: 원문 인용 줄이 기준 사본과 다름({len(pre_q)} / {len(now_q)})")
+    check_round4(cur, probs)
     # 상태 CSV ↔ md
     with open(STATE_CSV, encoding="utf-8-sig") as f:
         rows = list(csv.DictReader(f))

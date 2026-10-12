@@ -24,6 +24,11 @@
   으로 md 4개·9-5 CSV 「공개일(지시서 9-5)」 칸의 우리 글을 한 줄 안에서만 바꿈(줄을 끼우거나 지우지 않음; 처음 보정이 끼운 note 는 sub_ins 로 제자리).
   남은 「없음」류는 c3_keep 이 갈래(④)에 넣고 갈래 밖이 있으면 멈춤. 맨 끝 소절 끝 「#### 최종 비평(critic13_3) 대응」에 전·후 표.
   verify13_raas.py 최소 수정: fixd_before 가 「후」→「전」 사슬을 끝까지 따라감(지시서 항목 대조 「끝에 낼 것」 행이 두 번 바뀜).
+최종 비평(critic13_4) 대응(2026-10-08 KST, fix_log 「차례」=「최종 비평(critic13_4) 대응」, 줄을 끼우거나 지우지 않음 — 맨 끝 소절만 더함):
+  지적 1 — 9-3·9-5 조 번호 칸 「조 번호 해당 없음(판단: …)」(9-3 550·1010줄·CSV 조 칸 11행, 9-5 4458줄)은 글 그대로(R2 표지), 두 md 의 R3 공통 꼴 줄
+  (critic13_3 대응 소절)에 「조 번호 칸의 「조 번호 해당 없음(판단: …)」은 R2 표지(조 대응 판단 결과)이고, 본문 문장으로 조 대응을 적을 때만 ③ 꼴」을 덧붙임(c3_common).
+  지적 4 — 9-4_모범규준_원문.md 10장 「끝 표」·「끝 조 번호」 행 상태 「있음」 → 「해당 없음(산출 형식 항목 — 자료 수집 항목 아님)」, 받은 글 칸 「있음 — …」(그룹 B 꼴).
+  각 md(9-3·9-5·9-4 모범규준) 맨 끝에 「#### 최종 비평(critic13_4) 대응」 소절. check 가 이 셋을 봄(check_c4).
 웹 요청·API 키·OC 를 쓰지 않는다(로컬 파일만). 내려받은 HTML 을 읽으므로 `python3 -I` 로 실행.
 """
 from __future__ import annotations
@@ -979,7 +984,7 @@ def record_c3(d, extra=()):
            "- 무엇: `dart_out/risk13/critic13_3.json` new_issues 2 — 전문을 가진 글과 맞댄 우리 글의 「없음」이 9-4 회사 md(「나오지 않음/적히지 않음」으로 고침)와 다른 잣대로 남음. "
            "메인이 정한 공통 꼴로 이 파일의 우리 글을 전수로 다시 보고, 한 줄 안 낱말만 바꿈(줄을 끼우거나 지우지 않음 — 줄 번호 그대로; 처음 보정이 끼운 note 의 낱말도 제자리에서). "
            "원문 인용(코드 블록·> 줄)은 그대로(`fix13_D.py check`). 판정·상태는 바꾸지 않음.",
-           "- " + C3_COMMON,
+           "- " + c3_common(d.key),
            "- 고친 곳 %d건(아래 표 — 전·후 전문은 `dart_out/raw/web13/fix13_D/fix_log.json` 의 「차례」=「%s」 항목)." % (len(mine), C3)] + list(extra) + [
            "- 그대로 둔 것(④ — 우리 글에 남은 「없음」류 전수, 보정 뒤 줄 번호; 「」·`` 안 글·코드 블록·「고친 곳(전·후)」 지난 기록·이 소절은 셈하지 않음 — "
            "`fix13_D.py` 가 줄마다 갈래에 넣고, 갈래 밖이 남으면 멈춤):"]
@@ -1002,12 +1007,80 @@ C3_OTHER = {
 }
 
 
+# ───────────────────────────── 최종 비평(critic13_4) 대응 — R2 표지 ↔ R3 ③ 뜻, 10장 산출 형식 행 상태 ─────────────────────────────
+C4 = "최종 비평(critic13_4) 대응"
+C4_SRC = "critic13_4 new_issues"
+C4_AT = "③ 조 대응 판단 → 「대응하는 … 조를 찾지 못함(판단: 근거)」 "
+C4_CELL = {   # 이 파일의 「조 번호 칸」(R2 표지가 적히는 곳)
+    "R": "절마다 자료 묶음 머리 「- 모범규준 조(판단, …):」 줄·5-1 표 조 칸·CSV `dart_out/risk13/9-3_RAAS_낱말문장.csv` 「모범규준_조(판단·2016.8.1판제목)」 칸",
+    "E": "4장 색인 표 「모범규준 조」 칸·CSV `dart_out/risk13/9-5_검사결과_목록.csv` 「모범규준_조제목(2016.8.1판)」 칸",
+}
+C4_BAD = {"R": 2, "E": 1}     # critic13_4 지적 1 이 든 본문 줄(9-3 550·1010줄, 9-5 4458줄) — 글은 그대로
+C4_BAD_RE = re.compile(r"조 번호 해당 없음\(판단: [^)]*(?:겹치지 않음|바로 닿지 않음)")
+C4_NA = "해당 없음(산출 형식 항목 — 자료 수집 항목 아님)"   # 그룹 B 회사 md 지시서 항목 대조 표 「끝 표」·「끝 조 번호」 행과 같은 꼴
+C4_M_ROWS = [("끝 표", "9장 표"), ("끝 조 번호", "2장·7장 인용 머리 「모범규준 조:」, 3장 표, 9장·10장 표")]
+
+
+def c3_common(key):
+    """R3 공통 꼴 줄 — 9-3·9-5 는 ③ 뒤에 R2 표지 뜻을 덧붙임(critic13_4 지적 1: 조 번호 칸 「조 번호 해당 없음(판단: …)」 ↔ ③)."""
+    if key not in C4_CELL:
+        return C3_COMMON
+    if C3_COMMON.count(C4_AT) != 1:
+        raise SystemExit("[fix13_D] R3 공통 꼴 줄에서 ③ 자리를 찾지 못함")
+    add = ("— 단, 조 번호 칸(%s)의 「조 번호 해당 없음(판단: …)」은 R2 표지(조 대응 판단 결과)이고, 본문 문장으로 조 대응을 적을 때만 ③ 꼴"
+           "(%s 1 대응 덧붙임 — 그 칸 글은 그대로) " % (C4_CELL[key], C4_SRC))
+    return C3_COMMON.replace(C4_AT, C4_AT + add)
+
+
+def fix_c4_M(d):
+    """10장 지시서 항목별 대조 「끝 표」·「끝 조 번호」 행: 상태 「있음」 → 「해당 없음(산출 형식 항목 …)」, 받은 글 칸 「있음 — …」(그룹 B 꼴)."""
+    for key, got in C4_M_ROWS:
+        d.sub("| %s | 있음 |" % got, "| 있음 — %s | %s |" % (got, C4_NA), "R1",
+              "%s 4(R1 — 그 밖의 「받은 것」 표 상태 세 단계): 산출 형식 행 상태 칸을 그룹 B 회사 md(9-4_KB금융지주.md 등 「끝 표」·「끝 조 번호」 행)와 같은 꼴로 — "
+              "「있음」은 받은 글 칸 앞머리로 옮김" % C4_SRC, pred=lambda i, ln, k=key: ln.startswith("| %s | " % k))
+
+
+def record_c4(d, common_at):
+    """맨 끝 「#### 최종 비평(critic13_4) 대응」 — 앞 줄 번호는 그대로(이 소절만 맨 끝에 더함)."""
+    pos = d.pos()
+    out = ["", "#### %s(2026-10-08 KST)" % C4, ""]
+    if d.key in C4_CELL:
+        bad = [pos[i] for i, ln in enumerate(d.lines) if i not in d.code and C4_BAD_RE.search(ln)]
+        if len(bad) != C4_BAD[d.key]:
+            raise SystemExit("[fix13_D %s] critic13_4 지적 1 의 조 번호 칸 줄 %d개(기대 %d)" % (d.key, len(bad), C4_BAD[d.key]))
+        csvn = sum(1 for r in csv.DictReader(io.StringIO(open(CSV_R if d.key == "R" else CSV_E, encoding="utf-8-sig").read()))
+                   if C4_BAD_RE.search(r[R_CSV_COL if d.key == "R" else "모범규준_조제목(2016.8.1판)"]))
+        out += ["- 무엇: `dart_out/risk13/critic13_4.json` new_issues 1(낮음(꼴)) — 조 번호 칸의 「조 번호 해당 없음(판단: … 겹치지 않음/한 조에 바로 닿지 않음)」(%s줄%s)이 "
+                "위 소절 R3 공통 꼴 ③ 「대응하는 … 조를 찾지 못함(판단: 근거)」과 어긋나 보인다는 지적." % ("·".join(map(str, bad)), " — 같은 글 CSV 조 칸 %d행" % csvn if csvn else ""),
+                "- 고친 것: 그 칸 글은 그대로 — 조 번호 칸 표지(R2 「조 번호 해당 없음(판단: 이유)」 꼴 — 조를 맞대 본 뒤의 조 대응 판단 결과)이지 R3 본문 문장이 아님. "
+                "위 소절 R3 공통 꼴 줄(%d줄)의 ③ 뒤에 「— 단, 조 번호 칸(…)의 「조 번호 해당 없음(판단: …)」은 R2 표지(조 대응 판단 결과)이고, 본문 문장으로 조 대응을 적을 때만 ③ 꼴」을 "
+                "덧붙여 두 규칙이 어긋나지 않게 함(그 줄 안 낱말만). 판정·조 번호·상태는 바꾸지 않음." % common_at]
+    else:
+        rows = [x for x in LOG if x["파일"] == d.path and x.get("차례") == C4]
+        out += ["- 무엇: `dart_out/risk13/critic13_4.json` new_issues 4(낮음(꼴)) — 10장 지시서 항목별 대조 표 「끝 표」·「끝 조 번호」 행 상태 칸 「있음」이 R1 세 단계"
+                "(받은 글/일부/추출 범위에 없음) 밖.",
+                "- 고친 것(%s줄): 상태 칸 전 「있음」 → 후 「%s」, 받은 글 칸 전 「9장 표」·「2장·7장 인용 머리 …」 → 후 「있음 — 9장 표」·「있음 — 2장·7장 인용 머리 …」"
+                "(그룹 B 회사 md 9-4_KB금융지주.md·9-4_신한금융지주.md·9-4_하나금융지주.md·9-4_우리금융지주.md 의 같은 행 꼴 — 산출 형식 항목은 자료 수집 항목이 아니어서 "
+                "세 단계를 매기지 않고 「있음」은 받은 글 칸에 둠). `verify13_mobeom.py` 10장 대조(「있음」이 행에 있어야 함)는 그대로 맞음 — 스크립트 수정 없음."
+                % ("·".join(str(pos[x["줄_기준사본"] - 1]) for x in rows), C4_NA)]
+    out.append("- 줄을 끼우거나 지우지 않음(한 줄 안 낱말만; 이 소절만 맨 끝에 더함 — 앞 줄 번호 그대로). 원문 인용(코드 블록·> 줄)은 그대로(`fix13_D.py check`). "
+               "전·후 전문은 `dart_out/raw/web13/fix13_D/fix_log.json` 의 「차례」=「%s」 항목." % C4)
+    return out
+
+
 # ───────────────────────────── 실행 ─────────────────────────────
 def append_record(d, rec_fn, *args, c3_extra=()):
     last = max(i for i, ln in enumerate(d.lines) if ln.strip())
+    if d.key in C4_CELL:   # critic13_4 지적 1 — R3 공통 꼴 줄의 덧붙임(끼운 소절 안 한 줄) 전·후 기록(아래 끼운 소절 항목보다 앞 — check 는 같은 자리 마지막 항목 = 소절 전체를 봄)
+        LOG.append(dict(파일=d.path, 줄_기준사본=f"{last + 1} 뒤에 끼움", 전="- " + C3_COMMON, 후="- " + c3_common(d.key), 규칙="R2·R3",
+                        이유=C4_SRC + " 1(R3 ③ ↔ R2 조 번호 칸 표지): 이 파일 R3 공통 꼴 줄에 조 번호 칸 「조 번호 해당 없음(판단: …)」의 뜻을 덧붙임 — 그 칸 글은 그대로",
+                        차례=C4, 조각=[C4_AT, c3_common(d.key)[c3_common(d.key).index(C4_AT):c3_common(d.key).index("④")]], 끼운줄고침=True))
     n = d.nlog() + 1
     rec = rec_fn(d, n, *args) + record_c3(d, c3_extra)
-    d.insert_after(last, rec, "R1~R5", "검증 기록 끝에 정합성 보정 소절(끝에 최종 비평(critic13_3) 대응 소절)")
+    if d.key in ("R", "E", "M"):
+        k = rec.index("- " + c3_common(d.key))
+        rec += record_c4(d, d.pos()[last] + 1 + k)
+    d.insert_after(last, rec, "R1~R5", "검증 기록 끝에 정합성 보정 소절(끝에 최종 비평(critic13_3)·(critic13_4) 대응 소절)")
 
 
 def fix():
@@ -1025,6 +1098,8 @@ def fix():
     fix_c3_E(dE)
     fix_c3_R(dR)
     fix_c3_M(dM)
+    BATCH[0] = C4                       # 최종 비평(critic13_4) 대응 — 한 줄 안 낱말만(9-3·9-5 는 R3 공통 꼴 줄 덧붙임 — append_record)
+    fix_c4_M(dM)
     BATCH[0] = None
     append_record(dP, record_P, c3_extra=[C3_OTHER["P"]])
     append_record(dE, record_E, S, kinds, c3_extra=[C3_OTHER["E"],
@@ -1120,6 +1195,27 @@ def check_crit2(cur, rows_e, rows_r):
     return out
 
 
+def check_c4(cur):
+    """최종 비평(critic13_4) 대응이 지금 파일에 있는지: 9-3·9-5 R3 공통 꼴 줄의 R2 표지 뜻, 9-4 모범규준 10장 산출 형식 두 행의 상태 칸, 소절 머리."""
+    out = []
+    for k in ("R", "E", "M"):
+        L = cur[MD[k]]
+        if "#### %s(2026-10-08 KST)" % C4 not in L:
+            out.append(f"{os.path.basename(MD[k])}: 「#### {C4}」 소절 없음")
+        if k in C4_CELL and ("- " + c3_common(k)) not in L:
+            out.append(f"{os.path.basename(MD[k])}: R3 공통 꼴 줄에 R2 표지 뜻(조 번호 칸 「조 번호 해당 없음(판단: …)」) 덧붙임 없음")
+    L = cur[MD["M"]]
+    try:
+        a = L.index("## 10. 지시서 항목별 대조(검증 2026-10-08 KST 추가)")
+    except ValueError:
+        return out + ["9-4_모범규준_원문.md: 10장 머리 없음"]
+    for key, got in C4_M_ROWS:
+        r = [ln for ln in L[a:] if ln.startswith("| %s | " % key)]
+        if len(r) != 1 or not r[0].endswith("| 있음 — %s | %s |" % (got, C4_NA)):
+            out.append(f"9-4_모범규준_원문.md 10장 「{key}」 행 상태 칸이 「{C4_NA}」 아님")
+    return out
+
+
 def check():
     probs = []
     if not os.path.exists(LOGF):
@@ -1169,6 +1265,7 @@ def check():
     if len(rows) != 235 or any(not r.get(PUB_COL, "").startswith("추출 범위에 없음(") for r in rows):
         probs.append(f"CSV {len(rows)}행 · 「{PUB_COL}」 칸이 모두 「추출 범위에 없음(…)」 아님")
     probs += check_crit2(cur, rows, list(csv.DictReader(io.StringIO(csv_texts[CSV_R]))))
+    probs += check_c4(cur)
     print(f"fix13_D check: fix_log {len(log)}곳 · md 4개 · CSV {len(rows)}행 — 문제 {len(probs)}건")
     for x in probs[:40]:
         print("  ✗", x)
