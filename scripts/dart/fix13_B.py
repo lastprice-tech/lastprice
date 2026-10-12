@@ -1156,7 +1156,7 @@ def section4(co, r4):
     for w_, k_ in SUB_KIND.items():
         kinds.setdefault(k_, []).append(w_)
     a("  - 확인: check 의 core_check 허용 목록 = 이 문구 — (지주 전체 기준)은 연결 측정 여부 뒤만, 하위 구분은 "
-      + "; ".join(f"{k_} {'·'.join(v_)}" for k_, v_ in kinds.items())
+      + " / ".join(f"{k_} — {'·'.join(v_)}" for k_, v_ in kinds.items())
       + "(`scripts/dart/fix13_A.py` 와 같은 SUB_OK·K45B_SUB). `python3 scripts/dart/fix13_B.py check` 가 문구의 예가 허용 목록 안인지, 허용 목록 낱말이 문구의 세 갈래(위험·대상·문구 종류)로 "
       "다 나뉘는지, 머리 상태 표기 줄에 이 문구가 있는지, `scripts/dart/fix13_A.py` 의 문구와 한 글자도 같은지도 봄.")
     if co in ADD_BLOCKS:

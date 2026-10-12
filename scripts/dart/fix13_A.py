@@ -1248,7 +1248,7 @@ def record4(d):
             "「핵심 이름은 지시서 낱말, " + RULE_OLD + "」 → 「핵심 이름은 지시서 낱말, " + BRACKET_RULE + "」, 위 재비평 소절 「잣대 — 상태 낱말 꼴」 줄 「" + RULE_OLD
             + "」·재비평 3 소절 「확인」 줄 「" + RULE3_OLD + "」 → 「" + BRACKET_RULE + "」.",
             "  - 확인: check 의 core_check 허용 목록 = 이 문구 — (지주 전체 기준)은 연결 측정 여부 뒤만, 하위 구분은 "
-            + "; ".join(f"{k_} {'·'.join(v_)}" for k_, v_ in kinds.items())
+            + " / ".join(f"{k_} — {'·'.join(v_)}" for k_, v_ in kinds.items())
             + "(`scripts/dart/fix13_B.py` 와 같은 SUB_OK·K45B_SUB). `python3 scripts/dart/fix13_A.py check` 가 문구의 예가 허용 목록 안인지, 허용 목록 낱말이 문구의 세 갈래(위험·대상·문구 종류)로 "
             "다 나뉘는지, 머리 상태 표기 줄에 이 문구가 있는지, `scripts/dart/fix13_B.py` 의 문구와 한 글자도 같은지도 봄.",
             "  - 지적 3(신한 22조 — 사업보고서 p.796 연결실체 규제자본 문장을 새 인용 S-34 로 옮겨 받은 글로 다시 판정)은 `scripts/dart/fix13_B.py` 몫 — 이 파일 바뀐 칸 0개."]
