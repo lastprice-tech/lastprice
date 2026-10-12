@@ -1,6 +1,6 @@
 verify13_raas — 13차 9-3 RAAS 산출물 검증(2026-10-07, scripts/dart/verify13_raas.py)
 대상: handoff/13차_산출물/9-3_RAAS.md · dart_out/risk13/9-3_RAAS_낱말문장.csv
-  sha256 1796a6be64086773decb61470fb09063efaf47789005abb9531a38da1c081b74  handoff/13차_산출물/9-3_RAAS.md
+  sha256 e187c60c0391916bed9612fd771d95e4883026b82de2d75658f26e62a2e39676  handoff/13차_산출물/9-3_RAAS.md
   sha256 2239d0e01ec5afa92dcf20ce08bd318a9e813341c46696f84c05f512e7e0b293  dart_out/risk13/9-3_RAAS_낱말문장.csv
 
 == 1. 원본 사슬(hwp → hwp2md → 전체 md) · md 머리 값

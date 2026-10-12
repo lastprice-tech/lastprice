@@ -12,15 +12,15 @@
   python3 -I scripts/dart/verify13_raas.py             exit 0 — 문제 0 → dart_out/risk13/verify13_raas.txt
   python3 scripts/dart/verify13_web.py                 exit 0 — 문제 0 → dart_out/risk13/verify13_web.txt
   python3 scripts/dart/fix13_A.py check                exit 0 — fix13_A check: fix_log 653곳, 상태 CSV 44행 — 문제 0건
-  python3 scripts/dart/fix13_B.py check                exit 0 — check: fix_log 1096개·상태 CSV 44행·md 4개 — 문제 0개
+  python3 scripts/dart/fix13_B.py check                exit 0 — check: fix_log 1098개·상태 CSV 44행·md 4개 — 문제 0개
   python3 -I scripts/dart/fix13_C.py check             exit 0 — fix_log 291건 · 줄 「후」 181곳 · 원문 인용 줄 2221줄 대조 · 문제 0건
   python3 -I scripts/dart/fix13_D.py check             exit 0 — fix13_D check: fix_log 707곳 · md 4개 · CSV 235행 — 문제 0건
   스크립트 14개
 
 ## ② API 키·OC 값 문자열(값은 찍지 않음)
-  DART_API_KEY(환경변수 에서 읽음): 파일 97개에 없음
-  LAW_OC(.env 에서 읽음): 파일 97개에 없음
-  가리지 않은 「OC=…」·「crtfc_key=…」 꼴 0곳(파일 97개)
+  DART_API_KEY(환경변수 에서 읽음): 파일 99개에 없음
+  LAW_OC(.env 에서 읽음): 파일 99개에 없음
+  가리지 않은 「OC=…」·「crtfc_key=…」 꼴 0곳(파일 99개)
 
 ## ③ handoff/13차_산출물 에 PDF·HWP·HWPX 없음
   파일 18개 — PDF·HWP·HWPX 0개
@@ -45,7 +45,7 @@
 
 ## ⑥ 00_목록.md·00_종합표.csv 의 원문 인용(「」·코드 블록·> 줄)이 13차 md 에 글자 그대로
   참고: 상태 CSV 에서 그대로 옮긴 칸(찾은_방법 등)의 「」 글 3개는 md 에는 같은 글자로 없고 상태 CSV 에 있음(문서 이름 줄임 등 — 원문 인용 아님)
-  「」 글 4712개(겹침 빼고 450개)·인용 줄 0개 대조 — 문제 0
+  「」 글 4720개(겹침 빼고 453개)·인용 줄 0개 대조 — 문제 0
 
 ## ⑦ R4 블록 머리 묶음(13차 md 인용 블록마다 출처 줄) · R3 00_목록.md 우리 글 「없음」
   인용 블록 662개 — 바로 앞 484 · 블록 머리 묶음 178 · 블록 첫 줄 뒤 0 · 묶음 꼴 밖 0 · 출처 줄 못 찾음 0 (00_목록 머리 R4 줄은 ⑤ 생성 칸 대조)

@@ -33,7 +33,8 @@
  ⑦ 재비평 4(critic13_4) — 「재비평 3」 소절 = 커밋 47ceddd 판의 그 소절(그때 기록 고정 — dart_out/raw/web13/compare94/pre_47ceddd/,
     없으면 git show), 「재비평 4」 소절이 끝 소절이고 그 소절의 입력·행렬·조번호대조 바뀐 수 = 47ceddd 사본과 다시 견준 수;
     머리 「상태 표기」 줄에 핵심 이름 괄호 규칙 문구(fix13_A.py·fix13_B.py 의 BRACKET_RULE — ast 로 읽음, 두 글이 같아야 함);
-    머리 작성일 줄의 「스크립트 실행 <시각>」은 1차 실행 하나뿐(재생성 시각을 md 에 쓰지 않음 — 멱등).
+    머리 작성일 줄의 「스크립트 실행 <시각>」은 1차 실행 하나뿐(재생성 시각을 md 에 쓰지 않음 — 멱등);
+    (R5 — critic13_5) 작성일 줄 「마지막 재생성 <날짜>(KST)」 = compare94_parse.json 「생성」의 KST 날짜 = R4_DATE(재비평 4 소절 머리 날짜).
 웹 요청·API 키·OC 를 쓰지 않는다(로컬 파일만).
 """
 from __future__ import annotations
@@ -865,7 +866,8 @@ def check_words(R, M, MDS):
 # ───────────────────────────── ⑦ 재비평 4(critic13_4)
 BASE4 = "47ceddd"
 H3 = "#### 재비평 3(critic13_3) 대응 — 다시 만듦(2026-10-08 KST)"
-H4 = "#### 재비평 4(critic13_4) 대응 — 다시 만듦(2026-10-08 KST)"
+R4_DATE = "2026-10-12"   # 재비평 4 대응 다시 만듦의 실제 날짜(KST, R5 — 커밋 f95df2a~95f35a3) — web13_compare.py R4_DATE 와 같아야 함
+H4 = f"#### 재비평 4(critic13_4) 대응 — 다시 만듦({R4_DATE} KST)"
 FIX_AB = ["scripts/dart/fix13_A.py", "scripts/dart/fix13_B.py"]
 
 
@@ -948,6 +950,20 @@ def check_round4(R, M):
     nt = len(re.findall(r"스크립트 실행 20\d\d-\d\d-\d\dT", head))
     if nt != 1:
         R.bad(f"작성일 줄의 「스크립트 실행 <시각>」 {nt}개 — 1차 실행 하나여야 함(재생성 시각은 compare94_parse.json)")
+    # (R5 — critic13_5 new_issues 1) 작성일 줄 「마지막 재생성 <날짜>(KST)」 = 그 줄이 가리킨 compare94_parse.json 「생성」의 KST 날짜
+    import json
+    m = re.search(r"마지막 재생성 (\d{4}-\d\d-\d\d)\(KST\)", head)
+    try:
+        with open(os.path.join(ROOT, RAW_DIR, "compare94_parse.json"), encoding="utf-8") as f:
+            gen = str(json.load(f).get("생성", ""))
+    except (OSError, ValueError):
+        gen = ""
+    if not m:
+        R.bad("작성일 줄에 「마지막 재생성 <날짜>(KST)」 라벨 없음")
+    elif not gen.endswith("+09:00") or gen[:10] != m.group(1) or m.group(1) != R4_DATE:
+        R.bad(f"작성일 줄 「마지막 재생성 {m.group(1)}(KST)」 ≠ compare94_parse.json 「생성」 {gen or '-'}(KST 날짜) 또는 R4_DATE {R4_DATE}")
+    else:
+        R.p(f"  작성일 줄 「마지막 재생성 {m.group(1)}(KST)」 = compare94_parse.json 「생성」 날짜(R5)")
 
 
 # ───────────────────────────── main

@@ -52,6 +52,8 @@ TODAY = "2026-10-07"
 # 13차 정합성 보정(scripts/dart/fix13_B.py, R5 날짜 라벨) 뒤의 꼴도 받음 — 절 제목 「## 검증 기록(2026-10-08 KST)」, 검증 때 더한 인용의 인용일 2026-10-08.
 FIX13_VREC = "## 검증 기록(2026-10-08 KST)"
 FIX13_QD = "2026-10-08"
+# 재비평 4(critic13_4) 보정(fix13_B.py — 실제 KST 2026-10-12)에서 더한 인용(신한 S-34)의 인용일.
+FIX13_QD4 = "2026-10-12"
 TXT8 = os.path.join("dart_out", "text", "risk8")
 TXT9 = os.path.join("dart_out", "text", "risk9")
 OUTD = os.path.join("handoff", "13차_산출물")
@@ -331,7 +333,7 @@ def check_quote(co, b, probs, detail):
         probs.append((where, f"URL/접수번호 다름: {m.group('loc')} / 메타 {sorted(d['locs_ok'])}"))
     if m.group("fetched") != d["fetched"][:10]:
         probs.append((where, f"원본 수집일 다름: {m.group('fetched')} / 메타 {d['fetched']}"))
-    if m.group("qd") not in (TODAY, FIX13_QD):
+    if m.group("qd") not in (TODAY, FIX13_QD, FIX13_QD4):
         probs.append((where, f"인용일 다름: {m.group('qd')}"))
     t = T(key)
     l1, l2 = int(m.group("l1")), int(m.group("l2"))
