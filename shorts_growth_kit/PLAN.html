@@ -73,7 +73,7 @@ li{margin:5px 0}
 <div class="wrap">
 <p class="eyebrow">History-Engineering Shorts · Growth Playbook</p>
 <h1>역사공학 성장 플레이북</h1>
-<p class="meta">2026-09-23 · 리서치 렌즈 8개 + 적대적 비평 1회 통과분만 수록 · 구현 코드: <span class="k">shorts_growth_kit/</span></p>
+<p class="meta">2026-09-23 초판 · 2026-10-14 §9 롱폼 제작 추가 · 리서치 렌즈 20개 + 적대적 비평 5회 통과분만 수록 · 구현 코드: <span class="k">shorts_growth_kit/</span></p>
 <p class="lead">벤치마크는 문법의 하한선일 뿐이다. 조회수는 <b>아이템 삼각측량 → 자기 채널 계측 → 훅 엔지니어링</b>의 서열로 자라며, 이 셋은 전부 코드가 된다. 이 문서는 그 규칙과 임계값, 그리고 이미 구현된 모듈의 지도를 담는다.</p>
 
 <div class="statrow">
@@ -246,7 +246,92 @@ li{margin:5px 0}
 <tr><td><span class="k">growth/script_lint.py</span></td><td>12슬롯 v2 린터(워드버짓·재훅·펀치·계약·제목 40자)</td><td>script.json 스키마 동봉</td></tr>
 <tr><td><span class="k">growth/db.py</span> · <span class="k">analytics.py</span></td><td>episodes/snapshots 스키마 · 리텐션 100pt→슬롯 귀속 · 커브 분류기</td><td>API 수집은 토큰 주입식, 오프라인 JSON도 지원</td></tr>
 <tr><td><span class="k">growth/config.py</span></td><td>모든 임계값 + 출처 주석 + 세이프존 상수</td><td>20편 후 자기 분위수로 교체</td></tr>
+<tr><td><span class="k">LONGFORM_PRODUCTION.md</span></td><td>§9 롱폼 제작 상세 원문(체크리스트·규칙 카드·프로토콜·QC)</td><td>2026-10-14</td></tr>
 </table></div>
+
+<h2>9. 롱폼 제작 — 전략·규격·업로드·썸네일·반복 개선·QC</h2>
+<p class="meta">2026-10-14 추가 · 리서치 2회(쇼츠/롱폼 전략 · AI 롱폼 제작) + 적대적 비평 통과분 · 상세 원문: <span class="k">shorts_growth_kit/LONGFORM_PRODUCTION.md</span></p>
+
+<h3>9.1 전략 — 쇼츠는 그대로, 롱폼은 승자 소재로만 격주</h3>
+<div class="thesis">
+<p><b>채택안.</b> 쇼츠 주 4~5편 유지(유일한 발견 엔진) + 쇼츠에서 검증된 물건 클러스터로만 롱폼(16:9, 5~7분) 격주 1편 + 첫 롱폼은 3주차에 "기준선 측정용"으로 1편. 게이트는 구독자 수가 아니라 <b>후속 쇼츠로 클러스터가 검증됐는가</b>(18편 engaged 중앙값 M 대비 3×M 이상 2편)와 <b>롱폼의 30일 노출·CTR·잔존</b>이다.</p>
+<p><b>"구독자 N명 후 롱폼"은 어떤 N에서도 기각.</b> 구독자는 배분과 무관(쇼츠 뷰 74% 비구독자), 구독 피드가 만드는 롱폼 뷰는 구독자 수의 ~10%(600명이면 ~60뷰), 구독자 수가 의미를 갖는 두 지점(500 = 팬펀딩·Hype, 1,000 = YPP)은 둘 다 롱폼이 이미 있어야 가치가 있다. <span class="conf hi">강</span></p>
+<p><b>롱폼 #1 &lt;100뷰는 실패가 아니라 판정 불가.</b> 신규 채널 첫 롱폼 30일 중앙값 180뷰(vidIQ, 13.7만 채널). 노출 &lt;1,000이면 테스트 미개시 = 주제/시드 문제. 삭제·재업로드 금지, 공개로 두고 링크만 다음 롱폼으로. <span class="conf hi">강</span></p>
+</div>
+<div class="tblwrap"><table>
+<tr><th>YPP 경로</th><th>2027-01-31까지</th><th>2027-02-01부터 (신규)</th><th>가입 후 유지 조건</th></tr>
+<tr><td>롱폼 시청시간</td><td>1,000구독 + 4,000h/12개월</td><td>1,000구독 + <b>8,000h/365일</b></td><td><b>없음</b> — 롱폼 광고 수익은 바닥선 없이 계속, 365일 롤링이라 누적형</td></tr>
+<tr><td>쇼츠 조회</td><td>1,000구독 + 1,000만/90일</td><td>1,000구독 + <b>2,000만/90일</b></td><td>쇼츠 광고 수익은 <b>매달</b> 직전 90일 qualified 1,000만 이상인 달에만 지급(기존 파트너 포함)</td></tr>
+<tr><td>팬펀딩 단계</td><td colspan="2">500구독 + 3,000h 또는 300만/90일 — <b>변경 없음</b></td><td>Creator Partnerships(공식 파트너 페이지 확인)·Hype(롱폼 7일 내 전용)</td></tr>
+</table></div>
+<p>산정은 "신청 시점 기준 직전 N일"(트레일링), 캘린더 분기 아님. 넘는 날 바로 신청 — 공식: <i>"it doesn't matter if your subscriber or watch hour counts drop below the threshold while waiting for review."</i> 8,000h = 평균 시청 3~5분 기준 연 10만~16만 롱폼 조회(격주 26편이면 편당 4~6천) — 쇼츠 2,000만/90일보다 훨씬 닿는 거리. 그 시계는 첫 롱폼부터 돈다.</p>
+
+<h3>9.2 규격 (불변 — 실험은 이 위에서만)</h3>
+<div class="tblwrap"><table>
+<tr><th>항목</th><th>규격</th><th>근거</th></tr>
+<tr><td>포맷·길이</td><td><b>16:9 필수</b>, YPP 전 5~7분(8분 미드롤 이점 0)</td><td>세로 ≤3분은 쇼츠로 분류(공식) → 시청시간 0</td></tr>
+<tr><td>구조</td><td>12슬롯 × 5챕터 질문 체인, 챕터 끝 열린 고리, 마스터 답 75~85%</td><td>파이프라인 그대로, 원가 $15~25</td></tr>
+<tr><td>오프닝</td><td>0~10초 쇼츠 질문 재제시 + 이행 약속(로고·인트로 없음), <b>20초 안에 Q1 답</b>, 지연은 Q2~Q5에만</td><td>쇼츠에서 온 시청자는 Q1 답을 이미 앎 → 숨기면 이탈</td></tr>
+<tr><td>AI 비주얼</td><td>≤40%(출발값), AI 클립 12~20초당 1개, 같은 유형 ≤15초 연속, <b>이중 레지스터</b>: 포토리얼은 규모·전경 샷만(AI 샷의 1/3 이하), 가설 복원은 청사진·판화 룩</td><td>피로(방향 근거)·정책(공식 "inconsistent AI clips")·원가(클립=97%)·라벨(비사실적은 설명란 라벨만)</td></tr>
+<tr><td>금지</td><td>컴필레이션, 롱폼→쇼츠 컷다운, AI 페르소나, 8분 패딩, 프리미어</td><td>재사용·비진정성 정책, 반복 콘텐츠</td></tr>
+</table></div>
+
+<h3>9.3 업로드 전 체크리스트</h3>
+<div class="grid2">
+<div class="card"><h4>정책·공개 <span class="conf hi">강</span></h4>실존 유적의 사실적 AI 재현 숏이 <b>1개라도 있으면 영상 단위 'Altered or synthetic = Yes'</b>(쇼츠 포함, <span class="k">containsSyntheticMedia</span> 기본값). 도면·지도·그레인·AI 대본·AI 썸네일·자동 자막은 대상 아님. 2026-05-27부터 미공개 포토리얼은 <b>자동 라벨</b> — 라벨 자체는 추천·수익 영향 없음(공식), 반복 미공개가 위험. 직전 2편 대비 AI 자산 재사용 0(해시), 도면 모티프·썸네일 원형 상이, 편당 고유 도면 3+, 출처 5+(학술·1차 2+). 10만+ 쇼츠 2편에 공개·출처·Related video 소급(YPP 심사 표본).</div>
+<div class="card"><h4>화면 표기·설명란</h4>skia 태그: 사실적 AI 숏 <span class="k">RECONSTRUCTION</span>(좌하단 첫 2~3초), 실사 <span class="k">PHOTO · 기관 · 연도</span>, 도면 <span class="k">Diagram: based on [출처]</span>. 설명란 고정: 1행 질문+유적명 → 챕터 5(각 ≥10초, 마스터 답 미노출) → Sources(저자·연도·페이지) → Image credits(PD/CC0/CC BY 우선) → How this was made → Corrections. <b>엔티티 일관성 자동 검증</b>: 제목 고유명이 0~10초 내레이션·설명 1행·챕터명·태그에 같은 철자 — 미충족 시 업로드 차단.</div>
+<div class="card"><h4>음악·사운드</h4>오디오 보관함 또는 화이트리스트 라이브러리만. <b>Suno 등 AI 음악·Creator Music 수익쉐어 트랙은 YPP 전 금지</b>. 저작권 클레임 영상은 <b>자동 더빙 부적격</b>(공식) → 공개 게이트 = Studio Checks 'No issues found'. loudnorm 2패스 −14 LUFS ±1, TP ≤ −1 dBTP.</div>
+<div class="card"><h4>자막·더빙·메타</h4>영어 SRT 생성·업로드(더빙·Ask YouTube 입력 품질), 번인 자막 금지. 자동 더빙 'Publish manually', 한국어는 본인 QA(오역 3곳+면 미게시, 편집 불가). 유료 MLA는 YPP 후 + 비영어 시청 10%+. 제목 핵심부 ≤50자·고유명 앞 35자, 해시태그 2~3, 썸네일 3840×2160·변형 전부 ≥1280×720(하나라도 미만이면 전부 480p — 공식). 예약 공개(프리미어는 A/B 불가).</div>
+</div>
+
+<h3>9.4 썸네일·제목 규칙 카드</h3>
+<div class="tblwrap"><table>
+<tr><th>규칙</th><th>내용</th></tr>
+<tr><td>주 이미지</td><td><b>실사(PD/CC0 &gt; CC BY) 또는 코드 도면만.</b> 실존 유적을 사진처럼 그린 AI 이미지 금지 — AI 썸네일 CTR 근거 없음, 플레이어 라벨과 불일치, Kurzgesagt 자동감지 오탐(2026-07, 확인) 시 소형 채널 구제 경로 없음</td></tr>
+<tr><td>원형 3종</td><td><b>T1</b> X-ray reveal(실사 일부를 벗겨 단면, 텍스트 0) / <b>T2</b> Defect callout(서클·화살표 1 + 1~3단어) / <b>T3</b> Then·Now 분할. 인물 실루엣은 규모감용만</td></tr>
+<tr><td>텍스트·색</td><td>0~3단어 ≤18자, 제목과 겹치는 명사 금지. 2색 고정(도면 시안 + 경고 오렌지), 로고 없음, 배경 탈채도</td></tr>
+<tr><td>자동 검사</td><td>세이프존(우하단 22%×16%, 하단 6%, 우상단 12%×18%), 텍스트 높이 ≥9%, 대비 ≥4.5:1, 피사체 ≥50%, 그레이스케일 분리. 168×94 축소본 3초 판독은 사람</td></tr>
+<tr><td>약속-이행</td><td><b>첫 프레임 = 썸네일과 같은 사진·구도</b>(pHash), 콜아웃은 20초 안 Q1 답 장면에 재등장. 공식 Intro(30초 잔존)가 이 일치를 측정</td></tr>
+<tr><td>제목</td><td><span class="k">[유적 고유명] + [긴장 술어]</span>. 질문형·길이·괄호 효과 ≈0(대규모 데이터) — 차이는 엔티티 구체성. 쇼츠 원문은 0~10초 내레이션으로, 제목은 엔티티형 재작성</td></tr>
+<tr><td>A/B</td><td>공식: 3안·≤2주·승자=시청시간·Inconclusive→첫 안·수정 시 자동 중단. 예상 노출 &lt;5,000이면 <b>2안만</b>, 원형이 다른 것끼리. CTR 8→10.4% 검출에 안당 ≈2,300 노출 → 노출 수백에선 "학습 불가"로 기록. 다이내믹 썸네일·자동 리프레시는 첫 10편 D0~D28 끔</td></tr>
+<tr><td>수동 교체</td><td>72시간 판단 금지(공식). 조건 3개 동시: 누적 노출 ≥1,000 AND Browse CTR이 채널 기준선 70% 미만 AND Intro가 평균 이상. 썸네일 먼저, 한 번에 1개, 간격 7일/신규 노출 1,000, 영상당 최대 2회. CTR 정상+노출 정체 = 교체 금지(주제·리텐션 점검)</td></tr>
+</table></div>
+<p><b>정정.</b> 첫 롱폼의 "CTR 8.7%/461노출"은 패키징 통과 증거가 아니다 — 클릭 ~40, 95% CI 6.1~11.3%, 노출이 채널 페이지·구독자·쇼츠 링크 등 따뜻한 소스일 가능성. Reach → 트래픽 소스별 표로 쪼개 Browse+Suggested 노출이 50% 미만이면 판정 보류.</p>
+
+<h3>9.5 첫 10편 반복 개선 프로토콜</h3>
+<p>이 규모(편당 100~300뷰)에서는 Key moments(조회 100+에서만)·Typical retention(비슷한 길이 10편 비교)이 거의 안 돌고 30초 잔존 CI가 ±10~15%p → <b>변수를 검증 경로별로 나눈다.</b></p>
+<div class="tblwrap"><table>
+<tr><th>게이트</th><th>판정</th><th>실패 시 레버</th></tr>
+<tr><td>G0 데이터 충분성</td><td>조회 &lt;100 또는 노출 &lt;1,000 → 결론 보류</td><td>기본값 불변</td></tr>
+<tr><td>G1 노출</td><td>D28 노출 &lt;1,000 = 분배 미개시</td><td>주제·수요(부모 쇼츠 상위 25%)</td></tr>
+<tr><td>G2 소스별 CTR</td><td>Browse CTR 2~10% 안, 채널 중앙값 −2%p 이내</td><td>썸네일·제목(A/B 또는 교체)</td></tr>
+<tr><td>G3 Intro 30초</td><td>잠정 하한 50%, 목표 60% → 3편 후 자체 중앙값으로 교체</td><td>0~20초 구성</td></tr>
+<tr><td>G4 챕터별 조건부 낙차</td><td>분당 낙차 d_c &gt; 챕터 2~5 중앙값×1.5 / 고리 직후 6초 잔존비 &lt;0.95 2편 연속</td><td>챕터 길이·비주얼 밀도·고리 문장</td></tr>
+<tr><td>G5 완주·페이오프</td><td>외부 APV 수치는 미검증 → <span class="k">relativeRetentionPerformance</span>(공식, 비슷한 길이 대비)로 대체</td><td>마스터 답 직전 빌드업</td></tr>
+<tr><td>G6 구독/1천뷰</td><td>—</td><td>엔드스크린·연결</td></tr>
+</table></div>
+<ul>
+<li><b>인프라(이번 주):</b> Reporting API 잡 <span class="k">channel_reach_combined_a1</span>(2026-01-15 추가, 소스별 노출·CTR — Targeted Queries엔 노출 없음)·<span class="k">channel_basic_a3</span> 등록(이후부터만 쌓임). 렌더러가 <span class="k">manifest.json</span>(segment start/end/type{ai_photoreal, ai_illustration, photo, map, diagram}/chapter/slot/is_open_loop/is_master_answer/camera_move/tts_speed/sfx_events/thumb_match_t) 출력. 리텐션 쿼리 <span class="k">elapsedVideoTimeRatio × audienceWatchRatio, relativeRetentionPerformance, startedWatching, stoppedWatching</span> + <span class="k">subscribedStatus</span> 분리(video 단일 ID 필수, 소스 필터 불가, 지연 48~72h).</li>
+<li><b>경로 A — 영상 내부 교차설계(가장 강력):</b> 챕터 2 = AI 클립 12초당 1, 챕터 4 = 20초당 1, 다음 편 맞바꿈. manifest와 100포인트 <span class="k">stoppedWatching</span>을 조인해 "AI 클립 시작점 이탈률 ÷ 실사·도면 시작점 이탈률". 10편 합산 비 ≥1.2 & CI 하한 &gt;1이면 AI 상한 하향. 편당 500뷰 전엔 관찰만. 같은 영상 안이라 시청자·패키징·트래픽이 통제 — 이 파이프라인만 할 수 있는 실험.</li>
+<li><b>경로 B — 네이티브 A/B:</b> 썸네일·제목(지금), 0~20초 3컷(영상 컷 A/B, 2026-09-23 발표 'coming soon') → 오프닝 20초만 바꾼 변형 렌더 기능 준비. <b>경로 C — 쇼츠 테스트베드:</b> 훅 문장은 쇼츠 3편(첫 2초만 다르게) Stayed to watch로 선별. <b>경로 D — 영상 간 ABAB:</b> 챕터 길이 하나만, 5 vs 7분은 편당 1,000뷰 이후.</li>
+<li><b>표본:</b> 30초 잔존 50→60% 그룹당 ≈390명, CTR 6→9% ≈1,200노출 → 10편으로 영상 간 변수는 1~2개가 한계. 판정: 짝지은 4쌍 중 3쌍 같은 방향 AND 합산 차이 &gt; 최소효과일 때만 기본값 변경.</li>
+<li><b>편당 포스트모템 5블록:</b> ①제작 변수 ②패키징(원형·A/B 결과·교체 로그) ③지표 D7/D28/D90(소스별 노출·CTR, engagedViews, AVD, relRetention, Intro, 챕터 낙차, dip/spike+세그먼트 유형, 구독/비구독 리텐션, 사실오류 댓글) ④첫 실패 게이트+가설 ⑤다음 편 변경 1개. 판독 D3 확인만 / D7 G1·G2 / D28 G3~G6 / D90 롱테일.</li>
+<li><b>비교 원칙:</b> 같은 나이끼리, 직전 5편 중앙값 대비, 최고 영상 대비 금지. 2026-08-24 이후 views만 부풀고 CTR·AVD·리텐션은 engaged 기준 불변(공식). 기대치(vidIQ): 10번째 편 30일 중앙값 272, 첫 10편 최고작 1,948 — <b>10편 묶음으로 평가</b>.</li>
+</ul>
+
+<h3>9.6 품질 QC — [자동] vs [사람]</h3>
+<div class="grid2">
+<div class="card"><h4>고증 — 가장 먼저 도입 <span class="conf hi">강</span></h4>[사람] F1 팩트 앵커 시트: AI 장면마다 참조 1 + 검증 속성 3(개수·재질·비례). 생성 AI는 수십 년 묵은 학설·시대착오를 기본값으로 그림(Magnani &amp; Clindaniel 2026). [자동] F2 <b>치수·하중 수치 오버레이는 실사·실측 도면·F1 통과 스틸 위에만</b> — 치수선이 AI 비례 오류를 확대. [사람] F3 시대착오 블랙리스트(철근·안전장비·강철 와이어·유리창·시대에 없는 기중기·현대 복원 상태·인물 크기; 프롬프트 negative에도).</div>
+<div class="card"><h4>비주얼·일관성 [자동]</h4>세트 바이블 YAML → 프롬프트; 단일 LUT 후 AI 샷 간 색온도 ±300K·휘도 ±8%("세계 레벨 통일, 진실 레벨 구분"); 카메라 무브 6종, 연속 동일 무브 금지, 단일 무브 ≤30%(피로 1순위 = 매 클립 같은 푸시인); i2v 앞 2.5~3.5초만, 직선 기울기 변화 ≥1.5° 탈락(Hough); AI 인물 ≤프레임 15%·얼굴/손 클로즈업 금지; 골든아워 챕터당 ≤1; 도면 문법 고정(하중=주황·치수=시안·해칭 45°).</div>
+<div class="card"><h4>내레이션 (ElevenLabs 2026-10 공식) [자동]</h4><span class="k">eleven_v4</span>(1만 자, speaker preservation) 슬롯별 생성 + <span class="k">previous_request_ids</span> 체인(2h 내; v3는 스티칭 미지원), 불안정 시 multilingual_v2. 쉼은 ffmpeg 무음(슬롯 0.35~0.5s, 고리 직전 0.9~1.2s, 마스터 답 직전 1.5s). 숫자·단위 낭독형 전처리, IPA 사전. 속도 0.95~1.06, 감정 태그 챕터당 ≤2. 문장 리듬 린터(길이 SD ≥4, 단문 ≥1, 12단어+ 3연속 금지). [사람] 감정 구간만 2~3테이크 선택. 슬롯별 라우드니스 ±1.5 LU.</div>
+<div class="card"><h4>페이싱·사운드 [자동]</h4>AI 클립 사이 시각 이벤트 4~8초; 도면 단독 20~40초 구간 챕터당 ≤1·3~5초마다 새 요소·챕터 첫 15초/고리 직전 금지; 챕터 전환 블루프린트 누적기 1.5~2.5초 + 시그니처 사운드. −14 LUFS ±1, TP ≤ −1, BGM 덕킹 12~18 dB(챕터 경계에서만 교체), SFX 4초당 ≤1. "5~7초 전환 = +20%" 류 수치는 벤더 문구 — 근거로 쓰지 않음. [사람] 공개 후 72h 내 사실오류 지적 2건+ → 24h 내 정정 고정 댓글 + Corrections.</div>
+</div>
+
+<h3>9.7 불확실성 2개 (4~8주 자기 데이터로 확인)</h3>
+<ul>
+<li><b>첫 롱폼이 461에서 멈춘 원인</b>(주제/썸네일/오프닝 셋 다 생존) → 소스별 노출 표 추출 후, 롱폼 #2·#3을 10만+ 쇼츠 주제로 같은 원형(T1) 유지한 채 내서 D7 노출 ≥1,000이면 주제 문제, 미달+Browse CTR&lt;중앙값 70%면 썸네일, CTR 정상+Intro&lt;50%면 오프닝. 3편 묶음 판정 전 규격 불변.</li>
+<li><b>AI 재현 클립이 실제로 이탈을 만드는지 / 자동 감지로 추천이 억제되는지</b> → 리텐션은 경로 A 10편 합산; 억제는 공개 Yes로 올린 영상에 자동 라벨 알림이 추가로 오는지, CTR·Intro 정상인데 Browse만 0인 패턴이 3편+ 반복되는지 → 반복 시 포토리얼 1/3→0 편 2개 ABAB.</li>
+</ul>
 
 <div class="footer">
 근거 등급은 리서치 원문 기준: <b>강</b>=공식 발표·RCT·학술 / <b>중</b>=업계 실측 교차 확인 / <b>약</b>=벤더 집계. 모든 외부 임계값은 초기값이며 자기 채널 데이터(20편)로 교체하는 것이 이 시스템의 요점이다. · 함께 보기: 「역사공학 쇼츠 자동화 제안서」 · 지금 신청할 것: Reddit OAuth, Google Trends API alpha, 채널 Advanced features(MLA·Related video 전제)
