@@ -126,6 +126,9 @@ __pycache__/
 # 13차(리스크부문 작업 9, 모범규준 조항 기준 표 보강) — md 산출물. 원본은 dart_out/raw/web13(무시)
 !/handoff/13차_산출물/
 
+# 14차(지주 조직도 × 조직별 인원 × 겸직) — md·CSV 산출물. 조직도 그림(PNG)·원본 PDF 는 dart_out/raw/(무시)
+!/handoff/14차_조직인원겸직/
+
 # selftest 임시 산출물
 /dart_out/_selftest/
 
