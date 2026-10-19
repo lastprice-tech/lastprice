@@ -13,6 +13,8 @@
      확정 방법, 판독_대조 칸, 단위 비고, 인원 보탬, md 6) 보탬·바꿈, 7) 검증 기록)을 읽어 그때 산출물을 그대로 다시 만든다.
   6) 비평 보정(critic14, 2026-10-19): 「없음」 꼴 보정 표(FIX_EOPSEUM), 맡은 임원 찾은 방법, 거꾸로 조직도 (판단) 표시,
      빠진 글 보탬, 떨어진 줄 인용 블록 표지, 사업보고서 「조직도」 검색 기록, 7) 끝 「비평 보정」 기록. 작업 시각은 고정값(멱등).
+  7) 비평 보정 2(critic14_2, 2026-10-19): 보정 표 2(FIX2 — 한계 줄 단정, 기준일 칸 「날짜(판단: …)」 꼴; RB2_MARK — 판독대조 판독B ② 꼴),
+     지원조직 CSV 열 이름 「주요 활동(원문)」, 7) 끝 「비평 보정 2」 기록. 위 6) 기록은 그대로 남게 FIX 뒤에 씀.
 
 실행: python3 -I scripts/dart/org14_g1.py   (키·OC 값은 쓰지도 읽지도 않음)
 """
@@ -103,6 +105,55 @@ class Fixer:
 
 
 FIX = Fixer()
+
+
+# ───────────────────────── 비평 보정 2(critic14_2 대응) ─────────────────────────
+FIX2_KST = "2026-10-19 11:40 KST"  # 비평 보정 2 를 넣은 작업 시각(고정값 — 멱등)
+BASIS_RULE = "기준일 칸 공통 꼴(iM 꼴 「<날짜>(판단: <무엇>에 기준일 글이 나오지 않아 <근거>로 둠)」)"
+# (전, 후, 규칙, 꼴) — 위 FIX_EOPSEUM 을 쓴 뒤의 글에 씀(위 「비평 보정」 기록 숫자는 그대로 남게).
+#   꼴 "sub" = 글 안 어디든, "cell" = CSV 칸 줄 전체 · md 표 칸(「| 」·「<br>」 사이) 조각 전체만. 긴 것부터.
+FIX2 = [
+    ("일반 부서 인원은 공시되지 않아 대부분 「추출 범위에 없음」",
+     "일반 부서 인원은 추출 범위(사업보고서·연차보고서·경영공시 — 찾은 방법은 6) 받지 못한 것)에 나오지 않아 대부분 「추출 범위에 없음」",
+     "한계 줄 단정 → 추출 범위 꼴(critic14_2 [2])", "sub"),
+    ("표에 기준일 글이 나오지 않음 (사업보고서 기준일 2025년 12월 31일 — (판단))",
+     "2025.12.31(판단: 표에 기준일 글이 나오지 않아 사업보고서 작성기준일로 둠)", BASIS_RULE, "sub"),
+    ("문장에 기준일 글이 나오지 않음 (사업보고서 기준일 2025년 12월 31일 — (판단))",
+     "2025.12.31(판단: 문장에 기준일 글이 나오지 않아 사업보고서 작성기준일로 둠)", BASIS_RULE, "sub"),
+    ("표에 기준일 글이 나오지 않음(사업보고서 2025.12.31 기준 (판단))",
+     "2025.12.31(판단: 표에 기준일 글이 나오지 않아 사업보고서 작성기준일로 둠)", BASIS_RULE, "sub"),
+    # 날짜 글이 아예 없던 칸(연차보고서 문장 행만 — run_company 에서 출처가 연차보고서인지 확인)
+    ("문장에 기준일 글이 나오지 않음",
+     "2025년(판단: 문장에 기준일 글이 나오지 않아 연차보고서 대상 연도로 둠)", BASIS_RULE + " · 날짜 글이 없던 칸(critic14_2 [5])", "cell"),
+]
+# 판독대조 CSV 판독B 칸(검증 반영 입력 = 판독 B JSON 글) 의 ② 꼴(g3·g4 와 같게) — (전 조각, 후 조각)
+RB2_MARK = [("같은 집계 글이 없음", "같은 집계 글이 적히지 않음"), ("범례·각주가 쪽에 없음", "범례·각주가 쪽에 나오지 않음")]
+FIX2N = {}
+_MD_CELL = {}
+
+
+def fix2(s, where, md=False):
+    """FIX2 를 글 하나(CSV 칸 또는 md 줄)에 쓰고 바꾼 곳을 셈."""
+    if not s:
+        return s
+    for old, new, _, kind in FIX2:
+        if kind == "sub":
+            k = s.count(old)
+            s = s.replace(old, new)
+        elif md:
+            rx = _MD_CELL.setdefault(old, re.compile(r"(?:(?<=\| )|(?<=<br>))" + re.escape(old) + r"(?=<br>| \|)"))
+            s, k = rx.subn(new, s)
+        else:
+            parts = s.split("\n")
+            k = sum(p == old for p in parts)
+            s = "\n".join(new if p == old else p for p in parts)
+        if k:
+            FIX2N[(where, old)] = FIX2N.get((where, old), 0) + k
+    return s
+
+
+def fix2_rows(rows, where, cols):
+    return [{k: (fix2(v, where) if k in cols else v) for k, v in r.items()} for r in rows]
 
 
 def none_in(where, what):
@@ -613,6 +664,10 @@ def run_company(company, cfg):
         for dk, t in docs.items():
             if nz(old) in t.norm:
                 checks["problems"].append(f"보정 표 「{old}」 가 원문 텍스트 {t.rel} 에 나옴 — 원문을 바꿀 수 있음")
+    for old in [x[0] for x in FIX2] + [x[0] for x in RB2_MARK]:
+        for dk, t in docs.items():
+            if nz(old) in t.norm:
+                checks["problems"].append(f"보정 표 2 「{old}」 가 원문 텍스트 {t.rel} 에 나옴 — 원문을 바꿀 수 있음")
 
     # ── 인용(서술) ──
     Q = {}
@@ -894,29 +949,35 @@ def run_company(company, cfg):
     write_csv(OUT_DIR / f"{company}_임원겸직.csv", EXEC_COLS, fix_rows(exec_rows, f"{company} 임원겸직 CSV"))
 
     # ── 산출: 지원조직 CSV ──
-    SUP_COLS = ["회사", "조직 종류", "부서(팀)명", "직원수", "직위(근속연수)", "주요 활동", "기준일", "출처"]
+    # 비평 보정 2: 열 이름 「주요 활동」 → 「주요 활동(원문)」(8개사 공통 꼴)
+    SUP_COLS = ["회사", "조직 종류", "부서(팀)명", "직원수", "직위(근속연수)", "주요 활동(원문)", "기준일", "출처"]
     sup_rows = []
     for s in supports:
         sup_rows.append({"회사": company, "조직 종류": s["kind"] + " (사업보고서 표)", "부서(팀)명": s["dept"], "직원수": s["n"],
-                         "직위(근속연수)": s["pos"] + (f"\n{s['note']}" if s["note"] else ""), "주요 활동": s["act"],
+                         "직위(근속연수)": s["pos"] + (f"\n{s['note']}" if s["note"] else ""), "주요 활동(원문)": s["act"],
                          "기준일": "표에 기준일 글 없음 (사업보고서 기준일 2025년 12월 31일 — (판단))",
                          "출처": src(meta, "biz", f"p.{s['쪽']}", f"{s['title']} · 원문 XML 칸 글, PDF 텍스트 {s['대조']}")})
     for s in sq_rows:
         sup_rows.append({"회사": company, "조직 종류": s["kind"], "부서(팀)명": s["dept"], "직원수": s["n"], "직위(근속연수)": s["pos"],
-                         "주요 활동": s["act"], "기준일": s["basis"], "출처": s["src"] + (f" ‖ 활동: {s['act_src']}" if s["act_src"] != s["src"] else "")})
+                         "주요 활동(원문)": s["act"], "기준일": s["basis"], "출처": s["src"] + (f" ‖ 활동: {s['act_src']}" if s["act_src"] != s["src"] else "")})
     for name, p in chart_pairs.items():
         sup_rows.append({"회사": company, "조직 종류": "연차보고서 지배구조 조직도(글자 층) 인원", "부서(팀)명": name,
                          "직원수": p["text"].split("\n")[1],
                          "직위(근속연수)": none_in("출처 칸 조직도 글", "부서 이름·인원 밖 글이 나오지 않음"),
-                         "주요 활동": none_in("출처 칸 조직도 글", "부서 이름·인원 밖 글이 나오지 않음"),
+                         "주요 활동(원문)": none_in("출처 칸 조직도 글", "부서 이름·인원 밖 글이 나오지 않음"),
                          "기준일": cfg["ann_chart_basis"], "출처": src(meta, "ann", f"p.{p['page']}", f"{docs['ann'].rel} {p['line']}행 · 원문 줄: {p['text'].replace(chr(10), ' / ')}")})
     ia_basis = "※ 2025년 12월 31일 기준 내부회계관리운영조직 관련 사항 기재" if company == "KB금융지주" else "표에 기준일 글 없음 (사업보고서 기준일 2025년 12월 31일 — (판단))"
     for r in ia:
         sup_rows.append({"회사": company, "조직 종류": "내부회계관리 운영조직 인력 (사업보고서 표)", "부서(팀)명": r["dept"], "직원수": f"총원 {r['총원']}",
                          "직위(근속연수)": f"내부회계담당인력수(A) {r['담당']} · 공인회계사자격증소지자수(B) {r['cpa']} · 비율(B/A*100) {r['비율']} · 내부회계담당인력의평균경력월수 {r['경력']}",
-                         "주요 활동": none_in("출처 칸 표", "이 표는 인원·자격만 적음"), "기준일": ia_basis,
+                         "주요 활동(원문)": none_in("출처 칸 표", "이 표는 인원·자격만 적음"), "기준일": ia_basis,
                          "출처": src(meta, "biz", f"p.{r['쪽']}", f"{ia_title} · 원문 XML 칸 글")})
-    write_csv(OUT_DIR / f"{company}_지원조직.csv", SUP_COLS, fix_rows(sup_rows, f"{company} 지원조직 CSV"))
+    sup_out = fix_rows(sup_rows, f"{company} 지원조직 CSV")
+    # 비평 보정 2: 날짜 글이 없던 기준일 칸(「cell」 꼴)은 연차보고서 문장 행에만 있어야 「연차보고서 대상 연도」 근거가 맞음
+    for r in sup_out:
+        if r["기준일"] in [x[0] for x in FIX2 if x[3] == "cell"] and not r["출처"].startswith(f"[{DOCNAME['ann']}"):
+            checks["problems"].append(f"기준일 「{r['기준일']}」 행의 출처가 연차보고서가 아님: {r['부서(팀)명']}")
+    write_csv(OUT_DIR / f"{company}_지원조직.csv", SUP_COLS, fix2_rows(sup_out, f"{company} 지원조직 CSV", ("기준일",)))
 
     # ── 단위별 인원 연결 ──
     sup_by = {s["dept"]: s for s in supports}
@@ -1043,7 +1104,8 @@ def run_company(company, cfg):
             "비고": u["csv_비고"] if "csv_비고" in u else "; ".join(x for x in [u["연결근거"], u["비고"]] if x),
         })
         unit_md_ways.append([(s.get("md_way", s["way"]), "md_way" in s) for s in st])
-    write_csv(OUT_DIR / f"{company}_조직단위.csv", UNIT_COLS, fix_rows(unit_rows, f"{company} 조직단위 CSV"))
+    write_csv(OUT_DIR / f"{company}_조직단위.csv", UNIT_COLS,
+              fix2_rows(fix_rows(unit_rows, f"{company} 조직단위 CSV"), f"{company} 조직단위 CSV", ("인원_기준일",)))
 
     # ── 산출: 판독대조 CSV ──
     RB_COLS = ["칸", "판독A", "판독B", "확정", "확정 방법"]
@@ -1068,6 +1130,12 @@ def run_company(company, cfg):
             if new:
                 FIX.n[(f"{company} 판독대조 CSV", f"{r[col]} → {new}")] = FIX.n.get((f"{company} 판독대조 CSV", f"{r[col]} → {new}"), 0) + 1
                 r[col] = new
+    # 비평 보정 2: 판독B 칸 「…없음」 → ② 꼴(판독 B JSON 은 그대로 — CSV 로 옮길 때만 바꿈)
+    for r in rb:
+        for old, new in RB2_MARK:
+            if old in r["판독B"]:
+                FIX2N[(f"{company} 판독대조 CSV", old)] = FIX2N.get((f"{company} 판독대조 CSV", old), 0) + r["판독B"].count(old)
+                r["판독B"] = r["판독B"].replace(old, new)
     write_csv(OUT_DIR / f"{company}_판독대조.csv", RB_COLS, rb)
 
     # ── 집계 ──
@@ -1356,6 +1424,13 @@ def write_md(R, extra):
     L.append("")
     # 비평 보정: 「없음」 꼴(인용 「> 」 줄·``` 블록 밖) → 떨어진 줄을 이은 인용 블록 안 건너뜀 표지 → 보정 기록
     lines = md_fix("\n".join(L).split("\n"), f"{c} md")
+    # 비평 보정 2: FIX2(한계 줄·기준일 칸) — 원문 인용(「> 」 줄)과 ``` 블록은 건드리지 않음
+    code = False
+    for i, x in enumerate(lines):
+        if x.startswith("```"):
+            code = not code
+        elif not code and not x.startswith(">"):
+            lines[i] = fix2(x, f"{c} md", md=True)
     # 7) 검증 기록 = 검증 반영 입력(검증 에이전트가 쓴 글). 지난 전 → 후 기록 줄(VR_KEEP)은 「없음」 보정도 하지 않음
     lines.append(R["VR"]["검증기록_제목"] + "\n")
     keep = VR_KEEP.get(c, ())
@@ -1371,7 +1446,48 @@ def write_md(R, extra):
     text = "\n".join(lines)
     assert text.endswith("\n")
     text += "\n" + "\n".join(fix_record(R, marks)) + "\n"
+    text += "\n" + "\n".join(fix_record2(R)) + "\n"
     (MD_DIR / f"14_{c}.md").write_text(text, encoding="utf-8")
+
+
+def fix_record2(R):
+    """7) 끝 「비평 보정 2」 기록(critic14_2 대응 — 전 → 후 대표 예와 개수, 개수는 이번 실행에서 센 값)."""
+    c = R["company"]
+    n = {}
+    for (where, old), k in FIX2N.items():
+        if where.startswith(c + " "):
+            n.setdefault(old, {})[where[len(c) + 1:]] = k
+    mine = "[1]·[2]·[5]" if c == "신한금융지주" else "[2]·[5]"
+    L = [f"### 비평 보정 2(critic14_2 대응, {FIX2_KST[:10]} KST)", "",
+         f"비평 `dart_out/org14/critic14_2.json` new_issues 가운데 이 회사 몫({mine})과 메인이 정한 8개사 공통 꼴(한계 줄 · 공시인원 「{NONE}」 행의 찾은 방법 자리 · "
+         "맡은 임원 「추출 범위에 없음」 행의 임원_겸직 · 기준일 칸 · CSV 열 이름)에 따라 생성기 `scripts/dart/org14_g1.py` 의 보정 표 2(FIX2 · RB2_MARK)로 다시 만듦"
+         f"(산출물은 손으로 고치지 않음, 보정 시각 {FIX2_KST}). 위 「비평 보정」 기록과 7) 검증 기록의 지난 전 → 후 기록은 그대로(④), 원문 인용(「> 」 줄·``` 블록)·원문 칸 글도 그대로. "
+         "`scripts/dart/verify14_g1.py` 에 검사 12~14 를 보태 exit 0 · 생성기 두 번 실행 md5 같음.", "",
+         "| 바꾼 것 | 전 → 후(대표 예) | 개수 |", "|---|---|---|"]
+    for old, new, rule, _ in FIX2:
+        if old in n:
+            cnt = " · ".join(f"{w} {k}" for w, k in n[old].items())
+            L.append(f"| {esc(rule)} | 「{esc(old)}」 → 「{esc(new)}」 | {cnt} |")
+    for old, new in RB2_MARK:
+        if old in n:
+            cnt = " · ".join(f"{w} {k}" for w, k in n[old].items())
+            L.append(f"| 판독대조 CSV 판독B 칸 「없음」 꼴 → ②(critic14_2 [1] — g3·g4 와 같게; 판독 B JSON 은 그대로) | 「…{old}」 → 「…{new}」 | {cnt} |")
+    L.append("| 지원조직 CSV 열 이름(8개사 공통 꼴) | 「주요 활동」 → 「주요 활동(원문)」 | 머리 1 |")
+    ur = R["unit_rows"]
+    hc = "공시인원(원문, 없으면 「추출 범위에 없음」)"
+    nn = [r for r in ur if r[hc] == NONE]
+    ok_src = sum(1 for r in nn if r["인원_출처"].startswith("찾은 방법: ") and not r["인원_내역(원문)"])
+    ne = [r for r in ur if r["대응_임원(성명·직위)"] == NONE]
+    ok_ne = sum(1 for r in ne if r["임원_겸직(원문: 겸직회사·직위·선임일·상근)"] == "해당 없음(대응 임원 추출 범위에 없음)")
+    L.append(f"| 공시인원 「{NONE}」 행의 찾은 방법 자리(공통 꼴 — 바꾼 곳 0, 확인만) | 인원_출처 칸 「찾은 방법: …」 · 인원_내역(원문) 칸 빈칸 — 처음부터 이 꼴 | {ok_src}/{len(nn)}행 |")
+    L.append(f"| 「{NONE}(직원 인원) — 위원 수는 인원_내역」 꼴 행(공통 꼴 — 바꾼 곳 0) | 이 회사 산출에는 이 꼴 행이 나오지 않음 — 위원회·이사회 행은 공시인원 칸에 위원 수 원문을 두고 인원_출처 연결 칸에 「(판단) 위원·이사 수이지 직원 수 아님」 류를 적음 | 0행 |")
+    L.append(f"| 맡은 임원 「{NONE}」 행의 임원_겸직(공통 꼴 — 바꾼 곳 0, 확인만) | 「해당 없음(대응 임원 추출 범위에 없음)」 — 처음부터 이 꼴 | {ok_ne}/{len(ne)}행 |")
+    L.append("| 임원겸직 CSV 열 이름(공통 꼴 — 바꾼 곳 0, 확인만) | 「출처(문서·접수번호·쪽)」 — 처음부터 이 이름 | 머리 1 |")
+    L.append("| 검증 스크립트 검사 보탬·고침 | `scripts/dart/verify14_g1.py` 보탬: 12 한계 줄 꼴·「공시되지 않음」 류 단정 0 · 회사 CSV 열 이름 / 13 공시인원 「추출 범위에 없음」 행의 인원_출처 「찾은 방법:」·인원_내역 빈칸, 임원_겸직 꼴 / "
+             "14 기준일 칸(지원조직 CSV 기준일 · 조직단위 CSV 인원_기준일 · md 3-6 기준일) = 원문 글 또는 「날짜(판단: …에 기준일 글이 나오지 않아 …로 둠)」 + 근거 문서 = 출처 문서. "
+             "고침: 7 판독B 칸 = 판독 B JSON 그대로 또는 끝 「없음」 → ② 꼴만 허용, 「…없음」 으로 끝나는 판독B 칸은 문제로; 「주요 활동」 열 이름 2곳. "
+             "고치기 전 산출(git HEAD ddac128 — 지원조직 CSV 머리만 새 열 이름으로 바꿔)에 돌리면 48건을 잡음(한계 줄 4 · 기준일 칸 42 · 판독B 칸 2) | 검사 3 보탬 · 2 고침 |")
+    return L
 
 
 # ───────────────────────── 회사별 덧붙임(받은 것·못 받은 것·차이) ─────────────────────────

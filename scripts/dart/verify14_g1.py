@@ -16,6 +16,13 @@
     작업 사실(웹 요청 없음·고친 곳: 없음·바뀐 곳 없음), 7) 검증 기록의 전 → 후 기록 줄, 판독대조 판독B 칸 = 판독B JSON 글 그대로
 10. (비평 보정) 맡은 임원 「추출 범위에 없음」 행: 대응_근거 = 「찾은 방법: … 글자 검색 … — N건」 이고 N 이 다시 센 값과 같음, 임원_겸직 = 「해당 없음(대응 임원 추출 범위에 없음)」
 11. (비평 보정) 인용 블록 안 「[…줄 건너뜀: 텍스트 N~M행…]」 표지: 출처 줄 범위 사이의 틈과 맞고, 다른 글이 낀 틈마다 표지가 있음
+12. (비평 보정 2, critic14_2) md 0) 한계 줄이 「일반 부서 인원은 추출 범위(사업보고서·연차보고서·경영공시 …)에 나오지 않아 …」 꼴이고,
+    7) 앞 원문 인용 밖에 「공시되지 않음」 류 단정이 0. 회사 CSV 열 이름(임원겸직 「출처(문서·접수번호·쪽)」, 지원조직 「주요 활동(원문)」)
+13. (비평 보정 2) 조직단위 CSV 공시인원 「추출 범위에 없음」 행: 인원_출처 「찾은 방법: …」, 인원_내역(원문) 칸에 「찾은 방법」 없음,
+    여러 줄 칸의 「추출 범위에 없음」 줄엔 「(찾은 범위: …)」; 맡은 임원 「추출 범위에 없음」 행 임원_겸직 = 「해당 없음(대응 임원 추출 범위에 없음)」
+14. (비평 보정 2) 기준일 칸(지원조직 CSV 기준일 · 조직단위 CSV 인원_기준일 · md 3-6 기준일): 줄마다 원문 글(원문 텍스트에 나옴) 또는
+    「<날짜>(판단: <무엇>에 기준일 글이 나오지 않아 <근거>로 둠)」 꼴, 근거 문서(사업보고서/연차보고서) = 그 줄의 출처 문서.
+    7. 의 판독B 대조는 판독B JSON 글 그대로 또는 끝 「없음」 → 「적히지 않음/나오지 않음」(② 꼴 바꿈)만 허용
 웹 요청 없음. 원본 파일은 읽기만 함.
 """
 import csv
@@ -378,7 +385,7 @@ def check_csv_sources(co):
             prob(f"{co}_지원조직.csv {k}행", "출처에서 문서·쪽을 읽지 못함")
             continue
         d = doc(fn)
-        for lab in ("부서(팀)명", "직원수", "직위(근속연수)", "주요 활동"):
+        for lab in ("부서(팀)명", "직원수", "직위(근속연수)", "주요 활동(원문)"):
             v = r[lab]
             if "추출 범위에 없음" in v or "(판단)" in v:
                 continue
@@ -657,7 +664,7 @@ def check_csv_md(co, exec_md, conc_md):
     h = find_heads(L, r"^### 3-1 ")[0]
     rows, _ = md_table_rows(L, h, "| 조직 종류 |")
     a = sorted((nows(c[1]), nows(c[2]), nows(c[3]).replace("주)", ""), nows(c[4])) for _, c in rows)
-    b = sorted((nows(r["부서(팀)명"]), nows(r["직원수"]), nows(r["직위(근속연수)"]).replace("주)", ""), nows(r["주요 활동"])) for r in sup)
+    b = sorted((nows(r["부서(팀)명"]), nows(r["직원수"]), nows(r["직위(근속연수)"]).replace("주)", ""), nows(r["주요 활동(원문)"])) for r in sup)
     cnt("md↔CSV 지원조직 행", len(a))
     if a != b:
         prob(f"{co} md 3-1 표", f"지원조직 CSV(사업보고서 표 행)와 다름: md {len(a)}행 / CSV {len(b)}행")
@@ -708,6 +715,8 @@ def check_reading(co, units):
         for lab in ("판독B", "확정", "확정 방법"):
             if not r[lab].strip():
                 prob(f"{co}_판독대조.csv {k}행", f"{lab} 칸이 비어 있음")
+        if r["판독B"].endswith("없음") and not r["판독B"].endswith(NONE):
+            prob(f"{co}_판독대조.csv {k}행", f"판독B 칸 「…{r['판독B'][-20:]}」 — 「없음」 꼴(② 「적히지 않음/나오지 않음」 으로)")
         differ = val(r["판독A"]) != val(r["판독B"])
         ndiff += differ
         m = re.match(r"^(%s\d+) (.+)$" % pref, r["칸"])
@@ -718,14 +727,16 @@ def check_reading(co, units):
                 prob(f"{co}_판독대조.csv {k}행", f"확정 「{r['확정']}」 ↔ 조직단위 CSV {fld} 「{units[idx][fld]}」")
             bu = bmap.get(key(a["units"][idx]["단위"]))
             bv = bu[bkeys[m.group(2)]] if bu else None
-            if bv is None or val(r["판독B"]) != bv:
+            if bv is None or val(r["판독B"]) not in b_forms(bv):
                 prob(f"{co}_판독대조.csv {k}행", f"판독B 칸 「{r['판독B']}」 ↔ 판독B JSON 「{bv}」")
             if "dpi" not in r["확정 방법"]:
                 prob(f"{co}_판독대조.csv {k}행", "확정 방법에 그림 dpi 기록 없음")
         elif r["칸"].startswith("머리글"):
             mk = "머리_집계글(판독)" if r["칸"] == "머리글_집계" else "각주(판독)"
-            if r["판독B"] != b[mk]:
-                prob(f"{co}_판독대조.csv {k}행", "머리글 판독B 칸 ↔ 판독B JSON 다름")
+            if r["판독B"] not in b_forms(b[mk]):
+                prob(f"{co}_판독대조.csv {k}행", "머리글 판독B 칸 ↔ 판독B JSON 다름(② 꼴 바꿈 밖)")
+            elif r["판독B"] != b[mk]:
+                cnt("판독B 칸 ② 꼴 바꿈(JSON 끝 「없음」 → 「적히지 않음/나오지 않음」)")
         if differ and not r["확정 방법"].startswith(("A=B 같은", "A≠B 다시 봄")):
             prob(f"{co}_판독대조.csv {k}행", "A·B 가 다른 칸인데 확정 방법이 「A=B 같은 …」/「A≠B 다시 봄」 꼴이 아님")
         if not differ and not r["확정 방법"].startswith("A=B 같음"):
@@ -753,6 +764,116 @@ def check_reading(co, units):
         g = [r for r in units if r["조직도_겸직표시(판독, 없으면 빈칸)"] == "(겸)"]
         INFO.append(f"{co} 확정 단위 {len(units)} · 「(겸)」 {len(g)}곳 · 조직도 집계 글 없음")
     return len(rec)
+
+
+def b_forms(v):
+    """판독B JSON 글 v 가 판독대조 CSV 판독B 칸에 옮겨질 수 있는 꼴: 그대로, 또는 끝 「없음」 → ② 꼴(비평 보정 2)."""
+    out = {v}
+    if v and v.endswith("없음"):
+        out |= {v[:-2] + t for t in ("적히지 않음", "나오지 않음")}
+    return out
+
+
+# ───────────────────────────── 12~14. 공통 꼴(비평 보정 2 — critic14_2) ─────────────────────────────
+JUDGE_BASIS_RE = re.compile(r"^(\d{4}\.\d{1,2}\.\d{1,2}|\d{4}년)\(판단: (.+)에 기준일 글이 나오지 않아 (.+)로 둠\)$")
+HEAD_EXEC = ["회사", "성명", "직위", "등기", "상근", "담당업무(원문)", "대응_조직단위", "대응_방식", "겸직회사", "겸직회사_직위", "선임일", "상근여부", "출처(문서·접수번호·쪽)"]
+HEAD_SUP = ["회사", "조직 종류", "부서(팀)명", "직원수", "직위(근속연수)", "주요 활동(원문)", "기준일", "출처"]
+NONE = "추출 범위에 없음"
+HC = "공시인원(원문, 없으면 「추출 범위에 없음」)"
+
+
+def basis_ok(co, line, src, texts, where):
+    """기준일 칸 한 줄: 원문 글(공백 무시로 원문 텍스트에 나옴) 또는 「날짜(판단: …에 기준일 글이 나오지 않아 …로 둠)」 꼴.
+    판단 꼴이면 근거 문서와 그 줄의 출처 문서가 맞는지도 봄."""
+    cnt("기준일 칸 줄")
+    if not line:
+        prob(where, "기준일 칸이 비어 있음")
+        return
+    m = JUDGE_BASIS_RE.match(line)
+    if m:
+        cnt("기준일 칸 — 날짜(판단: …) 꼴")
+        if "사업보고서" in m.group(3) and not src.startswith("[사업보고서"):
+            prob(where, f"기준일 「{line[:40]}」 은 사업보고서 근거인데 출처가 사업보고서가 아님")
+        if "연차보고서" in m.group(3) and not src.startswith("[지배구조 및 보수체계 연차보고서"):
+            prob(where, f"기준일 「{line[:40]}」 은 연차보고서 근거인데 출처가 연차보고서가 아님")
+        return
+    if any(nows(line) in t for t in texts) or all(any(nows(p) in t for t in texts) for p in line.split(" / ") if nows(p)):
+        cnt("기준일 칸 — 원문 글")
+        return
+    prob(where, f"기준일 칸 「{line[:60]}」 이 원문 글도 「날짜(판단: …에 기준일 글이 나오지 않아 …로 둠)」 꼴도 아님")
+
+
+def check_common14_2(co):
+    f = files_of(co)
+    texts = [doc(f[k]).all for k in ("biz", "ann", "ann2", "mgmt")] + [doc(x).all for x in f["corr"]]
+    L = md_lines(co)
+    # 12. 한계 줄 단정 0
+    lim = [i for i, x in enumerate(L) if x.startswith("| 한계 |")]
+    if len(lim) != 1:
+        prob(f"{co} md 0) 머리", f"「| 한계 |」 줄 {len(lim)}개")
+    for i in lim:
+        cnt("한계 줄")
+        if not re.search(r"일반 부서 인원은 추출 범위\(사업보고서·연차보고서·경영공시.*?\)에 나오지 않아", L[i]):
+            prob(f"{co} md {i + 1}줄", "한계 줄이 「일반 부서 인원은 추출 범위(사업보고서·연차보고서·경영공시 …)에 나오지 않아 …」 꼴이 아님")
+    code = False
+    for i, x in enumerate(L):
+        if x.startswith("## 7)"):
+            break
+        if x.startswith("```"):
+            code = not code
+        if code or x.startswith(">"):
+            continue
+        if re.search(r"공시되지 않|공시하지 않|공시 안 ", x):
+            prob(f"{co} md {i + 1}줄", f"「공시되지 않음」 류 단정: 「{x[:60]}」")
+    # 열 이름(8개사 공통 꼴)
+    for kind, head in (("임원겸직", HEAD_EXEC), ("지원조직", HEAD_SUP)):
+        with open(os.path.join(OUTD, f"{co}_{kind}.csv"), encoding="utf-8-sig", newline="") as fh:
+            h = next(csv.reader(fh))
+        cnt("열 이름 대조")
+        if h != head:
+            prob(f"{co}_{kind}.csv 머리", f"열 이름이 공통 꼴과 다름: {h}")
+    # 13. 공시인원 「추출 범위에 없음」 행의 찾은 방법 자리 · 임원_겸직 꼴(10. 에서도 봄)
+    units = read_csv(os.path.join(OUTD, f"{co}_조직단위.csv"))
+    for k, r in enumerate(units, 2):
+        where = f"{co}_조직단위.csv {k}행"
+        if "찾은 방법" in r["인원_내역(원문)"]:
+            prob(where, "인원_내역(원문) 칸에 작업 글 「찾은 방법」 이 있음 — 인원_출처 칸으로")
+        hc = r[HC]
+        if hc.startswith(NONE) and "\n" not in hc:
+            cnt("공시인원 추출 범위에 없음 행")
+            if not r["인원_출처"].startswith("찾은 방법: "):
+                prob(where, "공시인원 「추출 범위에 없음」 행의 인원_출처가 「찾은 방법: …」 으로 시작하지 않음")
+            if hc == NONE and (r["인원_내역(원문)"] or r["인원_기준일"]):
+                prob(where, "공시인원 「추출 범위에 없음」 행인데 인원_내역·인원_기준일 칸이 비어 있지 않음")
+        else:
+            for x in hc.split("\n"):
+                if x.startswith(NONE) and "(찾은 범위: " not in x:
+                    prob(where, f"공시인원 줄 「{x[:40]}」 에 찾은 범위가 없음")
+        if r["대응_임원(성명·직위)"] == NONE:
+            cnt("임원_겸직 공통 꼴 행")
+            if r["임원_겸직(원문: 겸직회사·직위·선임일·상근)"] != "해당 없음(대응 임원 추출 범위에 없음)":
+                prob(where, "맡은 임원 「추출 범위에 없음」 행의 임원_겸직이 공통 꼴이 아님")
+        # 14. 인원_기준일(인원 있는 행: 줄마다 인원_출처 줄과 짝)
+        if r["인원_기준일"]:
+            bl, sl = r["인원_기준일"].split("\n"), r["인원_출처"].split("\n")
+            if len(bl) != len(sl):
+                prob(where, f"인원_기준일 줄 {len(bl)} ↔ 인원_출처 줄 {len(sl)}")
+            for b_, s_ in zip(bl, sl):
+                basis_ok(co, b_, s_, texts, where + " 인원_기준일")
+    # 14. 지원조직 CSV 기준일
+    for k, r in enumerate(read_csv(os.path.join(OUTD, f"{co}_지원조직.csv")), 2):
+        basis_ok(co, r["기준일"], r["출처"], texts, f"{co}_지원조직.csv {k}행 기준일")
+    # 14. md 3-6 기준일 칸(조직단위 CSV 인원_기준일과 같아야 함)
+    h = find_heads(L, r"^### 3-6 ")[0]
+    rows, _ = md_table_rows(L, h, "| 단위(판독) |")
+    um = {r["조직단위(판독)"]: r for r in units}
+    for ln, c in rows:
+        r = um.get(c[0])
+        if r is None:
+            continue
+        cnt("md 3-6 기준일 칸")
+        if c[3].replace("<br>", "\n").replace("\\|", "|") != r["인원_기준일"]:
+            prob(f"{co} md {ln}줄", f"3-6 기준일 md ↔ 조직단위 CSV 인원_기준일 다름 (「{c[0]}」)")
 
 
 # ───────────────────────────── 8. 보안·형식 ─────────────────────────────
@@ -804,6 +925,7 @@ def main():
         n = check_reading(co, units)
         cnt(f"{co} 판독대조 행", n)
         check_eopseum(co)
+        check_common14_2(co)
         paths += [os.path.join(MDD, f"14_{co}.md")] + sorted(glob.glob(os.path.join(OUTD, f"{co}_*")))
     paths += [os.path.join(OUTD, "g1_검사.json"), os.path.abspath(__file__), os.path.join(ROOT, "scripts", "dart", "org14_g1.py")]
     nsec = check_security([p for p in paths if os.path.exists(p)])

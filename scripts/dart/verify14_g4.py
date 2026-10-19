@@ -18,6 +18,11 @@
     원문 「」 조각(회사 텍스트에 있음)·CSV 칸의 원문 글(앞 12자 공백 무시가 회사 텍스트에 있음), 작업 사실·공통 꼴 낱말(EOK),
     md 「### 비평 보정」 절의 「」 전·후 기록. 대응 임원 「추출 범위에 없음」 행은 대응_근거에 「찾은 방법:」·임원_겸직 「해당 없음(…)」.
     기준일 (판단) 꼴(「2025.12.31(판단: …)」「2025년(판단: …)」)은 원문 칸 대조에서 뺌.
+ G  (비평 보정 2, critic14_2 — 8개사 공통 꼴) md 0) 한계 줄: 「공시되지 않」 0(md 전체 — 「### 비평 보정」 절 「」 전·후 기록은 뺌)·
+    「추출 범위(사업보고서·연차보고서·경영공시 — 찾은 방법은 6) 받지 못한 것)에 나오지 않아」 있음 / 조직단위 CSV 공시인원 「추출 범위에 없음…」 행:
+    인원_출처 「찾은 방법:」 있음·인원_내역(원문 열)에 「찾은 방법」 0 / 맡은 임원 「추출 범위에 없음」 행 임원_겸직 「해당 없음(대응 임원 추출 범위에 없음)」 /
+    기준일 칸(조직도_기준일·인원_기준일 줄·지원조직 기준일·md 「- 기준일:」 줄): 앞머리에 날짜 글(20NN)이 있고, 「(판단:」 이 있으면
+    「<날짜>(판단: <무엇>에 기준일(날짜) 글이 나오지 않아 <근거>로 둠)」 꼴 / 임원겸직·지원조직 CSV 열 이름 = COMMON14 꼴
  K  키·OC 값 없음, 산출 폴더(handoff/14차_조직인원겸직, dart_out/org14)에 PDF·PNG 없음
 로컬 파일만 읽음(웹 요청 없음).
 """
@@ -152,6 +157,7 @@ def check_company(co, cfg):
     C_KJ = [c for c in units[0] if c.startswith("조직도_겸직표시")][0]
     C_HOW = [c for c in units[0] if c.startswith("대응_방식")][0]
     C_EXK = [c for c in units[0] if c.startswith("임원_겸직")][0]
+    C_OSRC = "출처(문서·접수번호·쪽)"     # 임원겸직 CSV 출처 열(비평 보정 2 — COMMON14 꼴)
 
     def doc_T(seg):
         m = re.search(r"(dart_out/text/risk8/\S+?\.txt)", seg)
@@ -416,10 +422,93 @@ def check_company(co, cfg):
         if not r["기준일"].strip():
             probs.append((tag, f"지원조직 CSV {n}행 기준일", "빈칸"))
 
+    # ── G: 비평 보정 2(critic14_2) — 8개사 공통 꼴
+    g = {k: 0 for k in ("limit_line", "nf_rows", "nomap_rows", "base_cells", "base_judged", "md_base_lines")}
+    # 열 이름
+    h_exec = list(execs[0].keys()) if execs else []
+    h_sup = list(sup[0].keys()) if sup else []
+    if C_OSRC not in h_exec or "출처" in h_exec:
+        probs.append((tag, "임원겸직 CSV 머리", f"출처 열 이름이 「{C_OSRC}」 꼴이 아님"))
+    if "주요 활동(원문)" not in h_sup:
+        probs.append((tag, "지원조직 CSV 머리", "「주요 활동(원문)」 열이 나오지 않음"))
+    # md 0) 한계 줄 + md 전체 「공시되지 않」(비평 보정 절 「」 전·후 기록·인용 블록은 뺌)
+    LIMIT_RE = "추출 범위(사업보고서·연차보고서·경영공시 — 찾은 방법은 6) 받지 못한 것)에 나오지 않아"
+    lim = [ln for ln in md if ln.startswith("- 한계:")]
+    g["limit_line"] = len(lim)
+    if len(lim) != 1 or LIMIT_RE not in lim[0]:
+        probs.append((tag, "md 0) 한계 줄", "공통 꼴 「…추출 범위(…)에 나오지 않아…」 가 나오지 않음"))
+    inb, crit_g = False, False
+    for i, ln in enumerate(md):
+        if ln.startswith("```"):
+            inb = not inb
+            continue
+        if ln.startswith("### 비평 보정"):
+            crit_g = True
+        elif ln.startswith("## "):
+            crit_g = False
+        if inb or ln.startswith(">"):
+            continue
+        body = re.sub(r"「[^「」]*(?:「[^「」]*」[^「」]*)*」", "", ln) if crit_g else ln
+        if "공시되지 않" in body:
+            probs.append((tag, f"md {i+1}줄 G", "「공시되지 않…」 단정 꼴"))
+    # 조직단위 CSV: 공시인원 「추출 범위에 없음…」 행 — 찾은 방법은 인원_출처, 인원_내역(원문 열)은 원문만
+    for n, r in enumerate(units, 2):
+        if r[C_UNIT].startswith("추출 범위에 없음"):
+            g["nf_rows"] += 1
+            if "찾은 방법:" not in r["인원_출처"]:
+                probs.append((tag, f"조직단위 CSV {n}행 인원_출처 G", "공시인원 추출 범위에 없음인데 인원_출처에 「찾은 방법:」 이 나오지 않음"))
+            if "찾은 방법" in r["인원_내역(원문)"]:
+                probs.append((tag, f"조직단위 CSV {n}행 인원_내역 G", "원문 열에 찾은 방법(작업 글)이 섞임"))
+        if r["대응_임원(성명·직위)"].strip() == "추출 범위에 없음":
+            g["nomap_rows"] += 1
+            if r[C_EXK] != NOMAP_CONC:
+                probs.append((tag, f"조직단위 CSV {n}행 임원_겸직 G", f"「{NOMAP_CONC}」 꼴이 아님"))
+    # 기준일 칸: 앞머리 날짜 글(20NN) + (판단) 꼴
+    JUDGED = re.compile(r"^20\d\d[^(]*\(판단: .+?에 (?:기준일|날짜) 글이 나오지 않아 .+로 둠(?: — .+)?\)$")
+
+    def base_ok(v, where):
+        """기준일 칸 = ① 「<날짜>(판단: …에 기준일(날짜) 글이 나오지 않아 …로 둠)」 꼴, 또는 ② 날짜 글(20NN)이 든 원문 표기(회사 텍스트에 공백 무시로 있음)."""
+        v = re.sub(r"^[①-⑳]\s*", "", v.strip())
+        g["base_cells"] += 1
+        if "(판단:" in v:
+            g["base_judged"] += 1
+            if not JUDGED.match(v):
+                probs.append((tag, where, f"기준일 (판단) 꼴이 「<날짜>(판단: <무엇>에 기준일 글이 나오지 않아 <근거>로 둠)」 이 아님: 「{v[:60]}」"))
+            return
+        orig = re.sub(r"\s*〔[^〕]*〕\s*$", "", v)
+        if not re.search(r"20\d\d", orig) or not in_texts(orig):
+            probs.append((tag, where, f"기준일 칸이 날짜 글이 든 원문 표기도, (판단) 꼴도 아님: 「{v[:50]}」"))
+
+    for n, r in enumerate(units, 2):
+        base_ok(r["조직도_기준일(원문)"], f"조직단위 CSV {n}행 조직도_기준일 G")
+        for x in r["인원_기준일"].split("\n"):
+            if x.strip():
+                base_ok(x, f"조직단위 CSV {n}행 인원_기준일 G")
+            elif not r[C_UNIT].startswith("추출 범위에 없음"):
+                probs.append((tag, f"조직단위 CSV {n}행 인원_기준일 G", "공시인원이 있는 행인데 기준일 빈칸"))
+    for n, r in enumerate(sup, 2):
+        if r["기준일"].strip():
+            base_ok(r["기준일"], f"지원조직 CSV {n}행 기준일 G")
+    for i, ln in enumerate(md):
+        m = re.match(r"^- 기준일: (.+?) · 형태: ", ln)
+        if m:
+            g["md_base_lines"] += 1
+            base_ok(m.group(1), f"md {i+1}줄 「- 기준일:」 G")
+    # NH: 사업보고서 「조직도」 검색 기록 줄 — 적힌 줄 수·공백 무시 수 ↔ 텍스트에서 다시 셈
+    if co == "NH농협금융지주":
+        sl = [ln for ln in md if ln.startswith("- 사업보고서 「조직도」 검색:")]
+        tb = T["사업보고서"]
+        n_line = sum(1 for l in tb.lines if "조직도" in l)
+        n_ws = tb.full.count("조직도")
+        if len(sl) != 1 or f"걸린 줄 {n_line}개(공백 무시 {n_ws}개)" not in sl[0] or cfg["texts"]["사업보고서"] not in sl[0]:
+            probs.append((tag, "md 1-4 아래 G", f"사업보고서 「조직도」 검색 기록 줄이 텍스트 셈(줄 {n_line} · 공백 무시 {n_ws})과 맞지 않거나 나오지 않음"))
+        g["biz_chart_search_line"] = len(sl)
+    st.update({"G_" + k: v for k, v in g.items()})
+
     # ── T: 임원겸직 CSV
     tabkey = {}
     for n, r in enumerate(execs, 2):
-        src = r["출처"]
+        src = r.get(C_OSRC, "")
         parts = src.split("‖")
         main_src = [x for x in parts if not x.strip().startswith("겸직:")]
         conc_src = [x for x in parts if x.strip().startswith("겸직:")]

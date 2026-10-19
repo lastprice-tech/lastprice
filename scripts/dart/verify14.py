@@ -19,6 +19,16 @@
  D  기준일 칸 빈칸 0: 조직단위 조직도_기준일(원문) 모든 행, 인원_기준일은 공시인원에 값이 있는 행(「추출 범위에 없음」으로
     시작하지 않거나 「추출 범위에 없음(직원 인원)」 — 위원 수 행), 지원조직 기준일 모든 행
     (참고로 날짜를 채우면서 「판단」 글이 나오지 않는 줄 수를 기록 — 문제로 세지 않음)
+ C  8개사 공통 꼴(비평 보정 2 — dart_out/org14/critic14_2.json 뒤 메인이 정한 꼴):
+    C1 한계 줄 단정 0: 회사 md 0) 의 한계 줄에 「추출 범위(사업보고서·연차보고서·경영공시 — 찾은 방법은 6) 받지 못한 것)에
+       나오지 않아」 꼴이 있고, 회사 md 7) 앞과 00_목록.md 의 「」 인용 밖에 「공시되지 않」 류 단정 0. 00_목록 4) 한계에도 같은 꼴.
+    C2 공시인원 「추출 범위에 없음」 행(「추출 범위에 없음(직원 인원)」 포함): 인원_출처에 「찾은 방법:」이 있고, 인원_내역(원문 열)에
+       「찾은 방법」 0. 「추출 범위에 없음」(직원 인원 꼴 뺌) 행의 인원_기준일은 빈칸(00_목록 5-1 설명과 맞음).
+    C3 임원_겸직 한 꼴: 맡은 임원 「추출 범위에 없음」 행의 임원_겸직 = 「해당 없음(대응 임원 추출 범위에 없음)」(8개사 모두).
+    C4 기준일 (판단) 꼴: 조직도_기준일(원문)·인원_기준일·지원조직 기준일의 줄마다 날짜 글(숫자 4자리)이 있고,
+       「 / 」로 이은 조각(괄호·「」 밖에서 나눔) 가운데 「판단」이 든 조각은 「<날짜>(판단: <무엇>에 기준일 글이 나오지 않아 <근거>로 둠)」 꼴
+       (「기준일 날짜 글이」「날짜가」 변형 허용), 「판단」 없이 「나오지 않」「적히지 않」「표기」 관찰만 적은 옛 꼴 0.
+    C5 열 이름 한 꼴: 회사 CSV 머리 = 합본 머리(임원겸직은 앞 13열 또는 16열 전체) — 이름 맞춤 표 없이.
  K  키·OC 값(.env·환경 변수에서 읽음 — 값은 찍지 않음)이 14차 산출 파일에 나오지 않음, crtfc_key=/OC= 뒤에 가리지 않은 값 0
  F  handoff/14차_조직인원겸직 에 PDF·PNG·HWP(그림·원본) 파일 0개(dart_out/org14 도 함께 확인)
  B  1~13차 산출물이 커밋 b4ecf46 과 같음: git diff --quiet b4ecf46 -- <경로들> (+ 그 경로에 추적 안 되는 새 파일 0개)
@@ -53,11 +63,9 @@ MERGED = {
     "지원조직": ("14_지원조직_인원.csv", [
         "회사", "조직 종류", "부서(팀)명", "직원수", "직위(근속연수)", "주요 활동(원문)", "기준일", "출처"]),
 }
-# 합본 열 이름 → 회사 CSV 에서 허용하는 같은 자리 열 이름 꼴(비평 보정 뒤 남은 것만 — 조직단위 CSV 는 8개사가 합본 머리와 같아야 함)
-SAME_COL = {
-    "출처(문서·접수번호·쪽)": {"출처"},
-    "주요 활동(원문)": {"주요 활동"},
-}
+# 합본 열 이름 → 회사 CSV 에서 허용하는 같은 자리 열 이름 꼴. 비평 보정 2 뒤 8개사 회사 CSV 머리가 합본 머리와 같아 비움
+# (전: 「출처(문서·접수번호·쪽)」 ← 「출처」, 「주요 활동(원문)」 ← 「주요 활동」).
+SAME_COL: dict = {}
 TEXT = os.path.join(ROOT, "dart_out", "text", "risk8")
 OLD_PATHS = ["handoff/13차_산출물", "handoff/원문_10차", "handoff/원문_11차", "handoff/법령원문_10차",
              "handoff/법령원문_11차", "handoff/법령원문_저용량", "handoff/임원현황.csv", "handoff/겸직현황_정리.csv",
@@ -516,6 +524,151 @@ def check_dates(data):
          + (" · ".join(f"{k} {v}" for k, v in ref.items()) if ref else "0"))
 
 
+# ───────────── C: 8개사 공통 꼴(비평 보정 2) ─────────────
+LIMIT_FORM = "추출 범위(사업보고서·연차보고서·경영공시 — 찾은 방법은 6) 받지 못한 것)에 나오지 않아"
+LIMIT_FORM_MERGED = "추출 범위(사업보고서·연차보고서·경영공시 — 찾은 방법은 회사 md 6) 받지 못한 것)에 나오지 않아"
+DANJEONG = re.compile(r"공시되지\s?않|공시하지\s?않|공시돼\s?있지\s?않|공시되어\s?있지\s?않")
+NOMAP_CONC = "해당 없음(대응 임원 추출 범위에 없음)"
+JUD = re.compile(r"^(?:[①-⑳]\s*)?(?P<d>[^()]*\d{4}[^()]*)\(판단: (?P<body>.+)\)$")
+JUD_BODY = re.compile(r"^.+?에 .*?(?:기준일(?: 날짜)? 글이|기준일\(날짜\) 글이|날짜 글이|날짜가) 나오지 않아 .+?로 둠(?: — .+)?$")
+OLD_DATE = re.compile(r"나오지 않|적히지 않|표기")
+
+
+def split_top(s):
+    """「 / 」로 이은 조각을 괄호·「」 밖에서만 나눔."""
+    out, buf, d, i = [], "", 0, 0
+    while i < len(s):
+        ch = s[i]
+        if ch in "(「":
+            d += 1
+        elif ch in ")」":
+            d = max(0, d - 1)
+        if d == 0 and s.startswith(" / ", i):
+            out.append(buf)
+            buf, i = "", i + 3
+            continue
+        buf += ch
+        i += 1
+    out.append(buf)
+    return out
+
+
+def md_body_lines(L, stop):
+    """회사 md 에서 stop 줄 앞까지, 코드 블록·「>」 인용 줄을 뺀 (줄 번호, 글)."""
+    out, code = [], False
+    for i, l in enumerate(L[:stop], start=1):
+        if l.startswith("```"):
+            code = not code
+            continue
+        if code or l.startswith(">"):
+            continue
+        out.append((i, l))
+    return out
+
+
+def check_common(data):
+    # C1 한계 줄
+    n_lim = 0
+    for co in COS:
+        L = md_lines(os.path.join(HND, f"14_{co}.md"))
+        s0, e0 = section(L, "## 0)")
+        lim = [(i + 1, L[i]) for i in range(s0, e0) if re.match(r"(\| 한계 \||- 한계[:：])", L[i])]
+        if not lim:
+            prob(f"C1 {co}", "회사 md 0) 에 한계 줄이 나오지 않음")
+        for ln, l in lim:
+            n_lim += 1
+            if LIMIT_FORM not in l:
+                prob(f"C1 {co}", f"md {ln}행 한계 줄에 공통 꼴 「{LIMIT_FORM[:30]}…」이 나오지 않음")
+        s7 = next((i for i, l in enumerate(L) if l.startswith("## 7)")), len(L))
+        for ln, l in md_body_lines(L, s7):
+            m = DANJEONG.search(blank_quotes(l))
+            if m:
+                prob(f"C1 {co}", f"md {ln}행(7) 앞) 단정 꼴: …{l[max(0, m.start() - 20):m.end() + 6]}…")
+    L = md_lines(os.path.join(HND, "00_목록.md"))
+    for i, l in enumerate(L, start=1):
+        m = DANJEONG.search(blank_quotes(l))
+        if m:
+            prob("C1 00_목록.md", f"{i}행 단정 꼴: …{l[max(0, m.start() - 20):m.end() + 6]}…")
+    s4, e4 = section(L, "## 4)")
+    if not any(LIMIT_FORM_MERGED in l for l in L[s4:e4]):
+        prob("C1 00_목록.md", "4) 한계에 일반 부서 인원 공통 꼴 줄이 나오지 않음")
+    info(f"C1 한계 줄: 회사 md 0) {n_lim}줄 모두 공통 꼴 확인 대상 · 회사 md 7) 앞·00_목록 의 「공시되지 않」 류 단정은 문제로 셈")
+
+    # C2 공시인원 「추출 범위에 없음」 행의 찾은 방법 자리
+    hu = MERGED["조직단위"][1]
+    kp, kd, kb, ks = (hu.index("공시인원(원문, 없으면 「추출 범위에 없음」)"), hu.index("인원_내역(원문)"),
+                      hu.index("인원_기준일"), hu.index("인원_출처"))
+    c2 = OrderedDict((co, [0, 0]) for co in COS)
+    for r, x in enumerate(data["조직단위"], start=2):
+        v = x[kp]
+        if not v.startswith("추출 범위에 없음"):
+            continue
+        wiwon = v.startswith("추출 범위에 없음(직원 인원)")
+        c2[x[0]][1 if wiwon else 0] += 1
+        if not re.search(r"찾은 방법\s?:", x[ks]):
+            prob(f"C2 {x[0]}", f"조직단위 레코드 {r} 「{x[5]}」: 공시인원 「추출 범위에 없음」인데 인원_출처에 「찾은 방법:」이 나오지 않음")
+        if "찾은 방법" in x[kd]:
+            prob(f"C2 {x[0]}", f"조직단위 레코드 {r} 「{x[5]}」: 인원_내역(원문 열)에 「찾은 방법」 작업 글")
+        if not wiwon and x[kb].strip():
+            prob(f"C2 {x[0]}", f"조직단위 레코드 {r} 「{x[5]}」: 공시인원 「추출 범위에 없음」 행인데 인원_기준일이 빈칸이 아님(00_목록 5-1 설명과 다름)")
+    info("C2 공시인원 「추출 범위에 없음」 행(인원_출처 「찾은 방법:」 · 인원_내역 작업 글 0) — 일반 / 「(직원 인원)」 위원회 행: "
+         + " · ".join(f"{co} {a}/{b}" for co, (a, b) in c2.items()))
+
+    # C3 맡은 임원 「추출 범위에 없음」 행의 임원_겸직
+    ki, km, kj = hu.index("대응_임원(성명·직위)"), hu.index("대응_방식(이름 일치/(판단)/추출 범위에 없음)"), hu.index("임원_겸직(원문: 겸직회사·직위·선임일·상근)")
+    c3 = OrderedDict((co, 0) for co in COS)
+    for r, x in enumerate(data["조직단위"], start=2):
+        if not (x[km].startswith("추출 범위에 없음") or x[ki].startswith("추출 범위에 없음")):
+            continue
+        c3[x[0]] += 1
+        if x[kj] != NOMAP_CONC:
+            prob(f"C3 {x[0]}", f"조직단위 레코드 {r} 「{x[5]}」: 임원_겸직 「{x[kj][:40]}」 ≠ 공통 꼴 「{NOMAP_CONC}」")
+    info("C3 맡은 임원 「추출 범위에 없음」 행의 임원_겸직 공통 꼴 확인: " + " · ".join(f"{co} {n}" for co, n in c3.items()))
+
+    # C4 기준일 칸
+    hs = MERGED["지원조직"][1]
+    cols = [("조직단위", hu.index("조직도_기준일(원문)")), ("조직단위", kb), ("지원조직", hs.index("기준일"))]
+    n_seg = n_jud = 0
+    for kind, j in cols:
+        cname = MERGED[kind][1][j]
+        for r, x in enumerate(data[kind], start=2):
+            for ln in x[j].split("\n"):
+                if not ln.strip():
+                    continue
+                where = f"{kind} 레코드 {r} ({x[0]}) 「{cname}」"
+                if not re.search(r"\d{4}", ln):   # 날짜 글은 줄마다(원문 「2025년말 기준 / 준법감시인 제외」처럼 「 / 」가 원문인 줄이 있어 조각마다 보지 않음)
+                    prob(f"C4 {x[0]}", f"{where}: 날짜 글(숫자 4자리)이 나오지 않는 줄 「{ln[:60]}」")
+                for sg in split_top(ln):
+                    sg = sg.strip()
+                    if not sg:
+                        continue
+                    n_seg += 1
+                    if "판단" in sg:
+                        n_jud += 1
+                        m = JUD.match(sg)
+                        if not m or not JUD_BODY.match(m.group("body")):
+                            prob(f"C4 {x[0]}", f"{where}: (판단) 조각이 공통 꼴이 아님 「{sg[:90]}」")
+                    elif OLD_DATE.search(sg):
+                        prob(f"C4 {x[0]}", f"{where}: 「판단」 없이 관찰만 적은 옛 꼴 「{sg[:80]}」")
+    info(f"C4 기준일 칸 조각 {n_seg}개(조직도_기준일·인원_기준일·지원조직 기준일) 가운데 (판단) 조각 {n_jud}개 — 모두 날짜 글 + 공통 꼴이어야 함")
+
+    # C5 열 이름 한 꼴
+    ok = OrderedDict()
+    allowed = {"조직단위": {19}, "임원겸직": {13, 16}, "지원조직": {8}}
+    for kind, (_, head) in MERGED.items():
+        ok[kind] = 0
+        for co in COS:
+            h = rcsv(os.path.join(ORG, f"{co}_{kind}.csv"))[0]
+            if len(h) not in allowed[kind] or h != head[:len(h)]:
+                bad = [f"{i}:「{a}」≠「{b}」" for i, (a, b) in enumerate(zip(h, head)) if a != b]
+                prob(f"C5 {co}", f"{kind} CSV 머리가 합본 머리와 다름(열 {len(h)}) {' '.join(bad)[:120]}")
+            else:
+                ok[kind] += 1
+    if SAME_COL:
+        prob("C5", f"열 이름 맞춤 표 SAME_COL 이 비어 있지 않음: {sorted(SAME_COL)}")
+    info("C5 회사 CSV 머리 = 합본 머리(맞춤 표 없이): " + " · ".join(f"{k} {n}/8" for k, n in ok.items()))
+
+
 # ───────────── K·F·B ─────────────
 def secret_values():
     vals = []
@@ -582,12 +735,14 @@ def main():
         check_eopseum(data)
         check_nomap(data)
         check_dates(data)
+        check_common(data)
     check_fragments()
     check_secrets_files()
     check_old()
     lines = [f"# verify14 — 14차 합본 검증 ({now})", "",
              "검사: G 그룹 검증 4개 실행 · J 합본 = 회사 CSV 이어 붙임(+멱등) · S 00_목록 2절 숫자 = CSV 다시 셈 · "
              "E 「없음」 단정(원문 칸·「」 인용 밖) 0 · N 맡은 임원 「추출 범위에 없음」 행의 찾은 방법 · D 기준일 칸 빈칸 0 · "
+             "C 8개사 공통 꼴(한계 줄 단정 0·찾은 방법 자리·임원_겸직 한 꼴·기준일 (판단) 꼴·열 이름 한 꼴) · "
              "Q 00_목록 「」 조각 ↔ 회사 md·CSV · K 키·OC 값이 파일에 나오지 않음 · F 산출 폴더 PDF·PNG·HWP 0개 · B 1~13차 = b4ecf46", ""]
     lines += ["## 기록"] + [f"- {x}" for x in INFO] + [""]
     lines += [f"## 문제 {len(PROBS)}건"] + [f"- {x}" for x in PROBS] + [""]
@@ -595,7 +750,7 @@ def main():
     with open(OUT, "w", encoding="utf-8") as f:
         f.write("\n".join(lines) + "\n")
     for x in INFO:
-        if x.startswith(("G ", "J ", "E ", "N ", "D ", "K ", "F ", "B ")):
+        if x.startswith(("G ", "J ", "E ", "N ", "D ", "C", "K ", "F ", "B ")):
             print(x[:200])
     print(f"S 2절 회사 {sum(1 for x in INFO if x.startswith('S '))}행 확인 · Q {next((x for x in INFO if x.startswith('Q ')), '')}")
     for x in PROBS[:30]:

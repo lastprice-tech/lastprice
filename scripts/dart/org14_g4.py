@@ -17,6 +17,9 @@
     NH 직원 표 제목)은 이 스크립트 코드에 옮김(「검증 g4 고침」 표시).
   - 비평 보정(critic14, 2026-10-19): 「없음」 공통 꼴(CRITIC_FIX 표 + 생성 글 꼴), 대응 임원 「추출 범위에 없음」 행의 찾은 방법,
     기준일 (판단) 꼴 — md 7) 끝 「### 비평 보정」 절.
+  - 비평 보정 2(critic14_2, 2026-10-19): 메인이 정한 8개사 공통 꼴 — 0) 한계 줄(추출 범위에 나오지 않음 꼴), 보조 조직도·협의회
+    기준일 칸 「<날짜>(판단: <무엇>에 기준일 글이 나오지 않아 <근거>로 둠)」(OUT_FIX2 · 리스크관리협의회 기준일), 임원겸직 CSV 열 이름
+    「출처(문서·접수번호·쪽)」, NH 사업보고서 「조직도」 검색 기록 줄 — md 7) 끝 「### 비평 보정 2」 절.
 만드는 것:
   handoff/14차_조직인원겸직/14_<회사>.md
   dart_out/org14/<회사>_조직단위.csv · _임원겸직.csv · _지원조직.csv · _판독대조.csv · _판독A.json
@@ -43,6 +46,10 @@ RAW = "dart_out/raw/org14"
 KST = datetime.timezone(datetime.timedelta(hours=9))
 WORK_AT = datetime.datetime.now(KST).strftime("%Y-%m-%d %H:%M KST")   # 실행 기록(raw run json)에만 — md 작업 시각은 검증입력 JSON 값
 NF = "추출 범위에 없음"
+# 0) 한계 줄(비평 보정 2 — 8개사 공통 꼴). 전 꼴은 「### 비평 보정 2」 절 전·후 표에 남김.
+LIMIT_NF_OLD = "일반 부서 인원과 직원 단위 겸직은 대부분 공시되지 않음."
+C_OFF_SRC = "출처(문서·접수번호·쪽)"   # 임원겸직 CSV 출처 열 이름(비평 보정 2 — COMMON14 꼴)
+LIMIT_NF = "일반 부서 인원과 직원 단위 겸직은 추출 범위(사업보고서·연차보고서·경영공시 — 찾은 방법은 6) 받지 못한 것)에 나오지 않아 대부분 「추출 범위에 없음」으로 남음."
 PROBLEMS: list[str] = []
 VIN_PATH = OUT + "/{co}_검증입력.json"   # 검증 에이전트(2026-10-16) 값 — 생성기 입력
 
@@ -88,16 +95,32 @@ OUT_FIX = [
     ("정정판이 없는 것으로 봄(목록 기간 안) (판단)", "대응하는 정정판을 찾지 못한 것으로 봄(목록 기간 안) (판단)"),
 ]
 FIX_USED: dict = {}
+# 비평 보정 2(critic14_2, 2026-10-19) — 기준일 칸 공통 꼴 「<날짜>(판단: <무엇>에 기준일 글이 나오지 않아 <근거>로 둠)」(iM 꼴).
+# OUT_FIX 다음에 건다(OUT_FIX 가 만든 critic14 꼴 → 이번 꼴). 판독A.json(CHARTS 원기록)은 그대로.
+OUT_FIX2 = [
+    ("2025년말 무렵(판단: 그림·쪽 글에 기준일 글이 나오지 않음 — 이사회 「총 8명」이 연차보고서 본문 「2025년말 당사 이사회는 총 8명」과 같아 2025년말 무렵으로 봄)",
+     "2025년말 무렵(판단: 그림·쪽 글에 기준일 글이 나오지 않아 이사회 「총 8명」이 연차보고서 본문 「2025년말 당사 이사회는 총 8명」과 같은 점을 근거로 둠)"),
+    ("본 보고서 제출일 현재(2026.03.18 접수)",
+     "2026.03.18(판단: 그림 앞 문장 「iM금융지주의 본 보고서 제출일 현재 조직도는」에 날짜 글이 나오지 않아 사업보고서 접수일로 둠)"),
+    ("제목 글 「2026년」 뿐(날짜가 적히지 않음)",
+     "2026년(판단: 그림·쪽 글에 기준일 글이 나오지 않아 그림 제목 줄 「【 참고 : 2026년 농협금융지주 조직도 】」의 연도로 둠)"),
+]
+FIX2_USED: dict = {}
 
 
 def out_fix(obj, co):
-    """md·CSV 로 옮길 글에 OUT_FIX 를 건다(문자열·목록·튜플·사전을 따라 내려감). 쓰인 횟수를 회사별로 셈."""
+    """md·CSV 로 옮길 글에 OUT_FIX·OUT_FIX2 를 건다(문자열·목록·튜플·사전을 따라 내려감). 쓰인 횟수를 회사별로 셈."""
     if isinstance(obj, str):
         for a, b in OUT_FIX:
             n = obj.count(a)
             if n:
                 obj = obj.replace(a, b)
                 FIX_USED[(co, a)] = FIX_USED.get((co, a), 0) + n
+        for a, b in OUT_FIX2:
+            n = obj.count(a)
+            if n:
+                obj = obj.replace(a, b)
+                FIX2_USED[(co, a)] = FIX2_USED.get((co, a), 0) + n
         return obj
     if isinstance(obj, tuple):
         return tuple(out_fix(x, co) for x in obj)
@@ -113,6 +136,26 @@ def base_judged(scope, doc):
     if doc == "biz":
         return f"2025.12.31(판단: {scope}에 기준일 글이 나오지 않아 사업보고서 작성기준일로 둠)"
     return f"2025년(판단: {scope}에 기준일 글이 나오지 않아 연차보고서 대상 연도로 둠)"
+
+
+def council_base(docs, q, num):
+    """비평 보정 2: 협의회 구성원 수 문장의 기준일 칸 — 문장에는 기준일 글이 나오지 않아 바로 아래 구성 표의 원문 기준일 줄로 둠(판단).
+    표 위원 행 수(머리 줄 「성 명 직 위 …」 다음부터 「라. 」 앞까지)가 문장 숫자와 같은지 셈."""
+    d = docs[q["doc"]]
+    ttl = next((x.strip() for x in q["lines"] if re.fullmatch(r"【\s*농협금융지주 리스크관리협의회 구성\s*】", x.strip())), None)
+    bl = next((x.strip() for x in q["lines"] if re.fullmatch(r"\(\d{4}년 \d+월 \d+일 기준\)", x.strip())), None)
+    if not ttl or not bl:
+        PROBLEMS.append("NH농협금융지주 리스크관리협의회 표 제목·기준일 줄을 인용 Q23 에서 못 찾음")
+        return base_judged("문장·표", q["doc"])
+    hi = next(i for i in range(q["l1"], len(d.lines)) if d.lines[i].startswith("성 명 직 위"))
+    end = next(i for i in range(hi + 1, len(d.lines)) if re.match(r"^라\. ", d.lines[i]))
+    rows = [x for x in d.lines[hi + 1:end] if x.strip() and not PAGE_RE.match(x.strip())]
+    n = re.search(r"\d+", num).group(0)
+    if str(len(rows)) != n:
+        PROBLEMS.append(f"NH농협금융지주 리스크관리협의회 표 위원 행 {len(rows)} ↔ 문장 {num}")
+    date = re.fullmatch(r"\((\d{4}년 \d+월 \d+일) 기준\)", bl).group(1)
+    return (f"{date}(판단: 「{num}으로 구성되어 있습니다」 문장에 기준일 글이 나오지 않아 바로 아래 「{ttl}」 표의 원문 기준일 줄 「{bl}」로 둠 — "
+            f"표의 위원 행 {len(rows)}개로 문장 숫자와 같음)")
 
 
 def P(*a):
@@ -1394,7 +1437,7 @@ def run(co):
     for qid, dept, num in ({"iM금융지주": [], "NH농협금융지주": [("Q23", "리스크관리협의회", "총 14명")]}[co]):
         q = qs[qid]
         sup_csv.append({"회사": co, "조직 종류": "위험관리 — 협의회 구성원 수(직원 아님)", "부서(팀)명": dept, "직원수": num,
-                        "직위(근속연수)": "", "주요 활동(원문)": "\n".join(q["lines"]), "기준일": "인용 줄 안 날짜 참조", "출처": q["src"]})
+                        "직위(근속연수)": "", "주요 활동(원문)": "\n".join(q["lines"]), "기준일": council_base(docs, q, num), "출처": q["src"]})
     for r in ic:
         sup_csv.append({"회사": co, "조직 종류": "내부회계관리ㆍ운영조직 인력 표(참고)", "부서(팀)명": r["dept"], "직원수": f"총 원 {r['total']}",
                         "직위(근속연수)": f"내부회계담당인력수(A) {r['a']} / 공인회계사자격증소지자수(B) {r['b']} / 비율 {r['ratio']} / 평균경력월수 {r['months']}",
@@ -1475,8 +1518,9 @@ def run(co):
               "공시인원(원문, 없으면 「추출 범위에 없음」)", "인원_내역(원문)", "인원_기준일", "인원_출처", "대응_임원(성명·직위)", "대응_근거(담당업무 원문)",
               "대응_방식(이름 일치/(판단)/추출 범위에 없음)", "임원_겸직(원문: 겸직회사·직위·선임일·상근)", "겸직_출처", "판독_대조", "비고"]
     write_csv(f"{OUT}/{co}_조직단위.csv", H_UNIT, unit_rows + sup_rows)
-    H_OFF = ["회사", "성명", "직위", "등기", "상근", "담당업무(원문)", "대응_조직단위", "대응_방식", "겸직회사", "겸직회사_직위", "선임일", "상근여부", "출처", "임원표_구분", "겸직표_구분", "비고"]
-    write_csv(f"{OUT}/{co}_임원겸직.csv", H_OFF, off_rows)
+    # 비평 보정 2: 열 이름 「출처」 → COMMON14 꼴 「출처(문서·접수번호·쪽)」(8개사 같게) — 행 사전 열쇠는 「출처」 그대로 두고 쓸 때만 바꿈
+    H_OFF = ["회사", "성명", "직위", "등기", "상근", "담당업무(원문)", "대응_조직단위", "대응_방식", "겸직회사", "겸직회사_직위", "선임일", "상근여부", C_OFF_SRC, "임원표_구분", "겸직표_구분", "비고"]
+    write_csv(f"{OUT}/{co}_임원겸직.csv", H_OFF, [dict(r, **{C_OFF_SRC: r["출처"]}) for r in off_rows])
     H_SUP = ["회사", "조직 종류", "부서(팀)명", "직원수", "직위(근속연수)", "주요 활동(원문)", "기준일", "출처"]
     write_csv(f"{OUT}/{co}_지원조직.csv", H_SUP, sup_csv)
     H_PD = ["칸", "판독A", "판독B", "확정", "확정 방법(확대 그림 파일·dpi·clip)", "글자층_대조"]
@@ -1528,7 +1572,7 @@ def build_md(c):
       "(2) 표 — DART 원문 XML 에서 칸 나눔을 얻고 칸 글은 텍스트 파일과 공백 무시로 맞대어 쪽을 붙임. (3) 인용 — 텍스트 파일 줄 그대로. "
       "(4) 겸직 검색 — 「" + "」「".join(TERMS) + f"」 를 문서 5종 전체에서(줄 단위 + 공백 무시) 찾아 `dart_out/raw/org14/{co}_겸직검색.jsonl` 에 남김.")
     A("- 한계: 조직도는 2026년 6~8월 기준이고 인원·임원·겸직은 2025년 12월 31일(일부 2026.01~03) 기준이라 이름이 서로 맞지 않는 단위가 있음. "
-      "일반 부서 인원과 직원 단위 겸직은 대부분 공시되지 않음. 조직도 그림 안 글은 판독이라 원문 글자 그대로가 아님.\n")
+      f"{LIMIT_NF} 조직도 그림 안 글은 판독이라 원문 글자 그대로가 아님.\n")
 
     # 1) 조직도
     A(vm["1절_제목"] + "\n")
@@ -1578,7 +1622,8 @@ def build_md(c):
         A("- (판단) 경영공시(2026.6.30) 조직도와 연차보고서 2026년 조직도의 차이: 연차보고서 그림에는 부 아래 국·단 7개(전략기획국·재무관리단·신사업추진국·신용리스크관리국·리스크검증단·디지털전략국·AI비즈니스국)와 겸직 표시가 있고, "
           "경영공시 그림은 부 단위까지만 그리며 「개인정보보호책임자(CPO)」의 「(CPO)」, NH금융연구소 자리(회장 아래 옆줄)가 다름. 주주총회 상자는 경영공시에만 있음.")
         A("- 연차보고서 2026년 조직도의 겸직 표시(판독): 리스크검증단·AI비즈니스국 점선 상자 위 「(은행 원적)」, 각주 「* 리스크검증단, AI비즈니스국 (지주<겸직> - 은행<원적>)」. "
-          "연차보고서 리스크관리협의회 구성 표에 「서동완 농협금융지주 리스크검증단장」(원문, 인용 Q23)이 있어 리스크검증단 이름은 원문으로도 확인됨.\n")
+          "연차보고서 리스크관리협의회 구성 표에 「서동완 농협금융지주 리스크검증단장」(원문, 인용 Q23)이 있어 리스크검증단 이름은 원문으로도 확인됨.")
+        A(biz_chart_search(c) + "\n")
 
     # 2) 직원 수·겸직 숫자
     A("## 2) 지주 전체 직원 수·직원 겸직 숫자\n")
@@ -1701,9 +1746,30 @@ def build_md(c):
         A("**스크립트 점검 메모**: " + " / ".join(p for p in PROBLEMS if co in p or "XML" in p) + "\n")
     A(vm["검증기록"])   # 7) 검증 기록 — 검증 에이전트가 쓴 글(검증입력 JSON md.검증기록) 그대로
     A(critic_md(c))      # 7) 끝 — 비평 보정(critic14) 절
+    A(critic2_md(c))     # 7) 끝 — 비평 보정 2(critic14_2) 절
     os.makedirs(P(OUT_MD), exist_ok=True)
     with open(P(OUT_MD, f"14_{co}.md"), "w", encoding="utf-8") as f:
         f.write("\n".join(L))
+
+
+def biz_chart_search(c):
+    """비평 보정 2: 사업보고서 텍스트 「조직도」 검색 기록 한 줄(본 보고서·정정판 텍스트 전체, 줄 단위 + 공백 무시)."""
+    co, meta, docs = c["co"], c["meta"], c["docs"]
+    parts = []
+    for k in ("biz", "biz_amend"):
+        if k not in docs:
+            continue
+        d = docs[k]
+        n_line = sum(1 for l in d.lines if "조직도" in l)
+        n_ws = re.sub(r"\s+", "", "".join(d.lines)).count("조직도")
+        pages = [int(m.group(1)) for l in d.lines for m in [PAGE_RE.match(l.strip())] if m]
+        parts.append(f"{meta[k]['문서']} · {meta[k]['id']} 텍스트 `{meta[k]['file']}` 전체(p.{min(pages)}~{max(pages)}) — 「조직도」 걸린 줄 {n_line}개(공백 무시 {n_ws}개)")
+        c.setdefault("biz_chart_hits", {})[k] = (n_line, n_ws)
+    amend = "" if "biz_amend" in docs else " FY2025 정정판은 DART 문서 목록에 나오지 않아 검색 대상에 넣지 않음(6-2)."
+    if any(v[0] or v[1] for v in c["biz_chart_hits"].values()):
+        PROBLEMS.append(f"{co} 사업보고서 텍스트에 「조직도」가 걸림 — 검색 기록 줄 글을 고쳐야 함")
+    return ("- 사업보고서 「조직도」 검색: " + " ; ".join(parts) + " — 사업보고서 텍스트에서는 조직도를 찾지 못해 조직도는 경영공시(1-1·1-2)·연차보고서(1-3·1-4) 것만 씀."
+            + amend + " (판단) 글자층에 「조직도」 글이 들어 있지 않은 그림만의 조직도는 이 검색으로 잡히지 않음 — 사업보고서 PDF 그림을 한 장씩 보지는 않음.")
 
 
 # ───────────────────────── md 7) 끝 「### 비평 보정」 절 ─────────────────────────
@@ -1778,6 +1844,70 @@ def critic_md(c):
              + ", `판독A.json`·`판독B.json`(바이트까지 그대로).")
     L.append("- (4) 검증: `scripts/dart/verify14_g4.py` 에 E 검사(「없음」「없었」「없고」「없어」「없다」 꼴이 원문 칸·원문 「」 조각·작업 사실 낱말 밖에 0, 이 절의 「」 전·후 기록은 뺌 · 대응 임원 추출 범위에 없음 행의 찾은 방법·임원_겸직 꼴 · 지원조직 기준일 빈칸 0)를 더하고, "
              "SKIP 낱말을 새 꼴(「(숫자 글이 나오지 않음」·기준일 (판단) 꼴·「" + NOMAP_CONC + "」)로 바꿈, F 검사는 이 절을 뺌 → exit 0. 생성기를 두 번 돌려 md·CSV·JSON md5 같음(멱등).\n")
+    return "\n".join(L)
+
+
+# ───────────────────────── md 7) 끝 「### 비평 보정 2」 절(critic14_2) ─────────────────────────
+CRITIC2_AT = "2026-10-19 11:47–12:02 KST"
+
+
+def critic2_md(c):
+    co = c["co"]
+    rows_all = c["unit_rows"] + c["sup_rows"]
+    nf_rows = [r for r in rows_all if r["공시인원(원문, 없으면 「추출 범위에 없음」)"].startswith(NF)]
+    nf_ok = sum(1 for r in nf_rows if r["인원_출처"].startswith("찾은 방법:") and not r["인원_내역(원문)"].strip())
+    nf_staff = sum(1 for r in nf_rows if r["공시인원(원문, 없으면 「추출 범위에 없음」)"] != NF)
+    nomap_n = sum(1 for r in rows_all if r["대응_임원(성명·직위)"] == NF)
+    nomap_ok = sum(1 for r in rows_all if r["대응_임원(성명·직위)"] == NF and r["임원_겸직(원문: 겸직회사·직위·선임일·상근)"] == NOMAP_CONC)
+    ann = [r for r in c["sup_rows"] if r["_ck"] == "annual_chart"]
+    ann_new = ann[0]["조직도_기준일(원문)"] if ann else ""
+    # 기준일 칸 전수(조직도_기준일 · 인원_기준일 줄 · 지원조직 기준일): 원문 날짜 글 / (판단) 꼴
+    cells = [r["조직도_기준일(원문)"] for r in rows_all]
+    cells += [re.sub(r"^[①-⑳]\s*", "", x) for r in rows_all for x in r["인원_기준일"].split("\n") if x.strip()]
+    cells += [r["기준일"] for r in c["sup_csv"]]
+    n_judged = sum(1 for x in cells if "(판단:" in x)
+    n_nodate = sum(1 for x in cells if not re.search(r"20\d\d", x.split("(판단:")[0]))
+    sup_council = [r for r in c["sup_csv"] if r["조직 종류"].startswith("위험관리 — 협의회")]
+    t = lambda s: "「" + s + "」"
+    L = ["### 비평 보정 2(critic14_2 대응, 2026-10-19 KST)\n",
+         f"- 작업: 비평 보정 에이전트(그룹 g4) · {CRITIC2_AT} · 근거 `dart_out/org14/critic14_2.json` new_issues 중 이 회사 몫(머리 한계 줄의 「공시되지 않음」 단정 · "
+         "공시인원 「추출 범위에 없음」 행의 찾은 방법 자리 · 맡은 임원 「추출 범위에 없음」 행의 임원_겸직 꼴 · 연차보고서 서술 행 기준일 꼴)와 메인이 정한 8개사 공통 꼴 · "
+         "로컬 파일만 읽음(웹 요청·API 키·OC 사용 없음). 판독 값·원문 칸·인용 블록·`판독A.json`·`판독B.json`·검증입력 JSON 은 바꾸지 않음. 모든 보정은 `scripts/dart/org14_g4.py` 에서 함"
+         "(OUT_FIX2 짝 · council_base · LIMIT_NF · C_OFF_SRC · biz_chart_search — md·CSV 를 손으로 고치지 않음).\n"]
+    tb = [["0) 한계 줄", t(LIMIT_NF_OLD), t(LIMIT_NF), "md 1줄"]]
+    if co == "iM금융지주":
+        tb.append(["보조 조직도(연차보고서 p.7) 조직도_기준일 칸 · md 1-4 「기준일:」",
+                   t("2025년말 무렵(판단: 그림·쪽 글에 기준일 글이 나오지 않음 — 이사회 「총 8명」이 …과 같아 2025년말 무렵으로 봄)"),
+                   t(ann_new.replace("연차보고서 본문 「2025년말 당사 이사회는 총 8명」", "…")), f"조직단위 CSV {len(ann)}칸 · md 1줄"])
+        tb.append(["보조 조직도(사업보고서 p.432) md 1-3 「기준일:」(행 없는 보조 조직도)",
+                   t("본 보고서 제출일 현재(2026.03.18 접수)"), t(dict(OUT_FIX2)["본 보고서 제출일 현재(2026.03.18 접수)"]), "md 1줄"])
+    else:
+        tb.append(["보조 조직도(연차보고서 p.19) 조직도_기준일 칸 · md 1-4 「기준일:」", t("제목 글 「2026년」 뿐(날짜가 적히지 않음)"), t(ann_new),
+                   f"조직단위 CSV {len(ann)}칸 · md 1줄"])
+        tb.append(["지원조직 CSV 리스크관리협의회(총 14명) 기준일", t("인용 줄 안 날짜 참조"),
+                   t(sup_council[0]["기준일"]) if sup_council else "", f"지원조직 CSV {len(sup_council)}칸"])
+    tb.append(["임원겸직 CSV 열 이름", t("출처"), t(C_OFF_SRC) + "(COMMON14 꼴 · KB_임원겸직.csv 와 같음)", "머리 1칸"])
+    tb.append(["지원조직 CSV 열 이름", t("주요 활동(원문)"), "그대로(이미 COMMON14 꼴)", "0"])
+    tb.append(["조직단위 CSV 공시인원 「추출 범위에 없음」 행의 찾은 방법 자리",
+               f"인원_출처 「찾은 방법: …」·인원_내역(원문 열) 빈칸 {nf_ok}/{len(nf_rows)}행(KB·신한 꼴)",
+               "그대로(이미 공통 꼴)", "0"])
+    tb.append(["「추출 범위에 없음(직원 인원) — 위원 수는 인원_내역」 꼴 행",
+               f"이 회사 CSV 에 이 꼴 행 {nf_staff}개 — 위원·이사 수는 공시인원 칸에 〔위원 수(직원 아님)〕 같은 종류 표시로 둠", "그대로", "0"])
+    tb.append(["맡은 임원 「추출 범위에 없음」 행의 임원_겸직", f"{t(NOMAP_CONC)} {nomap_ok}/{nomap_n}행", "그대로(메인이 정한 8개사 꼴과 같음)", "0"])
+    if co == "NH농협금융지주":
+        hits = c["biz_chart_hits"]["biz"]
+        tb.append(["사업보고서 「조직도」 검색 기록", "1) 에 검색 기록 줄이 나오지 않음",
+                   f"1-4 아래 한 줄 「사업보고서 「조직도」 검색: … 걸린 줄 {hits[0]}개(공백 무시 {hits[1]}개) …」 + 6-2 「사업보고서의 조직도」 행", "md 2곳"])
+    tb.append(["기준일 칸 전수(조직도_기준일 · 인원_기준일 줄 · 지원조직 기준일)", "—",
+               f"날짜 글이 있는 원문 표기 {len(cells) - n_judged}칸 · 「<날짜>(판단: <무엇>에 기준일(날짜) 글이 나오지 않아 <근거>로 둠)」 {n_judged}칸 — 앞머리에 날짜 글이 나오지 않는 칸 {n_nodate}",
+               f"{len(cells)}칸 검사"])
+    L.append(md_table(["항목", "전(대표 예)", "후(대표 예)", "개수"], tb))
+    L.append("")
+    L.append("- 그대로 둔 것: 인용 블록·원문 칸, 「### 비평 보정」(critic14) 절의 지난 전·후 기록(그 절 「후」 글은 그때 꼴), 공시인원 「추출 범위에 없음」 행의 인원_기준일 빈칸"
+             "(인원 숫자가 나오지 않는 행이라 기준일을 두지 않음 — KB·신한과 같은 꼴).")
+    L.append("- 검증: `scripts/dart/verify14_g4.py` 에 G 검사(머리 한계 줄 「공시되지 않」 0 · 공통 꼴 글 있음, NH 사업보고서 「조직도」 검색 줄의 셈 ↔ 텍스트 다시 셈 · 공시인원 「추출 범위에 없음」 행의 인원_출처 「찾은 방법:」·인원_내역 빈칸, "
+             "맡은 임원 「추출 범위에 없음」 행의 임원_겸직 꼴, 기준일 칸 = 날짜 글이 있는 원문 표기 또는 「<날짜>(판단: …)」 꼴, 임원겸직·지원조직 CSV 열 이름 = COMMON14 꼴)를 더하고 "
+             f"임원겸직 CSV 출처 열을 새 이름으로 읽게 고침 → exit 0. 생성기를 두 번 돌려 md·CSV·JSON md5 같음(멱등).\n")
     return "\n".join(L)
 
 
@@ -1857,6 +1987,7 @@ def summary_nh(c):
         ["리스크관리부·리스크검증단(위험관리 조직) 인원", "연차보고서 위험관리 장 「리스크관리부」「리스크검증단」「명」 검색 — 리스크관리협의회 구성원(총 14명)과 부장·단장 이름만"],
         ["겸직 표 오유성·이성남·하성국의 지주 직위", "세 문서 성명 검색 — 겸직 표 밖에서 나오지 않음(황두선은 「회계담당직원」)"],
         ["사업보고서 FY2025 정정판", "dart_out/risk8/DART_문서목록.csv 에 NH 사업보고서 FY2025 는 20260331004252 하나뿐 — 목록에 정정판이 나오지 않아 정정판 대조는 하지 않음"],
+        ["사업보고서의 조직도", "사업보고서 20260331004252 텍스트 전체에서 「조직도」 검색 — " + "·".join(f"{a}줄(공백 무시 {b}개)" for a, b in c["biz_chart_hits"].values()) + " (1-4 아래 줄)"],
     ]
     diffs = [
         ["준법지원부 직원수 12 ↔ 직위 칸 합 11", "(판단) 원문 표 안에서 맞지 않음(위 3절 비고)"],

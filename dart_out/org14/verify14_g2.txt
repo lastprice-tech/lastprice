@@ -3,11 +3,11 @@
 
 ## 하나금융지주
 - quotes: 27
-- frag_ok: 847
-- frag_term: 33
+- frag_ok: 561
+- frag_term: 32
 - frag_title: 8
 - frag_pandok: 1
-- frag_search: 30
+- frag_search: 31
 - frag_bad: 0
 - pageline: 160
 - exec_cells: 285
@@ -17,17 +17,23 @@
 - cmp_rows: 220
 - name_match: 139
 - name_match_ws: 0
-- frag_fixrec: 70
+- frag_fixrec: 102
 - 집계: 글 {'부문': 9, '실': 1, '본부': 12, '부서': 32, '단': 1, '국': 1, '센터': 1, '팀': 29} ↔ 확정 {'부문': 9, '실': 1, '본부': 12, '단': 1, '국': 1, '센터': 1, '팀': 29, '부서': 32} (부문 = 「부문」 8 + 준법감시인 1, (판단))
+- g_limit: 1
+- g_nf_rows: 64
+- g_nf_src_ok: 64
+- g_conc_rows: 42
+- g_base_cells: 108
+- g_base_judge: 4
 - eopseum: 0
 
 ## 우리금융지주
 - quotes: 24
-- frag_ok: 449
-- frag_term: 40
+- frag_ok: 294
+- frag_term: 39
 - frag_title: 23
-- frag_pandok: 35
-- frag_search: 40
+- frag_pandok: 29
+- frag_search: 55
 - frag_bad: 0
 - pageline: 92
 - exec_cells: 140
@@ -37,11 +43,17 @@
 - cmp_rows: 136
 - name_match: 100
 - name_match_ws: 0
-- frag_fixrec: 89
+- frag_fixrec: 133
 - 집계: 집계 글 나오지 않음(그림 안에 · 확정 단위 수 43 ↔ CSV 43
+- g_limit: 1
+- g_nf_rows: 39
+- g_nf_src_ok: 39
+- g_conc_rows: 25
+- g_base_cells: 65
+- g_base_judge: 7
 - eopseum: 0
 
-## 원문 대조에서 따로 센 「」 조각 210개 (term=칸 이름·표지 낱말, title=문서 제목(메타 CSV), pandok=판독 이름, search=찾은 방법의 검색어)
+## 원문 대조에서 따로 센 「」 조각 218개 (term=칸 이름·표지 낱말, title=문서 제목(메타 CSV), pandok=판독 이름, search=찾은 방법의 검색어)
 하나 | md 5줄 | term | 판독
 하나 | md 5줄 | term | (판단)
 하나 | md 5줄 | term | 추출 범위에 없음
@@ -78,7 +90,7 @@
 하나 | md 357줄 | term | 준법감시인(준법지원인) 등 지원조직
 하나 | md 465줄 | search | 겸임
 하나 | md 467줄 | term | 공시인원
-하나 | md 495줄 | term | 인원_내역
+하나 | md 495줄 | search | 인원_출처
 하나 | md 567줄 | term | 이름 일치
 하나 | md 567줄 | term | (판단)
 하나 | md 567줄 | term | 추출 범위에 없음
@@ -176,19 +188,33 @@
 우리 | md 393줄 | title | 2025 년도 지배구조 및 보상체계 연차보고서 공시
 우리 | md 399줄 | pandok | 임원후보추천위원회 (사외이사 전원)
 우리 | md 399줄 | title | 2025 년도 지배구조 및 보상체계 연차보고서 공시
+우리 | md 399줄 | search | 부서원
+우리 | md 399줄 | search | 실무자
 우리 | md 400줄 | pandok | 감사위원회 (사외이사 4인)
 우리 | md 400줄 | title | 2025 년도 지배구조 및 보상체계 연차보고서 공시
+우리 | md 400줄 | search | 부서원
+우리 | md 400줄 | search | 실무자
 우리 | md 401줄 | pandok | 리스크관리위원회 (사외이사 4인)
 우리 | md 401줄 | title | 2025 년도 지배구조 및 보상체계 연차보고서 공시
+우리 | md 401줄 | search | 부서원
+우리 | md 401줄 | search | 실무자
 우리 | md 402줄 | pandok | 보상위원회 (사외이사 4인)
 우리 | md 402줄 | title | 2025 년도 지배구조 및 보상체계 연차보고서 공시
+우리 | md 402줄 | search | 부서원
+우리 | md 402줄 | search | 실무자
 우리 | md 403줄 | pandok | 윤리·내부통제위원회 (사외이사 5인)
 우리 | md 403줄 | title | 2025 년도 지배구조 및 보상체계 연차보고서 공시
+우리 | md 403줄 | search | 부서원
+우리 | md 403줄 | search | 실무자
 우리 | md 404줄 | pandok | 자회사대표이사 후보추천위원회 (이사 전원)
 우리 | md 404줄 | title | 2025 년도 지배구조 및 보상체계 연차보고서 공시
+우리 | md 404줄 | search | 부서원
+우리 | md 404줄 | search | 실무자
 우리 | md 405줄 | pandok | ESG경영위원회 (이사 전원)
 우리 | md 405줄 | title | 2025 년도 지배구조 및 보상체계 연차보고서 공시
-우리 | md 407줄 | term | 인원_내역
+우리 | md 405줄 | search | 부서원
+우리 | md 405줄 | search | 실무자
+우리 | md 407줄 | search | 인원_출처
 우리 | md 451줄 | term | 이름 일치
 우리 | md 451줄 | term | (판단)
 우리 | md 463줄 | term | 이름 일치
@@ -240,17 +266,11 @@
 우리 | 조직단위 CSV 9행 인원_내역(원문) | pandok | 윤리·내부통제위원회 (사외이사 5인)
 우리 | 조직단위 CSV 10행 인원_내역(원문) | pandok | 자회사대표이사 후보추천위원회 (이사 전원)
 우리 | 조직단위 CSV 11행 인원_내역(원문) | pandok | ESG경영위원회 (이사 전원)
-우리 | 조직단위 CSV 21행 인원_내역(원문) | pandok | 회계부
 우리 | 조직단위 CSV 21행 대응_근거(담당업무 원문) | pandok | 회계부
-우리 | 조직단위 CSV 24행 인원_내역(원문) | pandok | 시너지사업부
 우리 | 조직단위 CSV 24행 대응_근거(담당업무 원문) | pandok | 시너지사업부
-우리 | 조직단위 CSV 27행 인원_내역(원문) | pandok | 미래혁신부
 우리 | 조직단위 CSV 27행 대응_근거(담당업무 원문) | pandok | 미래혁신부
-우리 | 조직단위 CSV 28행 인원_내역(원문) | pandok | AI전략센터
 우리 | 조직단위 CSV 28행 대응_근거(담당업무 원문) | pandok | AI전략센터
-우리 | 조직단위 CSV 29행 인원_내역(원문) | pandok | ICT기획부
 우리 | 조직단위 CSV 29행 대응_근거(담당업무 원문) | pandok | ICT기획부
-우리 | 조직단위 CSV 42행 인원_내역(원문) | pandok | 기업문화리더십센터
 우리 | 조직단위 CSV 42행 대응_근거(담당업무 원문) | pandok | 기업문화리더십센터
 
 ## 문제 0건

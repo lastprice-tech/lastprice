@@ -13,6 +13,11 @@
  H  회사 CSV 열 이름 = COMMON14 「산출 2~3」 꼴(조직단위는 KB금융지주_조직단위.csv 머리 줄과 글자 그대로 같음), 지원조직 기준일 빈칸 0
  E  「없음」 단정(없음·없었음·없고·없어·없다)이 원문 밖에 0 — md(코드 블록·「>」 줄 밖)와 CSV 모든 칸에서 원문 줄·원문 「」 조각·
     작업 사실 낱말(EOK)을 뺀 나머지를 셈. md 「비평 보정」 절의 「」 조각(지난 전·후 기록)은 뺌
+ G  critic14_2 공통 꼴(8개사 같게): md 0) 한계 줄 단정 0(「공시되지 않」 0, 「추출 범위(사업보고서·연차보고서·경영공시」 있음),
+    조직단위 CSV 공시인원 「추출 범위에 없음…」 행의 인원_출처에 「찾은 방법:」 있음·인원_내역(원문 열)에 「찾은 방법」 0,
+    대응_방식 「추출 범위에 없음」 행의 임원_겸직 = 「해당 없음(대응 임원 추출 범위에 없음)」,
+    기준일 칸(조직도_기준일·인원_기준일 줄마다·지원조직 기준일): 날짜 글 있음, (판단)이 붙은 칸은 「<날짜>(판단: <무엇>에 기준일 글이 나오지 않아 <근거>로 둠)」 꼴,
+    옛 꼴(「표기 나오지 않음」「로 봄(판단)」) 0 — md 는 「비평 보정」 절 밖
  K  키·OC 값 없음, 산출 폴더에 PDF·PNG 없음
 로컬 파일만 읽음(웹 요청 없음).
 """
@@ -73,7 +78,11 @@ SHORT = {"조직도_겸직표시(판독, 없으면 빈칸)": "조직도_겸직�
 TOP = "(맨 위 — 위로 이어진 상자가 나오지 않음)"
 # E 검사: 「없음」 단정 꼴과, 단정이 아닌 작업 사실 낱말(방법 설명 — 13차와 같은 공통 꼴 ④)
 EOPSEUM = re.compile(r"없(?:음|었|고(?=\s)|어(?=\s)|다(?=[\s.]))")
-EOK = ["추출 범위에 없음", "글자층 없음", "글자층에 없음", "API 키·OC 사용 없음", "고친 인용: 없음", "(인자 없음"]
+NO_OFF_CONC = "해당 없음(대응 임원 추출 범위에 없음)"   # critic14_2 공통 꼴(메인이 정함 — 8개사 같게)
+EOK = [NO_OFF_CONC, "추출 범위에 없음", "글자층 없음", "글자층에 없음", "API 키·OC 사용 없음", "고친 인용: 없음", "(인자 없음"]
+# G 검사: 기준일 칸 꼴
+BASE_JUDGE = re.compile(r"^\d{4}[^()]*\(판단: .+에 기준일 글이 나오지 않아 .+로 둠\)$")
+BASE_OLD = ("표기 나오지 않음", "로 봄(판단)", "2025.12.31(판단)", "기준일 글이 나오지 않음)")
 FIX_HEAD = "### 비평 보정"
 META = ["dart_out/risk8/연차보고서_FY2025.csv", "dart_out/risk8/경영공시_2026_2Q.csv", "dart_out/risk8/DART_문서목록.csv"]
 
@@ -521,6 +530,67 @@ def check_company(co, cfg):
     for n, r in enumerate(sup, 2):
         if not r["기준일"].strip():
             probs.append((tag, f"지원조직 CSV {n}행", "기준일 빈칸"))
+
+    # ── G: critic14_2 공통 꼴(한계 줄·찾은 방법 자리·임원_겸직 꼴·기준일 칸)
+    for k in ("g_limit", "g_nf_rows", "g_nf_src_ok", "g_conc_rows", "g_base_cells", "g_base_judge"):
+        st[k] = 0
+    lim = [i for i, ln in enumerate(md) if ln.startswith("- 한계:")]
+    if len(lim) != 1:
+        probs.append((tag, "md 0) 한계", f"「- 한계:」 줄 {len(lim)}개"))
+    for i in lim:
+        st["g_limit"] += 1
+        if "공시되지 않" in md[i] or "추출 범위(사업보고서·연차보고서·경영공시" not in md[i]:
+            probs.append((tag, f"md {i+1}줄 0) 한계", "일반 부서 인원 글이 「추출 범위(…)에 나오지 않아」 꼴이 아님(단정)"))
+    inb = False
+    for i, ln in enumerate(md[:fix_from]):
+        if ln.startswith("```"):
+            inb = not inb
+            continue
+        if inb or ln.startswith(">"):
+            continue
+        if "공시되지 않" in ln:
+            probs.append((tag, f"md {i+1}줄", "「공시되지 않」 단정 꼴"))
+        for old in BASE_OLD:
+            if old in ln:
+                probs.append((tag, f"md {i+1}줄", f"기준일 옛 꼴 「{old}」"))
+    for n, r in enumerate(units, 2):
+        if r["공시인원(원문)"].startswith("추출 범위에 없음"):
+            st["g_nf_rows"] += 1
+            if "찾은 방법:" in r["인원_출처"]:
+                st["g_nf_src_ok"] += 1
+            else:
+                probs.append((tag, f"조직단위 CSV {n}행 {r['조직단위(판독)']}", "공시인원 「추출 범위에 없음」인데 인원_출처에 「찾은 방법:」 없음"))
+        if "찾은 방법" in r["인원_내역(원문)"]:
+            probs.append((tag, f"조직단위 CSV {n}행 {r['조직단위(판독)']}", "인원_내역(원문 열)에 「찾은 방법」 — 인원_출처로"))
+        if r["대응_방식"] == "추출 범위에 없음":
+            st["g_conc_rows"] += 1
+            if r["임원_겸직(원문)"] != NO_OFF_CONC:
+                probs.append((tag, f"조직단위 CSV {n}행 {r['조직단위(판독)']}", f"임원_겸직 「{r['임원_겸직(원문)'][:30]}」 ↔ 공통 꼴 「{NO_OFF_CONC}」"))
+        elif not r["임원_겸직(원문)"].strip():
+            probs.append((tag, f"조직단위 CSV {n}행 {r['조직단위(판독)']}", "대응 임원이 있는데 임원_겸직 빈칸"))
+
+    def base_cell(v, where, blank_ok=False):
+        lines = v.split("\n") if v else [""]
+        for x in lines:
+            if not x.strip():
+                if not blank_ok:
+                    probs.append((tag, where, "기준일 빈칸"))
+                continue
+            st["g_base_cells"] += 1
+            if not re.search(r"\d{4}", x):
+                probs.append((tag, where, f"기준일 칸에 날짜 글 없음: 「{x[:40]}」"))
+            if any(o in x for o in BASE_OLD):
+                probs.append((tag, where, f"기준일 옛 꼴: 「{x[:50]}」"))
+            if "(판단" in x or "나오지 않" in x:
+                st["g_base_judge"] += 1
+                if not BASE_JUDGE.match(x):
+                    probs.append((tag, where, f"기준일 (판단) 칸이 「<날짜>(판단: <무엇>에 기준일 글이 나오지 않아 <근거>로 둠)」 꼴이 아님: 「{x[:60]}」"))
+
+    for n, r in enumerate(units, 2):
+        base_cell(r["조직도_기준일(원문)"], f"조직단위 CSV {n}행 조직도_기준일")
+        base_cell(r["인원_기준일"], f"조직단위 CSV {n}행 인원_기준일", blank_ok=(r["공시인원(원문)"] == "추출 범위에 없음"))
+    for n, r in enumerate(sup, 2):
+        base_cell(r["기준일"], f"지원조직 CSV {n}행 기준일")
 
     # ── E: 「없음」 단정이 원문 밖에 있는지
     def rest(text, drop_all_frags=False):
