@@ -11,9 +11,17 @@
      조직도 겸직 표시 수, 조직도 기준일 = CSV 원문 칸). 지주 직원 수는 CSV 에 없어 회사 md 2) 직원 표 「합 계」 행과 맞댐.
     「추출 범위에 없음」 칸은 회사 md 2) 에 같은 말이 있는지 확인. 1-1·1-2·3-4 의 행 수·칸 수도 CSV 에서 다시 셈.
  Q  00_목록.md 1~4절의 「…」 조각이 회사 md·CSV 에 있는지(공백 무시) — 회사 행은 그 회사 파일에서, 나머지는 8개사 파일 전체에서
- K  키·OC 값(.env·환경 변수에서 읽음 — 값은 찍지 않음)이 14차 산출 파일에 없음, crtfc_key=/OC= 뒤 가리지 않은 값 없음
- F  handoff/14차_조직인원겸직 에 PDF·PNG·HWP(그림·원본) 파일 없음(dart_out/org14 도 함께 확인)
- B  1~13차 산출물이 커밋 b4ecf46 과 같음: git diff --quiet b4ecf46 -- <경로들> (+ 그 경로에 추적 안 되는 새 파일 없음)
+ E  「없음」 단정 0: 합본 CSV 3개의 모든 칸과 00_목록.md 의 모든 줄에서, 「」 인용 조각·정한 말(「추출 범위에 없음」
+    「해당 없음(대응 임원 추출 범위에 없음)」)·작업 사실(「글자층 없음」)·열 이름(「…없으면…」)을 뺀 글에
+    「없음·없었·없고·없어·없다」(00_목록은 「없는·없이·없으…·수 없」도) 꼴이 0곳. 원문 칸(원문 표·문장을 옮긴 칸)에서
+    걸린 글이 그 회사 텍스트(dart_out/text/risk8)에 공백 무시로 그대로 있으면 원문으로 보고 셈에서 뺌.
+ N  조직단위 행 가운데 대응_방식(또는 대응_임원)이 「추출 범위에 없음」인 행: 대응_근거 칸이 비어 있지 않고 「찾은 방법」이 적힘
+ D  기준일 칸 빈칸 0: 조직단위 조직도_기준일(원문) 모든 행, 인원_기준일은 공시인원에 값이 있는 행(「추출 범위에 없음」으로
+    시작하지 않거나 「추출 범위에 없음(직원 인원)」 — 위원 수 행), 지원조직 기준일 모든 행
+    (참고로 날짜를 채우면서 「판단」 글이 나오지 않는 줄 수를 기록 — 문제로 세지 않음)
+ K  키·OC 값(.env·환경 변수에서 읽음 — 값은 찍지 않음)이 14차 산출 파일에 나오지 않음, crtfc_key=/OC= 뒤에 가리지 않은 값 0
+ F  handoff/14차_조직인원겸직 에 PDF·PNG·HWP(그림·원본) 파일 0개(dart_out/org14 도 함께 확인)
+ B  1~13차 산출물이 커밋 b4ecf46 과 같음: git diff --quiet b4ecf46 -- <경로들> (+ 그 경로에 추적 안 되는 새 파일 0개)
 """
 from __future__ import annotations
 
@@ -45,15 +53,12 @@ MERGED = {
     "지원조직": ("14_지원조직_인원.csv", [
         "회사", "조직 종류", "부서(팀)명", "직원수", "직위(근속연수)", "주요 활동(원문)", "기준일", "출처"]),
 }
-# 합본 열 이름 → 회사 CSV 에서 허용하는 같은 자리 열 이름 꼴
+# 합본 열 이름 → 회사 CSV 에서 허용하는 같은 자리 열 이름 꼴(비평 보정 뒤 남은 것만 — 조직단위 CSV 는 8개사가 합본 머리와 같아야 함)
 SAME_COL = {
-    "조직도_겸직표시(판독, 없으면 빈칸)": {"조직도_겸직표시(판독)"},
-    "공시인원(원문, 없으면 「추출 범위에 없음」)": {"공시인원(원문)"},
-    "대응_방식(이름 일치/(판단)/추출 범위에 없음)": {"대응_방식"},
-    "임원_겸직(원문: 겸직회사·직위·선임일·상근)": {"임원_겸직(원문)"},
     "출처(문서·접수번호·쪽)": {"출처"},
     "주요 활동(원문)": {"주요 활동"},
 }
+TEXT = os.path.join(ROOT, "dart_out", "text", "risk8")
 OLD_PATHS = ["handoff/13차_산출물", "handoff/원문_10차", "handoff/원문_11차", "handoff/법령원문_10차",
              "handoff/법령원문_11차", "handoff/법령원문_저용량", "handoff/임원현황.csv", "handoff/겸직현황_정리.csv",
              "handoff/직원현황.csv"]
@@ -294,7 +299,7 @@ def check_summary(data):
         if not m or tuple(map(int, m.groups())) != (R["nexec"], R["reg"], R["unreg"]):
             prob(f"S {co} 임원 수", f"표 {c[7]} ↔ CSV {R['nexec']}(등기 {R['reg']} · 미등기 {R['unreg']})")
         # 겸직 임원
-        m = re.match(r"(\d+)명 \(그중 같은 날 임원 표에 있는 사람 (\d+)\)(?: — 임원 표에 없는 사람: (.*))?$", c[8])
+        m = re.match(r"(\d+)명 \(그중 같은 날 임원 표에 있는 사람 (\d+)\)(?: — 임원 표에 나오지 않는 사람: (.*))?$", c[8])
         if not m or (int(m.group(1)), int(m.group(2)), parse_names(m.group(3) or "")) != (len(R["conc"]), len(R["conc_in"]), R["conc_out"]):
             prob(f"S {co} 겸직 임원", f"표 {c[8][:60]} ↔ CSV {len(R['conc'])}명(임원 표 {len(R['conc_in'])}, 밖 {R['conc_out']})")
         # 조직도 겸직 표시
@@ -382,6 +387,135 @@ def check_fragments():
     info(f"Q 00_목록.md 1~4절 「」 조각 {n_ok + len(miss)}개 중 회사 md·CSV 에서 찾음 {n_ok}")
 
 
+# ───────────── E: 「없음」 단정(원문 칸·「」 인용 밖) ─────────────
+EOPSEUM = re.compile(r"없(?:음|었|고|어|다)")                       # 그룹 검증(E·검사 9)과 같은 꼴
+EOPSEUM_MD = re.compile(r"없(?:음|었|고|어|다|는|이|으)|수\s?없")     # 00_목록(합본 스크립트가 쓰는 글)은 더 넓게
+ALLOW = ["해당 없음(대응 임원 추출 범위에 없음)", "추출 범위에 없음", "글자층 없음"]   # 정한 말 · 작업 사실
+RAW_COLS = {   # 원문(또는 판독) 글을 옮긴 칸
+    "조직단위": {"조직도_기준일(원문)", "상위단위(판독)", "조직단위(판독)", "단위_층위(판독)", "조직도_겸직표시(판독, 없으면 빈칸)",
+               "인원_내역(원문)", "대응_근거(담당업무 원문)", "임원_겸직(원문: 겸직회사·직위·선임일·상근)"},
+    "임원겸직": {"성명", "직위", "등기", "상근", "담당업무(원문)", "겸직회사", "겸직회사_직위", "선임일", "상근여부"},
+    "지원조직": {"부서(팀)명", "직원수", "직위(근속연수)", "주요 활동(원문)", "기준일"},
+}
+_SRC = {}
+
+
+def src_text(co):
+    """그 회사 원문 텍스트(dart_out/text/risk8 에서 파일 이름에 회사 이름이 든 것) — 공백 뺀 글. 필요할 때만 읽음."""
+    if co not in _SRC:
+        parts = []
+        for fn in sorted(os.listdir(TEXT)):
+            if co in fn and fn.endswith(".txt"):
+                parts.append(open(os.path.join(TEXT, fn), encoding="utf-8", errors="replace").read())
+        _SRC[co] = ns("\n".join(parts))
+    return _SRC[co]
+
+
+def blank_quotes(s):
+    """「…」(겹 「」 포함) 안 글을 같은 길이의 빈칸으로 바꿈 — 자리(index)는 그대로."""
+    out, depth = [], 0
+    for ch in s:
+        if ch == "「":
+            depth += 1
+            out.append(" ")
+        elif ch == "」" and depth:
+            depth -= 1
+            out.append(" ")
+        else:
+            out.append(" " if depth else ch)
+    return "".join(out)
+
+
+def blank_phrases(s, phrases):
+    for p in phrases:
+        s = s.replace(p, " " * len(p))
+    return s
+
+
+def check_eopseum(data):
+    n_cell = n_hit_raw = 0
+    bad = []
+    for kind, (fname, head) in MERGED.items():
+        for r, x in enumerate(data.get(kind, []), start=2):
+            for j, v in enumerate(x):
+                if "없" not in v:
+                    continue
+                n_cell += 1
+                t = blank_phrases(blank_quotes(v), ALLOW)
+                for m in EOPSEUM.finditer(t):
+                    if head[j] in RAW_COLS[kind]:
+                        seg = ns(v[max(0, m.start() - 15):m.end()])
+                        if seg and seg in src_text(x[0]):
+                            n_hit_raw += 1
+                            continue
+                    bad.append(f"{fname} 레코드 {r} ({x[0]}) 「{head[j]}」: …{v[max(0, m.start() - 25):m.end() + 8]}…")
+    L = md_lines(os.path.join(HND, "00_목록.md"))
+    colnames = sorted({h for _, (_, hd) in MERGED.items() for h in hd if "없" in h}, key=len, reverse=True)
+    n_md = 0
+    for i, l in enumerate(L, start=1):
+        if "없" not in l:
+            continue
+        n_md += 1
+        t = blank_phrases(blank_quotes(blank_phrases(l, colnames)), ALLOW)
+        for m in EOPSEUM_MD.finditer(t):
+            bad.append(f"00_목록.md {i}행: …{l[max(0, m.start() - 25):m.end() + 8]}…")
+    for b in bad:
+        prob("E 「없음」", b.replace("\n", " ")[:220])
+    info(f"E 「없음」 검사: 합본 CSV 칸 {n_cell}개·00_목록 줄 {n_md}개에 「없」 글자 — 원문 칸에서 회사 텍스트와 같은 글 {n_hit_raw}곳은 원문으로 봄 · 단정 {len(bad)}곳")
+
+
+# ───────────── N: 맡은 임원 「추출 범위에 없음」 행의 찾은 방법 ─────────────
+def check_nomap(data):
+    head = MERGED["조직단위"][1]
+    ki, kg, km, kj = (head.index("대응_임원(성명·직위)"), head.index("대응_근거(담당업무 원문)"),
+                      head.index("대응_방식(이름 일치/(판단)/추출 범위에 없음)"), head.index("임원_겸직(원문: 겸직회사·직위·선임일·상근)"))
+    cnt, zero, forms = OrderedDict((co, 0) for co in COS), OrderedDict((co, 0) for co in COS), OrderedDict()
+    for r, x in enumerate(data["조직단위"], start=2):
+        if not (x[km].startswith("추출 범위에 없음") or x[ki].startswith("추출 범위에 없음")):
+            continue
+        cnt[x[0]] += 1
+        g = x[kg].strip()
+        if not g or "찾은 방법" not in g:
+            prob(f"N {x[0]}", f"조직단위 레코드 {r} 「{x[5]}」: 대응_임원 「추출 범위에 없음」인데 대응_근거에 찾은 방법이 적히지 않음")
+        if re.search(r"— 0건", g):
+            zero[x[0]] += 1
+        forms.setdefault(x[kj] or "(빈칸)", []).append(x[0])
+    info("N 맡은 임원 「추출 범위에 없음」 행(찾은 방법 적힘 / 그중 「— 0건」): "
+         + " · ".join(f"{co} {cnt[co]}/{zero[co]}" for co in COS))
+    info("N 같은 행의 임원_겸직 칸 꼴(참고): " + " · ".join(
+        f"「{k[:30]}」 {'·'.join(OrderedDict.fromkeys(v))} {len(v)}행" for k, v in forms.items()))
+
+
+# ───────────── D: 기준일 칸 빈칸 ─────────────
+def check_dates(data):
+    hu, hs = MERGED["조직단위"][1], MERGED["지원조직"][1]
+    i_org, i_pp, i_num = hu.index("조직도_기준일(원문)"), hu.index("인원_기준일"), hu.index("공시인원(원문, 없으면 「추출 범위에 없음」)")
+    i_sd = hs.index("기준일")
+    n_need = 0
+    for r, x in enumerate(data["조직단위"], start=2):
+        if not x[i_org].strip():
+            prob(f"D {x[0]}", f"조직단위 레코드 {r} 「{x[5]}」: 조직도_기준일 빈칸")
+        v = x[i_num]
+        if (not v.startswith("추출 범위에 없음")) or v.startswith("추출 범위에 없음(직원 인원)"):
+            n_need += 1
+            if not x[i_pp].strip():
+                prob(f"D {x[0]}", f"조직단위 레코드 {r} 「{x[5]}」: 공시인원 값이 있는데 인원_기준일 빈칸")
+    for r, x in enumerate(data["지원조직"], start=2):
+        if not x[i_sd].strip():
+            prob(f"D {x[0]}", f"지원조직 레코드 {r} 「{x[2]}」: 기준일 빈칸")
+
+    def nojud(v):
+        return [l for l in v.split("\n") if re.search(r"나오지 않|적히지 않", l) and re.search(r"\d{4}", l) and "판단" not in l]
+    ref = OrderedDict()
+    for kind, idx in (("조직단위", i_pp), ("지원조직", i_sd)):
+        for x in data[kind]:
+            if nojud(x[idx]):
+                ref[f"{kind} {x[0]}"] = ref.get(f"{kind} {x[0]}", 0) + 1
+    info(f"D 기준일 칸: 조직단위 {len(data['조직단위'])}행 조직도_기준일 · 인원 값 있는 {n_need}행 인원_기준일 · 지원조직 {len(data['지원조직'])}행 기준일 — 빈칸은 문제로 셈")
+    info("D 참고(문제로 세지 않음): 「나오지 않음」 관찰과 날짜를 함께 적고 「판단」 글이 나오지 않는 줄 — "
+         + (" · ".join(f"{k} {v}" for k, v in ref.items()) if ref else "0"))
+
+
 # ───────────── K·F·B ─────────────
 def secret_values():
     vals = []
@@ -445,19 +579,23 @@ def main():
     data = check_merged()
     if len(data) == 3:
         check_summary(data)
+        check_eopseum(data)
+        check_nomap(data)
+        check_dates(data)
     check_fragments()
     check_secrets_files()
     check_old()
     lines = [f"# verify14 — 14차 합본 검증 ({now})", "",
              "검사: G 그룹 검증 4개 실행 · J 합본 = 회사 CSV 이어 붙임(+멱등) · S 00_목록 2절 숫자 = CSV 다시 셈 · "
-             "Q 00_목록 「」 조각 ↔ 회사 md·CSV · K 키·OC 값 없음 · F 산출 폴더 PDF·PNG·HWP 없음 · B 1~13차 = b4ecf46", ""]
+             "E 「없음」 단정(원문 칸·「」 인용 밖) 0 · N 맡은 임원 「추출 범위에 없음」 행의 찾은 방법 · D 기준일 칸 빈칸 0 · "
+             "Q 00_목록 「」 조각 ↔ 회사 md·CSV · K 키·OC 값이 파일에 나오지 않음 · F 산출 폴더 PDF·PNG·HWP 0개 · B 1~13차 = b4ecf46", ""]
     lines += ["## 기록"] + [f"- {x}" for x in INFO] + [""]
     lines += [f"## 문제 {len(PROBS)}건"] + [f"- {x}" for x in PROBS] + [""]
     lines.append("결과: " + ("통과(exit 0)" if not PROBS else "실패(exit 1)"))
     with open(OUT, "w", encoding="utf-8") as f:
         f.write("\n".join(lines) + "\n")
     for x in INFO:
-        if x.startswith(("G ", "J ", "K ", "F ", "B ")):
+        if x.startswith(("G ", "J ", "E ", "N ", "D ", "K ", "F ", "B ")):
             print(x[:200])
     print(f"S 2절 회사 {sum(1 for x in INFO if x.startswith('S '))}행 확인 · Q {next((x for x in INFO if x.startswith('Q ')), '')}")
     for x in PROBS[:30]:

@@ -11,9 +11,12 @@
   - DART 원문 XML ZIP: dart_out/raw/document/<접수번호>.zip — 표의 칸 나눔만 여기서 얻고(scripts/dart/docparse.py),
     칸 글자는 텍스트 파일과 공백 무시 대조해 텍스트 파일 쪽 원문(줄바꿈 포함)을 싣는다.
   - 메타: dart_out/risk8/DART_문서목록.csv · 텍스트목록.csv · 연차보고서_FY2025.csv · 경영공시_2026_2Q.csv.
+  - 생성기 입력 dart_out/org14/<회사>_검증입력.json — 검증 에이전트(2026-10-16) 값(판독대조 CSV 판독B·확정·확정 방법,
+    조직단위 CSV 판독_대조 칸, 칸 고침, md 0) 한계 글·6) 판독 A↔B 칸·4) 표 고침·7) 검증 기록)과 비평 보정 기록(critic14, 2026-10-19).
+    산출 파일을 손으로 고치지 않고 이 JSON 이나 이 스크립트를 고친 뒤 다시 돌린다. 작업 시각은 고정값(WORK_AT·FIX_AT)이라 다시 돌려도 바이트가 같다(멱등).
 만드는 것:
   handoff/14차_조직인원겸직/14_<회사>.md
-  dart_out/org14/<회사>_조직단위.csv · _임원겸직.csv · _지원조직.csv · _판독대조.csv(A 칸만) · _판독A.json
+  dart_out/org14/<회사>_조직단위.csv · _임원겸직.csv · _지원조직.csv · _판독대조.csv · _판독A.json(판독 A 원기록 — CHARTS 글 그대로)
   dart_out/raw/org14/<회사>_겸직검색.jsonl (검색 걸린 줄 전부 — 기록용, git 무시)
 """
 from __future__ import annotations
@@ -35,8 +38,28 @@ OUT = "dart_out/org14"
 OUT_MD = "handoff/14차_조직인원겸직"
 RAW = "dart_out/raw/org14"
 KST = datetime.timezone(datetime.timedelta(hours=9))
-WORK_AT = datetime.datetime.now(KST).strftime("%Y-%m-%d %H:%M KST")
+# 산출에 적는 작업 시각은 고정값(다시 돌려도 바이트가 같도록 — 멱등). 실제 실행 시각은 RUN_AT(기록 파일 dart_out/raw/org14/org14_g2_run.json 에만).
+WORK_AT = "2026-10-16 17:15 KST"   # 수집·판독 A 작업 시각(1차)
+RUN_AT = datetime.datetime.now(KST).strftime("%Y-%m-%d %H:%M KST")
 NF = "추출 범위에 없음"
+# 검증 에이전트(2026-10-16)가 생성기 출력 위에 직접 고쳤던 값을 옮긴 생성기 입력(판독 B·확정·확정 방법, 판독_대조 칸, 칸 고침, md 검증 글·7) 검증 기록)
+VIN_PATH = OUT + "/{co}_검증입력.json"
+FIX_AT = "2026-10-19 KST"   # critic14 비평 보정(재생성) 날짜 — 고정값(멱등)
+TOP = "(맨 위 — 위로 이어진 상자가 나오지 않음)"   # 상위단위 없는 맨 위 상자(판독대조 CSV 칸 글)
+# critic14 「없음」 보정 — 판독 A 원기록(CHARTS 의 marks·header → 판독A.json, 읽기 전용)은 글을 그대로 두고, md·CSV 에 쓸 때만 아래 꼴로 바꾼다.
+A_OUT_FIX = [("같은 표시 글이 없음 — ", "같은 표시 글이 적히지 않음 — "), ("같은 집계 글이 없음)", "같은 집계 글이 적히지 않음)")]
+
+
+def afix(s):
+    for a, b in A_OUT_FIX:
+        s = s.replace(a, b)
+    return s
+
+
+# 회사 CSV 열 이름 — COMMON14 「산출 2~3」 꼴(KB금융지주_조직단위.csv 머리 줄과 글자 그대로 같음). 안쪽 열쇠(짧은 꼴) → 파일 열 이름.
+CSV_HEAD_OUT = {"조직도_겸직표시(판독)": "조직도_겸직표시(판독, 없으면 빈칸)", "공시인원(원문)": "공시인원(원문, 없으면 「추출 범위에 없음」)",
+                "대응_방식@조직단위": "대응_방식(이름 일치/(판단)/추출 범위에 없음)", "임원_겸직(원문)": "임원_겸직(원문: 겸직회사·직위·선임일·상근)",
+                "출처@임원겸직": "출처(문서·접수번호·쪽)"}
 PROBLEMS: list[str] = []
 
 
@@ -420,9 +443,9 @@ CHARTS = {
 JUDGE = {
     "하나금융지주": {
         "그룹임원후보추천위원회": [("이강원", "(판단) 담당업무 원문 「그룹임원후보추천위워회 위원장」의 「위워회」를 「위원회」 오기로 봄 — 글자 일치 아님")],
-        "전략부문": [("남호식", "(판단) 담당업무 「전략본부장」 — 2026.6.30 조직도에 「전략본부」 글자가 없고 이름이 가장 가까운 단위가 「전략부문」. 기준일(2025.12.31 ↔ 2026.6.30) 사이 개편 여부는 원문으로 확인 안 됨")],
+        "전략부문": [("남호식", "(판단) 담당업무 「전략본부장」 — 2026.6.30 조직도에 「전략본부」 글자가 나오지 않고 이름이 가장 가까운 단위가 「전략부문」. 기준일(2025.12.31 ↔ 2026.6.30) 사이 개편 여부는 원문으로 확인 안 됨")],
         "신사업·디지털본부": [
-            ("박근영", "(판단) 담당업무 「AIㆍ디지털전략본부장」 — 2026.6.30 조직도에 「AIㆍ디지털전략본부」 없음; 「AI·디지털전략팀」이 신사업·디지털본부 아래에 있어 이어지는 것으로 봄. 개편 여부는 원문으로 확인 안 됨"),
+            ("박근영", "(판단) 담당업무 「AIㆍ디지털전략본부장」 — 2026.6.30 조직도에 「AIㆍ디지털전략본부」 글자가 나오지 않음; 「AI·디지털전략팀」이 신사업·디지털본부 아래에 있어 이어지는 것으로 봄. 개편 여부는 원문으로 확인 안 됨"),
             ("정은혜", "(판단) 담당업무 「AIㆍ디지털전략본부소속」 — 위와 같은 근거"),
             ("엄태성", "(판단) 담당업무 「AIㆍ디지털전략본부소속」 — 위와 같은 근거"),
         ],
@@ -432,11 +455,11 @@ JUDGE = {
 # 대응을 정하지 않은 임원의 (판단) 메모
 NOMAP_NOTE = {
     "하나금융지주": {
-        "이승열": "(판단) 담당업무 「미래성장부문장」 — 2026.6.30 조직도에 「미래성장부문」 없음(「신사업/미래가치부문」은 이름이 다름). 부문장 직무의 대응 단위는 정하지 않음(위원회 대응만)",
-        "강성묵": "(판단) 담당업무 「시너지부문장」 — 2026.6.30 조직도에 「시너지부문」 없음(「시너지기획팀」이 지속성장부문 아래 있으나 단위 층위가 다름). 부문장 직무의 대응 단위는 정하지 않음(위원회 대응만)",
-        "이은형": "(판단) 담당업무 「글로벌부문장, ESG부문장」 — 2026.6.30 조직도에 「글로벌부문」「ESG부문」 없음(「글로벌본부」·「ESG본부」는 다른 부문 아래 본부). 대응을 정하지 않음",
-        "전호진": "(판단) 담당업무 「CIB본부장」 — 2026.6.30 조직도에 「CIB본부」 없음; 작성기준일 이후 퇴직 임원 표에 있음. 대응을 정하지 않음",
-        "정준형": "담당업무 「소비자리스크관리부문장」 — 2026.6.30 조직도에 없음. 연차보고서 조직도(2025.12.31)의 「소비자리스크관리부문장(CCRO)」과 글자 일치(이 CSV 의 연차보고서 조직도 행)",
+        "이승열": "(판단) 담당업무 「미래성장부문장」 — 2026.6.30 조직도에 「미래성장부문」 글자가 나오지 않음(「신사업/미래가치부문」은 이름이 다름). 부문장 직무의 대응 단위는 정하지 않음(위원회 대응만)",
+        "강성묵": "(판단) 담당업무 「시너지부문장」 — 2026.6.30 조직도에 「시너지부문」 글자가 나오지 않음(「시너지기획팀」이 지속성장부문 아래 있으나 단위 층위가 다름). 부문장 직무의 대응 단위는 정하지 않음(위원회 대응만)",
+        "이은형": "(판단) 담당업무 「글로벌부문장, ESG부문장」 — 2026.6.30 조직도에 「글로벌부문」「ESG부문」 글자가 나오지 않음(「글로벌본부」·「ESG본부」는 다른 부문 아래 본부). 대응을 정하지 않음",
+        "전호진": "(판단) 담당업무 「CIB본부장」 — 2026.6.30 조직도에 「CIB본부」 글자가 나오지 않음; 작성기준일 이후 퇴직 임원 표에 있음. 대응을 정하지 않음",
+        "정준형": "담당업무 「소비자리스크관리부문장」 — 2026.6.30 조직도에 이 이름이 나오지 않음. 연차보고서 조직도(2025.12.31)의 「소비자리스크관리부문장(CCRO)」과 글자 일치(이 CSV 의 연차보고서 조직도 행)",
     },
     "우리금융지주": {},
 }
@@ -743,11 +766,13 @@ def conc_text(name, conc):
 
 
 # ───────────────────────── 쓰기 도우미 ─────────────────────────
-def write_csv(path, header, rows):
+def write_csv(path, header, rows, kind=None):
+    """kind 를 주면 머리 줄만 CSV_HEAD_OUT 의 파일 열 이름으로 바꿔 쓴다(행 열쇠는 안쪽 짧은 꼴 그대로)."""
     os.makedirs(os.path.dirname(P(path)), exist_ok=True)
+    names = [CSV_HEAD_OUT.get(f"{h}@{kind}", CSV_HEAD_OUT.get(h, h)) for h in header] if kind else header
     with open(P(path), "w", encoding="utf-8-sig", newline="") as f:
         w = csv.writer(f)
-        w.writerow(header)
+        w.writerow(names)
         for r in rows:
             w.writerow([r.get(h, "") for h in header])
 
@@ -832,8 +857,32 @@ def write_pandok_json(co, layer):
 
 
 # ───────────────────────── 회사 하나 처리 ─────────────────────────
+def load_vin(co):
+    with open(P(VIN_PATH.format(co=co)), encoding="utf-8") as f:
+        return json.load(f)
+
+
+def apply_fixes(co, vin, kind, rows):
+    """검증 에이전트 칸 고침(검증입력 JSON 「칸_고침」) — 행 번호와 조건이 모두 맞아야 고친다. 「칸+」는 뒤에 덧붙임."""
+    for fx in vin.get("칸_고침", []):
+        if fx["파일"] != kind:
+            continue
+        i = fx["행"]
+        r = rows[i] if i < len(rows) else None
+        if r is None or any(r.get(k, "") != v for k, v in fx["조건"].items()):
+            PROBLEMS.append(f"{co} 칸 고침 {kind} {i}행 조건 안 맞음: {fx['조건']}")
+            continue
+        for k, v in fx["칸"].items():
+            if k.endswith("+"):
+                r[k[:-1]] = r.get(k[:-1], "") + v
+            else:
+                r[k] = v
+
+
 def run(co):
     ch = CHARTS[co]
+    vin = load_vin(co)
+    VINS[co] = vin
     meta = load_meta(co)
     docs = load_docs(co, meta)
     qs = build_quotes(co, docs)
@@ -987,7 +1036,12 @@ def run(co):
                      "경영지원부": "보상위원회·자회사대표이사후보추천위원회", "준법정책부": "윤리·내부통제위원회", "ESG경영부": "ESG경영위원회"}
     conc_src = f"{biz.label} · {biz.ident} · IX장 「회사와 계열회사간 임원 겸직 현황」 표 2개(쪽은 칸마다)"
 
-    def unit_row(chart_name, page, base, par, name, lvl, box, layer_res, note, hits, hc, cm, extra_note=""):
+    vcmp = vin["조직단위_판독대조"]
+
+    def cmp_text(key):
+        return vcmp["따로"].get(key) or vcmp["기본"].format(시각=vcmp["시각"], 번호=key)
+
+    def unit_row(key, chart_name, page, base, par, name, lvl, box, layer_res, note, hits, hc, cm, extra_note=""):
         r = {"회사": co, "조직도_문서": chart_name, "조직도_쪽": page, "조직도_기준일(원문)": base, "상위단위(판독)": par,
              "조직단위(판독)": name, "단위_층위(판독)": lvl, "조직도_겸직표시(판독)": ""}
         if hc:
@@ -1023,7 +1077,7 @@ def run(co):
             r["대응_방식"] = NF
             r["임원_겸직(원문)"] = ""
             r["겸직_출처"] = ""
-        r["판독_대조"] = "B 대기(검증 에이전트)" + (f"; A↔글자층: {layer_res}" if layer_res else "")
+        r["판독_대조"] = cmp_text(key) + (f"; A↔글자층: {layer_res}" if layer_res else "")
         r["비고"] = " ".join(x for x in (note, extra_note) if x)
         return r
 
@@ -1036,7 +1090,7 @@ def run(co):
             ex = f"(판독) 연차보고서 조직도(2025.12월말 기준, p.{ch['annual']['page']} 그림)에서 「{woori_ann_map[name]}」 오른쪽에 이어진 지원 부서로 그려짐."
         if name in ("주주총회",):
             ex += " (판단) 조직 단위라기보다 기관 — 대응 임원 칸은 기계 검색 결과 그대로."
-        unit_rows.append(unit_row(chart_doc, page_label, ch["base_date"], par, name, lvl, box,
+        unit_rows.append(unit_row(uid, chart_doc, page_label, ch["base_date"], par, name, lvl, box,
                                   layer_check(co, layer, name, box), f"[{uid}] 상자 글(판독): {box}. 선·위치(판독): {note}.", unit_hits[name], hc, cm, ex))
     for aid, par, name, base in extra_units:
         hc = []
@@ -1044,10 +1098,11 @@ def run(co):
         if a:
             hc.append(dict(n=re.search(r"(\d+)명", a["글"]).group(1), detail=f"연차보고서 조직도 글자층 「{a['글']}」", base="2025년 12월 31일 기준(조직도 제목)",
                            src=f"{ann.label} · {ann.ident} · p.{a['쪽']} · 줄 {a['줄']}"))
-        unit_rows.append(unit_row(f"연차보고서 「{meta['annual']['문서']}」 ({meta['annual']['url']})", f"p.{ch['annual']['page']}", ch["annual"]["base"],
+        unit_rows.append(unit_row(aid, f"연차보고서 「{meta['annual']['문서']}」 ({meta['annual']['url']})", f"p.{ch['annual']['page']}", ch["annual"]["base"],
                                   par, base, "연차보고서 조직도 상자(글자층 원문)", name, "", f"[{aid}] 상자 글(글자층 원문): {name}. 2026.6.30 경영공시 조직도에는 이 이름이 나오지 않아 연차보고서 조직도 행으로 따로 둠. 상위는 선 판독.",
                                   unit_hits.get(base, []), hc, None))
-    write_csv(f"{OUT}/{co}_조직단위.csv", H_UNIT, unit_rows)
+    apply_fixes(co, vin, "조직단위", unit_rows)
+    write_csv(f"{OUT}/{co}_조직단위.csv", H_UNIT, unit_rows, kind="조직단위")
 
     # ── 임원겸직 CSV ──
     H_OFF = ["회사", "성명", "직위", "등기", "상근", "담당업무(원문)", "대응_조직단위", "대응_방식", "겸직회사", "겸직회사_직위", "선임일", "상근여부", "출처",
@@ -1072,10 +1127,11 @@ def run(co):
     names = {o["성명"] for o in offs}
     for r in conc:
         if r["성명"] not in names:
-            off_rows.append({"회사": co, "성명": r["성명"], "직위": NF + "(임원 표에 없음)", "겸직회사": r["겸직회사"], "겸직회사_직위": r["겸직직위"],
+            off_rows.append({"회사": co, "성명": r["성명"], "직위": NF + "(임원 표에 나오지 않음)", "겸직회사": r["겸직회사"], "겸직회사_직위": r["겸직직위"],
                              "선임일": r["선임일"], "상근여부": r["상근여부"], "겸직표_구분": r["표"], "출처": f"{biz.label} · {biz.ident} · 겸직 표 {r['쪽']}"})
             PROBLEMS.append(f"{co} 겸직 표 이름이 임원 표에 없음: {r['성명']}")
-    write_csv(f"{OUT}/{co}_임원겸직.csv", H_OFF, off_rows)
+    apply_fixes(co, vin, "임원겸직", off_rows)
+    write_csv(f"{OUT}/{co}_임원겸직.csv", H_OFF, off_rows, kind="임원겸직")
 
     # ── 지원조직 CSV ──
     H_SUP = ["회사", "조직 종류", "부서(팀)명", "직원수", "직위(근속연수)", "주요 활동(원문)", "기준일", "출처"]
@@ -1102,7 +1158,7 @@ def run(co):
                 sup_rows.append({"회사": co, "조직 종류": "위험관리" if m.group(1) != "준법지원팀" else "준법감시(연차보고서)", "부서(팀)명": m.group(1),
                                  "직원수": (f"{fn.group(1)} (텍스트 「{m.group(2)}」 — 쪽 그림 확인: {fn.group(1)} + 위첨자 각주 {fn.group(2)})" if fn else m.group(2)),
                                  "직위(근속연수)": f"해당부서 평균 근속기간 — 현재원 {m.group(3)}, 전출자 {m.group(4)}" + (f"; 비고 「{m.group(5)}」" if m.group(5) else ""),
-                                 "주요 활동(원문)": "표에 활동 칸 없음 — 각주: " + " ".join(x.strip() for x in q["lines"] if re.match(r"^\s*[1-4]\) ", x)) + " / 위 서술: " + " ".join(x.strip() for x in qs["Q21"]["lines"]),
+                                 "주요 활동(원문)": "표에 활동 칸이 나오지 않음 — 각주: " + " ".join(x.strip() for x in q["lines"] if re.match(r"^\s*[1-4]\) ", x)) + " / 위 서술: " + " ".join(x.strip() for x in qs["Q21"]["lines"]),
                                  "기준일": "2025년 말 기준(원문)", "출처": f"{qs['Q21']['short']}; {qs['Q22']['short']}; {q['short']} · {ann.path}"})
     else:
         for qid, kind, n, pos in (("Q18", "사외이사 지원", "4", "직위 나오지 않음"),):
@@ -1119,25 +1175,32 @@ def run(co):
         q = qs["Q22"]
         sup_rows.append({"회사": co, "조직 종류": "감사위원회 지원(연차보고서)", "부서(팀)명": "감사부", "직원수": "부서장 1명, 부원 11명", "직위(근속연수)": "근속연수 나오지 않음",
                          "주요 활동(원문)": "\n".join(l.strip() for l in q["lines"]), "기준일": "2025년말 현재(원문)", "출처": q["src"]})
-        sup_rows.append({"회사": co, "조직 종류": "위험관리", "부서(팀)명": NF, "직원수": NF, "직위(근속연수)": "", "주요 활동(원문)": "",
-                         "기준일": "", "출처": "찾은 방법: 사업보고서·연차보고서·경영공시 텍스트에서 「리스크관리부」「리스크모형검증부」「리스크관리 관련 부서」「인원 현황」「명이 근무」「명으로 구성」「전문인력」 검색 — 리스크관리부 인원 숫자 0건"})
+        sup_rows.append({"회사": co, "조직 종류": "위험관리", "부서(팀)명": NF, "직원수": NF, "직위(근속연수)": NF + "(찾은 방법은 출처 칸)", "주요 활동(원문)": NF + "(찾은 방법은 출처 칸)",
+                         "기준일": "2025.12.31(판단: 표에 기준일 글이 나오지 않음)", "출처": "찾은 방법: 사업보고서·연차보고서·경영공시 텍스트에서 「리스크관리부」「리스크모형검증부」「리스크관리 관련 부서」「인원 현황」「명이 근무」「명으로 구성」「전문인력」 검색 — 리스크관리부 인원 숫자 0건"})
     write_csv(f"{OUT}/{co}_지원조직.csv", H_SUP, sup_rows)
 
     # ── 판독대조 CSV (A 칸만) ──
     H_CMP = ["칸", "판독A", "판독B", "확정", "확정 방법(확대 그림 파일·dpi·clip)", "글자층_대조"]
     cmp_rows = []
     for k, v in ch["header"]:
-        cmp_rows.append({"칸": f"머리 — {k}", "판독A": v, "확정 방법(확대 그림 파일·dpi·clip)": f"A: {ch['clips']['top'][0]} {ch['clips']['top'][1]}dpi clip={ch['clips']['top'][2]}",
-                         "글자층_대조": ("글자층과 같음(공백 무시)" if ws(v) in ws(layer) else "글자층과 다름/없음") if co == "하나금융지주" else ("글자층(쪽 제목·기준일)" if "글자층" in k else "그림 판독")})
-    cmp_rows.append({"칸": "조직도 겸직 표시", "판독A": ch["marks"], "확정 방법(확대 그림 파일·dpi·clip)": "A: 200dpi 전체 + 확대 그림 전부"})
+        cmp_rows.append({"칸": f"머리 — {k}", "판독A": afix(v), "확정 방법(확대 그림 파일·dpi·clip)": f"A: {ch['clips']['top'][0]} {ch['clips']['top'][1]}dpi clip={ch['clips']['top'][2]}",
+                         "글자층_대조": ("글자층과 같음(공백 무시)" if ws(v) in ws(layer) else "글자층과 다름/글자층에 나오지 않음") if co == "하나금융지주" else ("글자층(쪽 제목·기준일)" if "글자층" in k else "그림 판독")})
+    cmp_rows.append({"칸": "조직도 겸직 표시", "판독A": afix(ch["marks"]), "확정 방법(확대 그림 파일·dpi·clip)": "A: 200dpi 전체 + 확대 그림 전부"})
     cmp_rows.append({"칸": "조직 단위 수", "판독A": str(len(ch["units"])), "확정 방법(확대 그림 파일·dpi·clip)": "A: 단위 표 행 수"})
     for uid, par, name, lvl, box, clip, note in ch["units"]:
         cf, dpi, rect = ch["clips"][clip]
         how = f"A: {ch['img200']} 200dpi 전체 + {cf} {dpi}dpi clip={rect}"
         lc = layer_check(co, layer, name, box)
         cmp_rows.append({"칸": f"{uid} 단위 이름", "판독A": f"{name} (상자 글: {box})", "확정 방법(확대 그림 파일·dpi·clip)": how, "글자층_대조": lc})
-        cmp_rows.append({"칸": f"{uid} 상위단위", "판독A": par or "(없음 — 맨 위)", "확정 방법(확대 그림 파일·dpi·clip)": how + f"; 선: {note}", "글자층_대조": "선은 글자층에 없음 — 그림 판독"})
+        cmp_rows.append({"칸": f"{uid} 상위단위", "판독A": par or TOP, "확정 방법(확대 그림 파일·dpi·clip)": how + f"; 선: {note}", "글자층_대조": "선은 글자층에 없음 — 그림 판독"})
         cmp_rows.append({"칸": f"{uid} 층위", "판독A": lvl, "확정 방법(확대 그림 파일·dpi·clip)": how})
+    # 판독 B·확정·확정 방법(검증 에이전트) — 검증입력 JSON 「판독대조」를 같은 순서·같은 칸 이름으로 붙임
+    vb = vin["판독대조"]
+    if [x["칸"] for x in vb] != [x["칸"] for x in cmp_rows]:
+        PROBLEMS.append(f"{co} 검증입력 판독대조 칸 순서·수가 생성 행과 다름")
+    for r, b in zip(cmp_rows, vb):
+        for k in ("판독B", "확정", "확정 방법(확대 그림 파일·dpi·clip)"):
+            r[k] = b[k]
     write_csv(f"{OUT}/{co}_판독대조.csv", H_CMP, cmp_rows)
 
     # ── md ──
@@ -1183,22 +1246,22 @@ def build_md(co, ch, meta, docs, qs, offs, conc, same8, n_ix, n_viii, emp, sup, 
     A(f"- 조직도 PDF: `{ch['pdf']}` {ch['page']}쪽 — sha256 {meta['mgmt']['sha']} (스크립트가 다시 계산해 메타와 같음을 확인). 그림 종류: {ch['image_kind']}")
     A(f"- 기준일 3종: 조직도(경영공시) 「{ch['base_date']}」 · 사업보고서 임원·직원 표 「{'2025년 12월 31일' if co == '하나금융지주' else '2025.12.31'}」(작성기준일 이후 표는 칸마다 따로 적음) · "
       f"연차보고서 「{ch['annual']['base']}」(연차보고서 조직도 제목) — 칸마다 기준일을 따로 적었다.")
-    A(f"- 수집일: 위 표 「원본 수집」 칸(2026-09-30~10-01 KST). 작업일: {WORK_AT}.")
+    A(f"- 수집일: 위 표 「원본 수집」 칸(2026-09-30~10-01 KST). 작업일: {WORK_AT} (비평 보정 재생성 {FIX_AT} — 7) 끝 비평 보정 절).")
     A("- 방법: (1) 조직도 — 200dpi 전체 그림을 먼저 보고, 글자가 작은 곳을 300~800dpi 로 잘라(clip) 확대해 판독 A 를 적음(이 스크립트 `HANA_UNITS`/`WOORI_UNITS` 표, "
       f"`dart_out/org14/{co}_판독A.json` 에 따로 저장). 상하 관계는 선(연결)을 따라 읽은 판독. (2) 표 — DART 원문 XML(같은 접수번호 ZIP)에서 칸 나눔을 얻고, 칸 글자는 텍스트 파일과 "
       "공백 무시 대조해 텍스트 파일 쪽 글자를 실음. (3) 인용 — 텍스트 파일 줄을 글자 그대로 코드 블록에 옮기고 바로 위에 [문서 · 접수번호/URL · 쪽 · 줄 · 파일 · 원본 수집 · 인용] 을 붙임.")
     A("- 한계: 조직도는 2026년 6~8월 기준이고 인원·임원·겸직은 2025년 12월 31일(일부 2026.02~03) 기준이라 이름이 서로 맞지 않는 단위가 있음. 일반 부서 인원과 직원 단위 겸직은 대부분 "
-      "공시되지 않아 「추출 범위에 없음」. 조직도 칸은 판독(검증 에이전트 판독 B 와 맞대기 전).\n")
+      "공시되지 않아 「추출 범위에 없음」. 조직도 칸은 판독(" + VINS[co]["md"]["한계_판독"] + ").\n")
 
     # 1) 조직도 판독
     A("## 1) 조직도 판독 (판독 A)\n")
     A(f"### 1-1. 조직도 머리 글 — {('글자층(원문)과 판독' if co == '하나금융지주' else '판독(제목·기준일은 쪽 글자층 원문)')}\n")
-    A(md_table(["칸", "판독 A"], [[k, v] for k, v in ch["header"]]))
+    A(md_table(["칸", "판독 A"], [[k, afix(v)] for k, v in ch["header"]]))
     A("")
     A(md_quote(qs["Q01"]))
     if co == "하나금융지주":
         A(f"- 쪽 글자층 전체: {mg.short(la + 1, lb - 1)} (조직도 상자 글이 글자층으로 들어 있음 — 판독과 글자층을 단위마다 대조해 1-2 표 「글자층」 칸에 적음).\n")
-    A(f"- 조직도 겸직 표시: {ch['marks']}\n")
+    A(f"- 조직도 겸직 표시: {afix(ch['marks'])}\n")
     A(f"### 1-2. 조직 단위 표 ({len(ch['units'])}개 — 그림에서 빠짐없이: 이사회·위원회·사무국·부문·본부·실·팀·센터·단 등)\n")
     rows = []
     for uid, par, name, lvl, box, clip, note in ch["units"]:
@@ -1233,7 +1296,7 @@ def build_md(co, ch, meta, docs, qs, offs, conc, same8, n_ix, n_viii, emp, sup, 
         A(f"- 결과: 실 1·본부 12·단 1·국 1·센터 1·팀 29(부서 32) 는 판독 수와 같음. 부문은 「부문」 글자 상자 {len(bumun)}개 — 「준법감시인」을 넣으면 9 (판단). "
           f"전체 판독 단위 {len(names)}개 = 집계 대상 {len(names) - len(others)}개(준법감시인 포함) + 집계 밖 {len(others)}개.\n")
     if co == "우리금융지주":
-        A("### 1-3. 판독한 단위 수 세기(조직도에 집계 글이 없어 맞댈 숫자는 없음)\n")
+        A("### 1-3. 판독한 단위 수 세기(조직도에 집계 글이 나오지 않아 맞댈 숫자가 적히지 않음)\n")
         names = [u[2] for u in ch["units"]]
         cats = [("부문", [n for n in names if n.endswith("부문")]), ("준법감시인", [n for n in names if n == "준법감시인"]),
                 ("총괄", [n for n in names if n.endswith("총괄")]), ("부(…부)", [n for n in names if n.endswith("부") and not n.endswith("부문")]),
@@ -1244,7 +1307,7 @@ def build_md(co, ch, meta, docs, qs, offs, conc, same8, n_ix, n_viii, emp, sup, 
         A(f"\n- 합계 {sum(len(v) for k, v in cats)}개(= 1-2 표 {len(names)}행).")
         A("- 세로쓰기 글자 읽기: 부 줄 상자 22개는 세로쓰기 — 위에서 아래로 한 글자씩 읽음. 200dpi 전체 그림에서 먼저 읽고 500dpi 확대 3장(botL·botM·botR)과 800dpi(준법감시ACT)에서 "
           "글자 순서를 하나씩 다시 확인함(예: 「리/스/크/모/형/검/증/부」, 「기/업/문/화/리/더/십/센/터」, 「준/법/감/시/A/C/T」). 「AI전략센터」의 「AI」, 「ICT기획부」의 「I/C/T」, 「ESG경영부」의 「E/S/G」, "
-          "「IR부」의 「I/R」은 라틴 글자. 원본 그림 해상도는 약 200dpi 라 확대는 보간 — 획이 흐린 글자는 없었음(판독 A 기준).\n")
+          "「IR부」의 「I/R」은 라틴 글자. 원본 그림 해상도는 약 200dpi 라 확대는 보간 — 획이 흐려 못 읽은 글자: 0자(판독 A 기준).\n")
     A(f"### 1-{4 if co == '하나금융지주' else 4}. 연차보고서 조직도(보조, {ch['annual']['base']}) — {ch['annual']['kind']}\n")
     if co == "하나금융지주":
         A(md_quote(qs["Q02"]))
@@ -1258,6 +1321,17 @@ def build_md(co, ch, meta, docs, qs, offs, conc, same8, n_ix, n_viii, emp, sup, 
         A(md_table(["번호", "상위(판독, 선)", "상자 글(판독)"], [[a, b or "—", c] for a, b, c in ch["annual"]["units"]]))
         A("\n- (판독) 오른쪽 회색 상자 6개는 왼쪽 위원회와 가로선으로 이어진 지원 부서로 그려짐(보상위원회·자회사대표이사후보추천위원회 두 줄이 「경영지원부」 하나로 모임; "
           "이사회사무국은 이사회 오른쪽 위 선과 임원후보추천위원회 선 둘 다에 닿음). 인원 숫자는 그림에 나오지 않음.\n")
+
+    # 사업보고서 「조직도」 검색 기록(COMMON14 입력 — 사업보고서에도 조직도가 있으면 확인)
+    found = []
+    for k in ("biz", "biz_amend"):
+        if k in docs:
+            d = docs[k]
+            n_l = sum(1 for l in d.lines if "조직도" in l)
+            n_w = ws("\n".join(d.lines)).count("조직도")
+            found.append((d, n_l, n_w))
+    A("- 사업보고서 「조직도」 검색: " + "; ".join(f"{d.label} · {d.ident} 텍스트 `{d.path}` 전체 — 「조직도」 걸린 줄 {n_l}개(공백 무시 {n_w}개)" for d, n_l, n_w in found)
+      + (" — 사업보고서에는 조직도가 나오지 않아 조직도는 경영공시(1-1~1-3)·연차보고서(1-4) 것만 씀.\n" if not any(n for _, n, _ in found) else " — 걸린 줄은 위 검색 기록 파일 참고.\n"))
 
     # 2) 직원 수·겸직 숫자
     A("## 2) 지주 전체 직원 수 · 직원 겸직 숫자\n")
@@ -1322,7 +1396,7 @@ def build_md(co, ch, meta, docs, qs, offs, conc, same8, n_ix, n_viii, emp, sup, 
     else:
         A(md_quote(qs["Q22"]))
         A(f"- 위험관리 조직 인원: **{NF}** — 찾은 방법: 사업보고서·연차보고서·경영공시 텍스트에서 「리스크관리부」「리스크모형검증부」「리스크관리 관련 부서」「인원 현황」「명이 근무」「명으로 구성」「전문인력」 검색, "
-          "연차보고서 「(준법|리스크|위험관리|내부통제)…N명」 정규식 검색(걸린 것은 리스크관리위원회 사외이사 4명 서술뿐). 연차보고서 조직도(2025.12월말)는 리스크관리위원회↔리스크관리부 선만 있고 인원 표기 없음(판독).")
+          "연차보고서 「(준법|리스크|위험관리|내부통제)…N명」 정규식 검색(걸린 것은 리스크관리위원회 사외이사 4명 서술뿐). 연차보고서 조직도(2025.12월말)는 리스크관리위원회↔리스크관리부 선만 있고 인원 표기는 나오지 않음(판독).")
     A(f"- 경영공시 2026 2Q: 임직원 수·조직 인원 **{NF}** — 찾은 방법: 경영공시 텍스트 전체에서 「임직원」「직원」「인원」「(명)」「겸직」「겸임」「조직」 검색 — 「(명)」은 신용리스크 차주 수 표, "
       "「조직」은 「조직 및 영업점」 제목·조직도 쪽뿐. 조직 관련 글은 조직도 쪽 글자층(1-1)과 영업점 현황 표뿐.\n")
     A("### 3-4. 조직 단위별로 모은 공시 인원(조직단위 CSV 의 「공시인원」 칸)\n")
@@ -1346,8 +1420,12 @@ def build_md(co, ch, meta, docs, qs, offs, conc, same8, n_ix, n_viii, emp, sup, 
     rows = []
     for o in offs:
         us = off_units.get(id(o), [])
-        rows.append([o["구분"], o["성명"], o["직위"], o["등기"], o["상근"], o["담당업무"], "<br>".join(n + ("" if h["방식"] == "이름 일치" else f" [{h['방식']}]") for n, h in us) or NF,
-                     " / ".join(sorted({h["방식"] for n, h in us})) or NF, NOMAP_NOTE[co].get(o["성명"], ""), f"{o['쪽']} 줄 {o['줄']}"])
+        r4 = [o["구분"], o["성명"], o["직위"], o["등기"], o["상근"], o["담당업무"], "<br>".join(n + ("" if h["방식"] == "이름 일치" else f" [{h['방식']}]") for n, h in us) or NF,
+              " / ".join(sorted({h["방식"] for n, h in us})) or NF, NOMAP_NOTE[co].get(o["성명"], ""), f"{o['쪽']} 줄 {o['줄']}"]
+        fx4 = VINS[co]["md"].get("4표_고침", {}).get(o["성명"])
+        if fx4:   # 검증 에이전트 고침(검증입력 JSON md.4표_고침)
+            r4[7], r4[8] = fx4["대응 방식"], fx4["비고"]
+        rows.append(r4)
     A(md_table(["표", "성명", "직위", "등기", "상근", "담당업무(원문)", "대응 조직단위(조직도 판독 이름)", "대응 방식", "비고", "쪽·줄"], rows))
     A("")
     A(f"- 출처: {biz.label} · {biz.ident} · {biz.path} (칸 나눔은 원문 XML 표, 글자는 텍스트 파일과 공백 무시 대조 — 담당업무 칸 {len(offs)}개 모두 텍스트에서 찾음"
@@ -1387,13 +1465,18 @@ def build_md(co, ch, meta, docs, qs, offs, conc, same8, n_ix, n_viii, emp, sup, 
     A(md_table(["항목", "내용"], dif))
     A("\n### 판단이 들어간 곳\n")
     A(md_table(["곳", "판단"], judg_list(co)))
-    A("\n## 7) 검증 기록\n")
-    A("(검증 에이전트가 덧붙임 — 판독 B 를 먼저 파일로 저장한 뒤 판독 A(`dart_out/org14/" + co + "_판독A.json`)와 맞대고, 다른 곳은 더 크게 잘라 확정 방법을 적는다.)\n")
+    # 7) 검증 기록 — 검증 에이전트가 쓴 글(검증입력 JSON md.검증기록)을 그대로 싣는다
+    vm = VINS[co]["md"]
+    A("\n" + vm["검증기록_제목"] + "\n")
+    A("\n".join(vm["검증기록"]))
+    if vm.get("비평보정"):   # critic14 비평 보정 기록(생성기 입력)
+        A("\n" + "\n".join(vm["비평보정"]))
     RESULTS[co] = dict(got=got, notg=notg, dif=dif)
     return "\n".join(L) + "\n"
 
 
 RESULTS: dict = {}
+VINS: dict = {}
 
 
 def got_list(co, ch, qs, offs, conc, emp, sup, headcount, unit_rows):
@@ -1437,15 +1520,15 @@ def diff_list(co, ch, layer, conc, amend_note, add_rows, offs, headcount, extra_
                 d.append([f"판독 A ↔ 글자층 ({uid} {name})", f"그림(판독): 「{box}」 / 글자층(텍스트 파일): 「AI☞디지털」+「전략팀」 — (판단) 글자층의 「☞」는 가운뎃점 글리프의 글자 대응 오류로 봄(같은 PDF 의 「신사업·」은 U+00B7 로 들어 있음). 그림에는 점 하나."])
         d.append(["연차보고서(2025.12.31) ↔ 경영공시(2026.6.30) 조직도", "연차보고서 조직도에만: 소비자리스크관리부문장(CCRO)·소비자리스크관리팀(6명) — 2026.6.30 조직도에는 「소비자보호본부」「소비자보호팀」(신사업/미래가치부문 아래). "
                   "연차보고서 조직도는 통제·지원 조직만 그린 지배구조 그림이라 사업 부문은 그 그림에 나오지 않음(관찰)."])
-        d.append(["임원 표 담당업무(2025.12.31) ↔ 2026.6.30 조직도 이름", "담당업무에만 있는 이름: 미래성장부문·시너지부문·글로벌부문·ESG부문·AIㆍ디지털전략본부·CIB본부·전략본부·소비자리스크관리부문 — 2026.6.30 조직도에 같은 글자 없음"])
+        d.append(["임원 표 담당업무(2025.12.31) ↔ 2026.6.30 조직도 이름", "담당업무에만 있는 이름: 미래성장부문·시너지부문·글로벌부문·ESG부문·AIㆍ디지털전략본부·CIB본부·전략본부·소비자리스크관리부문 — 2026.6.30 조직도에 같은 글자가 나오지 않음"])
         d.append(["담당업무 원문 오기", "이강원 담당업무 「그룹임원후보추천위워회 위원장」(「위워회」) — 원문 그대로 둠"])
         d.append(["연차보고서 텍스트 글자", "연차보고서·경영공시 텍스트에 「☞」가 가운뎃점 자리에 나옴(예: 「평가☞검증」「AI☞디지털」) — 원문 인용은 텍스트 그대로 둠 (판단: PDF 글리프 대응 문제)"])
         d.append(["연차보고서 인원 표 각주 번호", "머리 「해당부서 평균 근속기간3)」 과 리스크검증팀 「73)」 둘 다 3) — 근속기간 설명은 각주 4) (원문 그대로; (판단) 머리 번호 오기 가능)"])
     else:
         d.append(["감사부 인원 — 사업보고서 ↔ 연차보고서", "사업보고서 감사위원회 지원조직 표 「감사부 13」(감사부문장 1명 포함 직위 내역) / 연차보고서 「감사부는 부서장 1명, 부원 11명(2025년말 현재)」= 12 — (판단) 감사부문장 1명을 넣고 뺀 차이로 보임(13−1=12)"])
-        d.append(["임원 담당업무 ↔ 2026.8 조직도", "이정수 담당업무 「전략부문 (전략기획 주요업무집행책임자)」 — 2026.8 조직도에 「전략부문」 없음; 임원 현황 주8 「조직 개편에 따른 담당업무 변경(2026.02.27) : 이정수(전략경영총괄(전략기획 주요업무집행책임자))」 로 「전략경영총괄」과 글자 일치"])
+        d.append(["임원 담당업무 ↔ 2026.8 조직도", "이정수 담당업무 「전략부문 (전략기획 주요업무집행책임자)」 — 2026.8 조직도에 「전략부문」 글자가 나오지 않음; 임원 현황 주8 「조직 개편에 따른 담당업무 변경(2026.02.27) : 이정수(전략경영총괄(전략기획 주요업무집행책임자))」 로 「전략경영총괄」과 글자 일치"])
         d.append(["자회사대표이사후보추천위원회 띄어쓰기", "담당업무 「자회사대표이사후보 추천위원회」(띄어씀) ↔ 조직도(판독) 「자회사대표이사후보추천위원회」 — 대응은 (판단) 띄어쓰기만 다름"])
-        d.append(["연차보고서(2025.12월말) ↔ 경영공시(2026.8월말) 조직도", "연차보고서 조직도는 위원회↔지원부서만 그린 그림(부문 없음). 지원부서 6개(이사회사무국·감사부·리스크관리부·경영지원부·준법정책부·ESG경영부)는 2026.8 조직도에 모두 있음(판독)."])
+        d.append(["연차보고서(2025.12월말) ↔ 경영공시(2026.8월말) 조직도", "연차보고서 조직도는 위원회↔지원부서만 그린 그림(부문 상자는 나오지 않음). 지원부서 6개(이사회사무국·감사부·리스크관리부·경영지원부·준법정책부·ESG경영부)는 2026.8 조직도에 모두 있음(판독)."])
         d.append(["겸직 표 제목 표기", "가-2 「(기준일 : 2026.03.13)」 ↔ IX장 「(2026.03.13 기준)」 — 같은 날짜, 표 칸은 같음"])
     # 겸직 표 사이 차이
     k0, k1 = COS[co]["conc_kinds"]
@@ -1454,20 +1537,20 @@ def diff_list(co, ch, layer, conc, amend_note, add_rows, offs, headcount, extra_
     gone = [f"{n}({c})" for (n, c) in a if (n, c) not in b]
     new = [f"{n}({c})" for (n, c) in b if (n, c) not in a]
     chg = [f"{n}({c}) 직위 {a[(n, c)]['겸직직위']}→{b[(n, c)]['겸직직위']}" for (n, c) in a if (n, c) in b and a[(n, c)]["겸직직위"] != b[(n, c)]["겸직직위"]]
-    d.append([f"겸직 표 {k0} ↔ {k1}", f"빠짐: {', '.join(gone) or '없음'} / 새로: {', '.join(new) or '없음'} / 직위 바뀜: {', '.join(chg) or '없음'}"])
+    d.append([f"겸직 표 {k0} ↔ {k1}", f"빠짐: {', '.join(gone) or '0건'} / 새로: {', '.join(new) or '0건'} / 직위 바뀜: {', '.join(chg) or '0건'}"])
     if amend_note:
         d.append(["사업보고서 본 ↔ 정정판", amend_note])
     else:
-        d.append(["사업보고서 정정판", "FY2025 정정판 텍스트가 dart_out/text/risk8/ 에 없음(DART_문서목록 에 우리금융지주 사업보고서 (2025.12) 정정 행 없음) — 본 보고서만"])
+        d.append(["사업보고서 정정판", f"FY2025 정정판: {NF}(찾은 범위: `dart_out/text/risk8/사업보고서__우리금융지주__*.txt` 파일, `dart_out/risk8/DART_문서목록.csv` 의 우리금융지주 「사업보고서 (2025.12)」 행 — 정정 행 0건) — 본 보고서만 씀"])
     d.append(["연차보고서 본 ↔ 추가공시(인용 대조)", "; ".join(f"{q}: {r}" + (f" ({s})" if s else "") for q, r, s in add_rows)])
-    d.append(["판독 A ↔ 판독 B", "B 대기(검증 에이전트) — 판독대조 CSV 의 A 칸만 채움"])
+    d.append(["판독 A ↔ 판독 B", VINS[co]["md"]["판독AB"]])
     return d
 
 
 def judg_list(co):
     j = [["조직단위 CSV 「단위_층위」", "상자 모양·이름 끝 글자(부문/본부/팀…)와 그림 줄 위치로 나눈 판독·판단"],
          ["위원회 「공시인원」 칸", "위원(이사) 수는 직원 수가 아니라서 「공시인원」은 추출 범위에 없음으로 두고 인원_내역에만 적음 — counts 의 units_with_headcount 에 넣지 않음"],
-         ["지원조직 표 기준일", "표 안에 날짜가 없는 표는 사업보고서 작성기준일(2025.12.31)로 봄"]]
+         ["지원조직 표 기준일", "표 안에 날짜가 나오지 않는 표는 사업보고서 작성기준일(2025.12.31)로 봄"]]
     for unit, lst in JUDGE[co].items():
         for nm, why in lst:
             j.append([f"대응 {nm} → {unit}", why])
@@ -1504,10 +1587,10 @@ def main():
                 PROBLEMS.append(f"인증값 문자열이 {o} 에 있음")
         if re.search(r"crtfc_key=|[?&]OC=", txt):
             PROBLEMS.append(f"키 매개변수 문자열이 {o} 에 있음")
-    summary = dict(work_at=WORK_AT, counts=counts, problems=PROBLEMS, outputs=outs)
+    summary = dict(work_at=WORK_AT, run_at=RUN_AT, counts=counts, problems=PROBLEMS, outputs=outs)
     with open(P(RAW, "org14_g2_run.json"), "w", encoding="utf-8") as f:
         json.dump(summary, f, ensure_ascii=False, indent=1)
-    print(json.dumps(dict(work_at=WORK_AT, counts=counts, n_problems=len(PROBLEMS)), ensure_ascii=False))
+    print(json.dumps(dict(work_at=WORK_AT, run_at=RUN_AT, counts=counts, n_problems=len(PROBLEMS)), ensure_ascii=False))
     for p in PROBLEMS[:30]:
         print("문제:", p)
     return 0 if not PROBLEMS else 1

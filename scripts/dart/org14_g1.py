@@ -9,6 +9,10 @@
   3) 연차보고서·경영공시·사업보고서 텍스트에서 정해 둔 서술을 줄 그대로 옮긴다(쪽 포함).
   4) 산출: handoff/14차_조직인원겸직/14_<회사>.md, dart_out/org14/<회사>_{조직단위,임원겸직,지원조직,판독대조}.csv
      와 dart_out/org14/g1_검사.json(대조·검사 기록).
+  5) 검증 반영 입력 dart_out/org14/<회사>_검증반영.json(검증 에이전트가 2026-10-16 산출물에 직접 고친 값 — 판독대조 B·확정·
+     확정 방법, 판독_대조 칸, 단위 비고, 인원 보탬, md 6) 보탬·바꿈, 7) 검증 기록)을 읽어 그때 산출물을 그대로 다시 만든다.
+  6) 비평 보정(critic14, 2026-10-19): 「없음」 꼴 보정 표(FIX_EOPSEUM), 맡은 임원 찾은 방법, 거꾸로 조직도 (판단) 표시,
+     빠진 글 보탬, 떨어진 줄 인용 블록 표지, 사업보고서 「조직도」 검색 기록, 7) 끝 「비평 보정」 기록. 작업 시각은 고정값(멱등).
 
 실행: python3 -I scripts/dart/org14_g1.py   (키·OC 값은 쓰지도 읽지도 않음)
 """
@@ -27,8 +31,94 @@ OUT_DIR = ROOT / "dart_out" / "org14"
 MD_DIR = ROOT / "handoff" / "14차_조직인원겸직"
 TXT = ROOT / "dart_out" / "text" / "risk8"
 KST = dt.timezone(dt.timedelta(hours=9))
-NOW_KST = dt.datetime.now(KST).strftime("%Y-%m-%d %H:%M KST")
 NONE = "추출 범위에 없음"
+
+
+# ───────────────────────── 비평 보정(critic14 대응) ─────────────────────────
+FIX_KST = "2026-10-19 09:52 KST"  # 비평 보정을 넣은 작업 시각(고정값 — 다시 돌려도 같은 파일이 나오게)
+# 「없음」 규칙(13차와 같은 공통 꼴) 보정 표: (전, 후, 규칙). 원문 인용(md 「> 」 줄·``` 블록)에는 쓰지 않고,
+# 「전」 글이 원문 텍스트에 나오지 않는지는 run_company 에서 확인함. 긴 것부터 차례로 바꿈.
+#   ① 자료를 찾지 못함 → 추출 범위에 없음(찾은 범위) ② 원문 표·글 안 관찰 → 나오지 않음 ③ 대응 판단 → 대응하는 … 를 찾지 못함
+#   ④ 그대로 둠: 원문 인용, 작업 사실(웹 요청 없음·고친 곳 없음·바뀐 곳 없음), 7) 검증 기록의 전 → 후 기록
+FIX_EOPSEUM = [
+    ("문장에 기준일 글 없음 (사업보고서 기준일 2025년 12월 31일)", "문장에 기준일 글이 나오지 않음 (사업보고서 기준일 2025년 12월 31일 — (판단))", "②+(판단) 표시"),
+    ("표에 기준일 글 없음", "표에 기준일 글이 나오지 않음", "②"),
+    ("문장에 기준일 글 없음", "문장에 기준일 글이 나오지 않음", "②"),
+    ("표 칸에 줄바꿈이 없는 것은 원문 XML 칸 글에도 줄바꿈이 없기 때문", "표 칸에 줄바꿈이 나오지 않는 것은 원문 XML 칸 글에도 줄바꿈이 나오지 않기 때문", "②"),
+    ("칸 안 항목 사이에 구분 글자가 없는 것도", "칸 안 항목 사이에 구분 글자가 나오지 않는 것도", "②"),
+    ("(판단) 대응 단위 없음 — ", "(판단) 대응하는 단위를 찾지 못함 — ", "③"),
+    ("대응 단위 없음", "대응하는 단위를 찾지 못함(판단)", "③"),
+    ("원문 XML 없음(", "원문 XML zip 을 읽지 못함(", "작업 사실(낱말만 바로잡음 — zip 파일은 있으나 열리지 않음)"),
+    ("— 조직도에 「감사담당」 없음;", "— 조직도(판독)에 「감사담당」이 나오지 않음;", "②"),
+    ("- 부서 단위 겸직 글(숫자 없음, 경영공시):", "- 부서 단위 겸직 글(경영공시 — 이 글에 숫자가 나오지 않음):", "②"),
+    ("검색 — 지주 임직원 수 글 없음(목차 일반현황은 조직 및 영업점뿐)", "검색 — 추출 범위에 없음(지주 임직원 수 글이 나오지 않음; 목차 「일반현황」 아래는 「조직 및 영업점」뿐)", "①"),
+    ("검색 — 지주 임직원 수 글 없음", "검색 — 추출 범위에 없음(지주 임직원 수 글이 나오지 않음)", "①"),
+    ("2026.8 조직도(판독)에 같은 이름 없음", "2026.8 조직도(판독)에 같은 이름이 나오지 않음", "②"),
+    ("사업보고서 표에는 합계 숫자 없음", "사업보고서 표에는 합계 숫자가 나오지 않음", "②"),
+    ("54상자 이름·겸직표시(모두 없음) 전부 같음", "54상자 이름·겸직표시(모두 빈칸 — 표시 나오지 않음) 전부 같음", "②"),
+    ("인원 없는 43개 단위 이름", "인원이 나오지 않는 43개 단위 이름", "②"),
+    ("의 일반 낱말(계열사)이라 해당 없음.", "의 일반 낱말(계열사)이라 단위 인원 글이 아님 (판단).", "③"),
+    ("이 뜻을 적은 원문은 없음.", "이 뜻을 적은 원문은 찾지 못함(추출 범위에 없음 — 찾은 범위: 위 「(겸)」「겸직」「겸임」 검색).", "①"),
+    ("의 겸직 상대 회사·인원은 추출 범위에 없음.", "의 겸직 상대 회사·인원은 추출 범위에 없음(찾은 범위: 같은 검색).", "①"),
+    ("겸직 직원 수로 볼 수는 없음 — ", "겸직 직원 수로 보지 않음 — ", "③"),
+    ("겸직 경영진이 있다는 글이나 숫자는 없음.", "겸직 경영진이 있다는 글이나 숫자는 나오지 않음.", "②"),
+    ("같은 이름 단위가 조직도에 없고", "같은 이름 단위가 조직도(판독)에 나오지 않고", "②"),
+    ("에는 없는 사람(직원 신분 겸직으로 보임 (판단))", "에는 나오지 않는 사람(직원 신분 겸직으로 보임 (판단))", "②"),
+    ("「(겸)」 0건, 「겸직」「겸임」 검색 — 정의 글 없음", "「(겸)」 0건, 「겸직」「겸임」 검색 — 추출 범위에 없음(정의 글이 나오지 않음)", "①"),
+    ("같은 검색 — 모형검증팀만 「은행 겸직」 글 있음(인원 숫자 없음)", "같은 검색 — 추출 범위에 없음(모형검증팀만 「은행 겸직」 글이 나오고 인원 숫자는 나오지 않음)", "①"),
+    ("띄어쓰기 없어 보임", "띄어쓰기가 보이지 않음", "②"),
+    ("같은 방법(인원 없는 39개 단위)", "같은 방법(인원이 나오지 않는 39개 단위)", "②"),
+    ("직원의 타사 임원 겸직(숫자 없음)", "직원의 타사 임원 겸직(숫자가 나오지 않음)", "②"),
+    ("— 겸직 언급 없음(아래 인용)", "— 겸직 언급이 나오지 않음(아래 인용)", "②"),
+    ("반박 못 함 — 정의 글 없음.", "반박 못 함 — 정의 글이 나오지 않음.", "②"),
+    ("글 밖에 없음 |", "글 밖에 나오지 않음 |", "②"),
+    ("세 숫자 차이로 겸직 직원 수를 셀 수 없음.", "세 숫자 차이로 겸직 직원 수를 세지 않음.", "③"),
+    ("겸직 상대 회사·인원은 원문에 없음 — ", "겸직 상대 회사·인원은 원문에서 찾지 못함(추출 범위에 없음 — 찾은 범위: 위 ④ 표) — ", "①"),
+    ("추출 범위에 없음(표에 부서명 칸이 없음)", "추출 범위에 없음(찾은 범위: 연차보고서 p.201 준법감시직원 현황 표 — 표에 부서명 칸이 나오지 않음)", "①+②"),
+    ("팀 전체 인원은 추출 범위에 없음.", "팀 전체 인원은 추출 범위에 없음(찾은 범위: md 7) 검증 기록 ④ 반박 검색).", "①"),
+]
+# 판독대조 CSV 빈 값 표지(「(없음…)」 → 빈칸 표지)
+RB_MARK = {("상위단위", "(없음 — 맨 위)"): "(빈칸 — 맨 위)", ("상위단위", "(없음)"): "(빈칸)",
+           ("겸직표시", "(없음)"): "(빈칸 — 표시 나오지 않음)"}
+GAP_MARK = "[…줄 건너뜀: 텍스트 {a}~{b}행…]"
+# 7) 검증 기록(검증 반영 입력 「검증기록_줄」) 가운데 지난 전 → 후 기록 줄 번호(0부터) — 「없음」 규칙 ④로 그대로 둠
+VR_KEEP = {"KB금융지주": (9, 21), "신한금융지주": (9, 13, 22, 23, 24)}
+
+
+class Fixer:
+    """보정 표를 글에 쓰고 몇 곳 바꿨는지 셈(회사·산출물별)."""
+
+    def __init__(self):
+        self.n = {}
+
+    def __call__(self, s, where):
+        if not s or "없" not in s:
+            return s
+        for old, new, _ in FIX_EOPSEUM:
+            k = s.count(old)
+            if k:
+                s = s.replace(old, new)
+                self.n[(where, old)] = self.n.get((where, old), 0) + k
+        return s
+
+
+FIX = Fixer()
+
+
+def none_in(where, what):
+    """① 꼴: 추출 범위에 없음(찾은 범위: …)."""
+    return f"{NONE}(찾은 범위: {where} — {what})"
+
+
+def fix_rows(rows, where, skip_cols=()):
+    return [{k: (v if k in skip_cols else FIX(v, where)) for k, v in r.items()} for r in rows]
+
+
+def load_vr(company):
+    """검증 반영 입력(dart_out/org14/<회사>_검증반영.json): 검증 에이전트가 2026-10-16 에 산출물에 직접 고친 값
+    (판독대조 B·확정·확정 방법, 판독_대조 칸, 단위 비고 고침, 인원 보탬, md 6) 보탬·바꿈, 7) 검증 기록)과
+    작업 시각(고정값 — 다시 돌려도 같은 파일이 나오게)."""
+    return json.loads((OUT_DIR / f"{company}_검증반영.json").read_text(encoding="utf-8"))
 
 
 # ───────────────────────── 공통 도구 ─────────────────────────
@@ -253,6 +343,8 @@ CFG = {
             "bod_roles_biz": ("biz", [(r"^참고로 이사회사무국의 역할은 다음과 같습니다", r"^3\. 이사회 및 관련 위원회 부의 안건에 대한 실무적 검토", None),
                                       (r"^4\. 사외이사 활동지원 및 정보제공", r"^11\. 기타 사외이사의 역할과 책임을 위해 필요한 지원 업무", None)]),
             "emp_notes": ("biz", [(r"^주1\) 2025\.1\.1부터 2025\.12\.31까지 지급된 급여총액", r"^월별 평균급여액은 해당 월의 급여총액을", None)]),
+            # 비평 보정(critic14 gaps): 그룹 전 계열사 인력교류 숫자 — 직원 겸직 칸의 가까운 글
+            "emp_exchange": ("biz", [(r"^\(2\) 종업원에 관한 사항", r"^산운용 등 역량강화 부문 71명, 총 163명의 인력이 교류하여 근무중입니다", None)]),
             "unreg_note": ("biz", [(r"^주1\) 인원수 : 원소속회사가 계열사인 미등기임원", None, None)]),
             "other_conc": ("biz", [(r"^2\) 타회사 임원 겸임 현황", r"^- 해당사항 없음", None)]),
             "reorg": ("biz", [(r"^KB금융그룹은 금융의 사회적 역할이 확대되고", r"^.WM.SME부문.을 신설하였습니다", None)]),
@@ -312,6 +404,9 @@ CFG = {
         board_member_unit="K51",
         audit_committee_unit="K52",
         audit_member_rx=r"감사위원",
+        upside_down=("(판단) 조직도를 위아래 거꾸로 그린 꼴로 봄 — md·판독대조 K48",
+                     ["K03", "K19", "K21", "K23", "K25", "K27", "K29", "K32", "K36", "K39", "K42", "K44", "K48"], ("회 장", "이사회")),
+        chart_search_note="(판단) 두 줄 모두 4407행 「리브똑똑」 아래 메신저 서비스 설명(「기업사내메신저」)이라 지주 조직도가 아님 — 지주 조직도 글은 사업보고서 텍스트에 나오지 않음",
     ),
     "신한금융지주": dict(
         corp_dart="신한지주",
@@ -348,6 +443,8 @@ CFG = {
             "ann_bod_90": ("ann", [(r"^\(가\) 사외이사 지원부서 설치현황", r"^\s*- 인원구성 : 사무국장 1명\(총괄\), 팀원 2명", None)]),
             "ann_bod_129": ("ann", [(r"^당사는 사외이사 관련 업무를 담당하고, 사외이사의 역할과 책임 수행을 위해", r"^있습니다\.\s*$", None)]),
             "ann_cmte_129": ("ann", [(r"^또한 일부 이사회내위원회는 유관 업무를 담당하는 회사 내 부서에서 지원하고", r"^회장후보추천위원회, 자회사최고경영자후보추천위원회\) 입니다", None)]),
+            # 비평 보정(critic14 gaps): p.137 「팀장과 팀원 10명」 문장
+            "ann_succ_137": ("ann", [(r"^사\. 대표이사 회장 승계업무 지원부서 운영 현황\s*$", r"^대표이사 후보자 선발 및 자격요건 충족 여부 등을 검증한 결과를", None)]),
             "ann_succ_138": ("ann", [(r"^\s*<대표이사 회장 승계업무 지원부서 운영 현황>", r"^\s*② 회추위사무국 \(직원수 총 6명", None)]),
             "ann_audit_157": ("ann", [(r"^감사위원회는 보조조직인 감사팀을 직접 지휘하여", r"^구성되어 있으며, 자회사별 담당자를 지정하여", None)]),
             "ann_succ_185": ("ann", [(r"^\(4\) 자회사 대표이사 승계업무 지원부서 현황", r"^\s*- 직원수 : 총 10명", None)]),
@@ -368,7 +465,8 @@ CFG = {
             ("대표이사 회장 승계업무 지원(연차보고서)", "회추위사무국", "직원수 총 6명 – 이사회사무국 1명, 전략기획팀 1명, 홍보팀 1명, 신한리더십센터 3명", NONE, "ann_succ_138", "ann_succ_138", "문장에 기준일 글 없음"),
             ("감사위원회 보조조직(연차보고서)", "감사팀", NONE, "팀장 1명, 공인회계사(CPA) 2명, 실무 경력이 풍부한 책임자 이상의 직원으로", "ann_audit_157", "ann_audit_157", "문장에 기준일 글 없음"),
             ("자회사 대표이사 승계업무 지원(연차보고서)", "신한리더십센터", "총 10명", "팀장과 팀원 총 10명", "ann_succ_185", "ann_succ_185", "문장에 기준일 글 없음"),
-            ("준법감시(연차보고서 준법감시직원 현황)", "(준법감시인 산하)", "준법감시직원 수 10 준법감시인 제외", NONE, "ann_comp_201", "ann_comp_201", "2025년말 기준 / 준법감시인 제외"),
+            ("준법감시(연차보고서 준법감시직원 현황)", "추출 범위에 없음(표에 부서명 칸이 없음) — (판단) 준법감시인 산하 인력: 원문 「* 준법감시인 산하 인력 중 아래 인력은 미합산」", "준법감시직원 수 10 준법감시인 제외", NONE, "ann_comp_201", "ann_comp_201", "2025년말 기준 / 준법감시인 제외"),
+            ("대표이사 회장 승계업무 지원(연차보고서)", "신한리더십센터", "팀장과 팀원 10명", "팀장과 팀원 10명", "ann_succ_137", "ann_succ_137", "문장에 기준일 글 없음"),
         ],
         ann_chart_pairs=[("이사회사무국", "(3명)"), ("리스크관리팀", "(14명)"), ("SDGs기획팀", "(6명)"),
                          ("전략기획팀", "(16명)"), ("감사팀", "(10명)"), ("신한리더십센터", "(10명)"), ("준법지원획팀", "(10명)")],
@@ -381,7 +479,8 @@ CFG = {
             "S48": [("ann_chart", "리스크관리팀", "이름 일치")],
             "S40": [("ann_chart", "SDGs기획팀", "이름 일치")],
             "S24": [("ann_chart", "전략기획팀", "이름 일치")],
-            "S38": [("ann_chart", "신한리더십센터", "이름 일치"), ("sq", 3, "이름 일치"), ("sq", 6, "이름 일치")],
+            "S38": [("ann_chart", "신한리더십센터", "이름 일치"), ("sq", 3, "이름 일치"), ("sq", 6, "이름 일치"),
+                    ("sq", 8, "이름 일치 — (판단) 「팀장과 팀원 10명」은 총 10명 또는 팀장 1명+팀원 10명으로 읽힘")],
             "S30": [("ia", "회계파트", "(판단) 내부회계 표 「회계파트」 — 조직도 「회계 파트」와 띄어쓰기만 다름")],
             "S05": [("ia", "감사위원회주2)", "이름 일치 — (판단) 위원 수이지 직원 수 아님")],
             "S02": [("ia", "이사회 주1), 주3)", "(판단) 내부회계 표 「이사회」 — 이사 수이지 직원 수 아님")],
@@ -393,6 +492,7 @@ CFG = {
         board_member_unit="S02",
         audit_committee_unit=None,
         audit_member_rx=None,
+        chart_search_note="「IX. 계열회사 등에 관한 사항」 아래 절 제목 — 이 줄 뒤(같은 쪽)에는 계열회사 수 표 글(「기업집단의 명칭」「계열회사의 수」)만 나오고 지주 안 부서 이름 글은 나오지 않음 (판단: 계열회사 조직도 절이고, 그림이라 텍스트에 글이 나오지 않는 것으로 봄) — 지주 안 조직도 글은 사업보고서 텍스트에 나오지 않음",
     ),
 }
 
@@ -408,6 +508,11 @@ QTITLE = {
     "ann_ax_21": "연차보고서 — AX•디지털부문 출범", "mgmt_risk": "경영공시 — 지주회사 리스크관리팀(신용평가모형)",
     "mgmt_model": "경영공시 — 모형 검증 부서의 겸직", "mgmt_audit": "경영공시 — 지주 감사 부서(제3자 점검)",
     "mgmt_model2": "경영공시 — 모형검증팀 사후검증",
+    "ann_succ_137": "연차보고서 — 대표이사 회장 승계업무 지원부서 운영 현황(신한리더십센터 구성)",
+}
+# 인용 뒤에 붙이는 판단 글(비평 보정)
+QNOTE = {
+    "ann_succ_137": "- (판단) 「팀장과 팀원 10명」은 총 10명 또는 팀장 1명+팀원 10명으로 읽힘 — 같은 보고서 p.185 자회사 승계 지원부서 글은 「팀장과 팀원 총 10명」, p.138 표는 「직원수 총 10명」, 조직도 글은 「(10명)」.",
 }
 
 DOCNAME = {"biz": "사업보고서 (2025.12)", "ann": "지배구조 및 보수체계 연차보고서(2026 공시, 본공시)",
@@ -454,8 +559,43 @@ def run_company(company, cfg):
     global CFG_CUR
     CFG_CUR = cfg
     meta = load_meta(company, cfg)
+    VR = load_vr(company)
     readA = json.loads((OUT_DIR / f"{company}_판독A.json").read_text(encoding="utf-8"))
-    units = readA["units"]
+    unitsA = readA["units"]  # 판독 A 그대로(판독대조 CSV 판독A 칸)
+    # 판독 확정 값(판독대조 「확정」 칸 — 검증 반영 입력) 을 단위 칸에 씀
+    conf = {r[0]: r[2] for r in VR["판독대조"]}
+
+    def unval(v):
+        return "" if v.startswith("(없음") else v
+
+    FLD = {"단위 이름": "단위", "상위단위": "상위단위", "층위": "층위", "겸직표시": "겸직표시"}
+    units = []
+    for u in unitsA:
+        v = dict(u)
+        for lab, k in FLD.items():
+            c = conf.get(f"{u['id']} {lab}")
+            if c is not None:
+                v[k] = unval(c)
+        ov = VR["단위_고침"].get(u["id"], {})
+        if "md_비고" in ov:
+            v["md_비고"] = ov["md_비고"]
+        if "csv_비고" in ov:
+            v["csv_비고"] = ov["csv_비고"]
+        units.append(v)
+    # 비평 보정: 거꾸로 그린 조직도 해석에 기댄 상위단위 행의 비고에 (판단) 표시
+    upside = []
+    if cfg.get("upside_down"):
+        note, ids, parents = cfg["upside_down"]
+        for v in units:
+            if v["id"] in ids:
+                if v["상위단위"] not in parents:
+                    raise SystemExit(f"[거꾸로 조직도 비고] {v['id']} 상위단위 「{v['상위단위']}」 가 예상과 다름")
+                for k in ("비고", "md_비고", "csv_비고"):
+                    if k in v or k == "비고":
+                        v[k] = "; ".join(x for x in [v.get(k, ""), note] if x)
+                upside.append(v["id"])
+        if len(upside) != len(ids):
+            raise SystemExit(f"[거꾸로 조직도 비고] 단위 수 {len(upside)} ↔ {len(ids)}")
     uid = {u["id"]: u for u in units}
     checks = {"company": company, "problems": [], "notes": []}
 
@@ -466,6 +606,13 @@ def run_company(company, cfg):
         "mgmt": Text(TXT / cfg["mgmt"]),
     }
     biz = docs["biz"]
+    # 비평 보정: 사업보고서 텍스트의 「조직도」 검색 기록(COMMON 21행)
+    chart_hits = [(i + 1, biz.page[i], biz.lines[i].strip()) for i, l in enumerate(biz.lines) if "조직도" in l]
+    # 보정 표의 「전」 글이 원문 텍스트에 나오지 않는지(원문 글을 바꾸지 않게)
+    for old, _, _ in FIX_EOPSEUM:
+        for dk, t in docs.items():
+            if nz(old) in t.norm:
+                checks["problems"].append(f"보정 표 「{old}」 가 원문 텍스트 {t.rel} 에 나옴 — 원문을 바꿀 수 있음")
 
     # ── 인용(서술) ──
     Q = {}
@@ -643,8 +790,12 @@ def run_company(company, cfg):
         for frag in (ncount, pos):
             if frag != NONE and nz(frag) not in nz(Q[src_q]["text"]):
                 checks["problems"].append(f"서술 조각이 인용에 없음: {frag}")
-        sq_rows.append(dict(kind=kind, dept=dept, n=ncount, pos=pos, act=Q[act_q]["text"], basis=basis,
-                            src=Q[src_q]["src"], act_src=Q[act_q]["src"]))
+        # ① 꼴: 문장에 인원·직위 글이 나오지 않는 칸은 찾은 범위를 붙임(비평 보정)
+        where = f"출처 칸 문장({Q[src_q]['pages']})"
+        n_out = ncount if ncount != NONE else none_in(where, "총 인원 숫자가 나오지 않음")
+        pos_out = pos if pos != NONE else none_in(where, "직위 글이 나오지 않음")
+        sq_rows.append(dict(kind=kind, dept=dept, n=n_out, pos=pos_out, act=Q[act_q]["text"], basis=basis,
+                            src=Q[src_q]["src"], act_src=Q[act_q]["src"], pos_raw=pos))
 
     # ── 정정판 대조 ──
     corr = []
@@ -740,7 +891,7 @@ def run_company(company, cfg):
                                       **{"출처(문서·접수번호·쪽)": f"사업보고서 (2025.12) · {cfg['biz']} · p.{c['쪽']} · {concs[tag]['title']} {concs[tag]['basis']}"
                                          + (" (성명 칸은 위 행과 합친 칸 — rowspan)" if c["이름칸합침"] else "")}))
     EXEC_COLS = ["회사", "성명", "직위", "등기", "상근", "담당업무(원문)", "대응_조직단위", "대응_방식", "겸직회사", "겸직회사_직위", "선임일", "상근여부", "출처(문서·접수번호·쪽)"]
-    write_csv(OUT_DIR / f"{company}_임원겸직.csv", EXEC_COLS, exec_rows)
+    write_csv(OUT_DIR / f"{company}_임원겸직.csv", EXEC_COLS, fix_rows(exec_rows, f"{company} 임원겸직 CSV"))
 
     # ── 산출: 지원조직 CSV ──
     SUP_COLS = ["회사", "조직 종류", "부서(팀)명", "직원수", "직위(근속연수)", "주요 활동", "기준일", "출처"]
@@ -755,15 +906,17 @@ def run_company(company, cfg):
                          "주요 활동": s["act"], "기준일": s["basis"], "출처": s["src"] + (f" ‖ 활동: {s['act_src']}" if s["act_src"] != s["src"] else "")})
     for name, p in chart_pairs.items():
         sup_rows.append({"회사": company, "조직 종류": "연차보고서 지배구조 조직도(글자 층) 인원", "부서(팀)명": name,
-                         "직원수": p["text"].split("\n")[1], "직위(근속연수)": NONE, "주요 활동": NONE,
+                         "직원수": p["text"].split("\n")[1],
+                         "직위(근속연수)": none_in("출처 칸 조직도 글", "부서 이름·인원 밖 글이 나오지 않음"),
+                         "주요 활동": none_in("출처 칸 조직도 글", "부서 이름·인원 밖 글이 나오지 않음"),
                          "기준일": cfg["ann_chart_basis"], "출처": src(meta, "ann", f"p.{p['page']}", f"{docs['ann'].rel} {p['line']}행 · 원문 줄: {p['text'].replace(chr(10), ' / ')}")})
     ia_basis = "※ 2025년 12월 31일 기준 내부회계관리운영조직 관련 사항 기재" if company == "KB금융지주" else "표에 기준일 글 없음 (사업보고서 기준일 2025년 12월 31일 — (판단))"
     for r in ia:
         sup_rows.append({"회사": company, "조직 종류": "내부회계관리 운영조직 인력 (사업보고서 표)", "부서(팀)명": r["dept"], "직원수": f"총원 {r['총원']}",
                          "직위(근속연수)": f"내부회계담당인력수(A) {r['담당']} · 공인회계사자격증소지자수(B) {r['cpa']} · 비율(B/A*100) {r['비율']} · 내부회계담당인력의평균경력월수 {r['경력']}",
-                         "주요 활동": NONE + " (이 표는 인원·자격만 적음)", "기준일": ia_basis,
+                         "주요 활동": none_in("출처 칸 표", "이 표는 인원·자격만 적음"), "기준일": ia_basis,
                          "출처": src(meta, "biz", f"p.{r['쪽']}", f"{ia_title} · 원문 XML 칸 글")})
-    write_csv(OUT_DIR / f"{company}_지원조직.csv", SUP_COLS, sup_rows)
+    write_csv(OUT_DIR / f"{company}_지원조직.csv", SUP_COLS, fix_rows(sup_rows, f"{company} 지원조직 CSV"))
 
     # ── 단위별 인원 연결 ──
     sup_by = {s["dept"]: s for s in supports}
@@ -774,7 +927,7 @@ def run_company(company, cfg):
         for (kind, key, way) in cfg["unit_staff"].get(u["id"], []):
             if kind == "support":
                 s = sup_by[key]
-                items.append(dict(n=s["n"], 내역=f"{s['dept']} | {s['n']} | {s['pos']}" + (f" ({s['note']})" if s["note"] else ""),
+                items.append(dict(n=s["n"], 내역=f"{s['dept']} | {s['n']} | {s['pos']}" + (f" | {s['note']}" if s["note"] else ""),
                                   basis="표에 기준일 글 없음(사업보고서 2025.12.31 기준 (판단))",
                                   src=src(meta, "biz", f"p.{s['쪽']}", s["title"]), way=way))
             elif kind == "ann_chart":
@@ -787,7 +940,23 @@ def run_company(company, cfg):
                                   basis=ia_basis, src=src(meta, "biz", f"p.{r['쪽']}", ia_title), way=way))
             elif kind == "sq":
                 s = sq_rows[key]
-                items.append(dict(n=s["n"], 내역=s["pos"] if s["pos"] != NONE else s["n"], basis=s["basis"], src=s["src"], way=way))
+                items.append(dict(n=s["n"], 내역=s["pos_raw"] if s["pos_raw"] != NONE else s["n"], basis=s["basis"], src=s["src"], way=way))
+        # 검증 에이전트가 반박 검색으로 보탠 연차보고서 조직도 글(위원 수) — 검증 반영 입력 「인원_보탬」
+        for x in VR["인원_보탬"]:
+            if x["단위"] != u["id"]:
+                continue
+            t = docs["ann"]
+            assert t.rel.endswith(x["파일"]), (t.rel, x["파일"])
+            a_, b_ = x["줄"]
+            ls = [t.lines[k].strip() for k in range(a_ - 1, b_)]
+            k0 = [k for k, l in enumerate(ls) if l.startswith("(")][0]
+            n_txt = " ".join(ls[k0:])
+            if n_txt != x["인원_글"]:
+                checks["problems"].append(f"인원 보탬 {u['id']} 줄 {a_}~{b_} 글이 입력과 다름: {n_txt}")
+            items.append(dict(n=n_txt, 내역=" ".join(ls), basis=cfg["ann_chart_basis"],
+                              src=src(meta, "ann", f"p.{t.page[a_ - 1]}", "지배구조 현황 (1) 조직도(글자 층)"),
+                              way=f"{x['연결']} · 검증 에이전트가 반박 검색으로 보탬({x['파일']} {a_}~{b_}행)",
+                              md_way=f"{x['연결']} (검증 반박으로 보탬)"))
         return items
 
     # 단위별 임원(이후 표 우선, 기준일 표 함께)
@@ -806,8 +975,12 @@ def run_company(company, cfg):
                  "공시인원(원문, 없으면 「추출 범위에 없음」)", "인원_내역(원문)", "인원_기준일", "인원_출처",
                  "대응_임원(성명·직위)", "대응_근거(담당업무 원문)", "대응_방식(이름 일치/(판단)/추출 범위에 없음)",
                  "임원_겸직(원문: 겸직회사·직위·선임일·상근)", "겸직_출처", "판독_대조", "비고"]
-    unit_rows = []
-    chart_doc = f"{readA['문서']} · {readA['url']} · sha256 {readA['pdf_sha256'][:12]}…"
+    unit_rows, unit_md_ways, no_exec = [], [], []
+
+    def nkey(x):
+        return nzd(x).replace("그룹", "")
+
+    chart_doc =f"{readA['문서']} · {readA['url']} · sha256 {readA['pdf_sha256'][:12]}…"
     basis_txt = Q["chart_title"]["text"]
     staffed = 0
     for u in units:
@@ -834,6 +1007,24 @@ def run_company(company, cfg):
                 cs_src.append(f"사업보고서 (2025.12) · {cfg['biz']} · p.{c['쪽']} · {concs[t]['title']}")
         if ex2 and not cc:
             cc = [f"대응 임원의 이름이 겸직 표({concs['기준일']['basis']} / {concs['이후']['basis']})에 나오지 않음"]
+        if not ex2:
+            # 비평 보정: 맡은 임원 「추출 범위에 없음」 행에 찾은 방법(기계 검색 결과)을 적음
+            key = nkey(u["단위"])
+            hits = [(t, e) for t in ("기준일", "이후") for e in execs[t]["rows"] if key and key in nkey(e["담당업무"])]
+            base = (f"찾은 방법: 사업보고서 {cfg['biz']} 임원 표 {execs['기준일']['basis']} {len(execs['기준일']['rows'])}명·"
+                    f"작성기준일 이후 임원 표 {execs['이후']['basis']} {len(execs['이후']['rows'])}명의 담당업무에서 「{u['단위']}」 글자 검색"
+                    "(띄어쓰기·가운뎃점·「그룹」 붙임 무시)")
+            if not hits:
+                why_s = base + " — 0건"
+            else:
+                names = "·".join(dict.fromkeys(e["성명"] for _, e in hits))
+                why_s = base + f" — {len(hits)}건({names} 담당업무 안 다른 낱말에 걸림)"
+                if u["층위"].startswith("도식"):
+                    why_s += " — (판단) 도식 상자 이름이 다른 낱말 안에 걸린 것이라 대응하지 않음"
+                else:
+                    checks["problems"].append(f"맡은 임원 없음 단위 {u['단위']} 가 담당업무 글자 검색에 걸림 — 대응 다시 볼 것")
+            cc = ["해당 없음(대응 임원 추출 범위에 없음)"]
+            no_exec.append((u, len(hits)))
         unit_rows.append({
             "회사": company, "조직도_문서": chart_doc, "조직도_쪽": f"PDF p.{readA['pdf_쪽']} (인쇄 쪽 {readA['인쇄_쪽']})",
             "조직도_기준일(원문)": basis_txt, "상위단위(판독)": u["상위단위"], "조직단위(판독)": u["단위"], "단위_층위(판독)": u["층위"],
@@ -848,31 +1039,35 @@ def run_company(company, cfg):
             "대응_방식(이름 일치/(판단)/추출 범위에 없음)": way_s or NONE,
             "임원_겸직(원문: 겸직회사·직위·선임일·상근)": "\n".join(cc),
             "겸직_출처": "\n".join(sorted(set(cs_src))),
-            "판독_대조": "판독 B 전(검증 에이전트가 채움)",
-            "비고": "; ".join(x for x in [u["연결근거"], u["비고"]] if x),
+            "판독_대조": VR["판독_대조"][u["id"]],
+            "비고": u["csv_비고"] if "csv_비고" in u else "; ".join(x for x in [u["연결근거"], u["비고"]] if x),
         })
-    write_csv(OUT_DIR / f"{company}_조직단위.csv", UNIT_COLS, unit_rows)
+        unit_md_ways.append([(s.get("md_way", s["way"]), "md_way" in s) for s in st])
+    write_csv(OUT_DIR / f"{company}_조직단위.csv", UNIT_COLS, fix_rows(unit_rows, f"{company} 조직단위 CSV"))
 
     # ── 산출: 판독대조 CSV ──
-    imgdir = f"dart_out/raw/org14/{company}/"
-    clipmap = {Path(x["파일"]).name: x for x in readA["확대그림_목록"]}
-
-    def how(fn):
-        parts = []
-        for f in [s.strip() for s in fn.split(";") if s.strip()]:
-            x = clipmap.get(f)
-            parts.append(f"{imgdir}{f} · {x['dpi']}dpi · clip {x['clip_pt']}" if x else f)
-        return " / ".join(parts)
-
     RB_COLS = ["칸", "판독A", "판독B", "확정", "확정 방법"]
     rb = []
     for h in readA["머리글_판독"]:
-        rb.append({"칸": h["칸"], "판독A": h["판독"], "판독B": "", "확정": "", "확정 방법": f"{h['확대그림']} · {h['dpi']}dpi · clip {h['clip_pt']}"})
-    for u in units:
-        rb.append({"칸": f"{u['id']} 단위 이름", "판독A": u["단위"], "판독B": "", "확정": "", "확정 방법": how(u["확대그림"])})
-        rb.append({"칸": f"{u['id']} 상위단위", "판독A": u["상위단위"] or "(없음 — 맨 위)", "판독B": "", "확정": "", "확정 방법": how(u["확대그림"]) + " · " + u["연결근거"]})
-        rb.append({"칸": f"{u['id']} 층위", "판독A": u["층위"], "판독B": "", "확정": "", "확정 방법": how(u["확대그림"])})
-        rb.append({"칸": f"{u['id']} 겸직표시", "판독A": u["겸직표시"] or "(없음)", "판독B": "", "확정": "", "확정 방법": how(u["확대그림"])})
+        rb.append({"칸": h["칸"], "판독A": h["판독"]})
+    for u in unitsA:
+        rb.append({"칸": f"{u['id']} 단위 이름", "판독A": u["단위"]})
+        rb.append({"칸": f"{u['id']} 상위단위", "판독A": u["상위단위"] or "(없음 — 맨 위)"})
+        rb.append({"칸": f"{u['id']} 층위", "판독A": u["층위"]})
+        rb.append({"칸": f"{u['id']} 겸직표시", "판독A": u["겸직표시"] or "(없음)"})
+    # 판독B·확정·확정 방법 칸 = 검증 반영 입력(검증 에이전트가 판독 B JSON 을 먼저 저장한 뒤 채운 값)
+    if [r["칸"] for r in rb] != [x[0] for x in VR["판독대조"]]:
+        raise SystemExit(f"[판독대조 칸 순서가 검증 반영 입력과 다름] {company}")
+    for r, x in zip(rb, VR["판독대조"]):
+        r["판독B"], r["확정"], r["확정 방법"] = x[1], x[2], x[3]
+    # 비평 보정: 빈 값 표지 「(없음…)」 → 「(빈칸…)」(②: 조직도에 그 표시·선이 나오지 않음)
+    for r in rb:
+        fld = r["칸"].split(" ", 1)[-1]
+        for col in ("판독A", "판독B", "확정"):
+            new = RB_MARK.get((fld, r[col]))
+            if new:
+                FIX.n[(f"{company} 판독대조 CSV", f"{r[col]} → {new}")] = FIX.n.get((f"{company} 판독대조 CSV", f"{r[col]} → {new}"), 0) + 1
+                r[col] = new
     write_csv(OUT_DIR / f"{company}_판독대조.csv", RB_COLS, rb)
 
     # ── 집계 ──
@@ -897,7 +1092,8 @@ def run_company(company, cfg):
     return dict(company=company, cfg=cfg, meta=meta, readA=readA, units=units, uid=uid, Q=Q, execs=execs, concs=concs,
                 emp=emp, unreg=unreg, supports=supports, ia=ia, chart_pairs=chart_pairs, sq_rows=sq_rows,
                 unit_rows=unit_rows, exec_rows=exec_rows, checks=checks, counts=counts, docs=docs, copy_diffs=copy_diffs,
-                corr=corr, marks=marks, ia_basis=ia_basis, ia_title=ia_title)
+                corr=corr, marks=marks, ia_basis=ia_basis, ia_title=ia_title, VR=VR, unit_md_ways=unit_md_ways,
+                no_exec=no_exec, chart_hits=chart_hits, upside=upside, sup_rows=sup_rows)
 
 
 # ───────────────────────── md ─────────────────────────
@@ -907,6 +1103,127 @@ def esc(s):
 
 def bq(text):
     return "\n".join("> " + l for l in text.split("\n"))
+
+
+def md_fix(lines, where):
+    """「없음」 보정 표를 md 줄에 씀 — 원문 인용(「> 」 줄)과 ``` 블록은 건드리지 않음."""
+    out, code = [], False
+    for x in lines:
+        if x.startswith("```"):
+            code = not code
+            out.append(x)
+            continue
+        out.append(x if code or x.startswith(">") else FIX(x, where))
+    return out
+
+
+CIT_RX = re.compile(r"dart_out/text/risk8/(\S+?\.txt) ([0-9~,]+)행")
+_TXT_CACHE = {}
+
+
+def _keep(l):
+    return l.strip() != "" and not l.startswith("=== p.") and not re.match(r"^전자공시시스템 dart\.fss\.or\.kr Page \d+", l)
+
+
+def gap_marks(lines):
+    """인용 블록이 떨어진 줄 범위를 이어 붙였고 그 사이에 다른 글이 끼어 있으면, 그 자리에
+    블록 안 표지 줄 「[…줄 건너뜀: 텍스트 N~M행…]」 을 넣음(원문 줄은 그대로). 돌려줌: (새 줄, 넣은 표지 목록)."""
+    out, marks, i = [], [], 0
+    while i < len(lines):
+        if not (lines[i].startswith(">") and not lines[i].startswith("> 「(판단)」 표시가 없는 글은")):
+            out.append(lines[i])
+            i += 1
+            continue
+        j = i
+        while j < len(lines) and lines[j].startswith(">"):
+            j += 1
+        block = lines[i:j]
+        cit = None
+        for k in range(j, min(j + 4, len(lines))):
+            m = CIT_RX.search(lines[k])
+            if m:
+                cit = m
+                break
+            if lines[k].startswith(">") or lines[k].startswith("#"):
+                break
+        if cit and "," in cit.group(2):
+            fn = cit.group(1)
+            if fn not in _TXT_CACHE:
+                _TXT_CACHE[fn] = (TXT / fn).read_text(encoding="utf-8").split("\n")
+            T = _TXT_CACHE[fn]
+            rs = []
+            for part in cit.group(2).split(","):
+                a, _, b = part.partition("~")
+                rs.append((int(a), int(b or a)))
+            kept = [[n for n in range(a, b + 1) if _keep(T[n - 1])] for a, b in rs]
+            if sum(len(k) for k in kept) != len(block):
+                raise SystemExit(f"[건너뜀 표지] 블록 {len(block)}줄 ↔ 출처 줄 {sum(len(k) for k in kept)}줄: {fn} {cit.group(2)}")
+            new, pos = [], 0
+            for idx, (a, b) in enumerate(rs):
+                new += block[pos:pos + len(kept[idx])]
+                pos += len(kept[idx])
+                if idx + 1 < len(rs):
+                    a2 = rs[idx + 1][0]
+                    if any(_keep(T[n - 1]) for n in range(b + 1, a2)):
+                        new.append("> " + GAP_MARK.format(a=b + 1, b=a2 - 1))
+                        marks.append((fn, b + 1, a2 - 1))
+            block = new
+        out += block
+        i = j
+    return out, marks
+
+
+def fix_record(R, marks):
+    """7) 검증 기록 끝에 붙이는 「비평 보정」 기록(전 → 후 대표 예와 개수 — 개수는 이번 실행에서 센 값)."""
+    c = R["company"]
+    n = {}
+    for (where, old), k in FIX.n.items():
+        if where.startswith(c + " "):
+            n.setdefault(old, {})[where[len(c) + 1:]] = k
+    L = [f"### 비평 보정(critic14 대응, {FIX_KST[:10]} KST)", "",
+         f"비평 `dart_out/org14/critic14.json`(issues·gaps)과 `dart_out/raw/org14/critic/eopseum_content_hits.json` 에 따라 생성기 "
+         "`scripts/dart/org14_g1.py` 를 고쳐 다시 만듦(산출물은 손으로 고치지 않음, 보정 시각 " + FIX_KST + "). 순서: ① 검증 때 산출물에 직접 고친 값"
+         "(판독대조 CSV 판독B·확정·확정 방법, 조직단위 CSV 판독_대조·비고, 연차보고서 조직도 위원 수 보탬, 6) 보탬·바꿈 행, 7) 검증 기록)을 "
+         f"`dart_out/org14/{c}_검증반영.json` 으로 옮기고 생성기가 그때의 md·CSV 를 바이트까지 같게 다시 만드는 것을 확인(diff 0) → "
+         "② 아래 보정 → ③ `scripts/dart/verify14_g1.py` exit 0 · 생성기 두 번 실행 md5 같음. 원문 인용(「> 」 줄·``` 블록)·원문 칸 글은 그대로, "
+         "작업 사실(웹 요청 없음·고친 곳: 없음·바뀐 곳 없음)과 위 검증 기록의 지난 전 → 후 기록도 그대로.", "",
+         "| 바꾼 것 | 전 → 후(대표 예) | 개수 |", "|---|---|---|"]
+    for old, new, rule in FIX_EOPSEUM:
+        if old in n:
+            cnt = " · ".join(f"{w} {k}" for w, k in n[old].items())
+            L.append(f"| 「없음」 꼴 {rule} | 「{esc(old)}」 → 「{esc(new)}」 | {cnt} |")
+    # ① 찾은 범위를 붙인 「추출 범위에 없음」 칸(이번 실행 산출에서 셈)
+    for key, before, ex in ((f"{NONE}(찾은 범위: 출처 칸 문장(", NONE, "직위 글이 나오지 않음 / 총 인원 숫자가 나오지 않음"),
+                            (f"{NONE}(찾은 범위: 출처 칸 조직도 글", NONE, "부서 이름·인원 밖 글이 나오지 않음"),
+                            (f"{NONE}(찾은 범위: 출처 칸 표", f"{NONE} (이 표는 인원·자격만 적음)", "이 표는 인원·자격만 적음")):
+        k_sup = sum(v.count(key) for r in R["sup_rows"] for v in r.values())
+        k_unit = sum(v.count(key) for r in R["unit_rows"] for v in r.values())
+        if k_sup or k_unit:
+            where = key[len(NONE) + 1:].rstrip("(")
+            L.append(f"| ① 찾은 범위 붙임 | 「{before}」 → 「{NONE}({where} — {ex})」 꼴 | 지원조직 CSV {k_sup} · 조직단위 CSV {k_unit}"
+                     + (" (md 3-6 표에도 같은 칸)" if k_unit else "") + " |")
+    for old, d in n.items():
+        if " → (빈칸" in old:
+            cnt = " · ".join(f"{w} {k}" for w, k in d.items())
+            L.append(f"| ② 판독대조 빈 값 표지 | 「{old.split(' → ')[0]}」 → 「{old.split(' → ')[1]}」 | {cnt} |")
+    ne = R["no_exec"]
+    n0 = sum(1 for _, h in ne if h == 0)
+    L.append(f"| 맡은 임원 「{NONE}」 행의 찾은 방법(조직단위 CSV) | 대응_근거 빈칸 → 「찾은 방법: 사업보고서 … 임원 표 … 담당업무에서 「단위」 글자 검색"
+             f"(띄어쓰기·가운뎃점·「그룹」 붙임 무시) — 0건」; 임원_겸직 빈칸 → 「해당 없음(대응 임원 추출 범위에 없음)」 | {len(ne)}행(0건 {n0} · 다른 낱말에 걸림 {len(ne) - n0}) · md 6) 「맡은 임원」 행 1 |")
+    if R["upside"]:
+        L.append(f"| 거꾸로 그린 조직도 해석에 기댄 상위단위 (판단) 표시 | 비고 「…(판독)」 → 「…(판독); (판단) 조직도를 위아래 거꾸로 그린 꼴로 봄 — md·판독대조 K48」 | "
+                 f"{len(R['upside'])}행({', '.join(R['upside'])}) · 조직단위 CSV·md 1) 표 |")
+    if c == "KB금융지주":
+        q = R["Q"]["emp_exchange"]
+        L.append(f"| 빠진 가까운 글 보탬(gaps) | 2) 직원 겸직 칸에 사업보고서 {q['pages']} 「(2) 종업원에 관한 사항」 인력교류 문장 인용(텍스트 {q['lines']}행) + (판단) 그룹 전 계열사 숫자 — 지주 직원 겸직 숫자 아님 | md 인용 1 · 6) 받은 것 1 |")
+    else:
+        q = R["Q"]["ann_succ_137"]
+        L.append(f"| 빠진 문장 보탬(gaps) | 3-4 에 연차보고서 {q['pages']} 「사. 대표이사 회장 승계업무 지원부서 운영 현황」 인용(텍스트 {q['lines']}행) + (판단) 「팀장과 팀원 10명」 = 총 10명 또는 팀장 1명+팀원 10명; 신한리더십센터 행 공시인원에 보탬 | md 인용 1 · 조직단위 CSV 1행(칸 4개) · 지원조직 CSV 1행 · 6) 받은 것 1 |")
+    for fn, a, b in marks:
+        L.append(f"| 떨어진 줄을 이은 인용 블록 | 이어 붙인 자리(표지 없음) → 블록 안 표지 줄 「{GAP_MARK.format(a=a, b=b)}」({fn}) | 1 |")
+    L.append(f"| 사업보고서 「조직도」 검색 기록(COMMON 21행) | 기록 없음 → 1) 에 「사업보고서 텍스트에서 「조직도」 검색 … 나온 곳 {len(R['chart_hits'])}줄 …」 한 줄 | 1 |")
+    L.append("| 작업 시각 | 「작업일」 칸이 실행할 때마다 바뀜 → 첫 실행 시각·보정 시각을 고정값으로(멱등) | 1 |")
+    return L
 
 
 def write_md(R, extra):
@@ -927,24 +1244,27 @@ def write_md(R, extra):
         d = meta[k]
         L.append(f"| {DOCNAME[k]} | {d['title']} · {d['url']} · 공시일 {d['date']} · sha256 `{d['sha']}` · 수집 {d['fetched']} |")
     L.append(f"| 텍스트(쪽 표지 `=== p.N ===`) | `{R['docs']['biz'].rel}`, `{R['docs']['ann'].rel}`, `{R['docs']['ann_add'].rel}`, `{R['docs']['mgmt'].rel}` |")
-    L.append(f"| 작업일 | {NOW_KST} (스크립트 `scripts/dart/org14_g1.py` 실행 시각) · 판독 A {A['판독일시_KST']} |")
+    L.append(f"| 작업일 | {R['VR']['작업일_KST']} (스크립트 `scripts/dart/org14_g1.py` 첫 실행 시각) · 비평 보정 {FIX_KST}(같은 스크립트로 다시 만듦 — 시각은 스크립트 안 고정값이라 다시 돌려도 같은 파일) · 판독 A {A['판독일시_KST']} |")
     L.append(f"| 기준일 ① 조직도 | 「{Q['chart_title']['text']}」 (경영공시 {Q['chart_title']['pages']}, 글자 층 원문) |")
     L.append(f"| 기준일 ② 사업보고서 | 임원 표 「{R['execs']['기준일']['basis']}」, 작성기준일 이후 임원 표 「{R['execs']['이후']['basis']}」, 직원 표 「{R['emp']['기준일']}」 |")
     L.append(f"| 기준일 ③ 연차보고서 | 조직도 「{cfg['ann_chart_basis']}」, 인원 서술은 문장마다 다름(아래 3) 표의 기준일 칸) |")
     L.append("| 방법 | 조직도: 200dpi 쪽 그림을 먼저 보고 글자가 작은 곳은 300~600dpi 로 잘라(clip) 판독(그림 목록은 `" + f"dart_out/org14/{c}_판독A.json`). 표: 사업보고서 원문 XML 칸 글을 그대로 옮기고, 같은 접수번호 PDF 텍스트에서 공백 무시로 찾아 쪽을 붙임. 서술: 텍스트 파일 줄 그대로(쪽·줄 번호). 웹 요청 없음. |")
     L.append("| 쪽 번호 | 모두 PDF 쪽(텍스트 파일 `=== p.N ===`). 사업보고서 PDF 쪽 아래 「Page N」 인쇄 번호와 다름. |")
-    L.append("| 한계 | 조직도(2026년 8월)와 인원·겸직(2025.12.31 / 작성기준일 이후 2026.3) 기준일이 다름. 일반 부서 인원은 공시되지 않아 대부분 「추출 범위에 없음」. 조직도 그림 원본 해상도가 낮아(" + A["그림"]["원본_해상도_추정"] + ") 판독 B 대조 전까지 단위 이름·선 관계는 잠정. |\n")
+    L.append("| 한계 | 조직도(2026년 8월)와 인원·겸직(2025.12.31 / 작성기준일 이후 2026.3) 기준일이 다름. 일반 부서 인원은 공시되지 않아 대부분 「추출 범위에 없음」. 조직도 그림 원본 해상도가 낮아(" + A["그림"]["원본_해상도_추정"] + ") 단위 이름·선 관계는 검증 판독 B 대조로 확정(7) 검증 기록 — 가운뎃점 글자 등 남은 문제는 그곳에). |\n")
 
     # 1) 조직도 판독 표
-    L.append("## 1) 조직도 판독 표 (판독 A)\n")
+    L.append("## 1) 조직도 판독 표 (판독 A · 검증 판독 B 대조 후 확정 — 대조는 7) 검증 기록)\n")
     L.append(f"- 기준일 글(글자 층, 원문): 「{Q['chart_title']['text']}」 {Q['chart_title']['src']}")
     for h in A["머리글_판독"]:
         L.append(f"- {h['칸']} (판독): 「{h['판독']}」 — 확대: `{h['확대그림']}` {h['dpi']}dpi clip {h['clip_pt']}")
     L.append(f"- 배치(판독): {A['배치_판독']}")
-    L.append(f"- 겸직 표시(판독): {A['겸직표시_판독']}\n")
+    L.append(f"- 겸직 표시(판독): {A['겸직표시_판독']}")
+    hits = R["chart_hits"]
+    L.append(f"- 사업보고서 텍스트에서 「조직도」 검색(`{R['docs']['biz'].rel}` 전체) — 나온 곳 {len(hits)}줄: "
+             + " · ".join(f"{ln}행(p.{pg}) 「{t}」" for ln, pg, t in hits) + f" — {cfg['chart_search_note']}\n")
     L.append("| id | 상위단위(판독) | 조직단위(판독) | 층위(판독) | 겸직 표시(판독) | 선·자리 근거(판독) | 비고 |\n|---|---|---|---|---|---|---|")
     for u in R["units"]:
-        L.append(f"| {u['id']} | {esc(u['상위단위'])} | {esc(u['단위'])} | {esc(u['층위'])} | {esc(u['겸직표시'])} | {esc(u['연결근거'])} | {esc(u['비고'])} |")
+        L.append(f"| {u['id']} | {esc(u['상위단위'])} | {esc(u['단위'])} | {esc(u['층위'])} | {esc(u['겸직표시'])} | {esc(u['연결근거'])} | {esc(u.get('md_비고', u['비고']))} |")
     L.append("")
     L.extend(extra.get("chart_check", []))
 
@@ -982,16 +1302,21 @@ def write_md(R, extra):
     L.append(bq(Q["ann_chart"]["text"]) + f"\n\n{Q['ann_chart']['src']} · 추가공시 텍스트와 {Q['ann_chart'].get('ann_add_same', '')}\n")
     for qid in [k for k in Q if k.startswith("ann_") and k not in ("ann_chart",)]:
         L.append(f"**{QTITLE.get(qid, qid)}** (`{qid}`)\n\n" + bq(Q[qid]["text"]) + f"\n\n{Q[qid]['src']} · 추가공시 텍스트와 {Q[qid].get('ann_add_same', '')}\n")
+        if qid in QNOTE:
+            L.append(QNOTE[qid] + "\n")
     L.append("### 3-5 경영공시 2026 2Q — 조직 관련 글\n")
     for qid in [k for k in Q if k.startswith("mgmt_")]:
         L.append(f"**{QTITLE.get(qid, qid)}** (`{qid}`)\n\n" + bq(Q[qid]["text"]) + f"\n\n{Q[qid]['src']}\n")
-    L.append("- 경영공시 2026 2Q 의 임직원 수: " + NONE + " — 찾은 방법: `" + R["docs"]["mgmt"].rel + "` 전체(목차 「일반현황: 조직 및 영업점」뿐)에서 「임직원」「직원」「인원」「사무국」「조직」 검색; 나온 글은 위 3-5 와 은행 자회사 유동성 조직 설명뿐.\n")
+    L.append("- 경영공시 2026 2Q 의 임직원 수: " + NONE + " — 찾은 방법: `" + R["docs"]["mgmt"].rel + "` 전체(목차 「일반현황」 아래 「조직 및 영업점」뿐)에서 「임직원」「직원」「인원」「사무국」「조직」 검색; 나온 글은 위 3-5 와 은행 자회사 유동성 조직 설명뿐.\n")
     L.extend(extra.get("other_quotes", []))
     L.append("### 3-6 조직 단위별 인원 연결 (조직단위 CSV 요약)\n")
     L.append("| 단위(판독) | 공시인원(원문) | 인원 내역(원문) | 기준일 | 연결 방식 |\n|---|---|---|---|---|")
-    for r, u in zip(R["unit_rows"], R["units"]):
+    # 순서: 수집 때 인원을 붙인 단위(조직도 순서) → 검증 반박으로만 인원을 보탠 단위(조직도 순서)
+    trip = list(zip(R["unit_rows"], R["units"], R["unit_md_ways"]))
+    trip = [x for x in trip if not all(e for _, e in x[2])] + [x for x in trip if x[2] and all(e for _, e in x[2])]
+    for r, u, mw in trip:
         if r["공시인원(원문, 없으면 「추출 범위에 없음」)"] != NONE:
-            ways = "<br>".join(x.split(" — 연결: ")[-1] for x in r["인원_출처"].split("\n"))
+            ways = "<br>".join(w for w, _ in mw)
             L.append(f"| {esc(u['단위'])} | {esc(r['공시인원(원문, 없으면 「추출 범위에 없음」)'])} | {esc(r['인원_내역(원문)'])} | {esc(r['인원_기준일'])} | {ways} |")
     L.append(f"\n그 밖 {len(R['units']) - R['counts']['units_with_headcount']}개 단위: 「{NONE}」(찾은 방법은 조직단위 CSV 「인원_출처」 칸).\n")
 
@@ -1029,9 +1354,24 @@ def write_md(R, extra):
     for g in extra["diffs"]:
         L.append(f"| 다른 것 | {esc(g[0])} | {esc(g[1])} |")
     L.append("")
-    L.append("## 7) 검증 기록\n")
-    L.append("(검증 에이전트가 덧붙임 — 판독 B 는 `dart_out/org14/" + c + "_판독B.json` 에 먼저 저장한 뒤 `dart_out/org14/" + c + "_판독대조.csv` 의 판독B·확정·확정 방법 칸을 채움)\n")
-    (MD_DIR / f"14_{c}.md").write_text("\n".join(L), encoding="utf-8")
+    # 비평 보정: 「없음」 꼴(인용 「> 」 줄·``` 블록 밖) → 떨어진 줄을 이은 인용 블록 안 건너뜀 표지 → 보정 기록
+    lines = md_fix("\n".join(L).split("\n"), f"{c} md")
+    # 7) 검증 기록 = 검증 반영 입력(검증 에이전트가 쓴 글). 지난 전 → 후 기록 줄(VR_KEEP)은 「없음」 보정도 하지 않음
+    lines.append(R["VR"]["검증기록_제목"] + "\n")
+    keep = VR_KEEP.get(c, ())
+    body = R["VR"]["검증기록_줄"]
+    for i, x in enumerate(body):
+        if i in keep:
+            assert "→" in x, (c, i, x[:40])
+            lines.append(x)
+        else:
+            lines += md_fix([x], f"{c} md")
+    lines.append("")
+    lines, marks = gap_marks(lines)
+    text = "\n".join(lines)
+    assert text.endswith("\n")
+    text += "\n" + "\n".join(fix_record(R, marks)) + "\n"
+    (MD_DIR / f"14_{c}.md").write_text(text, encoding="utf-8")
 
 
 # ───────────────────────── 회사별 덧붙임(받은 것·못 받은 것·차이) ─────────────────────────
@@ -1051,6 +1391,8 @@ def extras(R):
         ]
         ex["emp_extra"] = [
             "**직원 겸직 숫자**: " + NONE + " — 찾은 방법: 사업보고서·연차보고서(본·추가)·경영공시 텍스트 전체에서 「겸직」「겸임」「겸직직원」「겸직 직원」「겸직인원」「겸직 인원」「(겸)」 검색(검색 결과 `dart_out/raw/org14/search/*__겸.txt`). 「겸직직원·겸직 직원·겸직인원」 0건.",
+            "- 가까운 글(판단: 그룹 전 계열사 인력교류 숫자 — 지주 직원 겸직 숫자가 아님):\n",
+            bq(Q["emp_exchange"]["text"]) + f"\n\n  {Q['emp_exchange']['src']}\n",
             "- 가까운 글(직원이 아니라 경영진·미등기임원 숫자):\n",
             bq(Q["ann_conc_217"]["text"]) + f"\n\n  {Q['ann_conc_217']['src']}\n",
             "- (판단) 위 「겸직 경영진 10명」과 사업보고서 미등기임원 보수 주석의 「원소속회사가 계열사인 미등기임원(2025.12.31 기준 10명)」은 같은 10명으로 보이나 원문이 같은 사람들이라고 적지는 않음.",
@@ -1145,6 +1487,30 @@ def extras(R):
             ("CRO: 2025.12.31 표 방동권 「파트장(부사장)」 「그룹 리스크관리파트 (CRO)」 ↔ 2026.3.18 표 나훈 「파트장 (상무)」 「리스크관리파트 (CRO)」", "작성기준일 이후 바뀜"),
             ("CFO: 2025.12.31 표 천상영 ↔ 2026.3.18 표 장정훈 「그룹재무부문 (CFO)」", "작성기준일 이후 바뀜"),
         ]
+    # 비평 보정: 빠진 가까운 글(받은 것) · 맡은 임원(받지 못한 것)
+    if c == "KB금융지주":
+        got.append(("가까운 글: 그룹 전 계열사 인력교류 총 163명(2025년, 「(2) 종업원에 관한 사항」) — (판단) 지주 직원 겸직 숫자가 아님", Q["emp_exchange"]["src"]))
+    else:
+        got.append(("신한리더십센터 「팀장과 팀원 10명」(대표이사 회장 승계업무 지원부서) — (판단) 총 10명 또는 팀장 1명+팀원 10명으로 읽힘", Q["ann_succ_137"]["src"]))
+    ne = R["no_exec"]
+    n0 = [u["단위"] for u, h in ne if h == 0]
+    nh = [u["단위"] for u, h in ne if h]
+    eb, ea = R["execs"]["기준일"], R["execs"]["이후"]
+    not_got.append((f"맡은 임원(조직도 단위 {len(ne)}곳)",
+                    f"{NONE} — 찾은 방법: 사업보고서 {R['cfg']['biz']} 임원 표 {eb['basis']} {len(eb['rows'])}명·작성기준일 이후 임원 표 {ea['basis']} {len(ea['rows'])}명의 "
+                    f"담당업무에서 단위 이름 글자 검색(띄어쓰기·가운뎃점·「그룹」 붙임 무시) — {len(n0)}곳 0건(" + "·".join(n0) + ")"
+                    + (f"; {len(nh)}곳(" + "·".join(nh) + ")은 다른 낱말 안에 걸림 — (판단) 도식 상자라 대응하지 않음" if nh else "")
+                    + ". 단위별 결과는 조직단위 CSV 대응_근거 칸"))
+    # 검증 에이전트가 6) 표에 보태거나 바꾼 행(검증 반영 입력)
+    lists = {"받은 것": got, "받지 못한 것": not_got, "다른 것": diffs}
+    for x in R["VR"]["md_6_바꿈"]:
+        lst = lists[x["구분"]]
+        k = [i for i, g in enumerate(lst) if g[0] == x["전_항목"]]
+        if len(k) != 1:
+            raise SystemExit(f"[6) 바꿀 행 못 찾음] {c}: {x['전_항목']}")
+        lst[k[0]] = (x["항목"], x["출처·방법"])
+    for x in R["VR"]["md_6_보탬"]:
+        lists[x["구분"]].append((x["항목"], x["출처·방법"]))
     ex["got"], ex["not_got"], ex["diffs"] = got, not_got, diffs
     return ex
 
@@ -1152,7 +1518,7 @@ def extras(R):
 def main():
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     MD_DIR.mkdir(parents=True, exist_ok=True)
-    allchk = {"작업시각": NOW_KST, "companies": []}
+    allchk = {"작업시각": load_vr(next(iter(CFG)))["작업일_KST"], "companies": []}
     for company, cfg in CFG.items():
         R = run_company(company, cfg)
         ex = extras(R)

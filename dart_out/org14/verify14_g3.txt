@@ -5,7 +5,7 @@
 - quotes: 33
 - quote_page: 33
 - page_refs: 373
-- frag_ok: 398
+- frag_ok: 402
 - frag_term: 37
 - frag_title: 23
 - frag_pandok: 7
@@ -23,13 +23,15 @@
 - name_match_pairs: 82
 - name_match_cells: 49
 - local_frags: 95
-- frag_record: 101
+- frag_record: 201
 - search_rows: 27
+- csv_heads: 3
+- eopseum: 0
 
 ## 한국투자금융지주
 - quotes: 30
 - quote_page: 30
-- page_refs: 316
+- page_refs: 319
 - frag_ok: 530
 - frag_term: 28
 - frag_title: 97
@@ -48,8 +50,10 @@
 - name_match_pairs: 31
 - name_match_cells: 18
 - local_frags: 111
-- frag_record: 84
+- frag_record: 175
 - search_rows: 36
+- csv_heads: 3
+- eopseum: 0
 
 ## 원문 대조에서 따로 센 「」 조각 312개 (term=칸 이름·표지 낱말, title=문서 제목(메타 CSV), pandok=판독 이름, search=찾은 방법의 검색어)
 메리 | md 5줄 | term | 판독
@@ -62,62 +66,62 @@
 메리 | md 34줄 | term | N부문 N팀
 메리 | md 39줄 | title | 제17기 2분기 경영공시
 메리 | md 51줄 | term | (겸)
-메리 | md 194줄 | search | 겸직직원
-메리 | md 194줄 | search | 겸직 직원
-메리 | md 194줄 | search | 겸직인원
-메리 | md 194줄 | search | 겸직 인원
-메리 | md 194줄 | search | 겸직자
-메리 | md 194줄 | search | 겸무
-메리 | md 194줄 | term | (겸)
-메리 | md 202줄 | term | (겸)
-메리 | md 202줄 | search | 겸무
-메리 | md 202줄 | search | 겸직 인원
-메리 | md 202줄 | search | 겸직 직원
-메리 | md 202줄 | search | 겸직인원
-메리 | md 202줄 | search | 겸직자
-메리 | md 202줄 | search | 겸직직원
-메리 | md 202줄 | term | (겸)
-메리 | md 202줄 | search | 겸무
-메리 | md 202줄 | search | 겸직 인원
-메리 | md 202줄 | search | 겸직 직원
-메리 | md 202줄 | search | 겸직인원
-메리 | md 202줄 | search | 겸직자
-메리 | md 202줄 | search | 겸직직원
-메리 | md 202줄 | term | (겸)
-메리 | md 202줄 | search | 겸무
-메리 | md 202줄 | search | 겸직 인원
-메리 | md 202줄 | search | 겸직 직원
-메리 | md 202줄 | search | 겸직인원
-메리 | md 202줄 | search | 겸직자
-메리 | md 202줄 | search | 겸직직원
-메리 | md 208줄 | term | 준법감시인(준법지원인) 지원조직
-메리 | md 460줄 | term | 공시인원
-메리 | md 480줄 | term | 인원_내역
-메리 | md 580줄 | term | 이름 일치
-메리 | md 580줄 | term | (판단) 띄어쓰기만 다름
-메리 | md 580줄 | term | (판단)
-메리 | md 580줄 | term | 추출 범위에 없음
-메리 | md 581줄 | term | 위원장/위원/의장
-메리 | md 708줄 | search | 겸직직원
-메리 | md 708줄 | search | 겸직 직원
-메리 | md 708줄 | search | 겸직인원
-메리 | md 708줄 | search | 겸직 인원
-메리 | md 708줄 | search | 겸직자
-메리 | md 708줄 | search | 겸무
-메리 | md 708줄 | term | (겸)
-메리 | md 718줄 | pandok | 브랜드·홍보 총괄
-메리 | md 727줄 | term | 부문장(직위 상자)
-메리 | md 727줄 | term | 그룹 부문
-메리 | md 727줄 | term | 경영 회의체
-메리 | md 727줄 | term | 최고책임자(직위 상자)
-메리 | md 727줄 | term | 책임자(임원)
-메리 | md 727줄 | term | 직위 상자
-메리 | md 727줄 | term | 책임자(임원)
-메리 | md 733줄 | term | 단위_층위
-메리 | md 734줄 | term | 공시인원
-메리 | md 734줄 | term | 공시인원
-메리 | md 736줄 | pandok | CEO (대표이사)
-메리 | md 744줄 | pandok | 브랜드·홍보 총괄
+메리 | md 196줄 | search | 겸직직원
+메리 | md 196줄 | search | 겸직 직원
+메리 | md 196줄 | search | 겸직인원
+메리 | md 196줄 | search | 겸직 인원
+메리 | md 196줄 | search | 겸직자
+메리 | md 196줄 | search | 겸무
+메리 | md 196줄 | term | (겸)
+메리 | md 204줄 | term | (겸)
+메리 | md 204줄 | search | 겸무
+메리 | md 204줄 | search | 겸직 인원
+메리 | md 204줄 | search | 겸직 직원
+메리 | md 204줄 | search | 겸직인원
+메리 | md 204줄 | search | 겸직자
+메리 | md 204줄 | search | 겸직직원
+메리 | md 204줄 | term | (겸)
+메리 | md 204줄 | search | 겸무
+메리 | md 204줄 | search | 겸직 인원
+메리 | md 204줄 | search | 겸직 직원
+메리 | md 204줄 | search | 겸직인원
+메리 | md 204줄 | search | 겸직자
+메리 | md 204줄 | search | 겸직직원
+메리 | md 204줄 | term | (겸)
+메리 | md 204줄 | search | 겸무
+메리 | md 204줄 | search | 겸직 인원
+메리 | md 204줄 | search | 겸직 직원
+메리 | md 204줄 | search | 겸직인원
+메리 | md 204줄 | search | 겸직자
+메리 | md 204줄 | search | 겸직직원
+메리 | md 210줄 | term | 준법감시인(준법지원인) 지원조직
+메리 | md 462줄 | term | 공시인원
+메리 | md 482줄 | term | 인원_내역
+메리 | md 582줄 | term | 이름 일치
+메리 | md 582줄 | term | (판단) 띄어쓰기만 다름
+메리 | md 582줄 | term | (판단)
+메리 | md 582줄 | term | 추출 범위에 없음
+메리 | md 583줄 | term | 위원장/위원/의장
+메리 | md 710줄 | search | 겸직직원
+메리 | md 710줄 | search | 겸직 직원
+메리 | md 710줄 | search | 겸직인원
+메리 | md 710줄 | search | 겸직 인원
+메리 | md 710줄 | search | 겸직자
+메리 | md 710줄 | search | 겸무
+메리 | md 710줄 | term | (겸)
+메리 | md 721줄 | pandok | 브랜드·홍보 총괄
+메리 | md 730줄 | term | 부문장(직위 상자)
+메리 | md 730줄 | term | 그룹 부문
+메리 | md 730줄 | term | 경영 회의체
+메리 | md 730줄 | term | 최고책임자(직위 상자)
+메리 | md 730줄 | term | 책임자(임원)
+메리 | md 730줄 | term | 직위 상자
+메리 | md 730줄 | term | 책임자(임원)
+메리 | md 736줄 | term | 단위_층위
+메리 | md 737줄 | term | 공시인원
+메리 | md 737줄 | term | 공시인원
+메리 | md 739줄 | pandok | CEO (대표이사)
+메리 | md 747줄 | pandok | 브랜드·홍보 총괄
 메리 | 조직단위 CSV 2행 조직도_문서 | title | 제17기 2분기 경영공시
 메리 | 조직단위 CSV 3행 조직도_문서 | title | 제17기 2분기 경영공시
 메리 | 조직단위 CSV 4행 조직도_문서 | title | 제17기 2분기 경영공시
@@ -274,7 +278,7 @@
 한국 | md 781줄 | term | 단위_층위
 한국 | md 782줄 | term | 공시인원
 한국 | md 782줄 | term | 공시인원
-한국 | md 803줄 | term | 연결선 없음
+한국 | md 803줄 | term | 연결선이 나오지 않음
 한국 | 조직단위 CSV 2행 조직도_문서 | title | 제25기 2분기 경영공시자료
 한국 | 조직단위 CSV 3행 조직도_문서 | title | 제25기 2분기 경영공시자료
 한국 | 조직단위 CSV 3행 인원_내역(원문) | pandok | 이사회 (사내이사2명 사외이사 5명)

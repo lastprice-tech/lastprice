@@ -13,6 +13,10 @@
  C  조직도 머리 집계 글 ↔ 확정 단위 수(두 회사 모두 집계 글 나오지 않음 — 단위 수만 맞댐)
  N  「이름 일치」: 단위 이름이 담당업무 원문에 글자 그대로(앞뒤 글자 경계, 「장」「소속」「겸」 붙음 허용) 있는지
  K  키·OC 값 없음(값은 적지 않음), 산출 폴더(handoff/14차_조직인원겸직, dart_out/org14)에 PDF·PNG 없음
+ H  회사 CSV 열 이름 = COMMON14 꼴(KB금융지주_조직단위·임원겸직·지원조직 CSV 머리 줄과 글자 그대로; 임원겸직 뒤 3열 임원표_구분·겸직표_구분·비고는 덧붙인 열),
+    지원조직 CSV 기준일 빈칸 0, 대응_방식 칸이 세 값(이름 일치 / (판단) / 추출 범위에 없음) 가운데 하나를 담음(빈칸 0)
+ E  「없음」 단정 꼴(없음·없었·없고·없어·없다)이 원문 밖에 0 — md(코드 블록·「>」 줄 밖)와 CSV 모든 칸에서 원문 줄·원문 「」 조각·
+    작업 사실 낱말(EOK)을 빼고 셈. 7) 의 「고치기 전 / 고친 뒤」 칸과 「### 비평 보정」 절의 「」 전·후 기록은 뺌(지난 기록)
 """
 import csv, json, os, re, sys
 
@@ -52,7 +56,7 @@ META = ["dart_out/risk8/연차보고서_FY2025.csv", "dart_out/risk8/경영공�
 # 원문 인용이 아닌 「」 낱말(이 작업의 칸 이름·표지·판단 낱말, 검증 기록 낱말)
 TERMS = {"판독", "(판단)", "추출 범위에 없음", "나오지 않음", "=== p.N ===", "원본 수집", "이름 일치", "공시인원", "인원_내역",
          "단위_층위", "글자층", "(겸)", "겸", "장", "소속", "실", "N부문 N팀", "N실", "위원장/위원/의장", "B 대기(검증 에이전트)",
-         "(판단) 띄어쓰기만 다름", "(판단) 「실」 글자만 빠짐", "판독_대조", "A↔글자층", "연결선 없음", "4부문 8담당…",
+         "(판단) 띄어쓰기만 다름", "(판단) 「실」 글자만 빠짐", "판독_대조", "A↔글자층", "연결선 없음", "연결선이 나오지 않음", "4부문 8담당…",
          "34부서", "판독대조", "글자층에 없음 — 그림 판독/설명", "글자층과 같음…", "(판단) / 이름 일치", "확정",
          "판독 A", "판독 B", "판독B", "다름", "같음", "/", " / ", "부문장", "그룹 부문", "협의회", "책임자(임원)", "부문",
          "경영 회의체", "최고책임자(직위 상자)", "직위 상자", "부문장(직위 상자)", "책임자(직위 상자)", "준법감시인(직위 상자)",
@@ -60,6 +64,25 @@ TERMS = {"판독", "(판단)", "추출 범위에 없음", "나오지 않음", "=
          # COMMON 지침의 표 이름(3-1 절 제목)·메타 CSV 칸 이름
          "준법감시인(준법지원인) 지원조직", "감사위원회 지원조직", "찾은곳"}
 
+# 회사 CSV 열 이름(COMMON14 꼴) → 이 검사 안에서 쓰는 짧은 이름
+LONG2SHORT = {"조직도_겸직표시(판독, 없으면 빈칸)": "조직도_겸직표시(판독)", "공시인원(원문, 없으면 「추출 범위에 없음」)": "공시인원(원문)",
+              "대응_방식(이름 일치/(판단)/추출 범위에 없음)": "대응_방식", "임원_겸직(원문: 겸직회사·직위·선임일·상근)": "임원_겸직(원문)",
+              "출처(문서·접수번호·쪽)": "출처", "주요 활동": "주요 활동(원문)"}
+EOPSEUM = re.compile(r"없(?:음|었|고(?=\s)|어(?=\s)|다(?=[\s.]))")
+# 단정이 아닌 작업 사실·방법 낱말(공통 꼴 ④)과 칸 이름
+EOK = ["추출 범위에 없음", "글자층 없음", "글자층에 없음", "웹 요청·API 키·OC 사용 없음", "웹 요청 없음", "(인자 없음", "없으면 빈칸", "없으면 「추출 범위에 없음」"]
+FIX_HEAD = "### 비평 보정"
+# COMMON14 「산출 2~4」 열 이름(= dart_out/org14/KB금융지주_{조직단위,임원겸직,지원조직}.csv 머리 줄)
+HEADS = {
+    "조직단위": ["회사", "조직도_문서", "조직도_쪽", "조직도_기준일(원문)", "상위단위(판독)", "조직단위(판독)", "단위_층위(판독)",
+             "조직도_겸직표시(판독, 없으면 빈칸)", "공시인원(원문, 없으면 「추출 범위에 없음」)", "인원_내역(원문)", "인원_기준일", "인원_출처",
+             "대응_임원(성명·직위)", "대응_근거(담당업무 원문)", "대응_방식(이름 일치/(판단)/추출 범위에 없음)",
+             "임원_겸직(원문: 겸직회사·직위·선임일·상근)", "겸직_출처", "판독_대조", "비고"],
+    "임원겸직": ["회사", "성명", "직위", "등기", "상근", "담당업무(원문)", "대응_조직단위", "대응_방식", "겸직회사", "겸직회사_직위", "선임일",
+             "상근여부", "출처(문서·접수번호·쪽)"],
+    "지원조직": ["회사", "조직 종류", "부서(팀)명", "직원수", "직위(근속연수)", "주요 활동", "기준일", "출처"],
+}
+HEAD_EXTRA = {"임원겸직": ["임원표_구분", "겸직표_구분", "비고"]}   # g2~g4 회사 CSV 에 덧붙인 열(합본 14_임원겸직.csv 와 같음)
 probs, notes = [], []
 stat = {}
 
@@ -94,7 +117,11 @@ class Text:
 
 
 def load_csv(p):
-    return list(csv.DictReader(open(p, encoding="utf-8-sig")))
+    return [{LONG2SHORT.get(k, k): v for k, v in r.items()} for r in csv.DictReader(open(p, encoding="utf-8-sig"))]
+
+
+def csv_head(p):
+    return next(csv.reader(open(p, encoding="utf-8-sig")))
 
 
 def frags(s):
@@ -530,7 +557,7 @@ def check_company(co, cfg, titles):
             if norm(nm) != norm(u["조직단위(판독)"]):
                 probs.append((co, f"판독대조 {ri}행", "R 확정 이름 ≠ 조직단위 CSV", f"{nm} / {u['조직단위(판독)']}"))
         elif fld in ("상위단위", "상위"):
-            cv = "" if r["확정"].startswith("(없음") else r["확정"]
+            cv = "" if r["확정"].startswith(("(없음", "(맨 위 —")) else r["확정"]
             if norm(cv) != norm(u["상위단위(판독)"]):
                 probs.append((co, f"판독대조 {ri}행", "R 확정 상위 ≠ 조직단위 CSV", f"{cv} / {u['상위단위(판독)']}"))
         elif fld == "층위":
@@ -577,6 +604,73 @@ def check_company(co, cfg, titles):
             probs.append((co, f"조직단위 CSV {ri}행 {name}", "N 「이름 일치」인데 글자 그대로 없는 임원", ", ".join(n for n in names_here if n not in hits)))
         if not hits:
             probs.append((co, f"조직단위 CSV {ri}행 {name}", "N 「이름 일치」 표시인데 글자 그대로 맞는 임원 0명", way))
+
+    # ── H: 회사 CSV 열 이름(COMMON14 꼴 = KB 머리 줄)·지원조직 기준일·대응_방식 세 값 ──
+    for kind, want in HEADS.items():
+        h = csv_head(os.path.join(ORG, f"{co}_{kind}.csv"))
+        if h[:len(want)] != want or h[len(want):] != HEAD_EXTRA.get(kind, []):
+            probs.append((co, f"{kind} CSV 머리", "H 열 이름이 COMMON14 꼴과 다름", " / ".join(x for x in h if x not in want)))
+        kbp = os.path.join(ORG, f"KB금융지주_{kind}.csv")
+        if os.path.exists(kbp) and csv_head(kbp) != want:
+            notes.append((co[:2], f"{kind} CSV 머리", "kb-head", "KB 머리 줄이 이 검사의 COMMON 꼴과 다름(참고)"))
+    for ri, r in enumerate(sups, 2):
+        if not (r["기준일"] or "").strip():
+            probs.append((co, f"지원조직 CSV {ri}행", "H 기준일 빈칸", r["부서(팀)명"]))
+    for name, rows in (("조직단위", units), ("임원겸직", execs)):
+        for ri, r in enumerate(rows, 2):
+            if name == "임원겸직" and r["직위"].startswith("추출 범위에 없음(임원 표에"):
+                continue
+            parts = [x.strip() for x in (r["대응_방식"] or "").split(" / ")]
+            if not all(x == "이름 일치" or x.startswith("(판단)") or x == "추출 범위에 없음" for x in parts):
+                probs.append((co, f"{name} CSV {ri}행 {r.get('조직단위(판독)') or r.get('성명')}", "H 대응_방식이 세 값 밖(빈칸 포함)", r["대응_방식"] or "(빈칸)"))
+    st["csv_heads"] = len(HEADS)
+
+    # ── E: 「없음」 단정이 원문 밖에 있는지 ──
+    alltext = "".join(pool)
+
+    def is_src(s):
+        n = norm(s)
+        return bool(n) and n in alltext
+
+    def rest(text, drop_all_frags=False):
+        keep = []
+        for line in re.split(r"\n|<br>", text or ""):
+            if len(norm(line)) >= 6 and is_src(line):
+                continue                       # 원문 줄 그대로
+            for _ in range(4):                 # 겹친 「「…」…」 는 안쪽부터
+                for f in frags(line):
+                    if drop_all_frags or is_src(f):
+                        line = line.replace("「" + f + "」", "〔〕")
+            for ok in EOK:
+                line = line.replace(ok, "")
+            keep.append(line)
+        return "\n".join(keep)
+
+    BEFORE_AFTER_ROWS = {ln - 1 for ln, _ in md_tables(md, "| 곳 | 고치기 전 | 고친 뒤 |")}
+    st["eopseum"] = 0
+    fix_from = next((i for i, l in enumerate(md) if l.startswith(FIX_HEAD)), len(md))
+    inb = False
+    for i, ln in enumerate(md):
+        if ln.startswith("```"):
+            inb = not inb
+            continue
+        if inb or ln.startswith(">"):
+            continue
+        chk = ln
+        if i >= rec0 and ln.startswith("|") and i in BEFORE_AFTER_ROWS:
+            c = ln.strip()[1:-1].split(" | ")
+            chk = " | ".join([c[0]] + c[3:])        # 7) 고친 곳 표: 「고치기 전」「고친 뒤」 칸은 지난 기록이라 뺌
+        r_ = rest(chk, drop_all_frags=i >= fix_from)
+        for m in EOPSEUM.finditer(r_):
+            st["eopseum"] += 1
+            probs.append((co, f"md {i+1}줄", "E 「없음」 단정 꼴", "…" + r_[max(0, m.start() - 30):m.end()]))
+    for fname, rows_ in (("조직단위", units), ("임원겸직", execs), ("지원조직", sups), ("판독대조", cmp_)):
+        for ri, r in enumerate(rows_, 2):
+            for col, v in r.items():
+                r_ = rest(v)
+                for m in EOPSEUM.finditer(r_):
+                    st["eopseum"] += 1
+                    probs.append((co, f"{fname} CSV {ri}행 {col}", "E 「없음」 단정 꼴", "…" + r_[max(0, m.start() - 30):m.end()]))
 
     stat[co] = st
     return [mdp] + [os.path.join(ORG, f"{co}_{x}") for x in ("조직단위.csv", "임원겸직.csv", "지원조직.csv", "판독대조.csv", "판독A.json", "판독B.json")]

@@ -11,6 +11,11 @@
  6. CSV ↔ md 같은 값(조직도 판독 표·임원 표·지원조직 표·인원 연결 표)
  7. 판독대조 CSV: 판독B 칸 = 판독B JSON, 확정 칸 = 조직단위 CSV, 확정·확정 방법 칸 빈칸 없음, 머리 집계 글 ↔ 확정 단위 수
  8. 인증값(DART_API_KEY·LAW_OC 등) 문자열 없음, 산출 폴더(dart_out/org14·handoff/14차_조직인원겸직)에 PDF·PNG 없음
+ 9. (비평 보정 2026-10-19) 「없음」 단정이 원문 칸·원문 인용 밖에 0 인지: md(「> 」 줄·``` 블록·백틱·원문에 나오는 「」 조각 밖)와
+    CSV 4개(원문에 줄째 나오는 칸 줄 밖)의 「없」 꼴 — 허용: 「추출 범위에 없음」, 「해당 없음(대응 임원 추출 범위에 없음)」,
+    작업 사실(웹 요청 없음·고친 곳: 없음·바뀐 곳 없음), 7) 검증 기록의 전 → 후 기록 줄, 판독대조 판독B 칸 = 판독B JSON 글 그대로
+10. (비평 보정) 맡은 임원 「추출 범위에 없음」 행: 대응_근거 = 「찾은 방법: … 글자 검색 … — N건」 이고 N 이 다시 센 값과 같음, 임원_겸직 = 「해당 없음(대응 임원 추출 범위에 없음)」
+11. (비평 보정) 인용 블록 안 「[…줄 건너뜀: 텍스트 N~M행…]」 표지: 출처 줄 범위 사이의 틈과 맞고, 다른 글이 낀 틈마다 표지가 있음
 웹 요청 없음. 원본 파일은 읽기만 함.
 """
 import csv
@@ -129,6 +134,11 @@ def md_lines(co):
 
 # ───────────────────────────── 1. 인용 블록 ─────────────────────────────
 CIT_RE = re.compile(r"dart_out/text/risk8/(\S+?\.txt) ([0-9~,]+)행")
+GAP_RE = re.compile(r"^\[…줄 건너뜀: 텍스트 (\d+)~(\d+)행…\]$")
+
+
+def keep_line(l):
+    return l.strip() != "" and not l.startswith("=== p.") and not re.match(r"^전자공시시스템 dart\.fss\.or\.kr Page \d+", l)
 
 
 def check_blockquotes(co):
@@ -141,6 +151,8 @@ def check_blockquotes(co):
             while j < len(L) and L[j].startswith(">"):
                 j += 1
             block = [re.sub(r"^>\s?", "", x) for x in L[i:j]]
+            gaps = [tuple(int(v) for v in mm.groups()) for x in block for mm in [GAP_RE.match(x)] if mm]
+            block = [x for x in block if not GAP_RE.match(x)]
             cit = None
             for k in range(j, min(j + 4, len(L))):
                 if CIT_RE.search(L[k]):
@@ -162,6 +174,13 @@ def check_blockquotes(co):
             src = nows("".join(d.lines[n - 1] for n in rng if 0 < n <= len(d.lines)))
             q = nows("".join(block))
             cnt("인용블록")
+            # 건너뜀 표지 ↔ 출처 줄 범위 사이 틈(다른 글이 낀 틈마다 표지 하나)
+            rs = [tuple(int(v) for v in (pt.partition("~")[0], pt.partition("~")[2] or pt.partition("~")[0])) for pt in m.group(2).split(",")]
+            need = [(b1 + 1, a2 - 1) for (a1, b1), (a2, b2) in zip(rs, rs[1:])
+                    if any(keep_line(d.lines[n - 1]) for n in range(b1 + 1, a2))]
+            if gaps != need:
+                prob(where, f"건너뜀 표지 {gaps} ↔ 다른 글이 낀 틈 {need}")
+            cnt("건너뜀 표지", len(gaps))
             if q not in src:
                 # 줄 하나씩 찾아 어느 줄이 다른지 알려 줌
                 bad = [x for x in block if nows(x) and nows(x) not in src]
@@ -393,13 +412,17 @@ def check_csv_sources(co):
                 prob(f"{co}_조직단위.csv {k}행", f"공시인원 줄 수 {len(hc)} ↔ 인원_출처 줄 수 {len(srcs)}")
             for x, s in zip(hc, srcs):
                 fn, pr = file_for_citation(co, s), pages_in(s)
-                if x == "추출 범위에 없음" or not fn or not pr:
+                if x.startswith("추출 범위에 없음") or not fn or not pr:
                     continue
                 cnt("조직단위 공시인원 칸")
                 if not in_page(doc(fn), re.sub(r"^총원 ", "", x), pr[0], slack=1):
                     prob(f"{co}_조직단위.csv {k}행", f"공시인원 「{x}」 가 {fn} p.{pr[0]}(±1)에 없음")
+        if r["대응_임원(성명·직위)"] == "추출 범위에 없음":
+            check_no_exec(co, k, r)
         for x in r["대응_근거(담당업무 원문)"].split("\n"):
             m = re.match(r"\[\(기준일[^\]]*\)\] (\S+): (.*) \(p\.(\d+)\)$", x)
+            if x.startswith("찾은 방법: "):
+                continue
             if x and not m:
                 prob(f"{co}_조직단위.csv {k}행", f"대응_근거 꼴을 읽지 못함 「{x[:40]}」")
             if m:
@@ -425,6 +448,108 @@ def check_csv_sources(co):
                     cnt("조직단위 겸직 칸")
                     if not any(in_page(biz, part, p) for p in pg):
                         prob(f"{co}_조직단위.csv {k}행", f"임원_겸직 「{part}」 가 겸직 표 쪽 {pg}(±1)에 없음")
+
+
+# ───────────────────────────── 10. 맡은 임원 「추출 범위에 없음」 행 ─────────────────────────────
+def nkey(x):
+    x = re.sub(r"\s+", "", x or "")
+    for ch in "ㆍᆞ・‧•-":
+        x = x.replace(ch, "·")
+    return x.replace("그룹", "")
+
+
+NOEXEC_RE = re.compile(r"^찾은 방법: 사업보고서 \d+ 임원 표 \(기준일 : [^)]*\) (\d+)명·작성기준일 이후 임원 표 \(기준일 : [^)]*\) (\d+)명의 "
+                       r"담당업무에서 「(.+)」 글자 검색\(띄어쓰기·가운뎃점·「그룹」 붙임 무시\) — (\d+)건")
+
+
+def check_no_exec(co, k, r):
+    cnt("맡은 임원 추출 범위에 없음 행")
+    where = f"{co}_조직단위.csv {k}행"
+    m = NOEXEC_RE.match(r["대응_근거(담당업무 원문)"])
+    if not m:
+        prob(where, f"맡은 임원 「추출 범위에 없음」 인데 대응_근거에 찾은 방법(글자 검색 결과) 꼴이 없음: 「{r['대응_근거(담당업무 원문)'][:40]}」")
+        return
+    if m.group(3) != r["조직단위(판독)"]:
+        prob(where, f"찾은 방법의 검색어 「{m.group(3)}」 ↔ 단위 「{r['조직단위(판독)']}」")
+    # 다시 셈: 임원겸직 CSV 의 (표 기준일, 성명) 한 번씩
+    ex = read_csv(os.path.join(OUTD, f"{co}_임원겸직.csv"))
+    seen = {}
+    for e in ex:
+        if e["담당업무(원문)"] == "임원 표에 나오지 않음":
+            continue
+        tag = re.search(r"\(기준일 : [^)]*\)", e["출처(문서·접수번호·쪽)"].split(" ‖ ")[0]).group(0)
+        seen[(tag, e["성명"])] = e["담당업무(원문)"]
+    tags = sorted({t for t, _ in seen})
+    nb = [sum(1 for (t, _) in seen if t == x) for x in tags]
+    if sorted(nb) != sorted([int(m.group(1)), int(m.group(2))]):
+        prob(where, f"찾은 방법의 임원 수 {m.group(1)}·{m.group(2)} ↔ 임원겸직 CSV {nb}")
+    key = nkey(r["조직단위(판독)"])
+    hits = sum(1 for d in seen.values() if key and key in nkey(d))
+    cnt("맡은 임원 글자 검색 다시 셈")
+    if hits != int(m.group(4)):
+        prob(where, f"찾은 방법 「{m.group(4)}건」 ↔ 다시 센 값 {hits}건")
+    if hits and "(판단)" not in r["대응_근거(담당업무 원문)"]:
+        prob(where, "글자 검색에 걸렸는데 대응하지 않은 까닭((판단))이 없음")
+    if r["임원_겸직(원문: 겸직회사·직위·선임일·상근)"] != "해당 없음(대응 임원 추출 범위에 없음)":
+        prob(where, "맡은 임원 「추출 범위에 없음」 행의 임원_겸직 칸이 「해당 없음(대응 임원 추출 범위에 없음)」 이 아님")
+    if r["대응_방식(이름 일치/(판단)/추출 범위에 없음)"] != "추출 범위에 없음":
+        prob(where, "대응_방식 칸이 「추출 범위에 없음」 이 아님")
+
+
+# ───────────────────────────── 9. 「없음」 단정 ─────────────────────────────
+EOK = ["해당 없음(대응 임원 추출 범위에 없음)", "추출 범위에 없음", "웹 요청 없음", "고친 곳: 없음", "바뀐 곳 없음"]
+
+
+def strip_orig(x, texts):
+    """백틱 조각과, 원문 텍스트에 공백 무시로 나오는 「」 조각(안쪽부터)을 지운 글."""
+    x = re.sub(r"`[^`]*`", "", x)
+    prev = None
+    while prev != x:
+        prev = x
+        x = re.sub(r"「([^「」]*)」", lambda mm: "「」" if (nows(mm.group(1)) and any(nows(mm.group(1)) in t for t in texts)) or "없" not in mm.group(1)
+                   else "「" + mm.group(1).replace("「", "").replace("」", "") + "」⁂", x)
+        x = x.replace("」⁂", "」")
+        if prev == x:
+            break
+    for w in EOK:
+        x = x.replace(w, "")
+    return x
+
+
+def check_eopseum(co):
+    f = files_of(co)
+    texts = [doc(f[k]).all for k in ("biz", "ann", "ann2", "mgmt")] + [doc(x).all for x in f["corr"]]
+    L = md_lines(co)
+    code, in7 = False, False
+    for i, x in enumerate(L, 1):
+        if x.startswith("```"):
+            code = not code
+            continue
+        if x.startswith("## 7)"):
+            in7 = True
+        if code or x.startswith(">"):
+            continue
+        if in7 and "→" in x:
+            cnt("「없음」 검사 — 7) 전 → 후 기록 줄(그대로 둠)")
+            continue
+        cnt("「없음」 검사 md 줄")
+        if "없" in strip_orig(x, texts):
+            prob(f"{co} md {i}줄", f"원문 인용 밖 「없음」 꼴: 「{x[:80]}」")
+    b = json.load(open(os.path.join(OUTD, f"{co}_판독B.json"), encoding="utf-8"))
+    bvals = {b.get("머리_집계글(판독)", ""), b.get("각주(판독)", "")} | {v for u in b["units"] for v in u.values() if isinstance(v, str)}
+    for kind in ("조직단위", "임원겸직", "지원조직", "판독대조"):
+        for k, r in enumerate(read_csv(os.path.join(OUTD, f"{co}_{kind}.csv")), 2):
+            for col, v in r.items():
+                if kind == "판독대조" and col == "판독B" and v in bvals:
+                    continue
+                for line in v.split("\n"):
+                    cnt("「없음」 검사 CSV 칸 줄")
+                    if not line or "없" not in line:
+                        continue
+                    if any(nows(line) in t for t in texts):
+                        continue
+                    if "없" in strip_orig(line, texts):
+                        prob(f"{co}_{kind}.csv {k}행 {col[:12]}", f"원문 칸 밖 「없음」 꼴: 「{line[:80]}」")
 
 
 # ───────────────────────────── 4. 「」 짧은 인용 ─────────────────────────────
@@ -569,7 +694,7 @@ def check_reading(co, units):
         return re.sub(r"\s*\(겸\)$", "", n or "")
 
     def val(v):
-        return "" if v.startswith("(없음") else v
+        return "" if v.startswith(("(없음", "(빈칸")) else v
 
     bmap = {key(u["조직단위(판독)"]): u for u in b["units"]}
     aids = [u["id"] for u in a["units"]]
@@ -678,6 +803,7 @@ def main():
         check_inline_quotes(co, names)
         n = check_reading(co, units)
         cnt(f"{co} 판독대조 행", n)
+        check_eopseum(co)
         paths += [os.path.join(MDD, f"14_{co}.md")] + sorted(glob.glob(os.path.join(OUTD, f"{co}_*")))
     paths += [os.path.join(OUTD, "g1_검사.json"), os.path.abspath(__file__), os.path.join(ROOT, "scripts", "dart", "org14_g1.py")]
     nsec = check_security([p for p in paths if os.path.exists(p)])

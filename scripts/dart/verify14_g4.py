@@ -14,6 +14,10 @@
  C  iM 조직도 머리 집계 글 ↔ 확정 단위 층위 수(알려진 차이: 팀 머리 2 ↔ 상자 3 — 그 밖 차이는 실패)
  N  「이름 일치」 대응: 단위 이름이 담당업무(대표이사는 직위 포함) 원문에 글자 그대로 있는지(공백만 다르면 실패)
  H  md 0) 머리 sha256 ↔ 원본 PDF·ZIP(로컬)
+ E  (비평 보정 2026-10-19) 「없음」 단정 꼴(「없음」「없었」「없고」「없어」「없다」)이 원문 칸 밖에 0 — 허용: md 인용 코드 블록·'>' 줄,
+    원문 「」 조각(회사 텍스트에 있음)·CSV 칸의 원문 글(앞 12자 공백 무시가 회사 텍스트에 있음), 작업 사실·공통 꼴 낱말(EOK),
+    md 「### 비평 보정」 절의 「」 전·후 기록. 대응 임원 「추출 범위에 없음」 행은 대응_근거에 「찾은 방법:」·임원_겸직 「해당 없음(…)」.
+    기준일 (판단) 꼴(「2025.12.31(판단: …)」「2025년(판단: …)」)은 원문 칸 대조에서 뺌.
  K  키·OC 값 없음, 산출 폴더(handoff/14차_조직인원겸직, dart_out/org14)에 PDF·PNG 없음
 로컬 파일만 읽음(웹 요청 없음).
 """
@@ -65,6 +69,10 @@ TERMS = {"원본 수집", "추출 범위에 없음", "글자층", "(겸)", "공�
          "B 판독에 없음", "다름", "같음", "A=B 같음", "층위 낱말 대조", "(판독)", "판독B", "확정", "확정 방법", "(은행 원적)",
          "겸", "겸직", "원적", "ㄴ", "Page M", "p.N(쪽 꼬리 Page M) · … a~b행", "B_저장_뒤_다시_본_곳", "(보조 annual_chart p.11)",
          "(보조 annual_chart p.19)", "(보조 annual_chart p.7)", "다름: …", "A=B 같음(…)", "지주<겸직>"}
+NOMAP_CONC = "해당 없음(대응 임원 추출 범위에 없음)"
+# 「없음」 앞 낱말 중 작업 사실·공통 꼴(검사 E 허용)
+EOK = ("추출 범위에 ", "글자층 ", "해당 ", "OC 사용 ", "인자 ", "고친 곳 ", "고친 칸 ", "줄임 ")
+NEG = re.compile(r"없(음|었|고|어|다)")
 META = ["dart_out/risk8/연차보고서_FY2025.csv", "dart_out/risk8/경영공시_2026_2Q.csv", "dart_out/risk8/DART_문서목록.csv"]
 
 
@@ -308,11 +316,16 @@ def check_company(co, cfg):
     # ── F: 「」 조각
     inblock = False
     sec7 = False
+    crit_f = False
     for i, ln in enumerate(md):
         if ln.startswith("```"):
             inblock = not inblock
             continue
-        if inblock:
+        if ln.startswith("### 비평 보정"):
+            crit_f = True            # 비평 보정 절의 「」 는 전·후 기록(원문 대조에서 뺌)
+        elif ln.startswith("## "):
+            crit_f = False
+        if inblock or crit_f:
             continue
         for f in frags(ln):
             s = frag_status(f, ln)
@@ -338,6 +351,70 @@ def check_company(co, cfg):
                         notes.append((tag, f"{fname} CSV {n}행 {col}", s, f[:70]))
                     if s == "bad":
                         probs.append((tag, f"{fname} CSV {n}행 {col}", f"「{f[:60]}」 가 텍스트에 없음"))
+
+    # ── E: 「없음」 단정 꼴 — 원문 칸 밖에 0(비평 보정 2026-10-19)
+    def neg_hits(text, md_mode):
+        """text 안 「없음」류 중 허용되지 않은 것의 앞뒤 글 목록."""
+        bad = []
+        spans, stack = [], []                # 겹 「」 도 셈(안쪽·바깥쪽 모두)
+        for j, ch_ in enumerate(text):
+            if ch_ == "「":
+                stack.append(j)
+            elif ch_ == "」" and stack:
+                a_ = stack.pop()
+                spans.append((a_, j, text[a_ + 1:j]))
+        for m in NEG.finditer(text):
+            k = m.start()
+            if any(text[max(0, k - len(w)):k] == w for w in EOK):
+                continue
+            inq = [sp for sp in spans if sp[0] < k < sp[1]]
+            if any(in_texts(sp[2]) for sp in inq):
+                continue                     # 원문 「」 조각 안
+            if md_mode == "critic" and inq:
+                continue                     # 비평 보정 절의 「」 전·후 기록
+            if md_mode == "cell":
+                w12 = ws(text[:k + 2])[-12:]
+                if len(w12) >= 6 and in_texts(w12):
+                    continue                 # CSV 칸의 원문 글
+            bad.append(text[max(0, k - 30):k + 12].replace("\n", "⏎"))
+        return bad
+
+    inblock, crit = False, False
+    st["neg_checked"] = 0
+    for i, ln in enumerate(md):
+        if ln.startswith("```"):
+            inblock = not inblock
+            continue
+        if ln.startswith("### 비평 보정"):
+            crit = True
+        elif ln.startswith("## ") or (ln.startswith("### ") and crit):
+            crit = False
+        if inblock or ln.startswith(">"):
+            continue
+        st["neg_checked"] += len(NEG.findall(ln))
+        for b in neg_hits(ln, "critic" if crit else "md"):
+            probs.append((tag, f"md {i+1}줄 E", f"「없음」 단정 꼴: …{b}…"))
+    for fname, rows_ in (("조직단위", units), ("임원겸직", execs), ("지원조직", sup), ("판독대조", cmpr)):
+        for n, r in enumerate(rows_, 2):
+            for col, v in r.items():
+                st["neg_checked"] += len(NEG.findall(v or ""))
+                for b in neg_hits(v or "", "cell"):
+                    probs.append((tag, f"{fname} CSV {n}행 {col[:12]} E", f"「없음」 단정 꼴: …{b}…"))
+    # 대응 임원 「추출 범위에 없음」 행: 찾은 방법·임원_겸직 꼴
+    st["nomap_rows"] = 0
+    for n, r in enumerate(units, 2):
+        if r["대응_임원(성명·직위)"].strip() == "추출 범위에 없음":
+            st["nomap_rows"] += 1
+            if not r["대응_근거(담당업무 원문)"].startswith("찾은 방법: ") or not re.search(r" — \d+건", r["대응_근거(담당업무 원문)"]):
+                probs.append((tag, f"조직단위 CSV {n}행 대응_근거", "대응 임원 추출 범위에 없음인데 찾은 방법(검색 건수)이 없음"))
+            if r[C_EXK] != NOMAP_CONC:
+                probs.append((tag, f"조직단위 CSV {n}행 임원_겸직", f"대응 임원 추출 범위에 없음인데 「{NOMAP_CONC}」 이 아님"))
+        if not r[C_EXK].strip() and r["대응_임원(성명·직위)"].strip():
+            probs.append((tag, f"조직단위 CSV {n}행 임원_겸직", "빈칸"))
+    # 기준일 칸: 원문 기준일 조각이거나 (판단) 꼴 — 「기준일 글 없음」 꼴 0
+    for n, r in enumerate(sup, 2):
+        if not r["기준일"].strip():
+            probs.append((tag, f"지원조직 CSV {n}행 기준일", "빈칸"))
 
     # ── T: 임원겸직 CSV
     tabkey = {}
@@ -436,7 +513,8 @@ def check_company(co, cfg):
         exby.setdefault(r["성명"], []).append(r)
     last_nm = ""
     # ── U: 조직단위 CSV 원문 칸(공시인원·인원_내역·인원_기준일·임원_겸직·대응_근거) ↔ 텍스트
-    SKIP = ("추출 범위에 없음", "(숫자 글 없음", "문장·표에 기준일 글 없음", "표에 기준일 글 없음", "대응 임원이 겸직 표에 나오지 않음", "그림·쪽 글에 기준일 글 없음")
+    SKIP = ("추출 범위에 없음", "(숫자 글이 나오지 않음", "2025.12.31(판단:", "2025년(판단:", "대응 임원이 겸직 표에 나오지 않음",
+            "2025년말 무렵(판단:", NOMAP_CONC)
 
     def items(v):
         out = []
@@ -545,7 +623,7 @@ def check_company(co, cfg):
                 if k >= len(cells):
                     continue
                 v = cells[k]
-                if not v or v in ("-", "—") or re.fullmatch(r"[\d,.\-\s]+", v) or v.startswith(SKIP) or v.startswith(("표에 인원 수 칸 없음", "표에 활동 칸 없음")):
+                if not v or v in ("-", "—") or re.fullmatch(r"[\d,.\-\s]+", v) or v.startswith(SKIP) or v.startswith(("표에 인원 수 칸이 나오지 않음", "표에 활동 칸이 나오지 않음")):
                     continue
                 st["md_raw_cells"] = st.get("md_raw_cells", 0) + 1
                 if not piece_ok(nl(v)):
@@ -750,7 +828,7 @@ def check_company(co, cfg):
             else:
                 probs.append((tag, f"조직단위 CSV {n}행 {name}", f"「이름 일치」인데 {nm} 담당업무에 단위 이름이 글자 그대로 없음"))
     stat[co] = st
-    return [md_path] + [os.path.join(ORG, f"{co}_{k}") for k in ("조직단위.csv", "임원겸직.csv", "지원조직.csv", "판독대조.csv", "판독A.json", "판독B.json")]
+    return [md_path] + [os.path.join(ORG, f"{co}_{k}") for k in ("조직단위.csv", "임원겸직.csv", "지원조직.csv", "판독대조.csv", "판독A.json", "판독B.json", "검증입력.json")]
 
 
 def secret_values():
