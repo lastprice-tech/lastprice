@@ -94,6 +94,35 @@
       "role": "EP.1 마지막 프레임(S23 끝, 해 질 녘 쇠못 직전) — EP.2 S01 C 링크 base",
       "aspect_ratio": "9:16",
       "copy_from": "ep01/build/frames/S23_out.png"
+    },
+    {
+      "id": "NAIL",
+      "from": "PLANK",
+      "role": "뽑아 낸 손벼림 연철 쇠못 = 쇠못 부시 — EP.2 S04~S25 이후 매 회 불 피우는 샷, 인벤토리 아이콘 원본. 검수: 사각 몸통이 끝으로 가늘어지고 대가리가 울퉁불퉁(공장제 둥근 철사못이면 탈락), 녹 주황·갈색, 글자 없음",
+      "plain": "The nail is a hand-forged iron nail about twelve centimetres long with a tapering square shank and a lumpy square head, rusted orange-brown, with one face ground to bright grey metal only when described so.",
+      "aspect_ratio": "3:2",
+      "prompt": "Change this into a close three-quarter top view of the same hand-forged iron nail from {FROM}, now pulled out of the wood and lying alone on the wet black basalt: a tapering square shank about twelve centimetres long, slightly bent near the point, with a lumpy hand-hammered square head, rusted orange-brown all over. Keep the same soft grey overcast daylight from the left and the same rock; the whole nail in frame, sharp."
+    },
+    {
+      "id": "PLANK_UNDER",
+      "from": "PLANK",
+      "role": "뒤집은 널빤지 아랫면(F1 각인) — EP.2 S02~S04·S26~S27, F1 회수(EP.10)까지 같은 홈 모양을 고정. 검수: 홈이 글자·숫자·기호·로고(특히 VOC 모노그램)로 읽히면 탈락, 해초에 반쯤 가려야 함",
+      "plain": "The underside of the plank is darker, wetter oak with strands of seaweed and a short row of rough, shallow cut grooves half hidden under the seaweed, too fragmentary to read.",
+      "aspect_ratio": "3:2",
+      "prompt": "Turn the plank in {FROM} over to show its underside, lying on the same wet black basalt: the oak is darker and wetter on this side, with strands of dark green seaweed across it and the pointed tip of the same iron nail poking up through the wood. Near the nail, a short row of rough, shallow grooves is cut into the grain, a few short straight strokes and one angled stroke worn soft by the sea, half hidden under the seaweed and too fragmentary to read. Keep the same soft grey overcast light from the left, the three-quarter top view and the whole plank in frame, the grooves sharp."
+    },
+    {
+      "id": "FLINT",
+      "role": "배 밑바닥 잔해의 흰 돌(바닥짐 플린트 덩이, 허구 설정 — 설명란 명시) = 부싯돌 — EP.2 S13~S25 이후. 검수: 겉은 분필 같은 흰 껍질, 깬 속은 짙은 회색 유리질·패각상 곡면·얇은 날. 흰 차돌 자갈밭으로 그려지면 탈락",
+      "plain": "The stone is a palm-sized flint nodule with a knobbly chalky white rind; where broken it shows dark grey glassy stone with smooth curved shell-like faces and a thin sharp edge.",
+      "aspect_ratio": "3:2",
+      "prompt": "A photograph of one palm-sized flint nodule lying on wet black vesicular basalt next to a second, broken piece of the same nodule. The whole nodule is knobbly and rounded, coated in a thick chalky white rind; the broken piece shows the inside: dark grey, glassy, slightly translucent flint with smooth curved shell-like fracture faces and a thin sharp edge. Soft grey overcast daylight from the left. Subject colours: chalky white rind and dark grey glassy flint; background black wet rock. Close three-quarter top view, both pieces in frame, the sharp edge in focus."
+    },
+    {
+      "id": "EP2_END",
+      "role": "EP.2 마지막 프레임(S27 끝, 비 갠 해 질 녘 · 빗물 고인 널빤지 아랫면 홈) — EP.3 S01 C 링크 base",
+      "aspect_ratio": "9:16",
+      "copy_from": "ep02/build/frames/S27_out.png"
     }
   ],
   "sheet": {
