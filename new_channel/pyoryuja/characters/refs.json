@@ -123,6 +123,34 @@
       "role": "EP.2 마지막 프레임(S27 끝, 비 갠 해 질 녘 · 빗물 고인 널빤지 아랫면 홈) — EP.3 S01 C 링크 base",
       "aspect_ratio": "9:16",
       "copy_from": "ep02/build/frames/S27_out.png"
+    },
+    {
+      "id": "ABALONE",
+      "role": "빈 전복 껍데기 — EP.3 S08~S10 FAIL(새는 그릇) → S23 간수 빼는 체 → S24~S28 소금 그릇(이후 회차 소금 보관·인벤토리 '전복 껍데기 체' 아이콘 원본). 검수: 귀 모양 한 장, 가장자리 구멍 한 줄(끝쪽 4~5개 열림), 바깥 거친 갈회색·따개비, 안쪽 진주빛. 가리비·굴 등 다른 조개로 그려지거나 구멍 줄이 없으면 탈락",
+      "plain": "The abalone shell is a single ear-shaped shell about fourteen centimetres long, rough brown-grey and barnacled outside with a curved row of small open holes along one edge, smooth iridescent mother-of-pearl inside.",
+      "aspect_ratio": "3:2",
+      "prompt": "A photograph of one large empty abalone shell about fourteen centimetres long lying tilted on wet black vesicular basalt, so that both its outside and part of its inside show. The shell is ear-shaped and flattish; its outside is rough, dull brown-grey with a few small barnacles and patches of pink coralline crust, with a curved row of small round holes running along one edge, the last four or five of them open; the inside is smooth iridescent mother-of-pearl in silver, pink and green. Soft grey overcast daylight from the left. Subject colours: brown-grey shell, iridescent inside; background black wet rock. Close three-quarter top view, the whole shell in frame, the row of holes sharp."
+    },
+    {
+      "id": "COPPER",
+      "role": "난파 잔해 판자에 못 박힌 구리판(배 부엌칸 내벽 덧판이라는 허구 설정 — 설명란 명시) — EP.3 S15~S16, COPPER_PAN의 원본. 검수: 무광 적갈색·검은 변색 줄·작은 연녹색 반점, 가장자리 사각 못 줄, 두께 1mm 안팎의 얇은 판. 반짝이는 새 구리·글자·각인·VOC 모노그램·선체 피복판처럼 보이면 탈락",
+      "plain": "The copper sheet is a thin, dull reddish-brown sheet about forty by thirty centimetres, tarnished dark with a few small pale-green spots, nailed along its edges to a broken oak board.",
+      "aspect_ratio": "3:2",
+      "prompt": "A photograph of a broken piece of weathered dark oak board about sixty centimetres long lying on dry black basalt, with one thin sheet of old copper about forty by thirty centimetres nailed flat to it by a row of small hand-forged square-headed nails along all four edges. The copper is dull reddish-brown, tarnished dark in streaks, slightly dented and buckled, with a few small pale-green spots of corrosion, and it is plain metal with no stamps or markings. Soft grey overcast daylight from the left. Subject colours: dull reddish-brown copper, grey-brown oak; background black rock. Close three-quarter top view, the whole board in frame, the copper surface and nails sharp."
+    },
+    {
+      "id": "COPPER_PAN",
+      "from": "COPPER",
+      "role": "구리판 솥(완성품) — EP.3 S16~S28, 이후 회차 끓이는 그릇·인벤토리 아이콘 원본. 검수: 같은 구리판을 손으로 접은 얕은 판(벽 높이 약 5cm, 모서리 주름), 빈 못 구멍은 벽 위쪽에만(바닥 구멍 없음). 손잡이·리벳·매끈한 공장제 냄비·은빛 금속이면 탈락",
+      "plain": "The copper tray is the same thin dull reddish-brown copper sheet bent by hand into a shallow open tray about thirty-five by twenty-five centimetres, with low sloping sides about five centimetres high, rough pleated corners and a row of empty nail holes along the tops of its sides.",
+      "aspect_ratio": "3:2",
+      "prompt": "Change this into a close three-quarter top view of the same copper sheet from {FROM}, now pried off the board and bent by hand into a shallow open tray standing alone on the flat black basalt: its four sides are bent up into low, slightly uneven sloping walls about five centimetres high, the corners folded into rough pleats, the row of empty nail holes running along the tops of the walls, and the bottom flat and slightly dented. Keep the same dull tarnished reddish-brown copper with its small pale-green spots, the same soft grey overcast light from the left and the same rock; the whole tray in frame, sharp."
+    },
+    {
+      "id": "EP3_END",
+      "role": "EP.3 마지막 프레임(S29 끝, 해 진 직후 · 뭍 쪽 들판 너머 연기 한 줄) — EP.4 S01 C 링크 base",
+      "aspect_ratio": "9:16",
+      "copy_from": "ep03/build/frames/S29_out.png"
     }
   ],
   "sheet": {

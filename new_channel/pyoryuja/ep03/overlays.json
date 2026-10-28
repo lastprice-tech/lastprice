@@ -1,0 +1,482 @@
+{
+  "_doc": "후반 오버레이 정의. 좌표는 1080x1920 기준 px. 시간은 내레이션 줄(line) 기준 앵커라 TTS 실측 후 retime하면 자동으로 따라간다. render 명령이 build/overlays_resolved.json(절대 초)로 풀어 기존 skia 렌더러에 넘긴다.",
+  "canvas": [
+    1080,
+    1920
+  ],
+  "safe_box": {
+    "x0": 60,
+    "y0": 220,
+    "x1": 940,
+    "y1": 1436,
+    "_src": "shorts_growth_kit/growth/config.py SAFE_ZONE_1080x1920"
+  },
+  "fonts": {
+    "ui": "Pretendard SemiBold (대체: Noto Sans KR)",
+    "mono": "JetBrains Mono"
+  },
+  "colors": {
+    "ink": "#F4F1EA",
+    "dim": "#F4F1EA99",
+    "accent": "#F08A24",
+    "fresh": "#4FA3D9",
+    "sea": "#1F4E5F",
+    "warn": "#F2B705",
+    "panel": "#0E141BCC",
+    "salt": "#E9E4D8"
+  },
+  "subtitles": {
+    "source": "subtitles.srt",
+    "box": {
+      "x": 100,
+      "y": 1250,
+      "w": 800,
+      "h": 150
+    },
+    "style": "흰 글자 46px, 검은 외곽선 4px, 최대 2줄, 가운데 정렬. 숫자는 표기형(1리터, 35그램)",
+    "rule": "내레이션 1줄 = 자막 1블록. 15자 넘으면 의미 단위로 2줄 분할"
+  },
+  "items": [
+    {
+      "id": "ai_tag",
+      "type": "tag",
+      "text": "AI 창작 시리즈 · 1653",
+      "start": {
+        "at": 0.0
+      },
+      "end": {
+        "at": 2.0
+      },
+      "box": {
+        "x": 80,
+        "y": 1180,
+        "w": 360,
+        "h": 44
+      },
+      "style": "반투명 패널 + 흰 글자 28px. 첫 2초 필수(가드레일 A-2)"
+    },
+    {
+      "id": "ref_chip",
+      "type": "ref_chip",
+      "text": "← EP.2 홈 난 널빤지",
+      "start": {
+        "at": 0.3
+      },
+      "end": {
+        "at": 2.0
+      },
+      "box": {
+        "x": 580,
+        "y": 320,
+        "w": 340,
+        "h": 56
+      },
+      "style": "작은 칩 26px, panel 배경 + accent 테두리 2px. 이전 회 마지막 장면의 소품임을 알림(B7). 프레임 중앙의 홈·조약돌을 가리지 않는 우상단"
+    },
+    {
+      "id": "state_caption",
+      "type": "caption",
+      "text": [
+        "D+2 · 1653년 8월",
+        "제주 대정 해안 · 비 갠 해 질 녘"
+      ],
+      "start": {
+        "at": 2.0
+      },
+      "end": {
+        "line": "N02",
+        "edge": "start",
+        "offset": -0.3
+      },
+      "box": {
+        "x": 80,
+        "y": 240,
+        "w": 600,
+        "h": 110
+      },
+      "style": "1줄 38px accent / 2줄 30px ink, 좌측 정렬, 타자 효과 0.4s. 2초부터(B6). 끝 = S02 컷(다음 날 아침으로 시간 점프)"
+    },
+    {
+      "id": "ep_bug",
+      "type": "bug",
+      "text": "EP.3",
+      "start": {
+        "at": 0.0
+      },
+      "end": {
+        "line": "N30",
+        "edge": "end",
+        "offset": 0.4
+      },
+      "box": {
+        "x": 840,
+        "y": 240,
+        "w": 90,
+        "h": 50
+      },
+      "style": "투명도 60%, 높이 3% 이하"
+    },
+    {
+      "id": "time_card_morning",
+      "type": "time_card",
+      "text": "다음 날 아침 · D+3",
+      "start": {
+        "line": "N02",
+        "edge": "start",
+        "offset": -0.3
+      },
+      "end": {
+        "line": "N02",
+        "edge": "start",
+        "offset": 1.2
+      },
+      "box": {
+        "x": 80,
+        "y": 240,
+        "w": 420,
+        "h": 70
+      }
+    },
+    {
+      "id": "inventory_panel",
+      "type": "inventory",
+      "items": [
+        {
+          "name": "구명조끼",
+          "icon": "vest"
+        },
+        {
+          "name": "젖은 성냥",
+          "count": 0,
+          "icon": "matchbox",
+          "note": "사용 불가"
+        },
+        {
+          "name": "쇠 호루라기",
+          "icon": "whistle"
+        },
+        {
+          "name": "대나무 물통",
+          "icon_from_ref": "FLASK"
+        },
+        {
+          "name": "쇠못 부시",
+          "icon_from_ref": "NAIL",
+          "note": "← EP.2"
+        },
+        {
+          "name": "부싯돌(바닥짐 흰 돌)",
+          "icon_from_ref": "FLINT",
+          "note": "← EP.2"
+        },
+        {
+          "name": "젖은 쑥 솜",
+          "count": 0,
+          "icon": "tinder",
+          "note": "말리는 중"
+        }
+      ],
+      "companion": {
+        "name": "고양이",
+        "trust": 3,
+        "icon": "cat",
+        "note": "동행",
+        "display": "동행 · 고양이 · 신뢰 ●●●○○"
+      },
+      "start": {
+        "line": "N04",
+        "edge": "start",
+        "offset": 0.0
+      },
+      "end": {
+        "line": "N04",
+        "edge": "end",
+        "offset": 0.25
+      },
+      "box": {
+        "x": 80,
+        "y": 380,
+        "w": 300,
+        "h": 680
+      },
+      "style": "세로 슬롯 7칸(칸당 78px) + 동행 칸 1칸(110px, 개수 없음·신뢰 점). 내레이션에서 불리는 물통·쇠못·흰 돌·쑥 솜 칸 하이라이트(N04 단어 타이밍). 끝 = S05 컷"
+    },
+    {
+      "id": "label_rim",
+      "type": "callout",
+      "text": "흰 테 · 볕에 마른 바닷물",
+      "start": {
+        "line": "N06",
+        "edge": "start",
+        "offset": 1.0
+      },
+      "end": {
+        "line": "N07",
+        "edge": "start",
+        "offset": -0.2
+      },
+      "box": {
+        "x": 500,
+        "y": 620,
+        "w": 420,
+        "h": 64
+      },
+      "anchor_point": [
+        540,
+        1000
+      ],
+      "style": "얇은 지시선(3px) + 치수선 스타일 라벨. 지시점은 클립 승인 후 S06 흰 테 위치로 보정. 끝 = S07 컷"
+    },
+    {
+      "id": "companion_stat",
+      "type": "companion_stat",
+      "text": "고양이 · 신뢰 ●●●●○",
+      "delta": 1,
+      "start": {
+        "line": "N07",
+        "edge": "start",
+        "offset": 1.6
+      },
+      "end": {
+        "line": "N08",
+        "edge": "start",
+        "offset": -0.3
+      },
+      "box": {
+        "x": 620,
+        "y": 440,
+        "w": 300,
+        "h": 70
+      },
+      "style": "신뢰 점 하나가 채워지는 0.4s 애니메이션(3→4). 관계 비트(흰 앞발을 민물로 헹구고 남은 민물을 내줌) 직후. 끝 = S08 컷"
+    },
+    {
+      "id": "label_abalone",
+      "type": "callout",
+      "text": "전복 껍데기 · 숨구멍 줄",
+      "start": {
+        "line": "N09",
+        "edge": "start",
+        "offset": 0.0
+      },
+      "end": {
+        "line": "N10",
+        "edge": "start",
+        "offset": -0.3
+      },
+      "box": {
+        "x": 500,
+        "y": 620,
+        "w": 420,
+        "h": 64
+      },
+      "anchor_point": [
+        560,
+        900
+      ],
+      "style": "얇은 지시선(3px) + 치수선 스타일 라벨. 지시점은 클립 승인 후 S09 구멍 줄 위치로 보정. 끝 = S10 컷"
+    },
+    {
+      "id": "diagram_salt",
+      "type": "diagram",
+      "svg": "diagram_salt_evaporation.svg",
+      "start": {
+        "line": "N11",
+        "edge": "start",
+        "offset": -0.2
+      },
+      "end": {
+        "line": "N14",
+        "edge": "start",
+        "offset": -0.3
+      },
+      "background_dim": 0.4,
+      "build": [
+        {
+          "layer": "hollow",
+          "at": {
+            "line": "N11",
+            "edge": "start",
+            "offset": 0.4
+          },
+          "draw_s": 0.9
+        },
+        {
+          "layer": "salt",
+          "at": {
+            "line": "N11",
+            "edge": "start",
+            "offset": 2.0
+          },
+          "draw_s": 0.9
+        },
+        {
+          "layer": "evap",
+          "at": {
+            "line": "N12",
+            "edge": "start",
+            "offset": 0.0
+          },
+          "draw_s": 1.0
+        },
+        {
+          "layer": "level",
+          "at": {
+            "line": "N12",
+            "edge": "start",
+            "offset": 1.5
+          },
+          "draw_s": 1.0
+        },
+        {
+          "layer": "hl",
+          "at": {
+            "line": "N13",
+            "edge": "start",
+            "offset": 0.3
+          },
+          "draw_s": 0.7
+        },
+        {
+          "layer": "crystal",
+          "at": {
+            "line": "N13",
+            "edge": "start",
+            "offset": 0.8
+          },
+          "draw_s": 0.7
+        }
+      ],
+      "align": {
+        "live_water_line_y": 720,
+        "shots": [
+          "S11",
+          "S12"
+        ],
+        "note": "S11·S12 실사에서 넓은 오목의 고요한 수면이 프레임 위에서 약 37%(y≈720)의 밝은 수평선으로 놓이고, hollow 레이어의 수면선(y=720)이 그 위에 겹친다. 주인공은 상단 띠(y300~540, 중앙보다 약간 왼쪽), 고양이는 왼쪽 위, 오른쪽 위(증발 화살표·'볕' 자리)는 바다·하늘. 클립 승인 후 실제 수면 높이로 svg 수면선을 보정"
+      },
+      "rule": "완성 상태를 한 번에 띄우지 않는다(레이어 순차 드로잉 0.7~1.2s). 레이어 6 · 텍스트 6 · 숫자 1(35) · 강조선 1(hl) · 콜아웃 라벨 2. 완성 상태 약 2.3초. 개념도·축척 무시 표기 상시. 조건 줄(N14)은 실사(S13)라 도면은 N14 직전에 내린다. 끝 = S13 컷"
+    },
+    {
+      "id": "time_card_noon",
+      "type": "time_card",
+      "text": "한낮",
+      "start": {
+        "line": "N18",
+        "edge": "start",
+        "offset": -0.3
+      },
+      "end": {
+        "line": "N18",
+        "edge": "end",
+        "offset": 0.0
+      },
+      "box": {
+        "x": 80,
+        "y": 240,
+        "w": 200,
+        "h": 70
+      }
+    },
+    {
+      "id": "time_card_late",
+      "type": "time_card",
+      "text": "늦은 오후",
+      "start": {
+        "line": "N21",
+        "edge": "start",
+        "offset": -0.3
+      },
+      "end": {
+        "line": "N22",
+        "edge": "start",
+        "offset": 1.2
+      },
+      "box": {
+        "x": 80,
+        "y": 240,
+        "w": 280,
+        "h": 70
+      },
+      "style": "끝 = S21 컷(해 질 녘으로 시간 점프)"
+    },
+    {
+      "id": "warning_salt",
+      "type": "warning",
+      "text": [
+        "⚠ 따라 하지 마세요 · 100℃ 넘게 끓는 소금물이 튑니다",
+        "출처 모를 바닷물 소금은 먹지 마세요 · 고양이에겐 해롭습니다"
+      ],
+      "start": {
+        "line": "N26",
+        "edge": "start",
+        "offset": -0.3
+      },
+      "end": {
+        "line": "N28",
+        "edge": "start",
+        "offset": -0.3
+      },
+      "box": {
+        "x": 60,
+        "y": 300,
+        "w": 880,
+        "h": 110
+      },
+      "style": "warn 색 띠 + 검은 글자 30px 2줄. 위험 기술(불·끓는 소금물) 회차 의무(가드레일 D-21) — COST 구간(S25~S26) 내내. 구체 수치 '100℃'(바닷물·함수의 끓는점은 100℃보다 조금 높다 — factcheck F21). 젖은 돌 터짐·납/주석 금지는 설명란"
+    },
+    {
+      "id": "inventory_unlock",
+      "type": "inventory_card",
+      "item": {
+        "name": "구운 소금",
+        "icon_from_ref": "ABALONE",
+        "spec": "두세 줌 · 간수 빼는 중"
+      },
+      "tech": "소금",
+      "counter": "기록 03",
+      "start": {
+        "line": "N28",
+        "edge": "start",
+        "offset": 0.2
+      },
+      "end": {
+        "line": "N29",
+        "edge": "start",
+        "offset": -0.3
+      },
+      "box": {
+        "x": 240,
+        "y": 420,
+        "w": 600,
+        "h": 300
+      },
+      "style": "카드 = 이름 + 스탯 1칸 + 기록 n(B3). 카드 플립 0.4s + 카운터 02→03. 효과음은 국악 타악 1타. S27 위 40% 빈자리. 끝 = S28 컷"
+    },
+    {
+      "id": "endcard",
+      "type": "endcard",
+      "text": [
+        "「표류자 EP.3」 · 기록 03 / ?",
+        "다음 · EP.4 서른 리를 걷는 신"
+      ],
+      "start": {
+        "line": "N30",
+        "edge": "end",
+        "offset": 0.4
+      },
+      "end": {
+        "line": "N30",
+        "edge": "end",
+        "offset": 2.9
+      },
+      "box": {
+        "x": 140,
+        "y": 300,
+        "w": 800,
+        "h": 220
+      },
+      "style": "정지 프레임 위 상단(y300). 프레임 중앙의 연기 기둥을 가리지 않는다(연기 끝이 y520 위로 오르면 카드 높이를 줄인다). 음성 CTA 없음"
+    }
+  ]
+}

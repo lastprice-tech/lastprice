@@ -1,0 +1,131 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1920" viewBox="0 0 1080 1920">
+  <!-- EP.3 PRINCIPLE 도면: 바닷물 증발·농축(개념도, 축척 무시). 1080x1920 투명 배경.
+       레이어 id = overlays.json diagram_salt.build[].layer 순서로 0.7~1.2초씩 드로잉.
+       레이어 6 · 텍스트 6 · 숫자 1(35, N11에서 말함) · 강조선 1(hl, #F08A24 7px) · 콜아웃 라벨 2 · 최소 26px.
+       정렬: hollow 레이어의 수면선(y=720)은 S11·S12 실사의 넓은 오목 수면(프레임 위에서 약 37%). 캐릭터 상단 띠 y300~540(중앙보다 약간 왼쪽)은 비우고,
+       오른쪽 위(바다·하늘)에 '볕'과 증발 화살표를 둔다.
+       색: ink #F4F1EA / accent #F08A24 / sea #1F4E5F / fresh #4FA3D9 / salt #E9E4D8 / panel #0E141BCC -->
+  <defs>
+    <style>
+      text { font-family: Pretendard, 'Noto Sans KR', 'WenQuanYi Zen Hei', sans-serif; fill: #F4F1EA; }
+      .lbl { font-size: 40px; font-weight: 600; }
+      .sm  { font-size: 34px; font-weight: 600; }
+      .xs  { font-size: 26px; fill: #F4F1EAB3; }
+      .ln  { stroke: #F4F1EA; stroke-width: 3; fill: none; stroke-linejoin: round; stroke-linecap: round; }
+      .thin { stroke: #F4F1EA; stroke-width: 2; fill: none; }
+      .dash { stroke-dasharray: 10 8; }
+    </style>
+    <marker id="arw" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#F4F1EA"/>
+    </marker>
+    <pattern id="holes" width="46" height="40" patternUnits="userSpaceOnUse">
+      <circle cx="10" cy="12" r="6" fill="#F4F1EA" opacity="0.22"/>
+      <circle cx="32" cy="30" r="5" fill="#F4F1EA" opacity="0.22"/>
+      <circle cx="38" cy="8" r="4" fill="#F4F1EA" opacity="0.22"/>
+    </pattern>
+    <clipPath id="bowl">
+      <path d="M150,720 C230,960 380,1010 500,1010 C620,1010 770,960 850,720 Z"/>
+    </clipPath>
+  </defs>
+
+  <!-- 1 hollow: 너럭바위 오목 단면 + 바닷물(수면선 y=720 = 실사 수면) -->
+  <g id="hollow">
+    <path d="M80,720 L150,720 C230,960 380,1010 500,1010 C620,1010 770,960 850,720 L920,720 L920,1200 L80,1200 Z" fill="#0E141B" opacity="0.6"/>
+    <path d="M80,720 L150,720 C230,960 380,1010 500,1010 C620,1010 770,960 850,720 L920,720 L920,1200 L80,1200 Z" fill="url(#holes)"/>
+    <path d="M150,720 C230,960 380,1010 500,1010 C620,1010 770,960 850,720 Z" fill="#1F4E5F" opacity="0.85"/>
+    <path class="ln" d="M80,720 L150,720 C230,960 380,1010 500,1010 C620,1010 770,960 850,720 L920,720"/>
+    <line x1="150" y1="720" x2="850" y2="720" stroke="#4FA3D9" stroke-width="3"/>
+    <text class="lbl" x="345" y="826" style="font-size:44px">바닷물</text>
+    <text class="xs" x="900" y="1190" text-anchor="end">개념도 · 축척 무시</text>
+  </g>
+
+  <!-- 2 salt: 녹아 있는 소금(흩어진 점) + 콜아웃(숫자는 이것 하나) -->
+  <g id="salt">
+    <rect x="380" y="777" width="8" height="8" fill="#E9E4D8" opacity="0.9"/>
+    <rect x="596" y="758" width="8" height="8" fill="#E9E4D8" opacity="0.9"/>
+    <rect x="520" y="829" width="8" height="8" fill="#E9E4D8" opacity="0.9"/>
+    <rect x="212" y="763" width="8" height="8" fill="#E9E4D8" opacity="0.9"/>
+    <rect x="446" y="939" width="8" height="8" fill="#E9E4D8" opacity="0.9"/>
+    <rect x="248" y="795" width="8" height="8" fill="#E9E4D8" opacity="0.9"/>
+    <rect x="580" y="968" width="8" height="8" fill="#E9E4D8" opacity="0.9"/>
+    <rect x="810" y="752" width="8" height="8" fill="#E9E4D8" opacity="0.9"/>
+    <rect x="733" y="811" width="8" height="8" fill="#E9E4D8" opacity="0.9"/>
+    <rect x="370" y="937" width="8" height="8" fill="#E9E4D8" opacity="0.9"/>
+    <rect x="285" y="881" width="8" height="8" fill="#E9E4D8" opacity="0.9"/>
+    <rect x="588" y="830" width="8" height="8" fill="#E9E4D8" opacity="0.9"/>
+    <rect x="528" y="756" width="8" height="8" fill="#E9E4D8" opacity="0.9"/>
+    <rect x="373" y="882" width="8" height="8" fill="#E9E4D8" opacity="0.9"/>
+    <rect x="690" y="909" width="8" height="8" fill="#E9E4D8" opacity="0.9"/>
+    <rect x="327" y="879" width="8" height="8" fill="#E9E4D8" opacity="0.9"/>
+    <rect x="513" y="951" width="8" height="8" fill="#E9E4D8" opacity="0.9"/>
+    <rect x="647" y="810" width="8" height="8" fill="#E9E4D8" opacity="0.9"/>
+    <rect x="625" y="884" width="8" height="8" fill="#E9E4D8" opacity="0.9"/>
+    <rect x="479" y="900" width="8" height="8" fill="#E9E4D8" opacity="0.9"/>
+    <rect x="421" y="901" width="8" height="8" fill="#E9E4D8" opacity="0.9"/>
+    <rect x="350" y="841" width="8" height="8" fill="#E9E4D8" opacity="0.9"/>
+    <rect x="555" y="804" width="8" height="8" fill="#E9E4D8" opacity="0.9"/>
+    <rect x="425" y="837" width="8" height="8" fill="#E9E4D8" opacity="0.9"/>
+    <rect x="560" y="1046" width="340" height="96" rx="10" fill="#0E141BCC" stroke="#F08A24" stroke-width="2"/>
+    <text class="lbl" x="584" y="1108" style="font-size:44px;fill:#F08A24">소금 약 35 g</text>
+    <line x1="600" y1="1046" x2="582" y2="996" stroke="#F08A24" stroke-width="3"/>
+    <circle cx="581" cy="993" r="6" fill="#F08A24"/>
+  </g>
+
+  <!-- 3 evap: 볕 + 물만 날아간다(증발 화살표, 오른쪽 위 바다·하늘 쪽) -->
+  <g id="evap">
+    <circle cx="866" cy="456" r="24" fill="#F2B705"/>
+    <g stroke="#F2B705" stroke-width="4" stroke-linecap="round">
+      <line x1="866" y1="416" x2="866" y2="400"/><line x1="866" y1="496" x2="866" y2="512"/>
+      <line x1="826" y1="456" x2="810" y2="456"/><line x1="906" y1="456" x2="922" y2="456"/>
+      <line x1="838" y1="428" x2="827" y2="417"/><line x1="894" y1="484" x2="905" y2="495"/>
+      <line x1="894" y1="428" x2="905" y2="417"/><line x1="838" y1="484" x2="827" y2="495"/>
+    </g>
+    <text class="lbl" x="796" y="470" text-anchor="end" style="fill:#F2B705">볕</text>
+    <g class="ln" marker-end="url(#arw)">
+      <path d="M640,708 q-12,-18 0,-34 t0,-34 l0,-28"/>
+      <path d="M730,708 q-12,-18 0,-34 t0,-34 l0,-28"/>
+      <path d="M820,708 q-12,-18 0,-34 t0,-34 l0,-28"/>
+    </g>
+    <text class="sm" x="930" y="594" text-anchor="end">물만 날아간다</text>
+  </g>
+
+  <!-- 4 level: 물이 날아가 수면이 바닥 가까이까지 내려감, 소금은 남은 물에 모임 -->
+  <g id="level">
+    <rect x="140" y="721" width="720" height="254" fill="#0E141B" opacity="0.8" clip-path="url(#bowl)"/>
+    <g clip-path="url(#bowl)" stroke="#F4F1EA" stroke-width="2" stroke-dasharray="10 8" opacity="0.55">
+      <line x1="140" y1="800" x2="860" y2="800"/>
+      <line x1="140" y1="880" x2="860" y2="880"/>
+    </g>
+    <line class="ln" x1="600" y1="742" x2="600" y2="950" marker-end="url(#arw)"/>
+    <rect x="445" y="989" width="6" height="6" fill="#E9E4D8"/>
+    <rect x="471" y="991" width="6" height="6" fill="#E9E4D8"/>
+    <rect x="522" y="979" width="6" height="6" fill="#E9E4D8"/>
+    <rect x="596" y="988" width="6" height="6" fill="#E9E4D8"/>
+    <rect x="564" y="988" width="6" height="6" fill="#E9E4D8"/>
+    <rect x="524" y="996" width="6" height="6" fill="#E9E4D8"/>
+    <rect x="502" y="994" width="6" height="6" fill="#E9E4D8"/>
+    <rect x="549" y="990" width="6" height="6" fill="#E9E4D8"/>
+    <rect x="457" y="979" width="6" height="6" fill="#E9E4D8"/>
+    <rect x="486" y="998" width="6" height="6" fill="#E9E4D8"/>
+    <rect x="424" y="983" width="6" height="6" fill="#E9E4D8"/>
+    <rect x="578" y="990" width="6" height="6" fill="#E9E4D8"/>
+  </g>
+
+  <!-- 5 hl: 소금이 비치기 시작하는 높이(유일한 주황 7px 선) -->
+  <g id="hl">
+    <line x1="348" y1="975" x2="652" y2="975" stroke="#F08A24" stroke-width="7" stroke-linecap="round"/>
+  </g>
+
+  <!-- 6 crystal: 바닥에 소금 알갱이 + 라벨 -->
+  <g id="crystal">
+    <rect x="438" y="986" width="16" height="16" fill="#F4F1EA" stroke="#0E141B" stroke-width="1.5" transform="rotate(-8 446 994)"/>
+    <rect x="460" y="982" width="16" height="16" fill="#F4F1EA" stroke="#0E141B" stroke-width="1.5" transform="rotate(12 468 990)"/>
+    <rect x="484" y="988" width="16" height="16" fill="#F4F1EA" stroke="#0E141B" stroke-width="1.5" transform="rotate(-4 492 996)"/>
+    <rect x="508" y="982" width="16" height="16" fill="#F4F1EA" stroke="#0E141B" stroke-width="1.5" transform="rotate(9 516 990)"/>
+    <rect x="532" y="987" width="16" height="16" fill="#F4F1EA" stroke="#0E141B" stroke-width="1.5" transform="rotate(-12 540 995)"/>
+    <rect x="554" y="983" width="16" height="16" fill="#F4F1EA" stroke="#0E141B" stroke-width="1.5" transform="rotate(6 562 991)"/>
+    <text class="lbl" x="104" y="1120">소금이 비친다</text>
+    <line x1="300" y1="1084" x2="440" y2="1004" stroke="#F4F1EA" stroke-width="3"/>
+    <circle cx="444" cy="1001" r="5" fill="#F4F1EA"/>
+  </g>
+</svg>
