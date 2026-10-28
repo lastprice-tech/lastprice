@@ -88,6 +88,12 @@
       "role": "로케이션 베이스 플레이트(빈 해안) — S01 키프레임의 바탕",
       "aspect_ratio": "9:16",
       "prompt": "A vertical photograph of an empty rocky volcanic shoreline on the southwest coast of Jeju Island in the seventeenth century, early morning after a night of rain. Black vesicular basalt boulders and a flat lava shelf run down to grey-green sea, with shallow tide pools among the rocks, low dark headlands and scrubby coastal grass behind, and in the far distance across the bay a solitary bell-shaped volcanic dome mountain under low clouds. Scattered shipwreck debris lies along the waterline: broken dark timber planks, a coil of thick rope and split barrel staves, with one broken plank lying on the rocks in the lower middle of the frame. Soft grey overcast light, wet glistening rocks, bright enough to read the rock texture. Subject colours: black rock, grey-green sea, grey-brown timber; sky pale grey. Wide shot from a low vantage, the shoreline running from the lower left to the middle right, the middle third of the frame open for a figure, everything sharp and no people, buildings, boats or modern objects."
+    },
+    {
+      "id": "EP1_END",
+      "role": "EP.1 마지막 프레임(S23 끝, 해 질 녘 쇠못 직전) — EP.2 S01 C 링크 base",
+      "aspect_ratio": "9:16",
+      "copy_from": "ep01/build/frames/S23_out.png"
     }
   ],
   "sheet": {

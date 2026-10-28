@@ -59,16 +59,16 @@ route_table:                      # 하멜 기록 기반. ※ = 고증 확인 �
   S5: 여수 (1663~1666)
   rule: 시즌 안에서 루트는 연속, 시대 교체는 시즌 단위만
 
-season1_episodes:                 # 결말 분포 성공 6 / 부분 3 / 실패 1, 연속 동일 결말 금지
+season1_episodes:                 # 결말 분포 성공 5 / 부분 4 / 실패 1, 연속 동일 결말 금지 (changed 2026-10-28: 성공 6회는 10화 안에서 연속 없이 배치 불가 — EP.3·4·8 조정)
   - {ep: 0, title: "1653년 제주에 떨어진 첫 열흘 (표류자 EP.0)", form: 롱폼 8~10분, publish: W5}
   - {ep: 1, title: 바닷가의 민물, tech: 대나무 물통, principle: 민물-바닷물 밀도 차·해안 용천수, outcome: 성공}
   - {ep: 2, title: 못 하나로 불, tech: 난파선 철못 + 차돌 + 쑥 부싯깃, principle: 철 미세 입자 산화 발열, outcome: 부분}
-  - {ep: 3, title: 바닷물을 굽다, tech: 자염 소금, principle: 증발·농축, outcome: 부분}
-  - {ep: 4, title: 서른 리를 걷는 신, tech: 짚신, principle: 꼬임 장력·마찰 분산, outcome: 성공}
+  - {ep: 3, title: 바닷물을 굽다, tech: 자염 소금, principle: 증발·농축, outcome: 성공}   # 대가 = 수율·연료 (COST)
+  - {ep: 4, title: 서른 리를 걷는 신, tech: 짚신, principle: 꼬임 장력·마찰 분산, outcome: 부분}
   - {ep: 5, title: 비를 흘려보내는 옷, tech: 도롱이, principle: 겹침 배수, outcome: 성공, foreshadow: F2 목걸이 글자}
   - {ep: 6, title: 말이 통하지 않는 날, tech: 숯 필담 도구, principle: 탄소 안료, outcome: 부분}
   - {ep: 7, title: 바닥이 따뜻한 집, tech: 구들 보수, principle: 대류·축열, outcome: 성공}
-  - {ep: 8, title: 생선 기름 등잔, tech: 어유 등잔, principle: 모세관 현상, outcome: 성공, foreshadow: F3 바다 쪽 불빛}
+  - {ep: 8, title: 생선 기름 등잔, tech: 어유 등잔, principle: 모세관 현상, outcome: 부분, foreshadow: F3 바다 쪽 불빛}
   - {ep: 9, title: 바다로 나갈 수 있을까, tech: 테우, principle: 부력·적재 한계, outcome: 실패}
   - {ep: 10, title: 북으로 가는 명령, tech: 봇짐·멜빵, principle: 하중 분산, outcome: 성공}
 
@@ -109,6 +109,19 @@ forbidden_list:
   - 최근 30년 참사 장소
   - 4·3 / 5·18 / 일제강점기 친일 소재(시즌 1~2), 진행 중 전쟁, 종교
   - 메타데이터·내레이션 금칙어: 아이, 어린이, 동화, 귀여운, kids, cute
+
+rules_from_ep01_review:            # EP.1 페르소나 심사 B 규칙(review/ep01/persona_review.md 4절) — EP.2부터 적용
+  counter: 획득 카드 카운터는 '기록 n'(= 원장 tech_unlocked 수). '보유 n' 쓰지 않음. 카드 = 이름 + 스탯 1칸 + 기록 n
+  companion: 고양이는 원장 inventory가 아니라 companion으로 관리. HAVE 패널은 inventory.companion 칸(신뢰 ●○○○○, 개수 없음)
+  diagram: 레이어 ≤8, 텍스트 ≤9, 숫자는 내레이션이 말한 것만 ≤1, 강조선 1개(#F08A24 7px), 콜아웃 라벨 ≤2, 최소 26px, 완성 상태 ≥2초
+  principle_screen: 도면은 원리 설명 줄에만, 조건 줄은 실사. 도면 아래 샷 ≤8초, 캐릭터 상단 띠(y300~540), 실사 구도를 도면 좌표에 맞춘다
+  narration: 회당 비유 ≥1, 귀에 남는 문장은 PRINCIPLE 마지막 줄, 조각 종결은 STATE·GATHER·UNLOCK만, 쉼표 틀은 FAIL·TEST만, NEXT는 대가를 취소하지 않음
+  slots: 재료 인서트는 BUILD 첫 컷, HAVE 1줄(≤24음절), 답 뒤 꼬리 ≤20초
+  habit: 완성품을 손끝으로 두 번 톡톡(매 회 UNLOCK 샷 첫 1초), 물때·위치 표시는 조약돌
+  relation: 회마다 주인공이 고양이를 위해 하는 행동 1개(관계 비트)
+  continuity: 회차 첫 샷은 이전 회 마지막 프레임에서 C 링크(base=EPn_END)로 바로 잇고, 시간 점프는 S02에서
+  ui: 물때 ▲▼는 현재 상태 전용(같은 박스), 상태 자막은 2초부터, 엔드카드 '「표류자 EP.n」 · 기록 nn / ?' 상단(y300)
+  ops: 공개 시각은 영상에 넣지 않고 고정 댓글이 맡음. 고정 댓글에 별명 공모 + 다음 회 + 고정 리듬
 
 naming:
   shorts_title: 「표류자 EP.n」 + 2~8자 명사구 (40자 이내)

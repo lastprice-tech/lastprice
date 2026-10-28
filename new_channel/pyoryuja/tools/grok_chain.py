@@ -331,14 +331,25 @@ def check(ep: Episode) -> int:
         prev_ep, this_ep = ledger.get(f"EP.{num - 1}"), ledger.get(ep.spec["episode"])
         inv = next((o for o in ep.overlays["items"] if o["type"] == "inventory"), None)
         if prev_ep and inv:
+            # 동행(고양이)은 EP.2부터 인벤토리가 아니라 별도 칸(inventory.companion)으로 보인다(페르소나 심사 B3·B4)
             shown = [f"{i['name']}" + ("(0)" if i.get("count") == 0 else "") for i in inv["items"]]
-            want = prev_ep["inventory"]
+            if inv.get("companion"):
+                shown.append(inv["companion"]["name"])
+            want = list(prev_ep["inventory"])
+            comp = prev_ep.get("companion", {})
+            if comp.get("with") and comp.get("display", "고양이") not in want:
+                want.append(comp.get("display", "고양이"))
             if sorted(shown) != sorted(want):
                 errs.append(f"연속성: HAVE 인벤토리 {shown} ≠ 원장 EP.{num - 1} {want}")
         unlock = next((o for o in ep.overlays["items"] if o["type"] == "inventory_card"), None)
         if this_ep and unlock:
-            if unlock["counter"] != f"보유 {len(this_ep['inventory'])}":
-                errs.append(f"연속성: 획득 카드 '{unlock['counter']}' ≠ 원장 보유 {len(this_ep['inventory'])}")
+            c = unlock["counter"]
+            if c.startswith("기록"):      # EP.2부터: 기록 n = 원장 tech_unlocked 수
+                n_want = len(this_ep.get("tech_unlocked", []))
+                if not re.fullmatch(rf"기록 0?{n_want}", c):
+                    errs.append(f"연속성: 획득 카드 '{c}' ≠ 원장 기록 {n_want:02d}")
+            elif c != f"보유 {len(this_ep['inventory'])}":
+                errs.append(f"연속성: 획득 카드 '{c}' ≠ 원장 보유 {len(this_ep['inventory'])}")
             if unlock["item"]["name"] not in this_ep["inventory"]:
                 errs.append(f"연속성: 획득 아이템 {unlock['item']['name']} 가 원장 EP 인벤토리에 없음")
         if prev_ep and this_ep and prev_ep["outcome_type"] == this_ep["outcome_type"]:
@@ -670,6 +681,25 @@ def cmd_refs(ep: Episode, run: Runner, only: str | None):
         if only and r["id"] != only:
             continue
         stem = ep.ref_dir / "_candidates" / r["id"]
+        if r.get("copy_from"):                     # 생성하지 않고 기존 프레임을 레퍼런스로 복사(이전 회차 마지막 프레임 등)
+            src = SERIES / r["copy_from"]
+            if run.sim and not src.exists():
+                src = SERIES / r["copy_from"].replace("/build/", "/build_sim/")
+            dst = ep.ref_file(r["id"])
+            if src.exists() and (run.live or run.sim):
+                dst.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy(src, dst)
+                ep.state["refs"][r["id"]] = {"copied_from": str(src), "sha256": sha(dst)}
+                ep.save_state()
+                print(f"{r['id']}: {src} → {dst} 복사")
+            elif run.sim:
+                w, h = aspect_px(r.get("aspect_ratio", "9:16"))
+                dst.parent.mkdir(parents=True, exist_ok=True)
+                sh(["ffmpeg", "-y", "-v", "error", "-f", "lavfi", "-i", f"testsrc2=s={w}x{h}:d=1", "-frames:v", "1", str(dst)])
+                print(f"{r['id']}: (simulate) 원본 {src} 없음 → 더미 생성")
+            else:
+                print(f"{r['id']}: {r['copy_from']} 를 복사해 쓰는 레퍼런스 — 그 회차 승인 후 refs --only {r['id']} --live")
+            continue
         sketch = SERIES / r["sketch"] if r.get("sketch") else None
         files, images = {}, []
         if r.get("from"):

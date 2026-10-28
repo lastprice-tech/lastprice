@@ -17,7 +17,8 @@
         "name": "감",
         "health": "ok",
         "with": true,
-        "trust": 1
+        "trust": 1,
+        "display": "고양이"
       },
       "tech_unlocked": [],
       "outcome_type": "부분",
@@ -45,7 +46,8 @@
         "name": "감",
         "health": "ok",
         "with": true,
-        "trust": 2
+        "trust": 2,
+        "display": "고양이"
       },
       "tech_unlocked": [
         "물"
