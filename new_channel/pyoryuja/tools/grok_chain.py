@@ -430,7 +430,12 @@ def render(ep: Episode):
         v = lt[ln["id"]]
         tts_note = f"  ← 읽기: {ln['tts']}" if "tts" in ln else ""
         md.append(f"- `{ln['id']}` {fmt_ts(v['start'])}–{fmt_ts(v['end'])} ({v['syl']}음절, {v['rate']}/s) **{ln['text']}**{tts_note}")
-    md += ["", "## TAG", "", "- 음성 없음. 파도 소리 + 엔드카드 「표류자 EP.1」 · 시즌1", ""]
+    tag_shot = next((s for s in reversed(ep.shots) if s["slot"] == "TAG"), ep.shots[-1])
+    tag_sfx = ", ".join(tag_shot.get("sfx", [])) or "효과음 없음"
+    card = next((o for o in ep.overlays.get("items", []) if o["type"] == "endcard"), None)
+    card_txt = " / ".join(card["text"]) if card and isinstance(card.get("text"), list) else \
+        (card or {}).get("text") or f"「표류자 {ep.spec['episode']}」"
+    md += ["", "## TAG", "", f"- 음성 없음. 효과음 {tag_sfx} + 엔드카드 {card_txt}", ""]
     (ep.dir / "script.md").write_text("\n".join(md), encoding="utf-8")
 
     # 장면표

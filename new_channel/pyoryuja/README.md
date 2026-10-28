@@ -58,7 +58,7 @@ python3 tools/grok_chain.py ep01 pick-ref P 3
 python3 tools/grok_chain.py ep01 sheet                   # characters/refs/P_sheet.png, C_sheet.png
 
 # 2) 내레이션 먼저 녹음 (줄 ID별 파일) → 타이밍 실측 반영
-#    narration_tts.txt 의 각 줄을 build/tts/N01.wav … N33.wav 로 저장
+#    narration_tts.txt 의 각 줄을 build/tts/N01.wav … N34.wav 로 저장 (N06 결번 — 33개)
 python3 tools/grok_chain.py ep01 render                  # 장면 길이·생성 초·자막·오버레이 시간이 실측으로 갱신됨
 
 # 3) 샷 체인 — next 를 반복한다. 사람 게이트 2개: 시작 프레임 승인, 클립 승인
