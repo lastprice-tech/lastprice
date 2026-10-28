@@ -1,0 +1,107 @@
+{
+  "_doc": "레퍼런스 이미지 작업 정의. 각 ID는 n장 후보를 만든 뒤 사람이 1장을 골라(pick-ref) 확정한다. 확정 파일이 영상·편집 요청의 reference_images로 들어간다. 'from'이 있으면 그 확정 이미지를 편집(/v1/images/edits)해서 같은 정체성을 유지한다. 'sketch'가 있고 파일이 존재하면 손 스케치를 입력으로 쓰는 편집 프롬프트(prompt_from_sketch)를 우선 사용한다.",
+  "defaults": {
+    "model": "grok-imagine-image-2.0",
+    "resolution": "2k",
+    "quality": "medium",
+    "n": 4
+  },
+  "refs": [
+    {
+      "id": "P",
+      "role": "주인공 메인 레퍼런스(3/4 정면 전신). 모든 영상 샷의 정체성 기준.",
+      "plain": "The figure has a large smooth egg-shaped head of matte light-grey porcelain with no facial features, slender porcelain hands, a navy windbreaker with the sleeves pushed up, a safety-orange life vest with three black buckles and a small steel whistle on the left strap, charcoal trousers rolled to the calf and bare porcelain feet; its head stays featureless in every frame.",
+      "aspect_ratio": "2:3",
+      "sketch": "characters/sketch/P_sketch.jpg",
+      "prompt": "A full-body photograph of a stylized adult figure standing relaxed on a plain mid-grey studio floor against a seamless mid-grey backdrop. Its head is a large smooth egg shape, slightly taller than wide and broadest at the crown, made of matte unglazed light-grey porcelain with a completely smooth surface and no facial features, on a slender neck of the same material; the head is about one quarter of the figure's total height, and its hands are slender five-fingered hands of the same matte light-grey porcelain. It wears a damp navy technical windbreaker zipped to the chest with the sleeves pushed up to the forearms, faded charcoal cargo trousers rolled to mid-calf, bare matte light-grey porcelain feet, and a bright safety-orange foam life vest with three black buckle straps across the front and silver reflective strips on the shoulders; one small stainless steel whistle hangs from a short black cord on the left shoulder strap, with no logos or lettering anywhere. Three-quarter front view at eye level with a 50mm lens, soft even overcast light from the front-left and a gentle floor shadow, bright enough to read every material. Subject colours: light-grey porcelain head and hands, navy jacket, safety-orange vest, charcoal trousers; background neutral mid-grey. The whole figure is in frame from the top of the head to the feet with a margin, everything sharp.",
+      "prompt_from_sketch": "Render the figure in {SKETCH} as a full-body photograph of a stylized adult figure on a plain mid-grey studio backdrop, keeping the sketch's proportions and pose: a large smooth egg-shaped head of matte unglazed light-grey porcelain with no facial features, slender five-fingered porcelain hands, a damp navy windbreaker with sleeves pushed up, charcoal cargo trousers rolled to mid-calf, bare porcelain feet, and a bright safety-orange foam life vest with three black buckle straps, silver reflective shoulder strips and one small stainless steel whistle on a short black cord on the left shoulder strap. Three-quarter front view at eye level, 50mm lens, soft even overcast light from the front-left, whole figure in frame with a margin, everything sharp, no logos or lettering."
+    },
+    {
+      "id": "P_side",
+      "from": "P",
+      "role": "측면(좌향) 전신 — 걷기·옆모습 샷 검수용",
+      "aspect_ratio": "2:3",
+      "prompt": "Turn the figure in {FROM} to a clean side profile facing left, standing relaxed with arms at its sides. Keep the same figure, head shape, outfit, colours, studio light, mid-grey background and full-body crop."
+    },
+    {
+      "id": "P_back",
+      "from": "P",
+      "role": "후면 전신 — 어깨 너머 샷(S07) 검수용",
+      "aspect_ratio": "2:3",
+      "prompt": "Turn the figure in {FROM} around to show its back, standing relaxed, the back of the life vest and the smooth back of the egg-shaped head visible. Keep the same figure, outfit, colours, studio light, mid-grey background and full-body crop."
+    },
+    {
+      "id": "P_kneel",
+      "from": "P",
+      "role": "무릎 꿇은 자세 — S03·S08·S17 시작 프레임 편집 보조",
+      "aspect_ratio": "2:3",
+      "prompt": "Change the pose of the figure in {FROM}: it kneels on both knees and holds its cupped hands together in front of its chest, head tilted slightly down toward its hands. Keep the same figure, head, outfit, colours, studio light, mid-grey background and full-body crop."
+    },
+    {
+      "id": "C",
+      "role": "고양이 '감' 메인 레퍼런스(3/4 정면, 앉은 자세)",
+      "plain": "The cat is a lean adult ginger tabby with darker stripes, a white chest and two white front paws, a small notch at the tip of its left ear and a thin braided leather collar with one small brass disc, moving like a real cat.",
+      "aspect_ratio": "3:4",
+      "prompt": "A photograph of a lean adult short-haired ginger tabby cat sitting upright on a plain mid-grey studio floor against a seamless mid-grey backdrop. Its fur is deep orange with darker mackerel tabby stripes, with a white chest bib and two white front paws while the hind paws are orange; it has amber eyes, a small V-shaped notch at the tip of its left ear, and a long ringed tail with a darker tip, and it wears a thin braided dark-brown leather cord collar with one small dull brass disc tag. Three-quarter front view at the cat's eye level with an 85mm lens, soft even overcast light from the front-left, a calm alert expression of an adult working ship's cat. Subject colours: deep orange and white fur, dark-brown collar, dull brass tag; background neutral mid-grey. The whole cat is in frame with a margin, fur and whiskers sharp."
+    },
+    {
+      "id": "C_walk",
+      "from": "C",
+      "role": "걷는 측면 — S05 검수용",
+      "aspect_ratio": "3:2",
+      "prompt": "Change the pose of the cat in {FROM}: it walks to the right in a clean side profile, one white front paw lifted mid-step, tail held low. Keep the same cat, markings, notched left ear, collar, studio light and mid-grey background, whole cat in frame."
+    },
+    {
+      "id": "C_crouch",
+      "from": "C",
+      "role": "웅크려 냄새 맡는 자세 — S06·S18 검수용",
+      "aspect_ratio": "3:2",
+      "prompt": "Change the pose of the cat in {FROM}: it crouches low with its nose close to the floor, sniffing, seen from a three-quarter side view. Keep the same cat, markings, notched left ear, collar, studio light and mid-grey background, whole cat in frame."
+    },
+    {
+      "id": "PLANK",
+      "role": "난파선 널빤지(쇠못) — S01 고양이 자리, S07, S16 마개 재료, S22~S23 EP.2 떡밥",
+      "plain": "The plank is broken weathered dark oak with seaweed on it and one rusty hand-forged square-headed iron nail sticking out at an angle.",
+      "aspect_ratio": "3:2",
+      "prompt": "A photograph of one broken dark oak ship plank about one and a half metres long lying diagonally on wet black basalt rock. The plank is weathered and grey-brown with deep grain, splintered at one end, with strands of dark green seaweed across it and one hand-forged square-headed iron nail sticking out of it at an angle, rusted orange-brown. Soft grey overcast daylight from the left. Subject colours: grey-brown oak, rust orange nail, dark green seaweed; background black wet rock. The whole plank in frame from a three-quarter top view, the nail sharp."
+    },
+    {
+      "id": "BAMBOO",
+      "role": "떠밀려 온 굵은 대나무 장대 — S07, S12~S14",
+      "plain": "The bamboo pole is about six centimetres thick, pale green-yellow with white salt stains and nodes every thirty centimetres.",
+      "aspect_ratio": "3:2",
+      "prompt": "A photograph of one weathered bamboo pole about two metres long and six centimetres thick lying diagonally across wet black basalt rock. The culm is pale green-yellow with white salt stains, with raised nodes every thirty centimetres and one end cracked open. Soft grey overcast daylight from the left. Subject colours: pale green-yellow bamboo with white stains; background black wet rock. The whole pole in frame from a three-quarter top view, the nodes sharp."
+    },
+    {
+      "id": "FLASK",
+      "from": "BAMBOO",
+      "with": [
+        "PLANK"
+      ],
+      "role": "완성품 대나무 물통 — S15~S23, 인벤토리 아이콘 원본",
+      "plain": "The bamboo flask is a single thirty-centimetre bamboo section closed at the bottom by its node, with a rough dark oak plug.",
+      "aspect_ratio": "3:4",
+      "prompt": "Change this into one finished handmade water flask cut from the same bamboo as {FROM}: a single section about thirty centimetres tall and six centimetres wide standing upright on a flat black basalt rock, closed at the bottom by its natural node, with a roughly smoothed open rim at the top stoppered by a small hand-carved plug of the dark weathered oak from {WITH1}. Soft grey overcast daylight from the left, close three-quarter view at rock level, the whole flask in frame, plug and node sharp."
+    },
+    {
+      "id": "L01",
+      "role": "로케이션 베이스 플레이트(빈 해안) — S01 키프레임의 바탕",
+      "aspect_ratio": "9:16",
+      "prompt": "A vertical photograph of an empty rocky volcanic shoreline on the southwest coast of Jeju Island in the seventeenth century, early morning after a night of rain. Black vesicular basalt boulders and a flat lava shelf run down to grey-green sea, with shallow tide pools among the rocks, low dark headlands and scrubby coastal grass behind, and in the far distance across the bay a solitary bell-shaped volcanic dome mountain under low clouds. Scattered shipwreck debris lies along the waterline: broken dark timber planks, a coil of thick rope and split barrel staves, with one broken plank lying on the rocks in the lower middle of the frame. Soft grey overcast light, wet glistening rocks, bright enough to read the rock texture. Subject colours: black rock, grey-green sea, grey-brown timber; sky pale grey. Wide shot from a low vantage, the shoreline running from the lower left to the middle right, the middle third of the frame open for a figure, everything sharp and no people, buildings, boats or modern objects."
+    }
+  ],
+  "sheet": {
+    "_doc": "확정 레퍼런스를 한 장에 모은 검수용 시트(캐릭터 시트). assemble-sheet 명령이 ffmpeg로 생성.",
+    "P_sheet": [
+      "P",
+      "P_side",
+      "P_back",
+      "P_kneel"
+    ],
+    "C_sheet": [
+      "C",
+      "C_walk",
+      "C_crouch"
+    ]
+  }
+}

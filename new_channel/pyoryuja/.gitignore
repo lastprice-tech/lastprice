@@ -1,0 +1,5 @@
+# 생성물 — 다시 만들 수 있거나 용량이 큰 것
+ep*/build/
+ep*/build_sim/
+characters/refs/_candidates/
+*.upload.jpg

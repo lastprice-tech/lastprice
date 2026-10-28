@@ -1,0 +1,178 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000">
+  <!-- 표류자 디자인 기준 시트(벡터). 비율·색·식별 포인트의 기준이며 AI 레퍼런스 검수(QC) 기준선이다.
+       사람이 이 위에 직접 손 스케치를 덧그려 characters/sketch/P_sketch.jpg 로 저장하면
+       refs.json 의 P 작업이 그 스케치를 입력으로 쓴다(제작 증거 B-11). -->
+  <defs>
+    <style>
+      text { font-family: Pretendard, 'Noto Sans KR', 'WenQuanYi Zen Hei', sans-serif; fill: #1d2125; }
+      .t  { font-size: 30px; font-weight: 700; }
+      .n  { font-size: 19px; }
+      .s  { font-size: 16px; fill: #33383d; }
+      .ld { stroke: #1d2125; stroke-width: 1.5; fill: none; }
+      .por { fill: #D8D5CF; stroke: #8f8b84; stroke-width: 2; }
+      .jkt { fill: #2B3A4A; stroke: #1a242e; stroke-width: 2; }
+      .vst { fill: #F08A24; stroke: #b5651a; stroke-width: 2; }
+      .trs { fill: #4A4D50; stroke: #303336; stroke-width: 2; }
+      .cuf { fill: #62666a; }
+      .ref { fill: #C9CCCF; }
+      .cat { fill: #E8762B; stroke: #a8521c; stroke-width: 2; }
+      .wht { fill: #F4F1EA; stroke: #c9c4b8; stroke-width: 1.5; }
+      .str { stroke: #b0531a; stroke-width: 5; stroke-linecap: round; fill: none; }
+    </style>
+  </defs>
+  <rect width="1600" height="1000" fill="#A9ACAF"/>
+  <text class="t" x="40" y="54">표류자 — 디자인 기준 시트 v1</text>
+  <text class="s" x="40" y="80">주인공(이름 없음) 정면 · 측면 · 후면 / 고양이 '감' · 비율과 색은 이 시트가 기준. 얼굴 요소는 어떤 각도에서도 없다.</text>
+
+  <!-- 키 기준선 -->
+  <g stroke="#6d7175" stroke-dasharray="6 6" stroke-width="1.5">
+    <line x1="110" y1="110" x2="820" y2="110"/>
+    <line x1="110" y1="270" x2="820" y2="270"/>
+    <line x1="110" y1="790" x2="820" y2="790"/>
+  </g>
+  <text class="s" x="40" y="116">머리 끝</text>
+  <text class="s" x="40" y="276">턱</text>
+  <text class="s" x="40" y="796">발바닥</text>
+  <text class="s" x="40" y="540" transform="rotate(-90 40 540)">머리 = 전체 키의 약 1/4</text>
+
+  <!-- ── 정면 ── -->
+  <g id="P_front">
+    <path class="por" d="M230,110 C306,110 302,226 272,258 C256,274 204,274 188,258 C158,226 154,110 230,110 Z"/>
+    <rect class="por" x="218" y="266" width="24" height="24"/>
+    <path class="jkt" d="M150,302 L134,500 L158,504 L176,330 Z"/>
+    <path class="jkt" d="M310,302 L326,500 L302,504 L284,330 Z"/>
+    <path class="por" d="M136,498 L130,560 L150,562 L158,502 Z"/>
+    <path class="por" d="M324,498 L330,560 L310,562 L302,502 Z"/>
+    <ellipse class="por" cx="140" cy="578" rx="15" ry="22"/>
+    <ellipse class="por" cx="320" cy="578" rx="15" ry="22"/>
+    <path class="jkt" d="M156,296 Q230,280 304,296 L314,560 L146,560 Z"/>
+    <path class="vst" d="M168,300 Q230,288 292,300 L298,500 L162,500 Z"/>
+    <line x1="230" y1="296" x2="230" y2="500" stroke="#b5651a" stroke-width="2"/>
+    <rect class="ref" x="176" y="300" width="30" height="10" rx="2"/>
+    <rect class="ref" x="254" y="300" width="30" height="10" rx="2"/>
+    <g stroke="#15181b" stroke-width="6"><line x1="166" y1="370" x2="294" y2="370"/><line x1="165" y1="412" x2="295" y2="412"/><line x1="164" y1="454" x2="296" y2="454"/></g>
+    <g fill="#15181b"><rect x="220" y="362" width="20" height="16" rx="3"/><rect x="220" y="404" width="20" height="16" rx="3"/><rect x="220" y="446" width="20" height="16" rx="3"/></g>
+    <path d="M272,312 L276,338" stroke="#15181b" stroke-width="3"/>
+    <rect x="270" y="336" width="14" height="24" rx="5" fill="#cfd3d6" stroke="#7d8286" stroke-width="2"/>
+    <path class="trs" d="M150,560 L228,560 L224,716 L166,716 Z"/>
+    <path class="trs" d="M232,560 L310,560 L294,716 L236,716 Z"/>
+    <rect class="cuf" x="164" y="704" width="62" height="16" rx="3"/>
+    <rect class="cuf" x="234" y="704" width="62" height="16" rx="3"/>
+    <path class="por" d="M172,720 L218,720 L216,772 L176,772 Z"/>
+    <path class="por" d="M240,720 L286,720 L282,772 L244,772 Z"/>
+    <ellipse class="por" cx="192" cy="784" rx="30" ry="10"/>
+    <ellipse class="por" cx="266" cy="784" rx="30" ry="10"/>
+    <text class="n" x="186" y="852">정면</text>
+  </g>
+
+  <!-- ── 측면(좌향) ── -->
+  <g id="P_side" transform="translate(-90,0)">
+    <path class="por" d="M560,110 C624,110 628,214 606,252 C594,272 546,276 528,256 C500,222 500,110 560,110 Z"/>
+    <rect class="por" x="552" y="264" width="22" height="26"/>
+    <path class="jkt" d="M528,296 Q566,284 602,298 L606,560 L524,560 Z"/>
+    <path class="vst" d="M520,302 Q560,292 610,304 L614,500 L516,500 Z"/>
+    <rect class="ref" x="540" y="300" width="40" height="9" rx="2"/>
+    <g stroke="#15181b" stroke-width="5"><line x1="516" y1="370" x2="532" y2="370"/><line x1="516" y1="412" x2="532" y2="412"/><line x1="516" y1="454" x2="532" y2="454"/></g>
+    <path class="jkt" d="M554,306 L538,496 L560,500 L578,316 Z"/>
+    <path class="por" d="M540,494 L534,556 L554,558 L560,498 Z"/>
+    <ellipse class="por" cx="542" cy="574" rx="13" ry="21"/>
+    <path class="trs" d="M532,560 L604,560 L596,716 L540,716 Z"/>
+    <rect class="cuf" x="538" y="704" width="60" height="16" rx="3"/>
+    <path class="por" d="M548,720 L590,720 L586,772 L552,772 Z"/>
+    <path class="por" d="M548,772 L590,772 L590,792 L520,792 Q514,778 548,772 Z"/>
+    <text class="n" x="530" y="852">측면</text>
+  </g>
+
+  <!-- ── 후면 ── -->
+  <g id="P_back" transform="translate(-170,0)">
+    <path class="por" d="M880,110 C956,110 952,226 922,258 C906,274 854,274 838,258 C808,226 804,110 880,110 Z"/>
+    <rect class="por" x="868" y="266" width="24" height="24"/>
+    <path class="jkt" d="M800,302 L784,500 L808,504 L826,330 Z"/>
+    <path class="jkt" d="M960,302 L976,500 L952,504 L934,330 Z"/>
+    <path class="por" d="M786,498 L780,560 L800,562 L808,502 Z"/>
+    <path class="por" d="M974,498 L980,560 L960,562 L952,502 Z"/>
+    <ellipse class="por" cx="790" cy="578" rx="15" ry="22"/>
+    <ellipse class="por" cx="970" cy="578" rx="15" ry="22"/>
+    <path class="jkt" d="M806,296 Q880,280 954,296 L964,560 L796,560 Z"/>
+    <path class="vst" d="M818,300 Q880,288 942,300 L948,486 L812,486 Z"/>
+    <rect class="ref" x="826" y="300" width="108" height="12" rx="2"/>
+    <path class="trs" d="M800,560 L878,560 L874,716 L816,716 Z"/>
+    <path class="trs" d="M882,560 L960,560 L944,716 L886,716 Z"/>
+    <rect class="cuf" x="814" y="704" width="62" height="16" rx="3"/>
+    <rect class="cuf" x="884" y="704" width="62" height="16" rx="3"/>
+    <path class="por" d="M822,720 L868,720 L866,772 L826,772 Z"/>
+    <path class="por" d="M890,720 L936,720 L932,772 L894,772 Z"/>
+    <ellipse class="por" cx="846" cy="786" rx="24" ry="9"/>
+    <ellipse class="por" cx="914" cy="786" rx="24" ry="9"/>
+    <text class="n" x="852" y="852">후면</text>
+  </g>
+
+  <!-- 주인공 주석(번호 범례) -->
+  <g>
+    <g><circle cx="318" cy="150" r="13" fill="#1d2125"/><text x="318" y="156" text-anchor="middle" style="fill:#F4F1EA;font-size:17px;font-weight:700">1</text></g>
+    <g><circle cx="300" cy="348" r="13" fill="#1d2125"/><text x="300" y="354" text-anchor="middle" style="fill:#F4F1EA;font-size:17px;font-weight:700">2</text></g>
+    <g><circle cx="312" cy="412" r="13" fill="#1d2125"/><text x="312" y="418" text-anchor="middle" style="fill:#F4F1EA;font-size:17px;font-weight:700">3</text></g>
+    <g><circle cx="118" cy="528" r="13" fill="#1d2125"/><text x="118" y="534" text-anchor="middle" style="fill:#F4F1EA;font-size:17px;font-weight:700">4</text></g>
+    <g><circle cx="318" cy="690" r="13" fill="#1d2125"/><text x="318" y="696" text-anchor="middle" style="fill:#F4F1EA;font-size:17px;font-weight:700">5</text></g>
+  </g>
+  <g transform="translate(860,140)">
+    <text class="n" x="0" y="0" style="font-weight:700">주인공 식별 포인트</text>
+    <text class="s" x="0" y="34">① 무광 비유약 자기 질감, 위가 약간 넓은 달걀형 머리</text>
+    <text class="s" x="22" y="56">이목구비·귀 없음 — 어떤 각도에서도</text>
+    <text class="s" x="0" y="90">② 쇠 호루라기: 왼쪽 어깨끈, 짧은 검은 끈</text>
+    <text class="s" x="0" y="124">③ 주황 폼 구명조끼, 검은 버클 3개, 어깨 반사띠</text>
+    <text class="s" x="0" y="158">④ 남색 재킷, 소매는 팔뚝까지 걷음</text>
+    <text class="s" x="22" y="180">손 = 머리와 같은 재질, 손가락 5개</text>
+    <text class="s" x="0" y="214">⑤ 숯회색 바지 종아리까지 걷음, 맨발</text>
+    <text class="s" x="22" y="236">(EP.4 짚신 전까지 맨발 유지)</text>
+    <text class="s" x="0" y="270">로고·글자 없음 · 성인 체형 · 과장 연기 없음</text>
+  </g>
+
+  <!-- ── 고양이 '감' (앉은 정면 3/4) ── -->
+  <g id="C" transform="translate(0,-40)">
+    <path class="cat" d="M1236,700 Q1300,560 1366,700 Q1386,784 1300,790 Q1214,784 1236,700 Z"/>
+    <path class="cat" d="M1352,770 C1430,780 1450,700 1412,676" stroke-width="16" fill="none" stroke="#E8762B"/>
+    <path d="M1446,700 C1452,688 1446,676 1436,672" stroke="#8a3f12" stroke-width="14" fill="none" stroke-linecap="round"/>
+    <g class="str"><path d="M1252,700 q10,-12 22,-10"/><path d="M1350,700 q-10,-12 -22,-10"/><path d="M1246,740 q12,-8 26,-6"/><path d="M1356,740 q-12,-8 -26,-6"/></g>
+    <path class="wht" d="M1270,640 Q1300,612 1330,640 L1322,720 Q1300,736 1278,720 Z"/>
+    <ellipse class="wht" cx="1278" cy="786" rx="16" ry="10"/>
+    <ellipse class="wht" cx="1322" cy="786" rx="16" ry="10"/>
+    <path class="wht" d="M1270,760 L1286,760 L1286,784 L1270,784 Z" stroke="none"/>
+    <path class="wht" d="M1314,760 L1330,760 L1330,784 L1314,784 Z" stroke="none"/>
+    <path class="cat" d="M1252,560 Q1300,520 1348,560 Q1362,620 1300,630 Q1238,620 1252,560 Z"/>
+    <path class="cat" d="M1258,566 L1262,512 L1290,546 Z"/>
+    <path class="cat" d="M1342,566 L1338,512 L1326,528 L1318,524 L1310,546 Z"/>
+    <g class="str"><path d="M1290,540 l4,14"/><path d="M1300,538 l0,16"/><path d="M1310,540 l-4,14"/></g>
+    <ellipse cx="1280" cy="580" rx="7" ry="8" fill="#C98A1E"/>
+    <ellipse cx="1320" cy="580" rx="7" ry="8" fill="#C98A1E"/>
+    <path d="M1294,598 L1306,598 L1300,606 Z" fill="#7a4a3a"/>
+    <path d="M1262,632 Q1300,646 1338,632" stroke="#5A3A22" stroke-width="5" fill="none"/>
+    <circle cx="1300" cy="648" r="9" fill="#B08D57" stroke="#7d6235" stroke-width="2"/>
+    <text class="n" x="1248" y="836">고양이 '감'</text>
+  </g>
+  <g>
+    <g><circle cx="1360" cy="470" r="13" fill="#1d2125"/><text x="1360" y="476" text-anchor="middle" style="fill:#F4F1EA;font-size:17px;font-weight:700">6</text></g>
+    <g><circle cx="1206" cy="606" r="13" fill="#1d2125"/><text x="1206" y="612" text-anchor="middle" style="fill:#F4F1EA;font-size:17px;font-weight:700">7</text></g>
+    <g><circle cx="1252" cy="666" r="13" fill="#1d2125"/><text x="1252" y="672" text-anchor="middle" style="fill:#F4F1EA;font-size:17px;font-weight:700">8</text></g>
+    <g><circle cx="1240" cy="744" r="13" fill="#1d2125"/><text x="1240" y="750" text-anchor="middle" style="fill:#F4F1EA;font-size:17px;font-weight:700">9</text></g>
+  </g>
+  <g transform="translate(1180,830)">
+    <text class="s" x="0" y="0">⑥ 왼쪽 귀 끝 V자 홈</text>
+    <text class="s" x="0" y="24">⑦ 가는 가죽 끈 목걸이 + 무광 놋쇠 원판(판독 불가)</text>
+    <text class="s" x="0" y="48">⑧ 흰 가슴</text>
+    <text class="s" x="0" y="72">⑨ 흰 앞발 2개, 뒷발은 주황</text>
+    <text class="s" x="0" y="100">마른 성체 배 고양이 · 호박색 눈 · 고리 무늬 꼬리</text>
+    <text class="s" x="0" y="122">실제 고양이 행동만(의인화 금지) · 말하지 않음</text>
+  </g>
+
+  <!-- 팔레트 -->
+  <g transform="translate(40,880)">
+    <rect x="0" y="0" width="54" height="54" fill="#D8D5CF" stroke="#555"/><text class="s" x="0" y="76">머리·손 #D8D5CF</text>
+    <rect x="150" y="0" width="54" height="54" fill="#2B3A4A" stroke="#555"/><text class="s" x="150" y="76">재킷 #2B3A4A</text>
+    <rect x="290" y="0" width="54" height="54" fill="#F08A24" stroke="#555"/><text class="s" x="290" y="76">조끼 #F08A24</text>
+    <rect x="430" y="0" width="54" height="54" fill="#4A4D50" stroke="#555"/><text class="s" x="430" y="76">바지 #4A4D50</text>
+    <rect x="570" y="0" width="54" height="54" fill="#E8762B" stroke="#555"/><text class="s" x="570" y="76">고양이 #E8762B</text>
+    <rect x="720" y="0" width="54" height="54" fill="#B08D57" stroke="#555"/><text class="s" x="720" y="76">놋쇠 #B08D57</text>
+  </g>
+  <text class="s" x="40" y="990">금지: 큰 눈·볼터치·표정·파스텔·원색 카툰·검은 동그란 머리·로고·글자</text>
+</svg>

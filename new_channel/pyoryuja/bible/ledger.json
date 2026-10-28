@@ -1,0 +1,32 @@
+{
+  "_doc": "회차 종료 시점 상태 원장. 연속성 린트의 기준(바이블 ledger). 다음 회차 HAVE 슬롯은 직전 회 inventory만 쓸 수 있다.",
+  "episodes": [
+    {
+      "episode": "EP.0",
+      "date_in_world": "1653-08-16",
+      "location": "제주 대정 해안",
+      "weather": "폭풍 뒤 비",
+      "inventory": ["구명조끼", "젖은 성냥(0)", "쇠 호루라기", "고양이"],
+      "injuries": [],
+      "companion": {"name": "감", "health": "ok", "with": true, "trust": 1},
+      "tech_unlocked": [],
+      "outcome_type": "부분",
+      "world_objects": ["난파 잔해(널빤지·밧줄·통판)", "쇠못 박힌 널빤지(고양이 자리)", "떠밀려 온 대나무"],
+      "foreshadow_open": []
+    },
+    {
+      "episode": "EP.1",
+      "date_in_world": "1653-08-17",
+      "location": "제주 대정 해안 (같은 만)",
+      "weather": "흐림 → 갬",
+      "inventory": ["구명조끼", "젖은 성냥(0)", "쇠 호루라기", "고양이", "대나무 물통"],
+      "injuries": [],
+      "companion": {"name": "감", "health": "ok", "with": true, "trust": 2},
+      "tech_unlocked": ["물"],
+      "outcome_type": "성공",
+      "world_objects": ["쇠못 박힌 널빤지 — EP.2 재료", "대나무 자투리", "용천수 바위틈(썰물 때만)"],
+      "foreshadow_open": [],
+      "costume_state": {"P": "맨발, 바지 종아리까지 걷음, 재킷 젖음(오후에 마름), 조끼 착용", "C": "아침 젖은 털 → 오후 마른 털, 목걸이 착용(글자 판독 불가 — EP.5 떡밥)"}
+    }
+  ]
+}
