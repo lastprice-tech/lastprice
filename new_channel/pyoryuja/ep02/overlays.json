@@ -1,0 +1,472 @@
+{
+  "_doc": "후반 오버레이 정의. 좌표는 1080x1920 기준 px. 시간은 내레이션 줄(line) 기준 앵커라 TTS 실측 후 retime하면 자동으로 따라간다. render 명령이 build/overlays_resolved.json(절대 초)로 풀어 기존 skia 렌더러에 넘긴다.",
+  "canvas": [
+    1080,
+    1920
+  ],
+  "safe_box": {
+    "x0": 60,
+    "y0": 220,
+    "x1": 940,
+    "y1": 1436,
+    "_src": "shorts_growth_kit/growth/config.py SAFE_ZONE_1080x1920"
+  },
+  "fonts": {
+    "ui": "Pretendard SemiBold (대체: Noto Sans KR)",
+    "mono": "JetBrains Mono"
+  },
+  "colors": {
+    "ink": "#F4F1EA",
+    "dim": "#F4F1EA99",
+    "accent": "#F08A24",
+    "fresh": "#4FA3D9",
+    "sea": "#1F4E5F",
+    "warn": "#F2B705",
+    "panel": "#0E141BCC"
+  },
+  "subtitles": {
+    "source": "subtitles.srt",
+    "box": {
+      "x": 100,
+      "y": 1250,
+      "w": 800,
+      "h": 150
+    },
+    "style": "흰 글자 46px, 검은 외곽선 4px, 최대 2줄, 가운데 정렬. 숫자는 표기형(1분, 7)",
+    "rule": "내레이션 1줄 = 자막 1블록. 15자 넘으면 의미 단위로 2줄 분할"
+  },
+  "items": [
+    {
+      "id": "ai_tag",
+      "type": "tag",
+      "text": "AI 창작 시리즈 · 1653",
+      "start": {
+        "at": 0.0
+      },
+      "end": {
+        "at": 2.0
+      },
+      "box": {
+        "x": 80,
+        "y": 1180,
+        "w": 360,
+        "h": 44
+      },
+      "style": "반투명 패널 + 흰 글자 28px. 첫 2초 필수(가드레일 A-2)"
+    },
+    {
+      "id": "ref_chip",
+      "type": "ref_chip",
+      "text": "← EP.1 쇠못",
+      "start": {
+        "at": 0.3
+      },
+      "end": {
+        "at": 2.0
+      },
+      "box": {
+        "x": 620,
+        "y": 320,
+        "w": 300,
+        "h": 56
+      },
+      "style": "작은 칩 26px, panel 배경 + accent 테두리 2px. 이전 회 마지막 장면의 소품임을 알림(페르소나 심사 B7). 프레임 중앙의 못을 가리지 않는 우상단"
+    },
+    {
+      "id": "state_caption",
+      "type": "caption",
+      "text": [
+        "D+1 · 1653년 8월",
+        "제주 대정 해안 · 해 질 녘"
+      ],
+      "start": {
+        "at": 2.0
+      },
+      "end": {
+        "line": "N03",
+        "edge": "start",
+        "offset": -0.2
+      },
+      "box": {
+        "x": 80,
+        "y": 240,
+        "w": 560,
+        "h": 110
+      },
+      "style": "1줄 38px accent / 2줄 30px ink, 좌측 정렬, 타자 효과 0.4s. 2초부터(B6)"
+    },
+    {
+      "id": "ep_bug",
+      "type": "bug",
+      "text": "EP.2",
+      "start": {
+        "at": 0.0
+      },
+      "end": {
+        "line": "N33",
+        "edge": "end",
+        "offset": 0.4
+      },
+      "box": {
+        "x": 840,
+        "y": 240,
+        "w": 90,
+        "h": 50
+      },
+      "style": "투명도 60%, 높이 3% 이하"
+    },
+    {
+      "id": "time_card_morning",
+      "type": "time_card",
+      "text": "다음 날 아침 · D+2",
+      "start": {
+        "line": "N04",
+        "edge": "start",
+        "offset": -0.4
+      },
+      "end": {
+        "line": "N04",
+        "edge": "start",
+        "offset": 1.6
+      },
+      "box": {
+        "x": 80,
+        "y": 240,
+        "w": 420,
+        "h": 70
+      }
+    },
+    {
+      "id": "inventory_panel",
+      "type": "inventory",
+      "items": [
+        {
+          "name": "구명조끼",
+          "icon": "vest"
+        },
+        {
+          "name": "젖은 성냥",
+          "count": 0,
+          "icon": "matchbox",
+          "note": "사용 불가"
+        },
+        {
+          "name": "쇠 호루라기",
+          "icon": "whistle"
+        },
+        {
+          "name": "대나무 물통",
+          "icon_from_ref": "FLASK",
+          "note": "← EP.1"
+        }
+      ],
+      "companion": {
+        "name": "고양이",
+        "trust": 2,
+        "icon": "cat",
+        "note": "동행",
+        "display": "동행 · 고양이 · 신뢰 ●●○○○"
+      },
+      "start": {
+        "line": "N04",
+        "edge": "start",
+        "offset": 0.0
+      },
+      "end": {
+        "line": "N04",
+        "edge": "end",
+        "offset": 0.3
+      },
+      "box": {
+        "x": 80,
+        "y": 380,
+        "w": 300,
+        "h": 520
+      },
+      "style": "세로 슬롯 4칸(칸당 96px) + 동행 칸 1칸(110px, 개수 없음·신뢰 점). 내레이션에서 이름이 불릴 때 해당 칸 하이라이트(N04 단어 타이밍). 끝 = S05 컷"
+    },
+    {
+      "id": "label_mugwort",
+      "type": "callout",
+      "text": "쑥 · 잎 뒷면이 흰 솜털",
+      "start": {
+        "line": "N05",
+        "edge": "start",
+        "offset": 0.2
+      },
+      "end": {
+        "line": "N06",
+        "edge": "start",
+        "offset": -0.2
+      },
+      "box": {
+        "x": 520,
+        "y": 620,
+        "w": 400,
+        "h": 64
+      },
+      "anchor_point": [
+        600,
+        900
+      ],
+      "style": "얇은 지시선(3px) + 치수선 스타일 라벨. 지시점은 클립 승인 후 쑥 잎 위치로 보정"
+    },
+    {
+      "id": "diagram_strike_spark",
+      "type": "diagram",
+      "svg": "diagram_strike_spark.svg",
+      "start": {
+        "line": "N11",
+        "edge": "start",
+        "offset": -0.3
+      },
+      "end": {
+        "line": "N15",
+        "edge": "start",
+        "offset": -0.3
+      },
+      "background_dim": 0.4,
+      "build": [
+        {
+          "layer": "stone",
+          "at": {
+            "line": "N11",
+            "edge": "start",
+            "offset": 0.5
+          },
+          "draw_s": 0.8
+        },
+        {
+          "layer": "iron",
+          "at": {
+            "line": "N11",
+            "edge": "start",
+            "offset": 1.6
+          },
+          "draw_s": 0.9
+        },
+        {
+          "layer": "edge_hl",
+          "at": {
+            "line": "N12",
+            "edge": "start",
+            "offset": 0.0
+          },
+          "draw_s": 1.0
+        },
+        {
+          "layer": "shaving",
+          "at": {
+            "line": "N12",
+            "edge": "start",
+            "offset": 2.4
+          },
+          "draw_s": 0.9
+        },
+        {
+          "layer": "heat",
+          "at": {
+            "line": "N13",
+            "edge": "start",
+            "offset": 1.2
+          },
+          "draw_s": 1.0
+        },
+        {
+          "layer": "air",
+          "at": {
+            "line": "N13",
+            "edge": "start",
+            "offset": 2.3
+          },
+          "draw_s": 0.9
+        },
+        {
+          "layer": "hardness",
+          "at": {
+            "line": "N14",
+            "edge": "start",
+            "offset": 1.4
+          },
+          "draw_s": 0.8
+        }
+      ],
+      "align": {
+        "live_nail_px": [
+          620,
+          480
+        ],
+        "shots": [
+          "S10",
+          "S11"
+        ],
+        "note": "S10·S11 실사에서 주인공이 든 쇠못 위치(x≈620, y≈480)에 iron 레이어의 확대 원·지시선이 닿는다. 클립 승인 후 실제 못 위치로 svg 원 좌표를 보정"
+      },
+      "rule": "완성 상태를 한 번에 띄우지 않는다(레이어 순차 드로잉 0.7~1.2s). 레이어 7 · 텍스트 7 · 숫자 1(7) · 강조선 1(edge_hl). 완성 상태 약 2.2초. 개념도·축척 무시 표기 상시. 끝 = S12 컷"
+    },
+    {
+      "id": "time_card_halfday",
+      "type": "time_card",
+      "text": "반나절 뒤",
+      "start": {
+        "line": "N19",
+        "edge": "start",
+        "offset": -0.3
+      },
+      "end": {
+        "line": "N19",
+        "edge": "end",
+        "offset": 0.0
+      },
+      "box": {
+        "x": 80,
+        "y": 240,
+        "w": 300,
+        "h": 70
+      }
+    },
+    {
+      "id": "time_card_later",
+      "type": "time_card",
+      "text": "한참 뒤",
+      "start": {
+        "line": "N22",
+        "edge": "start",
+        "offset": -0.3
+      },
+      "end": {
+        "line": "N23",
+        "edge": "start",
+        "offset": 0.3
+      },
+      "box": {
+        "x": 80,
+        "y": 240,
+        "w": 260,
+        "h": 70
+      }
+    },
+    {
+      "id": "warning_fire",
+      "type": "warning",
+      "text": [
+        "⚠ 따라 하지 마세요 · 튀는 돌·쇳조각에 눈을 다칩니다",
+        "산림 100m 안 불 피우기 금지 · 다 쓴 불은 물을 부어 끄세요"
+      ],
+      "start": {
+        "line": "N27",
+        "edge": "end",
+        "offset": 0.3
+      },
+      "end": {
+        "line": "N31",
+        "edge": "start",
+        "offset": -0.3
+      },
+      "box": {
+        "x": 60,
+        "y": 300,
+        "w": 880,
+        "h": 110
+      },
+      "style": "warn 색 띠 + 검은 글자 30px 2줄. 위험 기술 회차 의무(가드레일 D-21) — COST 구간(S22~S24) 내내"
+    },
+    {
+      "id": "companion_stat",
+      "type": "companion_stat",
+      "text": "고양이 · 신뢰 ●●●○○",
+      "delta": 1,
+      "start": {
+        "line": "N28",
+        "edge": "start",
+        "offset": 0.6
+      },
+      "end": {
+        "line": "N29",
+        "edge": "start",
+        "offset": -0.3
+      },
+      "box": {
+        "x": 620,
+        "y": 440,
+        "w": 300,
+        "h": 70
+      },
+      "style": "신뢰 점 하나가 채워지는 0.4s 애니메이션(2→3). 관계 비트(따뜻한 자리를 내줌) 직후. 끝 = S23 컷"
+    },
+    {
+      "id": "inventory_unlock",
+      "type": "inventory_card",
+      "item": {
+        "name": "쇠못 부시",
+        "icon_from_ref": "NAIL",
+        "spec": "연철 · 불티 적음"
+      },
+      "tech": "불",
+      "counter": "기록 02",
+      "start": {
+        "line": "N31",
+        "edge": "start",
+        "offset": 0.2
+      },
+      "end": {
+        "line": "N32",
+        "edge": "start",
+        "offset": -0.3
+      },
+      "box": {
+        "x": 240,
+        "y": 420,
+        "w": 600,
+        "h": 300
+      },
+      "style": "카드 = 이름 + 스탯 1칸 + 기록 n(B3). 카드 플립 0.4s + 카운터 01→02. 효과음은 국악 타악 1타. 끝 = S26 컷"
+    },
+    {
+      "id": "time_card_dusk",
+      "type": "time_card",
+      "text": "비 갠 해 질 녘",
+      "start": {
+        "line": "N32",
+        "edge": "start",
+        "offset": -0.3
+      },
+      "end": {
+        "line": "N33",
+        "edge": "start",
+        "offset": -0.2
+      },
+      "box": {
+        "x": 80,
+        "y": 240,
+        "w": 340,
+        "h": 70
+      }
+    },
+    {
+      "id": "endcard",
+      "type": "endcard",
+      "text": [
+        "「표류자 EP.2」 · 기록 02 / ?",
+        "다음 · EP.3 바닷물을 굽다"
+      ],
+      "start": {
+        "line": "N33",
+        "edge": "end",
+        "offset": 0.4
+      },
+      "end": {
+        "line": "N33",
+        "edge": "end",
+        "offset": 2.9
+      },
+      "box": {
+        "x": 140,
+        "y": 300,
+        "w": 800,
+        "h": 220
+      },
+      "style": "정지 프레임 위 상단(y300). 프레임 중앙의 홈을 가리지 않는다. 음성 CTA 없음"
+    }
+  ]
+}

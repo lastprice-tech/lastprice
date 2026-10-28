@@ -1,0 +1,90 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1920" viewBox="0 0 1080 1920">
+  <!-- EP.2 PRINCIPLE 도면: 부시 불티(개념도, 축척 무시). 1080x1920 투명 배경.
+       레이어 id = overlays.json diagram_strike_spark.build[].layer 순서로 0.7~1.2초씩 드로잉.
+       레이어 7 · 텍스트 7 · 숫자 1(7, N14에서 말함) · 강조선 1(edge_hl, #F08A24 7px) · 최소 26px.
+       정렬: iron 레이어의 확대 원(620,480)은 S10·S11 실사에서 주인공이 든 쇠못 위치. 캐릭터 상단 띠 y300~540은 비운다.
+       색: ink #F4F1EA / accent #F08A24 / warn #F2B705 / panel #0E141BCC -->
+  <defs>
+    <style>
+      text { font-family: Pretendard, 'Noto Sans KR', 'WenQuanYi Zen Hei', sans-serif; fill: #F4F1EA; }
+      .lbl { font-size: 36px; font-weight: 600; }
+      .sm  { font-size: 30px; font-weight: 600; }
+      .xs  { font-size: 26px; fill: #F4F1EAB3; }
+      .ln  { stroke: #F4F1EA; stroke-width: 3; fill: none; stroke-linejoin: round; }
+      .thin { stroke: #F4F1EA; stroke-width: 2; fill: none; }
+      .dash { stroke-dasharray: 10 8; }
+    </style>
+    <marker id="arw" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#F4F1EA"/>
+    </marker>
+    <radialGradient id="glow">
+      <stop offset="0" stop-color="#FFF4C2"/>
+      <stop offset="0.35" stop-color="#F2B705"/>
+      <stop offset="0.7" stop-color="#F08A24" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#F08A24" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- 1 stone: 깨서 날을 세운 단단한 돌(단면) -->
+  <g id="stone">
+    <path d="M130,960 L600,830 L300,1160 L130,1160 Z" fill="#0E141B" opacity="0.6"/>
+    <path class="ln" d="M130,960 L600,830 L300,1160 L130,1160 Z"/>
+    <g stroke="#F4F1EA" stroke-width="2" fill="none" opacity="0.35">
+      <path d="M540,884 C500,930 470,990 452,1060"/>
+      <path d="M470,920 C440,970 420,1030 410,1100"/>
+      <path d="M400,940 C380,990 368,1050 362,1120"/>
+    </g>
+    <text class="lbl" x="150" y="1122">단단한 돌</text>
+    <text class="xs" x="660" y="1180">개념도 · 축척 무시</text>
+  </g>
+
+  <!-- 2 iron: 쇠못 몸통(단면 확대) + 실사 못에서 오는 확대 지시선 + 치는 방향 -->
+  <g id="iron">
+    <circle class="thin dash" cx="620" cy="480" r="34"/>
+    <line class="thin dash" x1="644" y1="504" x2="898" y2="692"/>
+    <path d="M550,791 L900,717 L910,764 L560,838 Z" fill="#7A8088" opacity="0.85"/>
+    <path class="ln" d="M550,791 L900,717 L910,764 L560,838 Z"/>
+    <path d="M898,696 L932,692 L934,788 L904,784 Z" fill="#7A8088" opacity="0.85"/>
+    <path class="ln" d="M898,696 L932,692 L934,788 L904,784 Z"/>
+    <text class="lbl" x="772" y="690" style="font-size:40px">쇠</text>
+    <path class="ln" d="M720,632 L648,716" marker-end="url(#arw)"/>
+  </g>
+
+  <!-- 3 edge_hl: 돌 날 강조선(유일한 주황 7px 선) -->
+  <g id="edge_hl">
+    <path d="M450,871 L600,830 L540,896" stroke="#F08A24" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  </g>
+
+  <!-- 4 shaving: 날이 대패처럼 깎아 낸 얇은 쇳조각 -->
+  <g id="shaving">
+    <path d="M606,840 C626,850 646,856 656,872 C666,890 648,902 638,890 C630,880 642,868 654,872" stroke="#C9CDD2" stroke-width="5" fill="none" stroke-linecap="round"/>
+    <line class="thin" x1="650" y1="900" x2="660" y2="928"/>
+    <text class="sm" x="560" y="964">깎인 쇳조각</text>
+  </g>
+
+  <!-- 5 heat: 쇳조각이 달아올라 불티가 됨 -->
+  <g id="heat">
+    <path d="M664,878 Q 744,916 800,904" stroke="#F2B705" stroke-width="3" stroke-dasharray="4 8" fill="none"/>
+    <circle cx="824" cy="900" r="40" fill="url(#glow)"/>
+    <circle cx="824" cy="900" r="9" fill="#FFF4C2"/>
+    <text class="lbl" x="934" y="872" style="fill:#F2B705;font-size:38px" text-anchor="end">불티</text>
+  </g>
+
+  <!-- 6 air: 공기 속에서 탄다 -->
+  <g id="air">
+    <g class="ln" marker-end="url(#arw)">
+      <line x1="934" y1="984" x2="866" y2="934"/>
+      <line x1="824" y1="1022" x2="824" y2="954"/>
+      <line x1="716" y1="1014" x2="784" y2="942"/>
+    </g>
+    <text class="sm" x="934" y="1068" text-anchor="end">공기 속에서 탄다</text>
+  </g>
+
+  <!-- 7 hardness: 굳기 콜아웃(숫자는 이것 하나) -->
+  <g id="hardness">
+    <rect x="90" y="700" width="250" height="96" rx="10" fill="#0E141BCC" stroke="#F08A24" stroke-width="2"/>
+    <text class="lbl" x="116" y="764" style="font-size:46px;fill:#F08A24">굳기 7</text>
+    <line x1="215" y1="796" x2="262" y2="922" stroke="#F08A24" stroke-width="3"/>
+    <circle cx="264" cy="928" r="6" fill="#F08A24"/>
+  </g>
+</svg>
