@@ -41,7 +41,7 @@
     "BAMBOO": "Keep the bamboo's colour, white salt stains and node spacing exactly as in {BAMBOO}.",
     "PLANK": "Keep the plank and its iron nail exactly as in {PLANK}.",
     "FLASK": "Keep the bamboo flask's bamboo, node, size and dark oak plug exactly as in {FLASK}, with the plug in or out of its open end exactly as described above.",
-    "NAIL": "Keep the nail's length, tapering square shank and lumpy hand-forged square head exactly as in {NAIL}; its rust and any bright ground face are exactly as described above.",
+    "NAIL": "Keep the nail's length, tapering square shank and lumpy hand-forged square head exactly as in {NAIL}; its rust and any bright ground side are exactly as described above.",
     "FLINT": "Keep the stone's chalky white rind, dark grey glassy inside and size exactly as in {FLINT}; it is whole or broken exactly as described above.",
     "PLANK_UNDER": "Keep the plank's underside and its row of rough shallow grooves exactly as in {PLANK_UNDER}, the grooves half hidden by seaweed and too fragmentary to read; the nail is in or out of the wood exactly as described above."
   },
@@ -77,17 +77,17 @@
     {
       "id": "N04",
       "slot": "HAVE",
-      "text": "가진 건 구명조끼, 젖은 성냥, 호루라기, 물통. 그리고 고양이."
+      "text": "그 밖에 가진 건 구명조끼, 젖은 성냥, 호루라기, 물통이다."
     },
     {
       "id": "N05",
       "slot": "GATHER",
-      "text": "섬 어디서나 자라는 쑥."
+      "text": "섬 들판에 흔한 쑥."
     },
     {
       "id": "N06",
       "slot": "GATHER",
-      "text": "부싯깃은 쑥을 볶아 만들지만 볶을 불이 없다."
+      "text": "쑥 부싯깃은 볶아서 만들지만 볶을 불이 없다."
     },
     {
       "id": "N07",
@@ -119,18 +119,18 @@
     {
       "id": "N12",
       "slot": "PRINCIPLE",
-      "text": "단단한 돌 날이 대패처럼 쇠를 깎아 낸다."
+      "text": "단단한 돌 날이 대패처럼 쇠를 깎는다."
     },
     {
       "id": "N13",
       "slot": "PRINCIPLE",
-      "text": "깎인 쇳조각이 달아올라 공기 속에서 탄다."
+      "text": "깎인 조각이 달아올라 공기 속에서 탄다."
     },
     {
       "id": "N14",
       "slot": "PRINCIPLE",
-      "text": "오늘날 굳기 척도로 차돌은 7. 쇠보다 단단하다.",
-      "tts": "오늘날 굳기 척도로 차돌은 칠. 쇠보다 단단하다."
+      "text": "오늘날 굳기 척도로 차돌은 7이다. 쇠보다 단단하다.",
+      "tts": "오늘날 굳기 척도로 차돌은 칠이다. 쇠보다 단단하다."
     },
     {
       "id": "N15",
@@ -165,7 +165,7 @@
     {
       "id": "N21",
       "slot": "BUILD",
-      "text": "돌 위에 쑥 솜을 얹고, 못으로 모서리를 긁어 내린다."
+      "text": "돌 위에 쑥 솜을 얹고 못으로 모서리를 긁어 내린다."
     },
     {
       "id": "N22",
@@ -279,7 +279,7 @@
       ],
       "light": "dusk",
       "desc_ko": "앵글 컷(측면 미디엄, 널빤지 높이, 해 질 녘 반쯤 실루엣). 비스듬히 박힌 못은 위에서 뽑을 수 없어, 주인공이 두 손으로 널빤지 가장자리를 들어 뒤집는다. 젖어 더 어두운 아랫면에 못 끝이 삐져나와 있고, 그 옆에 해초에 반쯤 가린 거친 홈 몇 줄(F1 — 읽을 수 없음, 설명 없음). 고개가 홈 쪽으로 숙여지고 한 손이 그 옆에 멈춘다. 고양이는 뒤쪽 한 칸 위 바위.",
-      "edit_prompt": "Change the camera to a medium side view of the same place a moment later, at the height of the plank: the figure from {P} kneels on the dark rocks beside the broken plank from {PLANK}, both hands gripping the plank's near edge, the rusty nail still sticking up out of its top face, and the ginger cat from {C} sits on a higher rock a metre behind. Keep the dusk light of {SRC}, the figure and the cat partly silhouetted against the orange glow, and all designs exactly as in {P}, {C} and {PLANK}; the plank's underside, face down on the rock for now, is the one in {PLANK_UNDER}.",
+      "edit_prompt": "Change the camera to a medium side view of the same place a moment later, at the height of the plank: the figure from {P} kneels on the dark rocks beside the broken plank from {PLANK}, both hands gripping the plank's near edge, the rusty nail still sticking up out of its top side, and the ginger cat from {C} sits on a higher rock a metre behind. Keep the dusk light of {SRC}, the figure and the cat partly silhouetted against the orange glow, and all designs exactly as in {P}, {C} and {PLANK}; the plank's underside, turned down against the rock for now, is the one in {PLANK_UNDER}.",
       "prompt": "{SRC} is the first frame. The figure lifts the plank by its near edge and turns it over; it lands with its darker, wet underside facing up, where the pointed tip of the nail pokes through and, beside it, a short row of rough shallow grooves lies half hidden under strands of seaweed. The figure's head bows toward the grooves and one hand comes to rest beside them. Static camera. It ends with the figure kneeling still beside the overturned plank, its head bowed toward the grooves.",
       "end_state": "널빤지: 뒤집혀 아랫면이 위(못 끝이 삐져나옴, 홈은 해초에 반쯤 가림). 주인공: 그 옆에 무릎, 고개를 홈 쪽으로 숙임, 한 손은 홈 옆. 고양이: 뒤쪽 한 칸 위 바위. 해 질 녘.",
       "sfx": [
@@ -309,7 +309,7 @@
       "light": "dusk",
       "desc_ko": "로우 클로즈업(손만). 전경에 해초에 반쯤 가린 홈(초점, 읽을 수 없음), 그 너머로 오른손이 주먹만 한 현무암 덩이로 삐져나온 못 끝을 짧게 여러 번 쳐서 나무 속으로 되민다(반대쪽 대가리가 올라와 뽑힌다 — 실제 5~20분 걸리는 일이라 다음 컷은 시간 점프).",
       "edit_prompt": "Change the camera to a low close-up across the underside of the overturned plank from {PLANK_UNDER}, a moment later: the rough shallow grooves lie sharp in the near foreground, half hidden under strands of seaweed, and beyond them the matte light-grey porcelain right hand of the figure from {P} holds a fist-sized lump of black basalt just above the pointed nail tip poking up through the wood. Keep the dusk light of {SRC}; only the hand and forearm appear, the figure's head stays out of frame.",
-      "prompt": "{SRC} is the first frame. The hand taps the basalt lump down on the nail tip in short, firm blows, and the tip sinks back into the wood a little with each blow until it sits almost flush. The grooves in the foreground stay still and sharp. Static camera. It ends with the hand resting the basalt lump on the plank beside the flush nail tip.",
+      "prompt": "{SRC} is the first frame. The hand taps the basalt lump down on the nail tip in short, firm taps, and the tip sinks back into the wood a little with each tap until it sits almost flush. The grooves in the foreground stay still and sharp. Static camera. It ends with the hand resting the basalt lump on the plank beside the flush nail tip.",
       "end_state": "못 끝이 나무 속으로 거의 평평하게 되밀림. 손: 현무암 덩이를 널빤지 위에 내려놓은 채(손만). 전경에 홈. 해 질 녘 막바지.",
       "sfx": [
         "돌로 쇠를 치는 '탁탁'",
@@ -352,7 +352,7 @@
       "start": {
         "line": "N05",
         "edge": "start",
-        "offset": -0.3
+        "offset": -0.35
       },
       "link": "T",
       "from": "S04",
@@ -379,7 +379,7 @@
       "start": {
         "line": "N06",
         "edge": "start",
-        "offset": -0.2
+        "offset": -0.05
       },
       "link": "T",
       "from": "S05",
@@ -389,7 +389,7 @@
       ],
       "light": "late_morning_sun",
       "desc_ko": "시간 점프(한낮이 가까움, 볕이 강함). 높은 물때선 위 평평한 검은 너럭바위. 고양이가 이미 볕 든 바위 위에 옆으로 길게 누워 있다. 주인공이 쑥잎을 한 아름 안고 왼쪽에서 들어와 바위 옆에 무릎 꿇고 잎을 가장자리에 내려놓는다.",
-      "edit_prompt": "Change the scene to a flat black basalt slab in full sun on the rocks above the high-tide line of the same cove, later in the morning with strong sun and short hard shadows: the ginger cat from {C} lies stretched out on its side on the warm slab, eyes half closed, and the figure from {P} walks in from the left carrying an armful of picked mugwort leaves. Keep the coastline, outfit and both designs exactly as in {SRC}, {P} and {C}.",
+      "edit_prompt": "Change the scene to a flat black basalt slab in full sun on the rocks above the high-tide line of the same cove, later in the morning with strong sun and short hard shadows: the ginger cat from {C} lies stretched out on its side on the warm slab, dozing, and the figure from {P} walks in from the left carrying an armful of picked mugwort leaves. Keep the coastline, outfit and both designs exactly as in {SRC}, {P} and {C}.",
       "prompt": "{SRC} is the first frame. The figure steps up to the slab and kneels beside it, setting the armful of leaves down at its edge; the cat stays lying in the sun and only flicks one ear. Static camera. It ends with the figure kneeling at the slab beside the cat, its head bowed toward the leaves.",
       "end_state": "너럭바위(강한 볕). 고양이: 바위 위에 옆으로 누움. 주인공: 바위 옆 무릎, 고개 숙임, 쑥잎 더미를 가장자리에 놓음.",
       "sfx": [
@@ -417,7 +417,7 @@
       },
       "light": "late_morning_sun",
       "desc_ko": "부감 클로즈업(손만). 달궈진 검은 바위 위, 고양이의 흰 앞발 아래로 손이 쑥잎을 한 겹 펼치고 연한 조약돌 세 개를 차례로 얹어 바람에 날리지 않게 누른다(시리즈 표시 '조약돌'). 고양이 꼬리가 한 번 바위를 쓴다.",
-      "edit_prompt": "Change the camera to a close-up looking down onto the sunlit slab from {SRC}: the ginger cat from {C} lies along the top of the frame with its two white front paws stretched toward the centre, and the matte light-grey porcelain hands of the figure from {P} spread the mugwort leaves in a single layer on the hot black rock below the paws, three pale pebbles beside them. Keep the strong late-morning sun and the designs exactly as in {SRC}, {P} and {C}; only the hands and forearms of the figure appear, its head stays out of frame.",
+      "edit_prompt": "Change the camera to an overhead close-up of the sunlit slab from {SRC}: the ginger cat from {C} lies along the top of the frame with its two white front paws stretched toward the centre, and the matte light-grey porcelain hands of the figure from {P} spread the mugwort leaves in a single layer on the hot black rock below the paws, three pale pebbles beside them. Keep the strong late-morning sun and the designs exactly as in {SRC}, {P} and {C}; only the hands and forearms of the figure appear, its head stays out of frame.",
       "prompt": "{SRC} is the first frame. The hands smooth the last leaves flat and set the three pale pebbles on them, one after another, to hold them down; the cat's tail sweeps once across the rock. Static overhead camera. It ends with the leaves spread flat under the pebbles beside the cat's white paws and the hands withdrawing out of frame.",
       "end_state": "너럭바위 위 쑥잎 한 겹 + 연한 조약돌 3개(누름). 고양이: 위쪽에 누움, 흰 앞발이 보임. 손은 프레임 밖.",
       "sfx": [
@@ -483,7 +483,7 @@
       "start": {
         "line": "N11",
         "edge": "start",
-        "offset": -0.3
+        "offset": -0.2
       },
       "link": "A",
       "from": "S09",
@@ -494,7 +494,7 @@
       ],
       "light": "late_morning_sun",
       "desc_ko": "측면 와이드(바위 높이). 주인공은 큰 현무암 바위 꼭대기에 앉아 오른손으로 쇠못을 들어 올리고 고개를 그쪽으로 기울인다 — 못 위치 x≈620·y≈480(도면 지시선 시작점). 고양이는 왼쪽 너럭바위에 누움. 둘 다 상단 띠(y300~540), 합친 폭 약 1/3. 아래 2/3는 그늘진 바위 면만(도면, 배경 40% 어둡게).",
-      "edit_prompt": "Change the camera to a side-on view at the height of the rocks, a moment later: the figure from {P} sits on top of a large black boulder in the upper part of the frame, between about a sixth and just over a quarter of the way down, holding the rusty iron nail from {NAIL} up in its right hand just right of the centre of the frame and about a quarter of the way down, its blank head tilted toward the nail; the ginger cat from {C} lies on the sunlit slab at the upper left, level with the figure, the two together spanning about a third of the frame width. Leave the lower two-thirds of the frame as the plain, shadowed face of the boulder and dark rock with nothing else in it. Keep the late-morning sun of {SRC} and all designs exactly as in {P}, {C} and {NAIL}.",
+      "edit_prompt": "Change the camera to a side-on view at the height of the rocks, a moment later: the figure from {P} sits on top of a large black boulder in the upper part of the frame, between about a sixth and just over a quarter of the way down, holding the rusty iron nail from {NAIL} up in its right hand just right of the centre of the frame and about a quarter of the way down, its blank head tilted toward the nail; the ginger cat from {C} lies on the sunlit slab at the upper left, level with the figure, the two together spanning about a third of the frame width. Leave the lower two-thirds of the frame plain and empty: only the shadowed side of the boulder and dark rock. Keep the late-morning sun of {SRC} and all designs exactly as in {P}, {C} and {NAIL}.",
       "prompt": "{SRC} is the first frame. The figure turns the nail slowly between its fingers, holding it up in the same place; the cat lies still in the sun and the tip of its tail lifts once. Static camera. It ends with the same calm composition, the nail held up in the figure's right hand.",
       "end_state": "상단 띠: 바위 위 주인공(오른손에 쇠못을 들어 올림, x≈620·y≈480), 왼쪽 너럭바위에 고양이 누움. 아래 2/3 그늘진 바위 면.",
       "sfx": [
@@ -510,7 +510,7 @@
       "start": {
         "line": "N13",
         "edge": "start",
-        "offset": 0.47
+        "offset": 0.72
       },
       "link": "C",
       "from": "S10",
@@ -600,7 +600,7 @@
       "light": "late_morning_sun",
       "desc_ko": "시간 점프(몇 분 뒤) 클로즈업(손만). 평평한 현무암 위에서 왼손이 흰 돌을 누르고, 오른손의 주먹만 한 현무암 덩이로 내리친다. 쩍 갈라지며 짙은 회색 유리질 속(조개껍데기 같은 매끈한 곡면)과 얇고 날카로운 날이 드러난다. 왼손이 큰 조각을 들어 날을 카메라 쪽으로 돌린다.",
       "edit_prompt": "Change the camera to a close-up a few minutes later of a flat black basalt rock in the late-morning sun: the matte light-grey porcelain left hand of the figure from {P} holds the whole chalk-white stone from {FLINT} down on the rock, and the right hand raises a fist-sized lump of black basalt above it. Keep the light of {SRC}; only the hands and forearms appear, the figure's head stays out of frame.",
-      "prompt": "{SRC} is the first frame. The right hand brings the basalt lump down sharply on the white stone and it splits apart, showing dark grey glassy stone inside with smooth curved shell-like faces; the left hand lifts the larger piece and turns its thin sharp edge toward the camera. Static macro camera. It ends with the sharp glassy edge held up in the centre of the frame.",
+      "prompt": "{SRC} is the first frame. The right hand brings the basalt lump down sharply on the white stone and it splits apart, showing dark grey glassy stone inside with smooth curved shell-like surfaces; the left hand lifts the larger piece and turns its thin sharp edge toward the camera. Static macro camera. It ends with the sharp glassy edge held up in the centre of the frame.",
       "end_state": "왼손: 깨진 흰 돌 큰 조각을 들어 짙은 회색 유리질 날을 카메라 쪽으로. 바위 위에 작은 조각과 현무암 덩이.",
       "sfx": [
         "돌 깨지는 '딱'",
@@ -628,8 +628,8 @@
       },
       "light": "late_morning_sun",
       "desc_ko": "클로즈업(손만). 거친 현무암 면에 오른손이 쇠못 한 면을 대고 앞뒤로 세게 문지른다. 주황·갈색 녹가루가 검은 돌에 묻고 은회색 새 쇳빛 줄이 드러난다. 손이 못을 기울여 간 면에 햇빛을 받는다. 옆에 깨진 흰 돌 조각.",
-      "edit_prompt": "Change the camera to a close-up a moment later of the rough, pitted surface of a black basalt boulder: the matte light-grey porcelain right hand of the figure from {P} presses one face of the rusty iron nail from {NAIL} flat against the rock, and the broken white stone from {FLINT} lies on the rock nearby with its glassy edge up. Keep the late-morning sun of {SRC}; only the hand and forearm appear, the figure's head stays out of frame.",
-      "prompt": "{SRC} is the first frame. The hand rubs the nail back and forth along the rough basalt in short, hard strokes; orange-brown rust dust smears onto the black rock and a stripe of bright grey metal appears along the ground face. The hand lifts the nail and tilts it so the bright face catches the sun. Static macro camera. It ends with the nail held still, its bright ground face toward the camera.",
+      "edit_prompt": "Change the camera to a close-up a moment later of the rough, pitted surface of a black basalt boulder: the matte light-grey porcelain right hand of the figure from {P} presses one flat side of the rusty iron nail from {NAIL} flat against the rock, and the broken white stone from {FLINT} lies on the rock nearby with its glassy edge up. Keep the late-morning sun of {SRC}; only the hand and forearm appear, the figure's head stays out of frame.",
+      "prompt": "{SRC} is the first frame. The hand rubs the nail back and forth along the rough basalt in short, hard strokes; orange-brown rust dust smears onto the black rock and a stripe of bright grey metal appears along the ground side. The hand lifts the nail and tilts it so the bright side catches the sun. Static macro camera. It ends with the nail held still, its bright ground side toward the camera.",
       "end_state": "오른손: 쇠못(한 면이 은회색으로 갈림)을 들어 빛에 비춤. 바위에 녹가루. 깨진 흰 돌 조각은 옆.",
       "sfx": [
         "쇠를 돌에 가는 '스윽스윽'"
@@ -710,8 +710,8 @@
       },
       "light": "afternoon",
       "desc_ko": "익스트림 클로즈업(손만, 오목 위). 왼손에 깨진 흰 돌, 날을 위로. 날 바로 뒤에 쑥 솜을 얹어 엄지로 누름. 오른손이 쇠못 대가리를 쥐고 간 면으로 날을 위에서 아래로 비스듬히 빠르게 긁어 내린다(손가락을 내리치지 않는 궤적). 첫 번째는 아무것도 없고, 두 번째에 작은 주황 불티 하나가 튀어 몇 cm 날다 꺼진다.",
-      "edit_prompt": "Change the camera to an extreme close-up a moment later of the figure's matte light-grey porcelain hands from {P} above the hollow: the left hand holds the broken white stone from {FLINT} with its sharp glassy edge on top and a pinch of grey-green fluff resting on the stone just behind the edge under the left thumb, and the right hand holds the iron nail from {NAIL} by its head, its bright ground face just above the edge. Keep the warm afternoon sun of {SRC}; only the hands and forearms appear, the figure's head stays out of frame.",
-      "prompt": "{SRC} is the first frame. The right hand scrapes the bright face of the nail down along the stone's edge in one fast glancing stroke, then a second; the first stroke makes nothing, and on the second a single tiny orange spark jumps from the edge, arcs a few centimetres and fades out as it falls. Static macro camera. It ends with both hands held still in the grip, the fluff unlit.",
+      "edit_prompt": "Change the camera to an extreme close-up a moment later of the figure's matte light-grey porcelain hands from {P} above the hollow: the left hand holds the broken white stone from {FLINT} with its sharp glassy edge on top and a pinch of grey-green fluff resting on the stone just behind the edge under the left thumb, and the right hand holds the iron nail from {NAIL} by its head, its bright ground side just above the edge. Keep the warm afternoon sun of {SRC}; only the hands and forearms appear, the figure's head stays out of frame.",
+      "prompt": "{SRC} is the first frame. The right hand scrapes the bright side of the nail down along the stone's edge in one fast glancing stroke, then a second; the first stroke makes nothing, and on the second a single tiny orange spark jumps from the edge, arcs a few centimetres and fades out as it falls. Static macro camera. It ends with both hands held still in the grip, the fluff unlit.",
       "end_state": "두 손 쥐기 자세 정지: 왼손 흰 돌(날 위)+엄지로 누른 쑥 솜, 오른손 쇠못(간 면). 솜은 아직 안 붙음.",
       "sfx": [
         "쇠가 돌 날을 긁는 '칙'",
@@ -737,7 +737,7 @@
       ],
       "light": "afternoon",
       "desc_ko": "시간 점프(한참 뒤, 해가 더 낮고 그림자가 길다). 측면 미디엄. 오목 옆에 무릎 꿇은 주인공이 일정한 박자로 계속 친다. 무릎 주변 바위에 흰·회색 돌 부스러기(무뎌진 날을 다시 깬 흔적). 대부분은 아무것도 없고 가끔 작은 주황 불티 1~2개. 손을 한 번 털고 다시 친다. 고양이는 몇 걸음 뒤 너럭바위, 불티와 멀리.",
-      "edit_prompt": "Change the time to much later the same afternoon, the sun lower and the shadows longer, at the same hollow, seen in a medium side view: the figure from {P} kneels beside the nest in the hollow, its blank head bowed toward its hands, in the same striking grip with the broken white stone from {FLINT} in its left hand and the iron nail from {NAIL}, its ground face bright, in its right; small white and grey flakes knocked off the stone lie scattered on the rock around its knees, and the ginger cat from {C} sits on the slab several steps behind, well away from the hands. Keep the hollow, the nest and the twigs as in {SRC} and all designs exactly as in {P}, {C}, {FLINT} and {NAIL}.",
+      "edit_prompt": "Change the time to much later the same afternoon, the sun lower and the shadows longer, at the same hollow, seen in a medium side view: the figure from {P} kneels beside the nest in the hollow, its blank head bowed toward its hands, in the same striking grip with the broken white stone from {FLINT} in its left hand and the iron nail from {NAIL}, its ground side bright, in its right; small white and grey flakes knocked off the stone lie scattered on the rock around its knees, and the ginger cat from {C} sits on the slab several steps behind, well away from the hands. Keep the hollow, the nest and the twigs as in {SRC} and all designs exactly as in {P}, {C}, {FLINT} and {NAIL}.",
       "prompt": "{SRC} is the first frame. The figure strikes again and again in a steady rhythm; most strokes make nothing, and only now and then one or two tiny orange sparks jump from the stone and fade in the air. Between strokes it shakes its right hand once and goes on. The cat stays sitting on the slab. Static camera. It ends with the figure paused in the grip, hands held still just above the hollow.",
       "end_state": "주인공: 오목 옆 무릎, 쥐기 자세로 멈춤, 고개 숙임. 무릎 주변 돌 부스러기. 고양이: 뒤쪽 너럭바위. 늦은 오후 빛.",
       "sfx": [
@@ -767,7 +767,7 @@
       },
       "light": "afternoon",
       "desc_ko": "익스트림 클로즈업(손만). 쇠못이 날을 몇 번 긁어 내린다. 작은 주황 불티가 쑥 솜 위에 떨어지지만 붙지 못하고 하나씩 꺼진다(그을리지 않은 생쑥).",
-      "edit_prompt": "Change the camera to an extreme close-up a moment later of the pinch of grey-green fluff on top of the broken white stone from {FLINT}, held under the left thumb of the figure's matte light-grey porcelain hand from {P}, with the right hand holding the iron nail from {NAIL}, its ground face bright, poised just above the stone's edge. Keep the lower afternoon sun of {SRC}; only the hands appear, the figure's head stays out of frame.",
+      "edit_prompt": "Change the camera to an extreme close-up a moment later of the pinch of grey-green fluff on top of the broken white stone from {FLINT}, held under the left thumb of the figure's matte light-grey porcelain hand from {P}, with the right hand holding the iron nail from {NAIL}, its ground side bright, poised just above the stone's edge. Keep the lower afternoon sun of {SRC}; only the hands appear, the figure's head stays out of frame.",
       "prompt": "{SRC} is the first frame. The nail scrapes down the edge three times; twice a tiny orange spark lands on the fluff, glows for an instant and goes out. Static macro camera. It ends with the hands poised for another stroke, the fluff still unlit.",
       "end_state": "쥐기 자세. 쑥 솜은 아직 안 붙음(불티 자국만). 손만.",
       "sfx": [
@@ -846,8 +846,8 @@
         "C"
       ],
       "light": "squall",
-      "desc_ko": "같은 컷 이어서. 손바닥 높이도 안 되는 작은 불이 잔가지를 타고 자리 잡는다. 주인공이 연기 반대편, 불 옆의 마르고 따뜻한 바위를 손바닥으로 한 번 두드리고, 고양이가 너럭바위에서 걸어와 거기 앉는다(불에서 한 걸음). 뒤로 바다 쪽에서 짙은 회색 소나기 구름이 다가오고 빛이 어두워진다. (경고 오버레이 시작)",
-      "prompt": "Continuing from {SRC}, the small fire settles into the twigs, no higher than a hand; the figure pats the warm dry rock once on the side of the fire away from the smoke, and the cat walks over from the slab and sits down there, a step from the fire. Out over the sea behind them a dark grey squall is rolling in and the light begins to dim. Static camera. It ends with the cat sitting beside the figure near the small fire, its head turning toward the sea.",
+      "desc_ko": "같은 컷 이어서. 손바닥 높이도 안 되는 작은 불이 잔가지를 타고 자리 잡는다. 주인공이 연기 반대편, 불 옆의 마르고 따뜻한 바위를 손바닥으로 한 번 두드리고, 고양이가 너럭바위에서 걸어와 거기 앉는다(불에서 1m쯤 떨어진 자리). 뒤로 바다 쪽에서 짙은 회색 소나기 구름이 다가오고 빛이 어두워진다. (경고 오버레이 시작)",
+      "prompt": "Continuing from {SRC}, the small fire settles into the twigs, no higher than a hand; the figure pats the warm dry rock once on the side of the fire away from the smoke, and the cat walks over from the slab and sits down there, about a metre from the fire. Out over the sea behind them a dark grey squall is rolling in and the light begins to dim. Static camera. It ends with the cat sitting beside the figure near the small fire, its head turning toward the sea.",
       "end_state": "작은 불(손바닥 높이 이하). 주인공: 불 옆 무릎. 고양이: 연기 반대편 마른 바위에 앉아 바다 쪽으로 고개. 바다 위 소나기 구름, 빛이 어두워짐.",
       "sfx": [
         "작은 불 타닥",
@@ -930,7 +930,7 @@
       },
       "light": "rain",
       "desc_ko": "클로즈업(손만). 빗방울 맺힌 펼친 왼손바닥 위에 쇠못(간 면이 위)과 깨진 흰 돌. 첫 1초에 오른손 손끝이 쇠못을 두 번 톡톡(습관). 왼손 손가락이 천천히 오므려진다. 위쪽 40%는 비와 흐린 바위뿐(획득 카드 자리).",
-      "edit_prompt": "Change the camera to a close-up a moment later in the rain beside the dead fire: the open left palm of the figure from {P} holds the iron nail from {NAIL}, its bright ground face up, and the broken white stone from {FLINT}, raindrops beading on both, with the right hand's fingertip just above the nail. Keep the dim grey rain light of {SRC}. Frame the palm in the lower half of the frame, with only falling rain and soft dark rock in the upper 40% of the frame; only the hands appear, the figure's head stays out of frame.",
+      "edit_prompt": "Change the camera to a close-up a moment later in the rain beside the dead fire: the open left palm of the figure from {P} holds the iron nail from {NAIL}, its bright ground side up, and the broken white stone from {FLINT}, raindrops beading on both, with the right hand's fingertip just above the nail. Keep the dim grey rain light of {SRC}. Frame the palm in the lower half of the frame, with only falling rain and soft dark rock in the upper 40% of the frame; only the hands appear, the figure's head stays out of frame.",
       "prompt": "{SRC} is the first frame. The right fingertip taps the nail twice, then the fingers of the left hand close slowly over the nail and the stone as the rain keeps falling. Static camera. It ends with the closed hand holding them, rain running over the knuckles.",
       "end_state": "왼손이 쇠못과 흰 돌을 쥐고 오므려짐, 빗물이 손마디를 타고 흐름(손만).",
       "sfx": [

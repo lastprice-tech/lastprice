@@ -127,7 +127,7 @@
       "end": {
         "line": "N04",
         "edge": "start",
-        "offset": 1.6
+        "offset": 1.0
       },
       "box": {
         "x": 80,
@@ -175,7 +175,7 @@
       "end": {
         "line": "N04",
         "edge": "end",
-        "offset": 0.3
+        "offset": 0.25
       },
       "box": {
         "x": 80,
@@ -192,12 +192,12 @@
       "start": {
         "line": "N05",
         "edge": "start",
-        "offset": 0.2
+        "offset": 0.0
       },
       "end": {
         "line": "N06",
         "edge": "start",
-        "offset": -0.2
+        "offset": -0.05
       },
       "box": {
         "x": 520,
@@ -218,7 +218,7 @@
       "start": {
         "line": "N11",
         "edge": "start",
-        "offset": -0.3
+        "offset": -0.2
       },
       "end": {
         "line": "N15",
@@ -268,7 +268,7 @@
           "at": {
             "line": "N13",
             "edge": "start",
-            "offset": 1.2
+            "offset": 1.0
           },
           "draw_s": 1.0
         },
@@ -277,7 +277,7 @@
           "at": {
             "line": "N13",
             "edge": "start",
-            "offset": 2.3
+            "offset": 2.0
           },
           "draw_s": 0.9
         },
