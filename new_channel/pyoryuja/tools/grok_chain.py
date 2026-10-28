@@ -213,6 +213,8 @@ def video_prompt(ep: Episode, s: dict, mode: str = "api") -> str:
     parts.append(ep.spec["style_suffix"].replace("{light}", light))
     text = " ".join(parts)
     if mode == "api":
+        if not s.get("refs"):          # 레퍼런스 없는 순수 i2v: 태그 대신 평문
+            text = text.replace("{SRC} is the first frame.", "The provided image is the first frame.")
         return tagify(text, order, "api")
     return text.replace("{SRC} is the first frame.", "The uploaded image is the first frame.") \
                .replace("{SRC}", "the uploaded image")
@@ -492,14 +494,29 @@ class Runner:
 
     def _req(self, method: str, path: str, body: dict | None = None) -> dict:
         data = json.dumps(body).encode() if body is not None else None
-        req = urllib.request.Request(API + path, data=data, method=method,
-                                     headers={"Authorization": f"Bearer {self.key}",
-                                              "Content-Type": "application/json"})
-        try:
-            with urllib.request.urlopen(req, timeout=180) as r:
-                return json.loads(r.read().decode())
-        except urllib.error.HTTPError as e:
-            sys.exit(f"API {e.code} {path}: {e.read().decode()[:2000]}")
+        # POST는 요청이 처리되지 않은 게 확실한 429/503만 재시도(중복 생성·이중 과금 방지), GET은 5xx도 재시도
+        retry_codes = {429, 503} if method == "POST" else {429, 500, 502, 503, 504}
+        for attempt in range(4):
+            req = urllib.request.Request(API + path, data=data, method=method,
+                                         headers={"Authorization": f"Bearer {self.key}",
+                                                  "Content-Type": "application/json"})
+            try:
+                with urllib.request.urlopen(req, timeout=180) as r:
+                    return json.loads(r.read().decode())
+            except urllib.error.HTTPError as e:
+                msg = e.read().decode()[:2000]
+                if e.code in retry_codes and attempt < 3:
+                    print(f"   API {e.code} — {10 * (attempt + 1)}초 후 재시도")
+                    time.sleep(10 * (attempt + 1))
+                    continue
+                sys.exit(f"API {e.code} {path}: {msg}")
+            except urllib.error.URLError as e:
+                if method == "GET" and attempt < 3:
+                    print(f"   네트워크 오류({e.reason}) — 재시도")
+                    time.sleep(10 * (attempt + 1))
+                    continue
+                sys.exit(f"네트워크 오류 {path}: {e.reason}")
+        sys.exit(f"API 재시도 초과: {path}")
 
     def show(self, kind: str, body: dict, files: dict):
         print(f"\n[{kind}] 요청 본문 (dry-run, 이미지는 경로로 표시)")
@@ -564,7 +581,7 @@ class Runner:
                 url = (st.get("video") or {}).get("url")
                 download(url, out)
                 self.log("video", body, {**st, "request_id": rid}, files)
-                if st.get("respect_moderation") is False:
+                if False in (st.get("respect_moderation"), (st.get("video") or {}).get("respect_moderation")):
                     print("   경고: respect_moderation=false (필터링됨) — 클립 확인 필요")
                 return out
             if status in ("failed", "expired"):
@@ -580,8 +597,8 @@ def scrub(o):
         return {k: scrub(v) for k, v in o.items()}
     if isinstance(o, list):
         return [scrub(v) for v in o]
-    if isinstance(o, str) and o.startswith("data:"):
-        return f"<data-uri {len(o)}B sha256:{hashlib.sha256(o.encode()).hexdigest()[:12]}>"
+    if isinstance(o, str) and (o.startswith("data:") or len(o) > 4096):   # data URI·b64_json
+        return f"<{len(o)}B sha256:{hashlib.sha256(o.encode()).hexdigest()[:12]}>"
     return o
 
 
@@ -770,26 +787,60 @@ def build_video_body(ep: Episode, s: dict, gen_s: int, run: Runner) -> tuple[dic
     return body, files
 
 
+def source_shas(ep: Episode, s: dict) -> dict:
+    """시작 프레임이 어떤 입력에서 나왔는지(출발·참고 샷 끝 프레임, K는 베이스 레퍼런스)."""
+    if s["link"] == "K":
+        f = ep.ref_file(s["base"])
+        return {f"ref:{s['base']}": sha(f) if f.exists() else None}
+    return {d: ep.st(d).get("out_sha") for d in [s["from"]] + s.get("context", [])}
+
+
+def invalidate_downstream(ep: Episode, sid: str) -> list[str]:
+    """sid의 끝 프레임이 바뀌면, 그 프레임에서 (직·간접으로) 출발한 모든 샷을 미승인으로 되돌린다."""
+    dead, hit = {sid}, []
+    for x in ep.shots:
+        if x["id"] == sid:
+            continue
+        if x.get("from") in dead or set(x.get("context", [])) & dead:
+            dead.add(x["id"])
+            stx = ep.st(x["id"])
+            if any(stx.get(k) for k in ("start_ok", "start_cands", "clip_ok")):
+                hit.append(x["id"])
+            for k in ("start_ok", "start_cands", "clip_ok", "src_shas"):
+                stx.pop(k, None)
+    return hit
+
+
+def current_takes(ep: Episode, sid: str) -> list[int]:
+    """지금 시작 프레임으로 만든 take 번호들(이전 시작 프레임으로 만든 클립은 제외)."""
+    st, sf = ep.st(sid), start_frame(ep, sid)
+    cur = sha(sf) if sf.exists() else None
+    return [i + 1 for i, src in enumerate(st.get("clip_src", [])) if src == cur]
+
+
 def step(ep: Episode, run: Runner, sid: str, retake: str | None = None):
     s = ep.shot_by_id[sid]
     st = ep.st(sid)
     tm = shot_times(ep, line_times(ep))[sid]
     live = run.live or run.sim
+    if retake:
+        for k in (("start_ok", "start_cands", "clip_ok", "src_shas") if retake == "start" else ("clip_ok",)):
+            st.pop(k, None)
+        hit = invalidate_downstream(ep, sid)
+        ep.save_state()
+        if hit:
+            print(f"   {sid} 재작업 → 하류 샷 승인 취소: {', '.join(hit)} (next로 다시 진행)")
     if live and s["link"] != "K" and not st.get("start_ok"):
         for dep in [s["from"]] + s.get("context", []):
             if not ep.st(dep).get("clip_ok"):
                 sys.exit(f"{sid}: 출발/참고 샷 {dep} 이 아직 승인되지 않음")
-    if retake == "start":
-        st.pop("start_ok", None)
-        st.pop("start_cands", None)
-    if retake == "clip":
-        st.pop("clip_ok", None)
 
     # 1) 시작 프레임
     if s["link"] == "F":
         if not out_frame(ep, s["from"]).exists():
             sys.exit(f"{sid}: {s['from']} 끝 프레임 없음")
-        st.update({"start_ok": True, "clip_ok": True, "freeze_of": s["from"], "length": tm["screen"]})
+        st.update({"start_ok": True, "clip_ok": True, "freeze_of": s["from"], "length": tm["screen"],
+                   "src_shas": source_shas(ep, s)})
         ep.save_state()
         print(f"{sid}: 정지 프레임({s['from']}) {tm['screen']}s — 완료")
         return
@@ -800,6 +851,7 @@ def step(ep: Episode, run: Runner, sid: str, retake: str | None = None):
                 start_frame(ep, sid).parent.mkdir(parents=True, exist_ok=True)
                 shutil.copy(src, start_frame(ep, sid))
                 st["start_ok"] = True
+                st["src_shas"] = source_shas(ep, s)
                 ep.save_state()
                 print(f"{sid}: C 링크 — {s['from']} 끝 프레임을 시작 프레임으로 고정")
             elif live:
@@ -819,8 +871,8 @@ def step(ep: Episode, run: Runner, sid: str, retake: str | None = None):
     # 2) 영상
     if not st.get("start_ok") and live:
         return
-    if st.get("clips") and not st.get("clip_ok") and not retake:
-        print(f"{sid}: 클립 검수 대기 → {st['clips'][-1]}\n"
+    if current_takes(ep, sid) and not st.get("clip_ok") and not retake:
+        print(f"{sid}: 클립 검수 대기 → {st['clips'][current_takes(ep, sid)[-1] - 1]}\n"
               f"   확인 후: approve {sid} clip [--take N] [--out 초]   (다시: retake {sid} clip --live)")
         return
     if st.get("clip_ok"):
@@ -831,6 +883,7 @@ def step(ep: Episode, run: Runner, sid: str, retake: str | None = None):
     out = run.video(body, files, ep.build / "clips" / f"{sid}_t{take}.mp4")
     if out:
         st.setdefault("clips", []).append(str(out))
+        st.setdefault("clip_src", []).append(sha(start_frame(ep, sid)))
         ep.save_state()
         print(f"{sid}: 클립 take {take} → {out}\n   계획 사용 구간 {tm['trim_in']:.3f}–{tm['trim_out']:.3f}s. "
               f"확인 후: approve {sid} clip --take {take} [--out 초]")
@@ -850,8 +903,11 @@ def sharpest_near(clip: Path, t: float, window: float = 0.125, margin: float = 1
     """t 앞뒤 ±window(24fps 기준 3프레임) 안에서 blurdetect 값이 가장 낮은 프레임 시각.
     t 프레임의 흐림이 최솟값보다 margin배 이상 나쁠 때만 옮긴다(샷 길이가 계통적으로 줄지 않게)."""
     a = max(0.0, t - window)
-    txt = sh(["ffmpeg", "-v", "info", "-ss", f"{a:.3f}", "-t", f"{2 * window + 0.02:.3f}", "-i", str(clip),
-              "-vf", "blurdetect=block_width=32:block_height=32,metadata=print", "-f", "null", "-"], capture=True)
+    try:                                   # blurdetect는 ffmpeg 5.1+ — 없으면 보정 없이 진행
+        txt = sh(["ffmpeg", "-v", "info", "-ss", f"{a:.3f}", "-t", f"{2 * window + 0.02:.3f}", "-i", str(clip),
+                  "-vf", "blurdetect=block_width=32:block_height=32,metadata=print", "-f", "null", "-"], capture=True)
+    except SystemExit:
+        return t
     frames, cur_t = [], None
     for line in txt.splitlines():
         m = re.search(r"pts_time:([\d.]+)", line)
@@ -880,13 +936,20 @@ def cmd_approve(ep: Episode, sid: str, what: str, pick: int | None, take: int | 
         shutil.copy(p, start_frame(ep, sid))
         st["start_ok"] = True
         st["start_pick"] = p.name
+        st["src_shas"] = source_shas(ep, s)
         ep.save_state()
         print(f"{sid}: 시작 프레임 확정 ← {p.name}")
         return
     clips = st.get("clips") or []
-    if not clips:
-        sys.exit(f"{sid}: 클립이 없음")
-    clip = Path(clips[(take or len(clips)) - 1])
+    if not st.get("start_ok"):
+        sys.exit(f"{sid}: 시작 프레임이 미승인/무효 상태 — next 로 시작 프레임부터 다시")
+    valid = current_takes(ep, sid)
+    if not valid:
+        sys.exit(f"{sid}: 현재 시작 프레임으로 만든 클립이 없음 — next 로 생성")
+    take = take or valid[-1]
+    if take not in valid:
+        sys.exit(f"{sid}: take {take} 는 이전 시작 프레임으로 만든 클립 — 사용 가능: {valid}")
+    clip = Path(clips[take - 1])
     dur = ffprobe_duration(clip) or 0
     fps = probe_fps(clip)
     a = tm["trim_in"] if t_in is None else t_in
@@ -897,14 +960,28 @@ def cmd_approve(ep: Episode, sid: str, what: str, pick: int | None, take: int | 
         b = dur - 0.05
     if not exact:
         b2 = sharpest_near(clip, b)
-        if abs(b2 - b) > 0.001:
-            print(f"   아웃 포인트 {b:.3f}s → 가장 선명한 프레임 {b2:.3f}s")
-        b = b2
+        d = b2 - b
+        if abs(d) > 0.001:
+            if s["link"] == "C" or a + d < 0:
+                # C: 첫 프레임이 앞 샷 끝과 이어져 있어 인 포인트를 옮기면 이음매가 튄다 → 보정 안 함
+                print(f"   (선명 프레임 {b2:.3f}s 발견했지만 {'C 링크' if s['link'] == 'C' else '인 포인트 0 미만'}라 아웃 유지)")
+            else:
+                a, b = round(a + d, 4), b2      # 인·아웃을 같이 옮겨 화면 길이(=내레이션 동기) 유지
+                print(f"   아웃 포인트 → 가장 선명한 프레임 {b:.3f}s (인 포인트도 {d:+.3f}s 이동, 길이 유지)")
+    if abs((b - a) - tm["screen"]) > 0.05:
+        print(f"   경고: 화면 길이 {b - a:.2f}s ≠ 계획 {tm['screen']:.2f}s — 이후 샷이 {b - a - tm['screen']:+.2f}s 밀린다."
+              " 의도한 것이면 assemble --force, 아니면 --out 을 다시 지정")
+    old_sha = st.get("out_sha") if st.get("clip_ok") else None
     of = out_frame(ep, sid)
     of.parent.mkdir(parents=True, exist_ok=True)
     sh(["ffmpeg", "-y", "-v", "error", "-ss", f"{b:.3f}", "-i", str(clip), "-frames:v", "1", str(of)])
-    st.update({"clip_ok": True, "take": clips.index(str(clip)) + 1, "in": round(a, 4), "out": round(b, 4),
-               "fps": fps, "out_frame": str(of), "out_sha": sha(of)})
+    new_sha = sha(of)
+    if old_sha and old_sha != new_sha:
+        hit = invalidate_downstream(ep, sid)    # 재승인으로 끝 프레임이 바뀌면 하류 무효
+        if hit:
+            print(f"   끝 프레임이 바뀜 → 하류 샷 승인 취소: {', '.join(hit)}")
+    st.update({"clip_ok": True, "take": take, "in": round(a, 4), "out": round(b, 4),
+               "fps": fps, "out_frame": str(of), "out_sha": new_sha})
     ep.save_state()
     nxt = [x["id"] for x in ep.shots if x.get("from") == sid or sid in x.get("context", [])]
     print(f"{sid}: 클립 승인 (take {st['take']}, {a:.3f}–{b:.3f}s, 화면 {b - a:.2f}s / 계획 {tm['screen']:.2f}s)\n"
@@ -919,17 +996,35 @@ def cmd_status(ep: Episode):
             extra = f"정지 {st.get('length')}s ({st.get('freeze_of')})"
         else:
             extra = f"take {st.get('take')} {st.get('in')}–{st.get('out')}s" if st.get("clip_ok") else ""
+        if st.get("clip_ok") and st.get("src_shas") != source_shas(ep, s):
+            extra += "  ⚠ 출발 프레임 바뀜 → retake start"
         print(f"{flag} {s['id']} {s['link']} {s['slot']:9} {extra}")
     refs = ep.state.get("refs", {})
     print("레퍼런스 확정:", ", ".join(refs) or "없음")
 
 
-def cmd_assemble(ep: Episode):
-    parts, filt, i = [], [], 0
-    for k, s in enumerate(ep.shots):
+def cmd_assemble(ep: Episode, force: bool = False):
+    planned = shot_times(ep, line_times(ep))
+    stale = [s["id"] for s in ep.shots
+             if ep.st(s["id"]).get("clip_ok") and ep.st(s["id"]).get("src_shas") != source_shas(ep, s)]
+    if stale:
+        sys.exit(f"출발 프레임이 바뀐 샷: {', '.join(stale)} — retake <샷> start 로 다시 만들 것")
+    actual, t, worst = {}, 0.0, 0.0
+    for s in ep.shots:
         st = ep.st(s["id"])
         if not st.get("clip_ok"):
             sys.exit(f"{s['id']} 미승인 — assemble 불가")
+        length = st["length"] if s["link"] == "F" else st["out"] - st["in"]
+        actual[s["id"]] = {"t_in": round(t, 3), "t_out": round(t + length, 3), "screen": round(length, 3)}
+        worst = max(worst, abs(t - planned[s["id"]]["t_in"]))
+        t += length
+    (ep.build / "timeline_actual.json").write_text(json.dumps(actual, ensure_ascii=False, indent=2), encoding="utf-8")
+    if worst > 0.1 and not force:
+        sys.exit(f"샷 시작 시각이 계획(내레이션 기준)에서 최대 {worst:.2f}s 어긋남 — 아웃 포인트를 고치거나 "
+                 "assemble --force 후 build/timeline_actual.json 기준으로 후반 타이밍을 맞출 것")
+    parts, filt, i = [], [], 0
+    for k, s in enumerate(ep.shots):
+        st = ep.st(s["id"])
         if s["link"] == "F":
             parts += ["-loop", "1", "-t", f"{st['length']:.3f}", "-i", str(out_frame(ep, s["from"]))]
             filt.append(f"[{i}:v]scale=1080:1920:flags=lanczos,setsar=1,fps=24,format=yuv420p[v{i}]")
@@ -948,7 +1043,8 @@ def cmd_assemble(ep: Episode):
     out = ep.build / f"{ep.spec['episode'].replace('.', '')}_picture.mp4"
     sh(["ffmpeg", "-y", "-v", "error", *parts, "-filter_complex", graph, "-map", "[out]",
         "-c:v", "libx264", "-crf", "16", "-preset", "medium", str(out)])
-    print(f"picture lock → {out} ({ffprobe_duration(out):.2f}s, 무음). 다음: TTS·효과음·오버레이 합성은 기존 파이프라인.")
+    print(f"picture lock → {out} ({ffprobe_duration(out):.2f}s, 무음, 계획 대비 최대 어긋남 {worst:.2f}s)."
+          " 다음: TTS·효과음·오버레이 합성은 기존 파이프라인.")
 
 
 def cmd_plan(ep: Episode, run: Runner, sid: str | None):
@@ -980,6 +1076,7 @@ def main():
     ap.add_argument("--in", dest="t_in", type=float)
     ap.add_argument("--out", dest="t_out", type=float)
     ap.add_argument("--exact", action="store_true", help="아웃 포인트 선명도 보정 끄기")
+    ap.add_argument("--force", action="store_true", help="assemble: 타이밍 어긋남 경고 무시")
     a = ap.parse_args()
     ep = Episode(a.episode)
     if a.simulate:
@@ -1012,7 +1109,7 @@ def main():
     elif a.cmd == "status":
         cmd_status(ep)
     elif a.cmd == "assemble":
-        cmd_assemble(ep)
+        cmd_assemble(ep, a.force)
 
 
 if __name__ == "__main__":

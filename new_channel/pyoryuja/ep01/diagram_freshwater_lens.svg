@@ -80,7 +80,7 @@
   <!-- 6 discharge: 해안 유출 -->
   <g id="discharge">
     <path d="M240,770 C430,766 610,716 698,676" stroke="#4FA3D9" stroke-width="6" fill="none" marker-end="url(#arwB)"/>
-    <path d="M704,670 C716,656 724,640 728,620" stroke="#4FA3D9" stroke-width="6" fill="none" marker-end="url(#arwB)"/>
+    <path d="M704,676 C714,670 722,662 728,652" stroke="#4FA3D9" stroke-width="6" fill="none" marker-end="url(#arwB)"/>
   </g>
 
   <!-- 7 ghyben: 1:40 치수 -->
@@ -97,7 +97,7 @@
 
   <!-- 8 name: 용천수 -->
   <g id="name">
-    <line class="dim" x1="734" y1="618" x2="790" y2="572"/>
+    <line class="dim" x1="730" y1="660" x2="790" y2="572"/>
     <text class="lbl" x="796" y="566" style="fill:#4FA3D9">용천수</text>
   </g>
 

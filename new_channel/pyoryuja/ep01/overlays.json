@@ -86,7 +86,7 @@
     {"id": "warning_boil", "type": "warning",
      "text": ["⚠ 실제로는 반드시 끓여 마셔야 합니다", "해안 용천수는 밀물 때 바닷물이 섞입니다"],
      "start": {"line": "N28", "edge": "start", "offset": 0.0}, "end": {"line": "N30", "edge": "end", "offset": 0.5},
-     "box": {"x": 60, "y": 230, "w": 880, "h": 120},
+     "box": {"x": 60, "y": 300, "w": 880, "h": 120},
      "style": "warn 색 띠 + 검은 글자 32/26px. 위험 기술 회차 의무(가드레일 D-21)"},
 
     {"id": "inventory_unlock", "type": "inventory_card",
