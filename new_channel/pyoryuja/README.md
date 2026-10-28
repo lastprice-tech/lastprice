@@ -12,7 +12,7 @@
 | `characters/model_sheet.svg` · `_preview.jpg` | 디자인 기준 시트(비율·색·식별점) |
 | `characters/CHARACTERS.md` | 레퍼런스 생성 순서·선택 기준·정체성 유지 장치 |
 | `characters/refs.json` | 레퍼런스 이미지 작업 11개(주인공 4·고양이 3·소품 3·로케이션 1)의 프롬프트 |
-| `ep01/shots.json` | **원본 데이터**: 내레이션 34줄 + 샷 24개(연결 방식·편집 프롬프트·영상 프롬프트·끝 상태·효과음) |
+| `ep01/shots.json` | **원본 데이터**: 내레이션 33줄 + 샷 26개(연결 방식·편집 프롬프트·영상 프롬프트·끝 상태·효과음) |
 | `ep01/shotlist.md` | 장면표 + 샷별 최종 프롬프트(API용 태그본, 앱용 평문본) — `render` 생성물 |
 | `ep01/script.md` · `narration_tts.txt` · `subtitles.srt` | 대본(슬롯·타임코드·음절 속도), TTS 입력본, 자막 — `render` 생성물 |
 | `ep01/overlays.json` · `diagram_freshwater_lens.svg` | 후반 오버레이(태그·상태 자막·인벤토리·도면·경고·지도·엔드카드), 원리 도면 |
@@ -58,7 +58,7 @@ python3 tools/grok_chain.py ep01 pick-ref P 3
 python3 tools/grok_chain.py ep01 sheet                   # characters/refs/P_sheet.png, C_sheet.png
 
 # 2) 내레이션 먼저 녹음 (줄 ID별 파일) → 타이밍 실측 반영
-#    narration_tts.txt 의 각 줄을 build/tts/N01.wav … N34.wav 로 저장
+#    narration_tts.txt 의 각 줄을 build/tts/N01.wav … N33.wav 로 저장
 python3 tools/grok_chain.py ep01 render                  # 장면 길이·생성 초·자막·오버레이 시간이 실측으로 갱신됨
 
 # 3) 샷 체인 — next 를 반복한다. 사람 게이트 2개: 시작 프레임 승인, 클립 승인
