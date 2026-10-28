@@ -6,6 +6,7 @@
 
 | 파일 | 내용 |
 |---|---|
+| `PROCESS_TO_SCRIPT.md` | 기획 → 시즌 → 바이블 → 엔진 사양 → 캐릭터 → 대본 → 장면표 → 오버레이 → 리뷰까지 실제로 밟은 절차와 다음 회차 체크리스트 |
 | `bible/series_bible.yaml` | 세계관·캐릭터·스타일·금지 목록 (제작판) |
 | `bible/ledger.json` | 회차 종료 상태 원장(인벤토리·위치·결말) — 연속성 린트 기준 |
 | `characters/model_sheet.svg` · `_preview.jpg` | 디자인 기준 시트(비율·색·식별점) |
