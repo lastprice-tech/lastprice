@@ -26,18 +26,18 @@
 
   <!-- 키 기준선 -->
   <g stroke="#6d7175" stroke-dasharray="6 6" stroke-width="1.5">
-    <line x1="110" y1="110" x2="820" y2="110"/>
+    <line x1="110" y1="164" x2="820" y2="164"/>
     <line x1="110" y1="270" x2="820" y2="270"/>
     <line x1="110" y1="790" x2="820" y2="790"/>
   </g>
-  <text class="s" x="40" y="116">머리 끝</text>
+  <text class="s" x="40" y="170">머리 끝</text>
   <text class="s" x="40" y="276">턱</text>
   <text class="s" x="40" y="796">발바닥</text>
-  <text class="s" x="40" y="540" transform="rotate(-90 40 540)">머리 = 전체 키의 약 1/4</text>
+  <text class="s" x="40" y="540" transform="rotate(-90 40 540)">머리 = 전체 키의 약 1/6 (6등신)</text>
 
   <!-- ── 정면 ── -->
   <g id="P_front">
-    <path class="por" d="M230,110 C306,110 302,226 272,258 C256,274 204,274 188,258 C158,226 154,110 230,110 Z"/>
+    <path class="por" transform="translate(230,268) scale(0.655) translate(-230,-268)" d="M230,110 C306,110 302,226 272,258 C256,274 204,274 188,258 C158,226 154,110 230,110 Z"/>
     <rect class="por" x="218" y="266" width="24" height="24"/>
     <path class="jkt" d="M150,302 L134,500 L158,504 L176,330 Z"/>
     <path class="jkt" d="M310,302 L326,500 L302,504 L284,330 Z"/>
@@ -67,7 +67,7 @@
 
   <!-- ── 측면(좌향) ── -->
   <g id="P_side" transform="translate(-90,0)">
-    <path class="por" d="M560,110 C624,110 628,214 606,252 C594,272 546,276 528,256 C500,222 500,110 560,110 Z"/>
+    <path class="por" transform="translate(560,268) scale(0.655) translate(-560,-268)" d="M560,110 C624,110 628,214 606,252 C594,272 546,276 528,256 C500,222 500,110 560,110 Z"/>
     <rect class="por" x="552" y="264" width="22" height="26"/>
     <path class="jkt" d="M528,296 Q566,284 602,298 L606,560 L524,560 Z"/>
     <path class="vst" d="M520,302 Q560,292 610,304 L614,500 L516,500 Z"/>
@@ -85,7 +85,7 @@
 
   <!-- ── 후면 ── -->
   <g id="P_back" transform="translate(-170,0)">
-    <path class="por" d="M880,110 C956,110 952,226 922,258 C906,274 854,274 838,258 C808,226 804,110 880,110 Z"/>
+    <path class="por" transform="translate(880,268) scale(0.655) translate(-880,-268)" d="M880,110 C956,110 952,226 922,258 C906,274 854,274 838,258 C808,226 804,110 880,110 Z"/>
     <rect class="por" x="868" y="266" width="24" height="24"/>
     <path class="jkt" d="M800,302 L784,500 L808,504 L826,330 Z"/>
     <path class="jkt" d="M960,302 L976,500 L952,504 L934,330 Z"/>
@@ -109,7 +109,7 @@
 
   <!-- 주인공 주석(번호 범례) -->
   <g>
-    <g><circle cx="318" cy="150" r="13" fill="#1d2125"/><text x="318" y="156" text-anchor="middle" style="fill:#F4F1EA;font-size:17px;font-weight:700">1</text></g>
+    <g><circle cx="290" cy="196" r="13" fill="#1d2125"/><text x="290" y="202" text-anchor="middle" style="fill:#F4F1EA;font-size:17px;font-weight:700">1</text></g>
     <g><circle cx="300" cy="348" r="13" fill="#1d2125"/><text x="300" y="354" text-anchor="middle" style="fill:#F4F1EA;font-size:17px;font-weight:700">2</text></g>
     <g><circle cx="312" cy="412" r="13" fill="#1d2125"/><text x="312" y="418" text-anchor="middle" style="fill:#F4F1EA;font-size:17px;font-weight:700">3</text></g>
     <g><circle cx="118" cy="528" r="13" fill="#1d2125"/><text x="118" y="534" text-anchor="middle" style="fill:#F4F1EA;font-size:17px;font-weight:700">4</text></g>

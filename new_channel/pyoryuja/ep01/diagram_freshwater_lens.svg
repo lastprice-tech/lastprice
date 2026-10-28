@@ -34,7 +34,7 @@
     <rect x="60" y="580" width="880" height="580" fill="url(#holes)" clip-path="url(#underground)"/>
     <path class="ln" d="M60,580 C260,586 520,620 700,660 L716,672"/>
     <path class="ln" d="M716,672 q14,-8 28,0 t28,0 t28,0 t28,0 t28,0 t28,0 t28,0 t28,0"/>
-    <text class="sm" x="72" y="462">현무암: 빗물이 그대로 스민다</text>
+    <text class="sm" x="72" y="462">현무암: 틈과 구멍으로 빗물이 스민다</text>
     <text class="xs" x="830" y="712">바다</text>
     <text class="xs" x="690" y="1146">개념도 · 축척 무시</text>
   </g>

@@ -3,3 +3,5 @@ ep*/build/
 ep*/build_sim/
 characters/refs/_candidates/
 *.upload.jpg
+__pycache__/
+*.pyc

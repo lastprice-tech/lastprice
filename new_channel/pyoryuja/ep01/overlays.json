@@ -57,7 +57,7 @@
 
     {"id": "tide_high", "type": "icon_label",
      "text": "밀물 ▲",
-     "start": {"line": "N14", "edge": "start", "offset": 0.0}, "end": {"line": "N14", "edge": "end", "offset": 0.4},
+     "start": {"line": "N14", "edge": "start", "offset": 0.0}, "end": {"line": "N15", "edge": "start", "offset": -0.3},
      "box": {"x": 700, "y": 320, "w": 220, "h": 70},
      "style": "물결 아이콘 + 상승 화살표"},
 
@@ -71,7 +71,7 @@
        {"layer": "lens",       "at": {"line": "N16", "edge": "start", "offset": 0.0}, "draw_s": 1.2},
        {"layer": "seawater",   "at": {"line": "N16", "edge": "start", "offset": 0.8}, "draw_s": 0.8},
        {"layer": "density",    "at": {"line": "N16", "edge": "start", "offset": 2.0}, "draw_s": 0.7},
-       {"layer": "discharge",  "at": {"line": "N17", "edge": "start", "offset": 1.2}, "draw_s": 1.0},
+       {"layer": "discharge",  "at": {"line": "N17", "edge": "start", "offset": 2.4}, "draw_s": 1.0},
        {"layer": "ghyben",     "at": {"line": "N17", "edge": "end",   "offset": 0.0}, "draw_s": 0.9},
        {"layer": "name",       "at": {"line": "N18", "edge": "start", "offset": 0.6}, "draw_s": 0.7},
        {"layer": "tide_low",   "at": {"line": "N19", "edge": "start", "offset": 1.0}, "draw_s": 1.0}
@@ -84,15 +84,15 @@
      "box": {"x": 80, "y": 240, "w": 420, "h": 70}},
 
     {"id": "warning_boil", "type": "warning",
-     "text": ["⚠ 실제로는 반드시 끓여 마셔야 합니다", "해안 용천수는 밀물 때 바닷물이 섞입니다"],
-     "start": {"line": "N28", "edge": "start", "offset": 0.0}, "end": {"line": "N30", "edge": "end", "offset": 0.5},
+     "text": ["⚠ 실제로는 1분 이상 팔팔 끓여 마셔야 합니다", "해안 용천수는 밀물 때 바닷물이 섞입니다"],
+     "start": {"line": "N28", "edge": "start", "offset": 0.0}, "end": {"line": "N31", "edge": "start", "offset": -0.3},
      "box": {"x": 60, "y": 300, "w": 880, "h": 120},
      "style": "warn 색 띠 + 검은 글자 32/26px. 위험 기술 회차 의무(가드레일 D-21)"},
 
     {"id": "inventory_unlock", "type": "inventory_card",
      "item": {"name": "대나무 물통", "icon_from_ref": "FLASK", "spec": "용량 약 0.5 L"},
      "counter": "보유 5",
-     "start": {"line": "N31", "edge": "start", "offset": 0.2}, "end": {"line": "N31", "edge": "end", "offset": 0.4},
+     "start": {"line": "N31", "edge": "start", "offset": 0.2}, "end": {"line": "N32", "edge": "start", "offset": -0.3},
      "box": {"x": 240, "y": 420, "w": 600, "h": 300},
      "style": "카드 플립 0.4s + 카운터 4→5. 효과음은 국악 타악 1타"},
 
@@ -104,8 +104,9 @@
     {"id": "map_inset", "type": "map",
      "region": "제주도 윤곽(OSM 해안선, ODbL 표기)",
      "marker": {"label": "대정", "lat": 33.22, "lon": 126.25, "note": "대략 위치 — 실제 표착지는 학설이 갈림(용머리 해안 등)"},
-     "start": {"line": "N33", "edge": "start", "offset": 0.0}, "end": {"line": "N33", "edge": "end", "offset": 0.6},
+     "start": {"line": "N33", "edge": "start", "offset": 0.0}, "end": {"line": "N34", "edge": "start", "offset": -0.2},
      "box": {"x": 640, "y": 330, "w": 290, "h": 200},
+     "credit": {"text": "© OpenStreetMap", "box": {"x": 650, "y": 504, "w": 270, "h": 22}, "style": "20px ink 80%, 지도 표시 내내"},
      "style": "선화 지도, 현재 위치 점 깜빡임 2회. 하멜 루트는 표시하지 않는다(스포 금지)"},
 
     {"id": "endcard", "type": "endcard",
