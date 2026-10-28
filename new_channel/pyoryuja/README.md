@@ -17,6 +17,8 @@
 | `ep01/overlays.json` · `diagram_freshwater_lens.svg` | 후반 오버레이(태그·상태 자막·인벤토리·도면·경고·지도·엔드카드), 원리 도면 |
 | `ep01/factcheck.md` · `metadata.md` | 사실 확인 시트(출처), 업로드 메타데이터·고정 댓글·교차 게시 |
 | `tools/grok_chain.py` | 실행기: 린트 → 문서 생성 → 레퍼런스 → 시작 프레임 → 영상 → 끝 프레임 → 다음 샷 → 조립 |
+| `review/PROCEDURE.md` · `review/personas/*.md` | 영상 생성 전 외부 제작자 페르소나 심사 절차(「신비한 건축사전」·「문명」) — 실행은 `.claude/workflows/pyoryuja-persona-review.js` |
+| `review/ep01/persona_review.md` | EP.1 심사 결과와 반영 내역 |
 
 ## 영상 연결 방식 — "앞 영상의 마지막 프레임에서 다음 행동을 잇는다"
 
@@ -45,6 +47,7 @@ export XAI_API_KEY=...                       # xAI 콘솔에서 발급
 # 0) 점검 — 린트와 문서 재생성
 python3 tools/grok_chain.py ep01 check
 python3 tools/grok_chain.py ep01 render
+#    그다음 페르소나 심사(review/PROCEDURE.md) → A 항목 반영 → check/render 재실행. 영상 생성 전에 한 번만.
 
 # 1) 캐릭터·소품·로케이션 레퍼런스 (CHARACTERS.md 3절 기준으로 고르기)
 python3 tools/grok_chain.py ep01 refs --only P --live    # → characters/refs/_candidates/P_cand1~4.png
