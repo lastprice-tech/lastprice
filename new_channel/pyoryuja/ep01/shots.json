@@ -52,18 +52,18 @@
     {
       "id": "N01",
       "slot": "STATE",
-      "text": "바다에 빠졌다. 깨어난 곳은, 1653년 제주.",
-      "tts": "바다에 빠졌다. 깨어난 곳은, 천육백오십삼 년 제주."
+      "text": "바다에 빠진 둘. 깨어난 곳은, 1653년 제주.",
+      "tts": "바다에 빠진 둘. 깨어난 곳은, 천육백오십삼 년 제주."
     },
     {
       "id": "N02",
       "slot": "NEED",
-      "text": "이 바위 해안에 닿은 건 둘뿐이다."
+      "text": "사방이 바다인데 마실 물이 없다."
     },
     {
       "id": "N03",
       "slot": "NEED",
-      "text": "물 없이 버티는 건, 보통 사흘 안팎."
+      "text": "물 없이 버티는 건 보통 사흘 안팎."
     },
     {
       "id": "N04",
@@ -73,12 +73,7 @@
     {
       "id": "N05",
       "slot": "HAVE",
-      "text": "가진 건 이게 전부다."
-    },
-    {
-      "id": "N06",
-      "slot": "HAVE",
-      "text": "구명조끼, 젖은 성냥, 호루라기. 그리고 고양이 한 마리."
+      "text": "가진 건 구명조끼, 젖은 성냥, 호루라기. 그리고 고양이 한 마리."
     },
     {
       "id": "N07",
@@ -94,11 +89,6 @@
       "id": "N09",
       "slot": "GATHER",
       "text": "구멍과 틈이 많아, 빗물이 잘 스며드는 돌이다."
-    },
-    {
-      "id": "N10",
-      "slot": "GATHER",
-      "text": "부서진 배 조각 사이, 떠밀려 온 굵은 대나무 한 줄기."
     },
     {
       "id": "N11",
@@ -130,13 +120,13 @@
     {
       "id": "N16",
       "slot": "PRINCIPLE",
-      "text": "민물은 바닷물보다 약 2.5퍼센트 가볍다.",
+      "text": "민물은 바닷물보다 약 2.5% 가볍다.",
       "tts": "민물은 바닷물보다 약 이 점 오 퍼센트 가볍다."
     },
     {
       "id": "N17",
       "slot": "PRINCIPLE",
-      "text": "그래서 바닷물 위에 떠서, 해안으로 새어 나온다."
+      "text": "그래서 기름처럼 바닷물 위에 떠, 해안으로 새어 나온다."
     },
     {
       "id": "N18",
@@ -146,7 +136,12 @@
     {
       "id": "N19",
       "slot": "PRINCIPLE",
-      "text": "조건은 하나. 바다가 물러난 시간."
+      "text": "바다가 물러나야, 섬이 물을 내준다."
+    },
+    {
+      "id": "N10",
+      "slot": "BUILD",
+      "text": "부서진 배 조각 사이, 떠밀려 온 굵은 대나무 한 줄기."
     },
     {
       "id": "N20",
@@ -156,7 +151,7 @@
     {
       "id": "N21",
       "slot": "BUILD",
-      "text": "돌 조각으로 마디 바로 아래를 빙 둘러 깊이 긁고, 꺾는다."
+      "text": "마디 아래를, 돌 조각으로 한 바퀴. 그리고 꺾는다."
     },
     {
       "id": "N22",
@@ -171,17 +166,19 @@
     {
       "id": "N24",
       "slot": "BUILD",
-      "text": "마개는 배의 나무 조각을 현무암에 갈아서."
+      "text": "마개는 배의 나무 조각을 현무암에 갈아 만든다."
     },
     {
       "id": "N25",
       "slot": "TEST",
-      "text": "물이 빠졌다."
+      "text": "물이 빠졌다.",
+      "pause_after": 0.6
     },
     {
       "id": "N26",
       "slot": "TEST",
-      "text": "같은 틈에서, 다른 물이 나온다."
+      "text": "같은 틈에서, 다른 물이 나온다.",
+      "pause_after": 1.2
     },
     {
       "id": "N27",
@@ -196,32 +193,33 @@
     {
       "id": "N29",
       "slot": "COST",
-      "text": "하루 두 번, 물때를 외워야 한다."
+      "text": "다음 썰물까지, 이 한 통으로 버틴다."
     },
     {
       "id": "N30",
       "slot": "COST",
-      "text": "그리고 끓이지 않은 물은, 언제나 위험하다."
+      "text": "끓이지 않은 물은, 언제나 위험하다."
     },
     {
       "id": "N31",
       "slot": "UNLOCK",
-      "text": "첫 번째 물건. 대나무 물통."
+      "text": "첫 번째 기록. 대나무 물통.",
+      "pause_after": 0.9
     },
     {
       "id": "N32",
       "slot": "NEXT",
-      "text": "물은 해결됐다."
+      "text": "물은 찾았다."
     },
     {
       "id": "N33",
       "slot": "NEXT",
-      "text": "오늘 밤도, 불은 없다."
+      "text": "오늘 밤도, 끓일 불은 없다."
     },
     {
       "id": "N34",
       "slot": "NEXT",
-      "text": "부서진 널빤지에, 쇠못 하나가 박혀 있다."
+      "text": "부서진 널빤지에 쇠못 하나가 박혀 있다."
     }
   ],
   "shots": [
@@ -241,7 +239,7 @@
       ],
       "light": "morning",
       "desc_ko": "와이드. 현무암 물가에 옆으로 쓰러져 있던 주인공이 팔로 몸을 밀어 일어나 앉는다. 뒤편 널빤지 위의 젖은 고양이가 몸을 털며 일어선다.",
-      "edit_prompt": "Place the figure from {P} lying on its right side on the wet black basalt rocks at the waterline in the lower middle of {SRC}, one arm stretched toward the sea, its orange life vest bright against the dark rock and its trousers soaked; place the ginger cat from {C} sitting on the broken plank from {PLANK}, which lies where the broken plank lies in {SRC} about two metres behind the figure, fur wet and spiky, looking at the figure. Keep the shoreline, debris, distant mountain, light and framing of {SRC}, and keep both designs exactly as in {P} and {C}.",
+      "edit_prompt": "Place the figure from {P} lying on its right side in the foreground on the wet black basalt at the waterline, across the middle band of {SRC} (between about 45% and 62% of the frame height), its body spanning about two-thirds of the frame width with its blank head nearest the camera, one arm stretched toward the sea, its orange life vest bright against the dark rock and its trousers soaked; place the ginger cat from {C} sitting on the broken plank from {PLANK}, which lies where the broken plank lies in {SRC} about two metres behind the figure, clearly visible against the pale sea, fur wet and spiky, looking at the figure. Keep the shoreline, debris, distant mountain, light and framing of {SRC}, and keep both designs exactly as in {P} and {C}.",
       "prompt": "{SRC} is the first frame. Small waves wash over the lowest rocks. The figure stirs, pushes itself up with both arms and slowly sits up, its head turning toward the open sea; behind it the cat stands up on the plank and shakes the water from its fur. The camera holds the wide shot with only a very slight push-in, so the whole cove, the debris with the plank and the distant mountain stay in frame. It ends with the figure sitting upright on the rocks, still, its head turned toward the sea.",
       "end_state": "주인공: 물가 바위에 똑바로 앉아 고개가 바다(화면 오른쪽)를 향함. 고양이: 뒤쪽 널빤지 위에 서 있음, 젖은 털.",
       "sfx": [
@@ -271,7 +269,8 @@
       "sfx": [
         "바람",
         "맨발이 젖은 돌을 딛는 소리"
-      ]
+      ],
+      "overlay": "map_inset"
     },
     {
       "id": "S03",
@@ -289,7 +288,7 @@
       ],
       "light": "morning",
       "desc_ko": "로우 사이드 미디엄 클로즈업. 웅덩이 가에 무릎 꿇고 두 손으로 바닷물을 떠 올리다가 머리 앞에서 멈추고, 손가락을 벌려 물을 흘려보낸다.",
-      "edit_prompt": "Change the camera to a low side-angle medium close-up of the same place a moment later: the figure from {P} now kneels at the edge of the shallow tide pool with both cupped hands dipped in the seawater. Keep the same location, wet rocks, light and soaked outfit as {SRC}, and the figure's design exactly as in {P}.",
+      "edit_prompt": "Change the camera to a low side-angle medium close-up of the same place a moment later: the figure from {P} now kneels at the edge of the shallow tide pool with both cupped hands dipped in the seawater at the centre of the frame, just below the middle. Keep the same location, wet rocks, light and soaked outfit as {SRC}, and the figure's design exactly as in {P}.",
       "prompt": "{SRC} is the first frame. The figure lifts its cupped hands full of seawater up close beneath its blank head, stops just short of it and holds for a beat, then slowly opens its fingers and lets the water spill back into the pool. Static camera. It ends with the figure kneeling, hands lowered and dripping, head bowed slightly.",
       "end_state": "주인공: 무릎 꿇은 채 젖은 손을 내림, 고개 약간 숙임.",
       "sfx": [
@@ -365,40 +364,12 @@
       },
       "light": "morning",
       "desc_ko": "로우 매크로. 구멍 숭숭한 현무암 바위 밑동의 젖은 틈. 고양이가 냄새를 맡고 흰 앞발로 한 번 건드린다. 주인공의 손이 들어와 다공질 표면을 손끝으로 쓸어본다.",
-      "edit_prompt": "Change the camera to a low macro close-up at the foot of the black boulder in {SRC}: a dark wet crack runs along the base of a vesicular basalt boulder covered in small holes, a thin film of water glistening inside it, and the ginger cat from {C}, its fur still damp and clumped from the sea, crouches with its nose close to the crack. Keep the same light and wet rocks as {SRC}, and the cat's design exactly as in {C}. The figure from {P} is just out of frame to the left; only the cat, the crack and the rock are in this frame.",
-      "prompt": "{SRC} is the first frame. The cat sniffs along the wet crack and touches it once with a white front paw, then pulls the paw back and shakes it. The figure's matte light-grey porcelain hand enters from the left and its fingertips trace the porous, pitted surface of the basalt. Very slow camera slide to the right along the rock. It ends on the hand resting flat on the porous rock beside the crack, the cat sitting next to it.",
+      "edit_prompt": "Change the camera to a low macro close-up at the foot of the black boulder in {SRC}: a dark wet crack runs along the base of a vesicular basalt boulder covered in small holes, a thin film of water glistening inside it, and the ginger cat from {C}, its fur still damp and clumped from the sea, crouches with its nose close to the crack. Keep the same light and wet rocks as {SRC}, and the cat's design exactly as in {C}. The figure from {P} is just out of frame to the left; only the cat, the crack and the rock are in this frame. The pitted rock face fills the middle of the frame and the crack runs across the frame just below the middle.",
+      "prompt": "{SRC} is the first frame. The cat sniffs along the wet crack and touches it once with a white front paw, then pulls the paw back, shakes it and steps aside to the right edge of the frame; only then the figure's matte light-grey porcelain hand enters from the left and its fingertips trace the porous, pitted surface of the basalt. Static macro camera. It ends on the hand resting flat on the porous rock beside the crack, the cat sitting at the right edge of the frame.",
       "end_state": "틈 옆 다공질 바위 위에 주인공 손이 평평하게 놓임. 고양이: 그 옆에 앉음.",
       "sfx": [
         "물방울 똑똑",
         "고양이 코 킁킁"
-      ]
-    },
-    {
-      "id": "S07",
-      "slot": "GATHER",
-      "beat": "(인서트) 떠밀려 온 대나무",
-      "start": {
-        "line": "N10",
-        "edge": "start",
-        "offset": -0.2
-      },
-      "link": "A",
-      "from": "S06",
-      "context": [
-        "S01"
-      ],
-      "refs": [
-        "P",
-        "BAMBOO",
-        "PLANK"
-      ],
-      "light": "morning",
-      "desc_ko": "인서트(어깨 너머). 바위 밑에 무릎 꿇은 주인공의 어깨 너머로 10m 밖 난파 잔해. 바위 사이에 낀 굵은 대나무와 고양이가 앉아 있던 널빤지. 천천히 대나무로 푸시인.",
-      "edit_prompt": "Change the camera to an over-the-shoulder view from behind the figure from {P}, now kneeling at the foot of the boulder in {SRC}, its head turned back along the shore toward the scattered shipwreck debris of the cove in {CTX1}, about ten metres away: the broken plank from {PLANK} lies where it lies in {CTX1}, and the thick weathered bamboo pole from {BAMBOO} lies wedged between two rocks at the far end of the debris, a few metres beyond the plank. Keep the wet rocks and light of {SRC}, the debris and shoreline of {CTX1}, and the figure's design exactly as in {P}.",
-      "prompt": "{SRC} is the first frame. The figure holds still as the camera pushes in slowly past its shoulder toward the thick bamboo pole; small waves wash around the planks. It ends with the bamboo pole clearly visible in the middle of the frame.",
-      "end_state": "프레임 중앙에 대나무 장대. (컷어웨이 — 다음 샷은 S06 끝 프레임에서 이어짐)",
-      "sfx": [
-        "파도가 잔해 사이로 드나듦"
       ]
     },
     {
@@ -417,9 +388,9 @@
         "C"
       ],
       "light": "morning",
-      "desc_ko": "사이드 미디엄. 바위틈 물줄기 아래 두 손을 2초쯤 대고 물을 모은 뒤(N11), 머리 앞으로 가져가 기울이고(N12), 고개를 홱 젖혀 좌우로 흔들며 물을 털어버린다(N13). 고양이가 움찔 물러난다.",
-      "edit_prompt": "Change the camera to a side medium shot at the foot of the boulder: the figure from {P} kneels close to the porous black rock with both cupped hands held under a thin trickle of water seeping from the dark crack, and the ginger cat from {C} sits half a metre behind it. Keep the same boulder, crack, wet rocks and light as {SRC}, and both designs exactly as in {P} and {C}.",
-      "prompt": "{SRC} is the first frame. Water quickly collects in the figure's cupped hands under the thin trickle; it brings the water up close beneath its blank head and tilts its head slightly forward, then jerks its head back and flings the water away to the side. The cat flinches and takes a step back. Static camera. It ends with the figure frozen, kneeling, head turned away from the crack.",
+      "desc_ko": "어깨 너머(뒤통수만 보임). 바위틈 물줄기 아래 두 손을 2초쯤 대고 물을 모은 뒤(N11), 머리 앞으로 가져가 기울이고(N12), 고개를 홱 젖혀 좌우로 흔들며 물을 털어버린다(N13). 고양이가 움찔 물러난다.",
+      "edit_prompt": "Change the camera to an over-the-shoulder view from behind and slightly to the left of the figure from {P}, its blank head seen only from the back, kneeling close to the porous black rock with both cupped hands held under a thin trickle of water seeping from the dark crack; the crack runs diagonally from the lower left toward the centre of the frame, and the ginger cat from {C} sits half a metre to the figure's right. Keep the same boulder, crack, wet rocks and light as {SRC}, and both designs exactly as in {P} and {C}.",
+      "prompt": "{SRC} is the first frame. Water quickly collects in the figure's cupped hands under the thin trickle; it raises the cupped water up in front of its head, out of the camera's view behind the back of the head, holds a beat, then jerks its head back and flings the water away to the side. The cat flinches and takes a step back. Static camera. It ends with the figure frozen, kneeling, head turned away from the crack.",
       "end_state": "주인공: 무릎 꿇은 채 바위틈 반대쪽으로 고개 돌림. 고양이: 반 걸음 뒤.",
       "sfx": [
         "물 받는 소리",
@@ -453,7 +424,7 @@
     {
       "id": "S10",
       "slot": "PRINCIPLE",
-      "beat": "만 전경, 나란히 앉음 (도면)",
+      "beat": "해안 측면 정렬 구도, 나란히 앉음 (도면)",
       "start": {
         "line": "N15",
         "edge": "start",
@@ -461,17 +432,14 @@
       },
       "link": "A",
       "from": "S09",
-      "context": [
-        "S01"
-      ],
       "refs": [
         "P",
         "C"
       ],
       "light": "morning",
-      "desc_ko": "하이 와이드(8m 위 경사면). 밀물이 낮은 바위를 덮은 만 전체. 주인공과 고양이는 물가 위 마른 바위에 나란히 앉아 바다를 본다. 아주 느린 크레인 다운. 화면 중·상단을 비워 도면 오버레이 자리 확보(배경 40% 어둡게).",
-      "edit_prompt": "Change the camera to a high wide shot of the whole cove laid out as in {CTX1}, seen from about eight metres up the slope behind the boulder of {SRC}: the sea is now at high tide, covering the lower rocks and washing around the debris, and the figure from {P} sits on a dry boulder above the waterline near the crack with the ginger cat from {C} sitting beside it. Keep the shoreline, headlands and distant mountain as in {CTX1}, the light as in {SRC}, and both designs exactly as in {P} and {C}. Leave the upper and middle part of the frame calm and uncluttered. Take only the cove, shoreline and debris from {CTX1}; the figure and the cat each appear only once, where described here.",
-      "prompt": "{SRC} is the first frame. Waves roll in slowly and wash over the low rocks; the figure and the cat sit still, their heads turned toward the sea, and the cat's tail flicks once. Very slow, steady downward crane of the camera. It ends with the same calm composition.",
+      "desc_ko": "해안선 측면 와이드(바위 꼭대기 높이), 밀물. 수면선 y≈670, 잠긴 틈 x≈716 — 도면의 해수면·출구와 겹친다. 주인공·고양이는 좌상단 바위 위(y300~540 띠, 합친 폭 ≥ 프레임 1/4). 아래 2/3는 비움(도면, 배경 40% 어둡게).",
+      "edit_prompt": "Change the camera to a side-on view along the shoreline, level with the top of the boulder in {SRC}, a moment later at high tide: the land and the black porous boulder fill the left two-thirds of the frame and the open sea fills the right third; the waterline crosses the frame horizontally about one third of the way down, and the flooded crack at the foot of the boulder meets the water just right of the centre of the frame. The figure from {P} and the ginger cat from {C} sit side by side on top of the boulder in the upper left, between about a sixth and a quarter of the way down the frame, together spanning about a quarter of the frame width, both heads turned toward the sea. Keep the light as in {SRC} and both designs exactly as in {P} and {C}. Leave the lower two-thirds of the frame as plain dark wet rock and calm water with nothing else in it.",
+      "prompt": "{SRC} is the first frame. Small waves roll in from the right and wash into the flooded crack; the figure and the cat sit still on the boulder, their heads turned toward the sea, and the cat's tail flicks once. Static camera. It ends with the same calm composition.",
       "end_state": "만 전경, 밀물. 주인공·고양이 나란히 앉음.",
       "sfx": [
         "파도 베드(낮게)",
@@ -482,7 +450,7 @@
     {
       "id": "S11",
       "slot": "PRINCIPLE",
-      "beat": "실시간 이어짐 · 여전히 밀물, 끝에 잔해 쪽으로 고개 (도면)",
+      "beat": "실시간 이어짐 · 밀물, 꼬리가 팔을 스침 (도면)",
       "start": {
         "line": "N17",
         "edge": "start",
@@ -495,14 +463,67 @@
         "C"
       ],
       "light": "morning",
-      "desc_ko": "같은 컷 이어서(실시간). 파도가 계속 밀려오고 둘은 가만히 앉아 있다. 고양이 꼬리가 한 번 움직이고 주인공 손이 바위 위에서 한 번 옮겨진다. 끝에 주인공이 난파 잔해 쪽으로 고개를 돌린다. 물때·빛 변화는 S12 시간 점프에서 처리.",
-      "prompt": "Continuing from {SRC}, waves keep rolling in over the low rocks while the figure and the cat sit still; the cat's tail flicks and the figure's hand shifts once on the rock. The camera continues its very slow downward crane. It ends with the figure's head turning toward the shipwreck debris.",
-      "end_state": "여전히 밀물. 주인공: 잔해 쪽으로 고개 돌림. 고양이: 옆에 앉음.",
+      "desc_ko": "같은 컷 이어서(실시간). 파도가 계속 틈으로 밀려들고, 고양이 꼬리가 한 번 움직여 주인공 팔을 스치고, 주인공 손이 바위 위에서 한 번 옮겨진다.",
+      "prompt": "Continuing from {SRC}, waves keep washing into the crack; the cat's tail flicks once and brushes the figure's arm, and the figure's hand shifts once on the rock. Static camera. It ends with the two still sitting side by side on the boulder, heads turned toward the sea.",
+      "end_state": "밀물. 둘이 나란히 앉아 바다를 봄.",
       "sfx": [
         "파도 베드(낮게)",
         "바람"
       ],
       "overlay": "diagram_freshwater_lens"
+    },
+    {
+      "id": "S11b",
+      "slot": "PRINCIPLE",
+      "beat": "밀물선에 조약돌 놓기 · 잔해 쪽으로 고개",
+      "start": {
+        "line": "N19",
+        "edge": "start",
+        "offset": -0.3
+      },
+      "link": "A",
+      "from": "S11",
+      "refs": [
+        "P",
+        "C"
+      ],
+      "light": "morning",
+      "desc_ko": "앵글 컷(측면 미디엄). 주인공이 잠긴 틈 옆 바위로 내려와 연한 조약돌 하나를 집어 방금 파도가 닿은 자리에 놓고 앉는다(물때 표시). 고양이는 한 칸 위 바위에서 내려다본다. 끝에 난파 잔해 쪽으로 고개. 도면 없음, 어둡게 안 함.",
+      "edit_prompt": "Change the camera to a medium shot from the side, a moment later: the figure from {P} now sits on the rock shelf beside the flooded crack at the foot of the boulder in {SRC}, a few pale pebbles lying on the rock by its hand, and the ginger cat from {C} sits on a slightly higher rock just behind it, looking down. High tide, the same light as {SRC}; keep both designs exactly as in {P} and {C}.",
+      "prompt": "{SRC} is the first frame. The figure picks up one pale pebble, leans forward and sets it down on the rock exactly where the highest wave has just reached, then sits back; the cat watches the pebble. Static camera. It ends with the figure's head turning toward the shipwreck debris along the shore.",
+      "end_state": "밀물. 조약돌이 밀물선에 놓임. 주인공: 잔해 쪽으로 고개. 고양이: 한 칸 위 바위.",
+      "sfx": [
+        "파도 베드(낮게)",
+        "돌이 돌에 놓이는 소리"
+      ]
+    },
+    {
+      "id": "S07",
+      "slot": "BUILD",
+      "beat": "(인서트) 떠밀려 온 대나무",
+      "start": {
+        "line": "N10",
+        "edge": "start",
+        "offset": -0.2
+      },
+      "link": "A",
+      "from": "S11b",
+      "context": [
+        "S01"
+      ],
+      "refs": [
+        "P",
+        "C",
+        "BAMBOO"
+      ],
+      "light": "morning",
+      "desc_ko": "인서트(어깨 너머, 밀물). 잠긴 바위틈 옆에 앉은 주인공의 어깨 너머로 10m 밖 난파 잔해. 바위 사이에 낀 굵은 대나무와 쇠못 널빤지, 위쪽 바위의 고양이. 천천히 대나무로 푸시인.",
+      "edit_prompt": "Change the camera to an over-the-shoulder view from behind the figure from {P}, now sitting on the rock beside the flooded crack in {SRC} with the ginger cat from {C} on the boulder above it at the edge of the frame, its head turned back along the shore toward the scattered shipwreck debris of the cove in {CTX1}, about ten metres away: the broken plank with its iron nail lies where it lies in {CTX1}, and the thick weathered bamboo pole from {BAMBOO} lies wedged between two rocks at the far end of the debris, a few metres beyond the plank. Keep the wet rocks and light of {SRC}, the debris and shoreline of {CTX1}, and the figure's design exactly as in {P}.",
+      "prompt": "{SRC} is the first frame. The figure holds still as the camera pushes in slowly past its shoulder toward the thick bamboo pole; small waves wash around the planks. It ends with the bamboo pole clearly visible in the middle of the frame.",
+      "end_state": "프레임 중앙에 대나무 장대, 널빤지와 고양이도 프레임 안. (다음 샷 S12는 이 프레임에서 T 링크)",
+      "sfx": [
+        "파도가 잔해 사이로 드나듦"
+      ]
     },
     {
       "id": "S12",
@@ -514,7 +535,7 @@
         "offset": -0.2
       },
       "link": "T",
-      "from": "S11",
+      "from": "S07",
       "refs": [
         "P",
         "BAMBOO"
@@ -550,7 +571,7 @@
       "light": "late_morning",
       "hero": true,
       "desc_ko": "히어로 샷 — 익스트림 클로즈업(몇 분 뒤). 홈은 이미 거의 한 바퀴 파여 있고, 오른손이 현무암 조각으로 마지막 남은 부분을 톱질하듯 긁어 홈을 완성한다. 섬유가 말려 나오고 가루가 검은 돌에 떨어진다. 끝에 조각을 바위에 내려놓는다.",
-      "edit_prompt": "Change the camera to an extreme close-up of the figure's matte light-grey porcelain hands from {P} on the bamboo pole in {SRC}, a few minutes later: the left hand holds the pole steady on the rock and the right hand holds a sharp, thin flake of black basalt in a pale groove already scored deep most of the way around the bamboo just below a node, a few curled fibres and shavings on the rock. Keep the same bamboo, rock surface and light as {SRC}.",
+      "edit_prompt": "Change the camera to an extreme close-up of the figure's matte light-grey porcelain hands from {P} on the bamboo pole in {SRC}, a few minutes later: the left hand holds the pole steady on the rock and the right hand holds a sharp, thin flake of black basalt in a pale groove already scored deep most of the way around the bamboo just below a node, a few curled fibres and shavings on the rock. Keep the same bamboo, rock surface and light as {SRC}. The fingertips and the flake occupy only the lower third of the frame; most of the frame is the groove and the falling shavings.",
       "prompt": "{SRC} is the first frame. The right hand saws the basalt flake back and forth in short, firm strokes in the groove while the left hand turns the pole a little, cutting through the last uncut section until the pale groove runs all the way around; thin fibres curl away and fine shavings fall onto the black rock. Static macro camera with shallow depth of field. It ends with a complete pale ring groove around the bamboo and the right hand laying the flake down on the rock.",
       "end_state": "마디 바로 아래 한 바퀴 홈 완성. 현무암 조각은 바위 위에 내려놓음.",
       "sfx": [
@@ -565,7 +586,7 @@
       "start": {
         "line": "N21",
         "edge": "end",
-        "offset": -0.7
+        "offset": -0.5
       },
       "link": "A",
       "from": "S13",
@@ -655,7 +676,7 @@
       ],
       "light": "afternoon",
       "desc_ko": "시간 점프(몇 시간 뒤, 썰물, 오후). 같은 바위틈(S08 참조). 바다가 멀리 물러나 낮은 바위가 드러났고, 틈에서 맑은 물이 꾸준히 흘러 작은 웅덩이에 고인다. 마개는 웅덩이 옆 바위 위. 주인공이 열린 물통을 물줄기에 대자 기포가 올라오며 찬다.",
-      "edit_prompt": "Change the scene to the same crack at the foot of the boulder shown in {CTX1}, hours later at low tide in warm afternoon light: the sea has drawn far back beyond the lower rocks, which are now exposed and drying, and a steady stream of clear water flows out of the crack into a small rock pool. The figure from {P} kneels at the pool holding the bamboo flask from {FLASK} upright with its open end at the top, its small dark oak plug lying on the rock beside the pool, and the ginger cat from {C} sits beside the pool. Keep the boulder and crack as in {CTX1}, and both designs exactly as in {P} and {C}.",
+      "edit_prompt": "Change the scene to the same crack at the foot of the boulder shown in {CTX1}, hours later at low tide in warm afternoon light: the sea has drawn far back beyond the lower rocks, which are now exposed and drying, and a steady stream of clear water flows out of the crack into a small rock pool. The figure from {P} kneels at the pool holding the bamboo flask from {FLASK} upright with its open end at the top, its small dark oak plug lying on the rock beside the pool, and the ginger cat from {C} sits beside the pool. The crack runs diagonally from the lower left toward the centre of the frame, and the pale pebble the figure set down at high tide now sits on the dry rock beside the crack, well above the water. Keep the boulder and crack as in {CTX1}, and both designs exactly as in {P} and {C}.",
       "prompt": "{SRC} is the first frame. The figure lowers the open bamboo flask into the stream where it leaves the crack; clear water pours in and bubbles rise out of the flask until it overflows. The flask stays open and its oak plug stays lying on the rock. The cat watches the water. Slow push-in. It ends with the figure lifting the full, dripping flask out of the stream.",
       "end_state": "주인공: 가득 찬 물통을 들어 올림. 마개는 바위 위. 고양이: 웅덩이 옆.",
       "sfx": [
@@ -666,11 +687,11 @@
     {
       "id": "S18",
       "slot": "TEST",
-      "beat": "마심 · 고양이도 핥음",
+      "beat": "첫 모금은 고양이에게 — 바위 오목에 따라 줌",
       "start": {
-        "line": "N27",
+        "line": "N26",
         "edge": "start",
-        "offset": -0.4
+        "offset": 1.3
       },
       "link": "A",
       "from": "S17",
@@ -680,13 +701,37 @@
         "FLASK"
       ],
       "light": "afternoon",
-      "desc_ko": "왼쪽 옆(프로필) 미디엄 클로즈업. 물통 테두리를 머리 아래쪽에 대고 마시듯 잠시 멈췄다가 무릎에 내려놓고 어깨가 풀린다(입 등 얼굴 요소는 생기지 않음). 옆에서 고양이가 웅덩이 물을 핥는다.",
-      "edit_prompt": "Change the camera to a medium close-up in side profile from the figure's left, slightly behind it, of the same moment: the figure from {P} kneels by the pool holding the full, open bamboo flask from {FLASK} upright just below its blank head, which is seen only from the side and back, the oak plug lying on the rock beside the pool, and the ginger cat from {C} crouches at the edge of the pool with its head lowered to the water. Keep the same place, warm afternoon light and both designs exactly as in {SRC}, {P} and {C}.",
-      "prompt": "{SRC} is the first frame. The figure raises the flask until its rim rests against the underside of its blank head, tips it slightly and holds it there for a moment, then lowers the flask to its knee and stays still, shoulders relaxing; the head stays blank throughout. The flask stays open and its oak plug stays on the rock. Beside it the cat laps water from the pool with small quick movements of its tongue. Static camera. It ends with the figure resting the flask on its knee.",
-      "end_state": "주인공: 무릎 위에 물통. 고양이: 웅덩이 물 핥는 중.",
+      "desc_ko": "뒤쪽 오른쪽 어깨 너머 미디엄 클로즈업. 주인공이 물통을 기울여 앞의 바위 오목에 맑은 물을 조금 따라 주고 세운다. 고양이가 다가와 핥는다.",
+      "edit_prompt": "Change the camera to a medium close-up from behind and to the right of the figure, slightly above its shoulder, of the same moment: the figure from {P} kneels at the pool with its back to the camera, its blank head seen only from behind, holding the full open bamboo flask from {FLASK} upright in both hands; a shallow hollow in the flat black rock lies just in front of it, and the ginger cat from {C} sits half a metre away on the far side of the hollow, facing the figure. The oak plug lies on the rock beside the pool. Keep the same place, warm afternoon light and all designs exactly as in {SRC}, {P}, {C} and {FLASK}.",
+      "prompt": "{SRC} is the first frame. The figure tips the open flask and pours a little clear water into the shallow hollow in the rock in front of the cat, then holds the flask upright again; the cat steps forward, lowers its head and laps from the hollow with small quick movements of its tongue. The oak plug stays on the rock. Static camera. It ends with the cat lapping from the hollow and the figure holding the flask upright on its knee.",
+      "end_state": "고양이: 오목의 물을 핥는 중. 주인공: 물통을 무릎 위에 세워 듦.",
       "sfx": [
-        "꿀꺽(작게, 사람 목소리 아님)",
+        "물 따르는 소리(짧게)",
         "고양이 물 핥는 소리"
+      ]
+    },
+    {
+      "id": "S18b",
+      "slot": "TEST",
+      "beat": "뒤에서 본 채 마심",
+      "start": {
+        "line": "N27",
+        "edge": "start",
+        "offset": -0.3
+      },
+      "link": "C",
+      "from": "S18",
+      "refs": [
+        "P",
+        "C",
+        "FLASK"
+      ],
+      "light": "afternoon",
+      "desc_ko": "같은 컷 이어서. 고양이는 계속 핥고, 주인공이 물통을 머리 앞쪽(카메라에서는 뒤통수에 가려짐)으로 올려 잠시 멈췄다 무릎에 내려놓는다. 얼굴 요소 없음.",
+      "prompt": "Continuing from {SRC}, the cat keeps lapping from the hollow; the figure raises the flask until its rim meets the front of its blank head, hidden from the camera behind the back of the head, holds it there for a moment, then lowers the flask to its knee and stays still, shoulders relaxing; the head stays blank throughout. The flask stays open and its oak plug stays on the rock. Static camera. It ends with the flask resting on the figure's knee and the cat sitting up beside the hollow.",
+      "end_state": "주인공: 무릎 위에 열린 물통. 고양이: 오목 옆에 앉음.",
+      "sfx": [
+        "꿀꺽(작게, 사람 목소리 아님)"
       ]
     },
     {
@@ -699,7 +744,7 @@
         "offset": -0.3
       },
       "link": "T",
-      "from": "S18",
+      "from": "S18b",
       "refs": [],
       "light": "afternoon",
       "desc_ko": "시간 점프(한 시간쯤 뒤, 물때가 바뀜). 로우 앵글 인서트. 용천수 웅덩이의 바다 쪽 가장자리. 돌아오는 밀물의 첫 잔물결이 테두리를 넘어 웅덩이로 흘러들며 맑은 물이 뿌옇게 섞인다.",
@@ -713,14 +758,14 @@
     {
       "id": "S20",
       "slot": "COST",
-      "beat": "물통을 무릎에 두고 돌아오는 바다를 봄 (경고)",
+      "beat": "마개 끼우기 → 풀백, 돌아오는 밀물 (경고)",
       "start": {
         "line": "N29",
         "edge": "start",
         "offset": -0.3
       },
       "link": "T",
-      "from": "S18",
+      "from": "S18b",
       "context": [
         "S19"
       ],
@@ -730,13 +775,13 @@
         "FLASK"
       ],
       "light": "afternoon",
-      "desc_ko": "미디엄 와이드(S19 직후). 주인공이 마른 바위에 기대앉아 마개 끼운 물통을 무릎에 올리고, 바로 아래 뿌옇게 섞인 웅덩이 가장자리로 돌아온 잔물결이 넘쳤다 빠진다. 고양이는 앞발을 핥는다. 천천히 풀백. (상단 경고 오버레이)",
-      "edit_prompt": "Change the camera to a medium-wide shot from slightly behind and to the side, a little later, just after the moment in {CTX1}: the figure from {P} sits back on a dry rock above the pool with the bamboo flask from {FLASK} on its knee, the oak plug that lay on the rock in {SRC} now pushed into its open end, its head turned toward the sea, and the ginger cat from {C} sits beside it; below them the pool is cloudy with seawater as in {CTX1} and small waves of the returning tide spill over its seaward rim. Keep the same place and both designs exactly as in {SRC}, {P} and {C}, with the warm afternoon sun as in {CTX1}.",
-      "prompt": "{SRC} is the first frame. Below the figure, small waves of the returning tide keep spilling over the rim of the cloudy pool and sliding back; the figure sits still, its head turned toward the water, and the cat licks its white front paw. The camera slowly pulls back. It ends with the figure sitting still, head turned toward the incoming water.",
-      "end_state": "주인공: 물통을 무릎에 올리고 밀려오는 물 쪽으로 고개. 고양이: 옆에 앉음. 밀물 시작.",
+      "desc_ko": "미디엄 클로즈업 → 풀백(S19 직후). 무릎 위 물통 입구에 참나무 마개를 꾹 눌러 끼우는 손에서 시작해 천천히 물러나, 마른 바위에 앉은 주인공과 아래 뿌옇게 섞인 웅덩이로 넘치는 잔물결을 보인다. 끝에 고양이가 다리에 몸을 붙인다. (상단 경고 오버레이)",
+      "edit_prompt": "Change the camera to a medium close-up from slightly behind and to the side, a little later, just after the moment in {CTX1}: the figure from {P} sits on a dry rock above the pool with the bamboo flask from {FLASK} standing on its knee, one hand holding the flask and the other pressing the oak plug that lay on the rock in {SRC} into its open end, its head tilted down toward the flask, and the ginger cat from {C} sits beside it; below them the edge of the pool is cloudy with seawater as in {CTX1}. Keep the same place and both designs exactly as in {SRC}, {P} and {C}, with the warm afternoon sun as in {CTX1}.",
+      "prompt": "{SRC} is the first frame. The hand pushes the oak plug firmly home into the flask and rests on it; then the camera slowly pulls back to a medium-wide shot showing the figure sitting above the cloudy pool, small waves of the returning tide spilling over its rim and sliding back, its head turning toward the water; near the end the cat shifts and presses its side against the figure's leg. It ends with the figure sitting still, head turned toward the incoming water, the cat against its leg.",
+      "end_state": "주인공: 마개 끼운 물통 무릎 위, 밀려오는 물 쪽으로 고개. 고양이: 다리에 몸을 붙임. 밀물 시작.",
       "sfx": [
-        "먼 파도",
-        "고양이 핥는 소리"
+        "마개 꾹 누르는 소리",
+        "먼 파도"
       ],
       "overlay": "warning_boil"
     },
@@ -761,11 +806,12 @@
       "light": "afternoon",
       "desc_ko": "바위 높이 클로즈업. 젖어 반짝이는 대나무 물통이 평평한 현무암 위에 서 있고, 주인공 손이 막 놓는다. 물방울이 대나무를 타고 흘러 돌을 적신다. 아주 느린 오비트. (인벤토리 카드 +1)",
       "edit_prompt": "Change the camera to a close-up at rock level: the plugged bamboo flask from {FLASK}, wet and glistening, stands upright on a flat black basalt rock, the matte light-grey porcelain hand of the figure from {P} just letting go of it, the sea softly out of focus behind. Keep the same warm afternoon light as {SRC} and the flask's design exactly as in {FLASK}. Frame it so the flask stands in the lower half of the frame, with only soft out-of-focus sea and sky in the upper 40% of the frame.",
-      "prompt": "{SRC} is the first frame. The hand lets go of the flask and withdraws out of frame; a drop of water runs down the bamboo and darkens the rock. Very slow orbit of the camera around the flask. It ends with the flask alone in the frame.",
+      "prompt": "{SRC} is the first frame. The fingertip taps the side of the flask twice, then the hand lets go and withdraws out of frame; a drop of water runs down the bamboo and darkens the rock. Very slow orbit of the camera around the flask. It ends with the flask alone in the frame.",
       "end_state": "대나무 물통 단독 프레임.",
       "sfx": [
+        "대나무 '톡톡' 2회",
         "물방울",
-        "국악 타악 1타(획득)"
+        "국악 타악 1타(획득, 톡톡 0.3초 뒤)"
       ],
       "overlay": "inventory_unlock"
     },
@@ -796,8 +842,7 @@
       "sfx": [
         "저녁 파도",
         "성냥갑 흔드는 소리(눅눅함)"
-      ],
-      "overlay": "map_inset"
+      ]
     },
     {
       "id": "S23",
@@ -837,7 +882,7 @@
         "edge": "end",
         "offset": 0.4
       },
-      "length": 3.0,
+      "length": 2.5,
       "link": "F",
       "from": "S23",
       "desc_ko": "S23 끝 프레임 정지 + 엔드카드 「표류자 EP.1」 · 시즌1. 음성 없음, 파도 소리만.",

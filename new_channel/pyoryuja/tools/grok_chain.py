@@ -247,12 +247,12 @@ def check(ep: Episode) -> int:
         link = s["link"]
         if link not in "KCATF":
             errs.append(f"{sid}: link {link} 미정의")
-        if link != "K" and s.get("from") not in seen:
+        if link != "K" and not (link == "C" and s.get("base") and not s.get("from")) and s.get("from") not in seen:
             errs.append(f"{sid}: from={s.get('from')} 가 앞 샷이 아님")
         for c in s.get("context", []):
             if c not in seen:
                 errs.append(f"{sid}: context {c} 가 앞 샷이 아님")
-        if link == "C" and prev and s["from"] != prev["id"]:
+        if link == "C" and prev and s.get("from") and s["from"] != prev["id"]:
             warns.append(f"{sid}: C 링크인데 직전 샷({prev['id']})이 아닌 {s['from']}에서 이어짐 — 컷 이음매 확인")
         c_run = c_run + 1 if link == "C" else 0
         if c_run > 3:
@@ -460,7 +460,7 @@ def render(ep: Episode):
                    "업로드 순서: " + " · ".join(f"{i}) {d}" for i, (_, d) in enumerate(order, 1)), "",
                    "```text", edit_prompt(ep, s, "api"), "```"]
         elif s["link"] == "C":
-            sl += ["", f"**① 시작 프레임** = {s['from']} 승인 클립의 끝 프레임 그대로(편집 없음). 앞 샷은 이 프레임 직전에서 끝나고 이 샷의 첫 프레임이 그 자리를 잇는다."]
+            sl += ["", f"**① 시작 프레임** = {s.get('from') or s['base'] + '(이전 회차)'} 승인 클립의 끝 프레임 그대로(편집 없음). 앞 샷은 이 프레임 직전에서 끝나고 이 샷의 첫 프레임이 그 자리를 잇는다."]
         if s["link"] != "F":
             vorder = video_images(s)
             sl += ["", f"**② 영상** (`grok-imagine-video-1.5`, {tm['gen_s']}s, 9:16, 720p, 오디오 끔)", "",
@@ -816,7 +816,7 @@ def build_video_body(ep: Episode, s: dict, gen_s: int, run: Runner) -> tuple[dic
 
 def source_shas(ep: Episode, s: dict) -> dict:
     """시작 프레임이 어떤 입력에서 나왔는지(출발·참고 샷 끝 프레임, K는 베이스 레퍼런스)."""
-    if s["link"] == "K":
+    if s["link"] == "K" or not s.get("from"):     # K, 또는 이전 회차 끝 프레임(base)에서 바로 잇는 C
         f = ep.ref_file(s["base"])
         out = {f"ref:{s['base']}": sha(f) if f.exists() else None}
     else:
@@ -860,7 +860,7 @@ def step(ep: Episode, run: Runner, sid: str, retake: str | None = None):
             st.pop(k, None)
         ep.save_state()   # 하류 무효화는 새 끝 프레임을 승인할 때 cmd_approve 의 out_sha 비교로 한다(끝 프레임이 같으면 하류 재사용)
     if live and s["link"] != "K" and not st.get("start_ok"):
-        for dep in [s["from"]] + s.get("context", []):
+        for dep in [x for x in [s.get("from")] + s.get("context", []) if x]:
             if not ep.st(dep).get("clip_ok"):
                 sys.exit(f"{sid}: 출발/참고 샷 {dep} 이 아직 승인되지 않음")
 
@@ -875,16 +875,17 @@ def step(ep: Episode, run: Runner, sid: str, retake: str | None = None):
         return
     if not st.get("start_ok"):
         if s["link"] == "C":
-            src = out_frame(ep, s["from"])
+            # 같은 회차 앞 샷의 끝 프레임, 또는 base(이전 회차 마지막 프레임 레퍼런스)를 그대로 고정
+            src = out_frame(ep, s["from"]) if s.get("from") else ep.ref_file(s["base"])
             if src.exists():
                 start_frame(ep, sid).parent.mkdir(parents=True, exist_ok=True)
                 shutil.copy(src, start_frame(ep, sid))
                 st["start_ok"] = True
                 st["src_shas"] = source_shas(ep, s)
                 ep.save_state()
-                print(f"{sid}: C 링크 — {s['from']} 끝 프레임을 시작 프레임으로 고정")
+                print(f"{sid}: C 링크 — {s.get('from') or s['base']} 끝 프레임을 시작 프레임으로 고정")
             elif live:
-                sys.exit(f"{sid}: {s['from']} 끝 프레임 없음 — approve {s['from']} clip 먼저")
+                sys.exit(f"{sid}: {s.get('from') or s['base']} 끝 프레임 없음 — approve {s.get('from')} clip 먼저 / 레퍼런스 확인")
         else:
             if st.get("start_cands") and not retake:
                 print(f"{sid}: 시작 프레임 후보 대기 중 → {st['start_cands']}\n"

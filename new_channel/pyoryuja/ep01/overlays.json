@@ -1,118 +1,507 @@
 {
   "_doc": "후반 오버레이 정의. 좌표는 1080x1920 기준 px. 시간은 내레이션 줄(line) 기준 앵커라 TTS 실측 후 retime하면 자동으로 따라간다. render 명령이 build/overlays_resolved.json(절대 초)로 풀어 기존 skia 렌더러에 넘긴다.",
-  "canvas": [1080, 1920],
-  "safe_box": {"x0": 60, "y0": 220, "x1": 940, "y1": 1436, "_src": "shorts_growth_kit/growth/config.py SAFE_ZONE_1080x1920"},
-  "fonts": {"ui": "Pretendard SemiBold (대체: Noto Sans KR)", "mono": "JetBrains Mono"},
-  "colors": {"ink": "#F4F1EA", "dim": "#F4F1EA99", "accent": "#F08A24", "fresh": "#4FA3D9", "sea": "#1F4E5F", "warn": "#F2B705", "panel": "#0E141BCC"},
-
+  "canvas": [
+    1080,
+    1920
+  ],
+  "safe_box": {
+    "x0": 60,
+    "y0": 220,
+    "x1": 940,
+    "y1": 1436,
+    "_src": "shorts_growth_kit/growth/config.py SAFE_ZONE_1080x1920"
+  },
+  "fonts": {
+    "ui": "Pretendard SemiBold (대체: Noto Sans KR)",
+    "mono": "JetBrains Mono"
+  },
+  "colors": {
+    "ink": "#F4F1EA",
+    "dim": "#F4F1EA99",
+    "accent": "#F08A24",
+    "fresh": "#4FA3D9",
+    "sea": "#1F4E5F",
+    "warn": "#F2B705",
+    "panel": "#0E141BCC"
+  },
   "subtitles": {
     "source": "subtitles.srt",
-    "box": {"x": 100, "y": 1250, "w": 800, "h": 150},
+    "box": {
+      "x": 100,
+      "y": 1250,
+      "w": 800,
+      "h": 150
+    },
     "style": "흰 글자 46px, 검은 외곽선 4px, 최대 2줄, 가운데 정렬. 숫자는 표기형(1653년, 2.5%)",
     "rule": "내레이션 1줄 = 자막 1블록. 15자 넘으면 의미 단위로 2줄 분할"
   },
-
   "items": [
-    {"id": "ai_tag", "type": "tag",
-     "text": "AI 창작 시리즈 · 1653",
-     "start": {"at": 0.0}, "end": {"at": 2.0},
-     "box": {"x": 80, "y": 1180, "w": 360, "h": 44},
-     "style": "반투명 패널 + 흰 글자 28px. 첫 2초 필수(가드레일 A-2)"},
-
-    {"id": "state_caption", "type": "caption",
-     "text": ["D+1 · 1653년 8월", "제주 대정 해안"],
-     "start": {"at": 0.2}, "end": {"line": "N02", "edge": "start", "offset": 0.0},
-     "box": {"x": 80, "y": 240, "w": 560, "h": 110},
-     "style": "1줄 38px accent / 2줄 30px ink, 좌측 정렬, 타자 효과 0.4s"},
-
-    {"id": "ep_bug", "type": "bug",
-     "text": "EP.1",
-     "start": {"at": 0.0}, "end": {"line": "N34", "edge": "end", "offset": 0.4},
-     "box": {"x": 840, "y": 240, "w": 90, "h": 50},
-     "style": "투명도 60%, 높이 3% 이하"},
-
-    {"id": "callout_salinity", "type": "callout",
-     "text": "해수 염도 ≈ 3.5%",
-     "start": {"line": "N04", "edge": "start", "offset": 0.0}, "end": {"line": "N04", "edge": "end", "offset": 0.3},
-     "box": {"x": 560, "y": 640, "w": 340, "h": 64},
-     "anchor_point": [470, 900],
-     "style": "얇은 지시선(3px) + 치수선 스타일 라벨"},
-
-    {"id": "inventory_panel", "type": "inventory",
-     "items": [
-       {"name": "구명조끼", "count": 1, "icon": "vest"},
-       {"name": "젖은 성냥", "count": 0, "icon": "matchbox", "note": "사용 불가"},
-       {"name": "쇠 호루라기", "count": 1, "icon": "whistle"},
-       {"name": "고양이", "count": 1, "icon": "cat"}
-     ],
-     "start": {"line": "N05", "edge": "start", "offset": 0.0}, "end": {"line": "N06", "edge": "end", "offset": 0.3},
-     "box": {"x": 80, "y": 380, "w": 300, "h": 440},
-     "style": "세로 슬롯 4칸, 칸당 96px. 내레이션에서 이름이 불릴 때 해당 칸 하이라이트(N06 단어 타이밍)"},
-
-    {"id": "label_basalt", "type": "callout",
-     "text": "제주 현무암 · 다공질",
-     "start": {"line": "N08", "edge": "start", "offset": 0.2}, "end": {"line": "N09", "edge": "end", "offset": 0.0},
-     "box": {"x": 520, "y": 560, "w": 380, "h": 64},
-     "anchor_point": [520, 980]},
-
-    {"id": "tide_high", "type": "icon_label",
-     "text": "밀물 ▲",
-     "start": {"line": "N14", "edge": "start", "offset": 0.0}, "end": {"line": "N15", "edge": "start", "offset": -0.3},
-     "box": {"x": 700, "y": 320, "w": 220, "h": 70},
-     "style": "물결 아이콘 + 상승 화살표"},
-
-    {"id": "diagram_freshwater_lens", "type": "diagram",
-     "svg": "diagram_freshwater_lens.svg",
-     "start": {"line": "N15", "edge": "start", "offset": -0.3}, "end": {"line": "N19", "edge": "end", "offset": 0.3},
-     "background_dim": 0.4,
-     "build": [
-       {"layer": "ground",     "at": {"line": "N15", "edge": "start", "offset": 0.0}, "draw_s": 0.8},
-       {"layer": "rain",       "at": {"line": "N15", "edge": "start", "offset": 0.6}, "draw_s": 1.0},
-       {"layer": "lens",       "at": {"line": "N16", "edge": "start", "offset": 0.0}, "draw_s": 1.2},
-       {"layer": "seawater",   "at": {"line": "N16", "edge": "start", "offset": 0.8}, "draw_s": 0.8},
-       {"layer": "density",    "at": {"line": "N16", "edge": "start", "offset": 2.0}, "draw_s": 0.7},
-       {"layer": "discharge",  "at": {"line": "N17", "edge": "start", "offset": 2.4}, "draw_s": 1.0},
-       {"layer": "ghyben",     "at": {"line": "N17", "edge": "end",   "offset": 0.0}, "draw_s": 0.9},
-       {"layer": "name",       "at": {"line": "N18", "edge": "start", "offset": 0.6}, "draw_s": 0.7},
-       {"layer": "tide_low",   "at": {"line": "N19", "edge": "start", "offset": 1.0}, "draw_s": 1.0}
-     ],
-     "rule": "완성 상태를 한 번에 띄우지 않는다(레이어 순차 드로잉 0.7~1.2s). 개념도·축척 무시 표기 상시."},
-
-    {"id": "time_card_lowtide", "type": "time_card",
-     "text": "몇 시간 뒤 · 썰물",
-     "start": {"line": "N25", "edge": "start", "offset": -0.3}, "end": {"line": "N25", "edge": "end", "offset": 0.6},
-     "box": {"x": 80, "y": 240, "w": 420, "h": 70}},
-
-    {"id": "warning_boil", "type": "warning",
-     "text": ["⚠ 실제로는 1분 이상 팔팔 끓여 마셔야 합니다", "해안 용천수는 밀물 때 바닷물이 섞입니다"],
-     "start": {"line": "N28", "edge": "start", "offset": 0.0}, "end": {"line": "N31", "edge": "start", "offset": -0.3},
-     "box": {"x": 60, "y": 300, "w": 880, "h": 120},
-     "style": "warn 색 띠 + 검은 글자 32/26px. 위험 기술 회차 의무(가드레일 D-21)"},
-
-    {"id": "inventory_unlock", "type": "inventory_card",
-     "item": {"name": "대나무 물통", "icon_from_ref": "FLASK", "spec": "용량 약 0.5 L"},
-     "counter": "보유 5",
-     "start": {"line": "N31", "edge": "start", "offset": 0.2}, "end": {"line": "N32", "edge": "start", "offset": -0.3},
-     "box": {"x": 240, "y": 420, "w": 600, "h": 300},
-     "style": "카드 플립 0.4s + 카운터 4→5. 효과음은 국악 타악 1타"},
-
-    {"id": "time_card_dusk", "type": "time_card",
-     "text": "해 질 녘",
-     "start": {"line": "N32", "edge": "start", "offset": -0.3}, "end": {"line": "N32", "edge": "end", "offset": 0.4},
-     "box": {"x": 80, "y": 240, "w": 260, "h": 70}},
-
-    {"id": "map_inset", "type": "map",
-     "region": "제주도 윤곽(OSM 해안선, ODbL 표기)",
-     "marker": {"label": "대정", "lat": 33.22, "lon": 126.25, "note": "대략 위치 — 실제 표착지는 학설이 갈림(용머리 해안 등)"},
-     "start": {"line": "N33", "edge": "start", "offset": 0.0}, "end": {"line": "N34", "edge": "start", "offset": -0.2},
-     "box": {"x": 640, "y": 330, "w": 290, "h": 200},
-     "credit": {"text": "© OpenStreetMap", "box": {"x": 650, "y": 504, "w": 270, "h": 22}, "style": "20px ink 80%, 지도 표시 내내"},
-     "style": "선화 지도, 현재 위치 점 깜빡임 2회. 하멜 루트는 표시하지 않는다(스포 금지)"},
-
-    {"id": "endcard", "type": "endcard",
-     "text": ["「표류자 EP.1」 · 시즌1", "다음 · EP.2 못 하나로 불"],
-     "start": {"line": "N34", "edge": "end", "offset": 0.4}, "end": {"line": "N34", "edge": "end", "offset": 3.4},
-     "box": {"x": 140, "y": 760, "w": 800, "h": 260},
-     "style": "정지 프레임 위 중앙. 음성 CTA 없음"}
+    {
+      "id": "ai_tag",
+      "type": "tag",
+      "text": "AI 창작 시리즈 · 1653",
+      "start": {
+        "at": 0.0
+      },
+      "end": {
+        "at": 2.0
+      },
+      "box": {
+        "x": 80,
+        "y": 1180,
+        "w": 360,
+        "h": 44
+      },
+      "style": "반투명 패널 + 흰 글자 28px. 첫 2초 필수(가드레일 A-2)"
+    },
+    {
+      "id": "state_caption",
+      "type": "caption",
+      "text": [
+        "D+1 · 1653년 8월",
+        "제주 대정 해안"
+      ],
+      "start": {
+        "at": 2.0
+      },
+      "end": {
+        "line": "N02",
+        "edge": "start",
+        "offset": 0.0
+      },
+      "box": {
+        "x": 80,
+        "y": 240,
+        "w": 560,
+        "h": 110
+      },
+      "style": "1줄 38px accent / 2줄 30px ink, 좌측 정렬, 타자 효과 0.4s"
+    },
+    {
+      "id": "ep_bug",
+      "type": "bug",
+      "text": "EP.1",
+      "start": {
+        "at": 0.0
+      },
+      "end": {
+        "line": "N34",
+        "edge": "end",
+        "offset": 0.4
+      },
+      "box": {
+        "x": 840,
+        "y": 240,
+        "w": 90,
+        "h": 50
+      },
+      "style": "투명도 60%, 높이 3% 이하"
+    },
+    {
+      "id": "callout_salinity",
+      "type": "callout",
+      "text": "바닷물 · 염분 약 3.5%",
+      "start": {
+        "line": "N04",
+        "edge": "start",
+        "offset": 0.0
+      },
+      "end": {
+        "line": "N04",
+        "edge": "end",
+        "offset": 0.3
+      },
+      "box": {
+        "x": 540,
+        "y": 640,
+        "w": 380,
+        "h": 64
+      },
+      "anchor_point": [
+        540,
+        1010
+      ],
+      "style": "얇은 지시선(3px) + 치수선 스타일 라벨"
+    },
+    {
+      "id": "inventory_panel",
+      "type": "inventory",
+      "items": [
+        {
+          "name": "구명조끼",
+          "icon": "vest"
+        },
+        {
+          "name": "젖은 성냥",
+          "count": 0,
+          "icon": "matchbox",
+          "note": "사용 불가"
+        },
+        {
+          "name": "쇠 호루라기",
+          "icon": "whistle"
+        },
+        {
+          "name": "고양이",
+          "icon": "cat",
+          "note": "동행"
+        }
+      ],
+      "start": {
+        "line": "N05",
+        "edge": "start",
+        "offset": 0.0
+      },
+      "end": {
+        "line": "N05",
+        "edge": "end",
+        "offset": 0.3
+      },
+      "box": {
+        "x": 80,
+        "y": 380,
+        "w": 300,
+        "h": 440
+      },
+      "style": "세로 슬롯 4칸, 칸당 96px. 내레이션에서 이름이 불릴 때 해당 칸 하이라이트(N05 단어 타이밍)"
+    },
+    {
+      "id": "label_basalt",
+      "type": "callout",
+      "text": "제주 현무암 · 구멍 많은 돌",
+      "start": {
+        "line": "N08",
+        "edge": "start",
+        "offset": 0.2
+      },
+      "end": {
+        "line": "N09",
+        "edge": "end",
+        "offset": 0.0
+      },
+      "box": {
+        "x": 520,
+        "y": 640,
+        "w": 380,
+        "h": 64
+      },
+      "anchor_point": [
+        540,
+        800
+      ]
+    },
+    {
+      "id": "tide_high",
+      "type": "icon_label",
+      "text": "밀물 ▲",
+      "start": {
+        "line": "N14",
+        "edge": "start",
+        "offset": 0.0
+      },
+      "end": {
+        "line": "N15",
+        "edge": "start",
+        "offset": -0.3
+      },
+      "box": {
+        "x": 700,
+        "y": 440,
+        "w": 220,
+        "h": 70
+      },
+      "style": "물결 아이콘 + 상승 화살표"
+    },
+    {
+      "id": "diagram_freshwater_lens",
+      "type": "diagram",
+      "svg": "diagram_freshwater_lens.svg",
+      "start": {
+        "line": "N15",
+        "edge": "start",
+        "offset": -0.3
+      },
+      "end": {
+        "line": "N18",
+        "edge": "end",
+        "offset": 0.3
+      },
+      "background_dim": 0.4,
+      "build": [
+        {
+          "layer": "ground",
+          "at": {
+            "line": "N15",
+            "edge": "start",
+            "offset": 0.0
+          },
+          "draw_s": 0.8
+        },
+        {
+          "layer": "rain",
+          "at": {
+            "line": "N15",
+            "edge": "start",
+            "offset": 0.6
+          },
+          "draw_s": 1.0
+        },
+        {
+          "layer": "lens",
+          "at": {
+            "line": "N16",
+            "edge": "start",
+            "offset": 0.0
+          },
+          "draw_s": 1.2
+        },
+        {
+          "layer": "seawater",
+          "at": {
+            "line": "N16",
+            "edge": "start",
+            "offset": 0.8
+          },
+          "draw_s": 0.8
+        },
+        {
+          "layer": "density",
+          "at": {
+            "line": "N16",
+            "edge": "start",
+            "offset": 2.0
+          },
+          "draw_s": 0.7
+        },
+        {
+          "layer": "interface_hl",
+          "at": {
+            "line": "N17",
+            "edge": "start",
+            "offset": 0.0
+          },
+          "draw_s": 1.0
+        },
+        {
+          "layer": "discharge",
+          "at": {
+            "line": "N17",
+            "edge": "start",
+            "offset": 3.0
+          },
+          "draw_s": 1.0
+        },
+        {
+          "layer": "name",
+          "at": {
+            "line": "N18",
+            "edge": "start",
+            "offset": 0.6
+          },
+          "draw_s": 0.7
+        }
+      ],
+      "rule": "완성 상태를 한 번에 띄우지 않는다(레이어 순차 드로잉 0.7~1.2s). 개념도·축척 무시 표기 상시."
+    },
+    {
+      "id": "time_card_lowtide",
+      "type": "time_card",
+      "text": "몇 시간 뒤",
+      "start": {
+        "line": "N25",
+        "edge": "start",
+        "offset": -0.3
+      },
+      "end": {
+        "line": "N25",
+        "edge": "end",
+        "offset": 0.6
+      },
+      "box": {
+        "x": 80,
+        "y": 240,
+        "w": 420,
+        "h": 70
+      }
+    },
+    {
+      "id": "tide_low",
+      "type": "icon_label",
+      "text": "썰물 ▼",
+      "start": {
+        "line": "N25",
+        "edge": "start",
+        "offset": -0.3
+      },
+      "end": {
+        "line": "N25",
+        "edge": "end",
+        "offset": 0.6
+      },
+      "box": {
+        "x": 700,
+        "y": 440,
+        "w": 220,
+        "h": 70
+      },
+      "style": "물결 아이콘 + 하강 화살표(tide_high와 같은 형식)"
+    },
+    {
+      "id": "warning_boil",
+      "type": "warning",
+      "text": [
+        "⚠ 실제로는 1분 이상 팔팔 끓여 마셔야 합니다"
+      ],
+      "start": {
+        "line": "N28",
+        "edge": "start",
+        "offset": 0.0
+      },
+      "end": {
+        "line": "N31",
+        "edge": "start",
+        "offset": -0.3
+      },
+      "box": {
+        "x": 60,
+        "y": 300,
+        "w": 880,
+        "h": 64
+      },
+      "style": "warn 색 띠 + 검은 글자 32px. 위험 기술 회차 의무(가드레일 D-21)"
+    },
+    {
+      "id": "tide_high_return",
+      "type": "icon_label",
+      "text": "밀물 ▲",
+      "start": {
+        "line": "N28",
+        "edge": "start",
+        "offset": 0.0
+      },
+      "end": {
+        "line": "N28",
+        "edge": "end",
+        "offset": 0.3
+      },
+      "box": {
+        "x": 700,
+        "y": 440,
+        "w": 220,
+        "h": 70
+      },
+      "style": "tide_high와 동일"
+    },
+    {
+      "id": "inventory_unlock",
+      "type": "inventory_card",
+      "item": {
+        "name": "대나무 물통",
+        "icon_from_ref": "FLASK",
+        "spec": "용량 약 0.5 L"
+      },
+      "counter": "보유 5",
+      "start": {
+        "line": "N31",
+        "edge": "start",
+        "offset": 0.2
+      },
+      "end": {
+        "line": "N32",
+        "edge": "start",
+        "offset": -0.3
+      },
+      "box": {
+        "x": 240,
+        "y": 420,
+        "w": 600,
+        "h": 300
+      },
+      "style": "카드 플립 0.4s + 카운터 4→5. 효과음은 국악 타악 1타"
+    },
+    {
+      "id": "time_card_dusk",
+      "type": "time_card",
+      "text": "해 질 녘",
+      "start": {
+        "line": "N32",
+        "edge": "start",
+        "offset": -0.3
+      },
+      "end": {
+        "line": "N32",
+        "edge": "end",
+        "offset": 0.4
+      },
+      "box": {
+        "x": 80,
+        "y": 240,
+        "w": 260,
+        "h": 70
+      }
+    },
+    {
+      "id": "map_inset",
+      "type": "map",
+      "region": "제주도 윤곽(OSM 해안선, ODbL 표기)",
+      "marker": {
+        "label": "대정",
+        "lat": 33.22,
+        "lon": 126.25,
+        "note": "대략 위치 — 실제 표착지는 학설이 갈림(용머리 해안 등)"
+      },
+      "start": {
+        "line": "N02",
+        "edge": "start",
+        "offset": 0.0
+      },
+      "end": {
+        "line": "N03",
+        "edge": "end",
+        "offset": 0.3
+      },
+      "box": {
+        "x": 640,
+        "y": 330,
+        "w": 290,
+        "h": 200
+      },
+      "credit": {
+        "text": "© OpenStreetMap",
+        "box": {
+          "x": 650,
+          "y": 504,
+          "w": 270,
+          "h": 22
+        },
+        "style": "20px ink 80%, 지도 표시 내내"
+      },
+      "style": "선화 지도, 현재 위치 점 깜빡임 2회. 하멜 루트는 표시하지 않는다(스포 금지)"
+    },
+    {
+      "id": "endcard",
+      "type": "endcard",
+      "text": [
+        "「표류자 EP.1」 · 기록 01 / ?",
+        "다음 · EP.2 못 하나로 불"
+      ],
+      "start": {
+        "line": "N34",
+        "edge": "end",
+        "offset": 0.4
+      },
+      "end": {
+        "line": "N34",
+        "edge": "end",
+        "offset": 2.9
+      },
+      "box": {
+        "x": 140,
+        "y": 300,
+        "w": 800,
+        "h": 220
+      },
+      "style": "정지 프레임 위 중앙. 음성 CTA 없음"
+    }
   ]
 }

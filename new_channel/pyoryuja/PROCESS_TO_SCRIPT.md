@@ -142,13 +142,13 @@ EP.1을 만들며 실제로 거친 순서를 그대로 적었다. 다음 회차�
 ```
 python3 tools/grok_chain.py ep01 check     # 슬롯 순서, 링크·앵커, 편집 이미지 수, 말 속도, 금칙어, 원장 연속성, 세이프존, 비용
 python3 tools/grok_chain.py ep01 render    # script.md, shotlist.md, subtitles.srt, narration_tts.txt, 오버레이 절대 시각
-python3 tools/grok_chain.py ep01 next --simulate ...   # API 없이 24샷 체인·조립 리허설
+python3 tools/grok_chain.py ep01 next --simulate ...   # API 없이 26샷 체인·조립 리허설
 ```
 
 ## 10. 리뷰 3겹
 1. **단일 최종 리뷰(Fable)**: 연속성·프롬프트·사실·정책·실행기를 본다. EP.1에서 15건이 나왔다(예: 잘라 쓴 대나무 재등장, 물때 역행).
 2. **독립 검증 워크플로우**: Opus 렌즈 5개(연속성 / Grok 생성 가능성·얼굴 위험 / 싱크 / 실행기 / 사실·정책)가 각자 찾고, Fable 판정자가 실제 파일과 대조해 거른다. EP.1은 57건 → 반영 28 · 기각 12(`review/ep01/verification.md`).
-3. **외부 제작자 페르소나 심사**: 「신비한 건축사전」 × 「문명」. 리뷰 6건 → 교차 심문 2건 → Fable 판정(A 지금 반영 / B 다음 회차 규칙 / C 기각). 절차는 `review/PROCEDURE.md`, 실행은 `.claude/workflows/pyoryuja-persona-review.js`.
+3. **외부 제작자 페르소나 심사**: 「신비한 건축사전」 × 「문명」. 리뷰 6건 → 교차 심문 2건 → Fable 판정(A 지금 반영 / B 다음 회차 규칙 / C 기각). 절차는 `review/PROCEDURE.md`, 실행은 `.claude/workflows/pyoryuja-persona-review.js`. EP.1은 두 페르소나 평균이 6항목 모두 3.5 미만이라 '구조 재편' 대상이었고, A 46건을 적용해 24샷 → 26샷이 됐다(`review/ep01/persona_review.md`).
 
 ## 11. 다음 단계 (아직 하지 않음)
 1. 레퍼런스 생성·선택(`refs` → `pick-ref` → `sheet`)
@@ -171,4 +171,9 @@ python3 tools/grok_chain.py ep01 next --simulate ...   # API 없이 24샷 체인
 - [ ] 고양이는 위험보다 먼저 피한다.
 - [ ] 오버레이 끝 시각이 컷 경계에 맞는다. 경고에 구체 수치가 있다.
 - [ ] 틱톡·릴스 AI 라벨, OSM 출처를 넣었다.
+- [ ] (페르소나 심사 B) 비유 ≥1, 귀에 남는 문장은 PRINCIPLE 마지막 줄. NEXT 첫 줄은 대가를 취소하지 않는다('해결됐다' 금지).
+- [ ] (B) HAVE는 1줄(≤24음절), 재료 인서트는 BUILD 첫 컷, 답 뒤 꼬리 ≤20초.
+- [ ] (B) 도면: 레이어 ≤8, 텍스트 ≤9, 숫자는 내레이션이 말한 것만 ≤1, 강조선 1개, 완성 상태 ≥2초. 조건 줄은 실사로.
+- [ ] (B) 실사 구도를 도면 좌표에 맞춘다(수면선·출구). 도면 아래 샷 ≤8초, 캐릭터는 상단 띠.
+- [ ] (B) 주인공 습관(완성품 톡톡 2회)·조약돌 표시, 관계 비트 1개(주인공이 고양이를 위해 하는 행동).
 - [ ] `check` 통과, `render`, `--simulate` 리허설 통과 → 리뷰 3겹.

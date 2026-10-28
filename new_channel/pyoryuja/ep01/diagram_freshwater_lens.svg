@@ -15,13 +15,13 @@
     <marker id="arw" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto-start-reverse">
       <path d="M0,0 L10,5 L0,10 z" fill="#F4F1EA"/>
     </marker>
-    <marker id="arwB" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="10" markerHeight="10" orient="auto">
+    <marker id="arwB" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto">
       <path d="M0,0 L10,5 L0,10 z" fill="#4FA3D9"/>
     </marker>
     <pattern id="holes" width="46" height="40" patternUnits="userSpaceOnUse">
-      <circle cx="10" cy="12" r="4" fill="#F4F1EA" opacity="0.18"/>
-      <circle cx="32" cy="30" r="3" fill="#F4F1EA" opacity="0.14"/>
-      <circle cx="38" cy="8" r="2" fill="#F4F1EA" opacity="0.12"/>
+      <circle cx="10" cy="12" r="6" fill="#F4F1EA" opacity="0.35"/>
+      <circle cx="32" cy="30" r="5" fill="#F4F1EA" opacity="0.35"/>
+      <circle cx="38" cy="8" r="4" fill="#F4F1EA" opacity="0.35"/>
     </pattern>
     <clipPath id="underground">
       <path d="M60,580 C260,586 520,620 700,660 L716,672 L940,672 L940,1160 L60,1160 Z"/>
@@ -34,22 +34,21 @@
     <rect x="60" y="580" width="880" height="580" fill="url(#holes)" clip-path="url(#underground)"/>
     <path class="ln" d="M60,580 C260,586 520,620 700,660 L716,672"/>
     <path class="ln" d="M716,672 q14,-8 28,0 t28,0 t28,0 t28,0 t28,0 t28,0 t28,0 t28,0"/>
-    <text class="sm" x="72" y="462">현무암: 틈과 구멍으로 빗물이 스민다</text>
-    <text class="xs" x="830" y="712">바다</text>
-    <text class="xs" x="690" y="1146">개념도 · 축척 무시</text>
+    <text class="lbl" x="72" y="560">현무암</text>
+        <text class="xs" x="690" y="1146">개념도 · 축척 무시</text>
   </g>
 
   <!-- 2 rain: 비 + 침투 -->
   <g id="rain">
     <g class="ln" marker-end="url(#arw)">
-      <line x1="182" y1="488" x2="170" y2="548"/>
-      <line x1="312" y1="490" x2="300" y2="552"/>
-      <line x1="442" y1="496" x2="430" y2="560"/>
+      <line x1="262" y1="488" x2="250" y2="548"/>
+      <line x1="382" y1="490" x2="370" y2="552"/>
+      <line x1="502" y1="496" x2="490" y2="560"/>
     </g>
     <g stroke="#4FA3D9" stroke-width="3" stroke-dasharray="6 8" marker-end="url(#arwB)" fill="none">
-      <path d="M170,596 L178,700"/>
-      <path d="M300,602 L308,706"/>
-      <path d="M430,614 L436,712"/>
+      <path d="M250,598 L258,700"/>
+      <path d="M370,604 L378,706"/>
+      <path d="M490,618 L496,712"/>
     </g>
   </g>
 
@@ -57,55 +56,41 @@
   <g id="lens">
     <path d="M60,616 C300,622 560,644 700,672 C560,780 300,1010 60,1130 Z" fill="#4FA3D9" opacity="0.55"/>
     <path class="ln dash" d="M60,616 C300,622 560,644 700,672"/>
-    <text class="xs" x="520" y="637" style="font-size:20px">지하수면</text>
-    <text class="lbl" x="130" y="830">민물</text>
-    <text class="sm" x="130" y="868">1.000 g/cm³</text>
-  </g>
+        <text class="lbl" x="130" y="830" style="font-size:44px">민물</text>
+      </g>
 
   <!-- 4 seawater: 해수 쐐기 -->
   <g id="seawater">
     <path d="M60,1130 C300,1010 560,780 700,672 L940,672 L940,1160 L60,1160 Z" fill="#1F4E5F" opacity="0.8"/>
     <path class="ln" d="M60,1130 C300,1010 560,780 700,672"/>
-    <text class="lbl" x="600" y="1060">바닷물</text>
-    <text class="sm" x="600" y="1098">1.025 g/cm³</text>
+    <text class="lbl" x="600" y="1060" style="font-size:44px">바닷물</text>
+      </g>
+
+  <!-- interface_hl: 경계면 강조선(내륙 → 출구) -->
+  <g id="interface_hl">
+    <path d="M60,1130 C300,1010 560,780 700,672" stroke="#F08A24" stroke-width="7" stroke-linecap="round" fill="none"/>
   </g>
 
   <!-- 5 density: 밀도 차 콜아웃 -->
   <g id="density">
-    <rect x="470" y="874" width="456" height="100" rx="10" fill="#0E141BCC" stroke="#F08A24" stroke-width="2"/>
-    <text class="lbl" x="492" y="918" style="fill:#F08A24">밀도 차 ≈ 2.5%</text>
-    <text class="sm" x="492" y="954">가벼운 민물이 바닷물 위에 뜬다</text>
+    <rect x="470" y="874" width="380" height="100" rx="10" fill="#0E141BCC" stroke="#F08A24" stroke-width="2"/>
+    <text class="lbl" x="492" y="918" style="fill:#F08A24">민물이 더 가볍다</text>
+    <text class="sm" x="492" y="954">약 2.5%</text>
+    <line x1="470" y1="924" x2="386" y2="924" stroke="#F08A24" stroke-width="3"/>
+    <circle cx="380" cy="924" r="6" fill="#F08A24"/>
   </g>
 
   <!-- 6 discharge: 해안 유출 -->
   <g id="discharge">
-    <path d="M240,770 C430,766 610,716 698,676" stroke="#4FA3D9" stroke-width="6" fill="none" marker-end="url(#arwB)"/>
-    <path d="M704,676 C714,670 722,662 728,652" stroke="#4FA3D9" stroke-width="6" fill="none" marker-end="url(#arwB)"/>
+    <path d="M240,770 C430,766 610,716 700,676 C712,670 722,662 728,652" stroke="#4FA3D9" stroke-width="6" fill="none" marker-end="url(#arwB)"/>
   </g>
 
-  <!-- 7 ghyben: 1:40 치수 -->
-  <g id="ghyben">
-    <line class="dim dash" x1="60" y1="672" x2="700" y2="672" opacity="0.6"/>
-    <text class="xs" x="128" y="664">해수면</text>
-    <line class="dim" x1="96" y1="619" x2="96" y2="669" marker-start="url(#arw)" marker-end="url(#arw)"/>
-    <text class="sm" x="104" y="606">h</text>
-    <line class="dim" x1="96" y1="675" x2="96" y2="1112" marker-start="url(#arw)" marker-end="url(#arw)"/>
-    <text class="sm" x="106" y="980">≈ 40h</text>
-    <text class="sm" x="72" y="1200">지하수면이 바다보다 1 m 높으면 → 민물은 해수면 아래 약 40 m까지</text>
-    <text class="xs" x="72" y="1234">가이벤–헤르츠베르크 관계 (밀도 1.000 / 1.025 · 이상적 조건 근사)</text>
-  </g>
 
   <!-- 8 name: 용천수 -->
   <g id="name">
     <line class="dim" x1="730" y1="660" x2="790" y2="572"/>
-    <text class="lbl" x="796" y="566" style="fill:#4FA3D9">용천수</text>
+    <rect x="786" y="526" width="136" height="54" rx="8" fill="#0E141BCC"/>
+    <text class="lbl" x="796" y="566" style="fill:#4FA3D9;font-size:40px">용천수</text>
   </g>
 
-  <!-- 9 tide_low: 물때 -->
-  <g id="tide_low">
-    <line x1="700" y1="644" x2="940" y2="644" stroke="#F2B705" stroke-width="3" stroke-dasharray="4 6"/>
-    <text class="xs" x="770" y="634" style="fill:#F2B705">밀물 — 출구 잠김</text>
-    <line x1="700" y1="728" x2="940" y2="728" stroke="#F4F1EA" stroke-width="3" stroke-dasharray="4 6"/>
-    <text class="xs" x="770" y="760">썰물 — 출구 드러남</text>
-  </g>
 </svg>
