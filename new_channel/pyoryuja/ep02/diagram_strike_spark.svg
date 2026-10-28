@@ -82,8 +82,8 @@
 
   <!-- 7 hardness: 굳기 콜아웃(숫자는 이것 하나) -->
   <g id="hardness">
-    <rect x="90" y="700" width="250" height="96" rx="10" fill="#0E141BCC" stroke="#F08A24" stroke-width="2"/>
-    <text class="lbl" x="116" y="764" style="font-size:46px;fill:#F08A24">굳기 7</text>
+    <rect x="90" y="700" width="280" height="96" rx="10" fill="#0E141BCC" stroke="#F08A24" stroke-width="2"/>
+    <text class="lbl" x="116" y="764" style="font-size:46px;fill:#F08A24">굳기 약 7</text>
     <line x1="215" y1="796" x2="262" y2="922" stroke="#F08A24" stroke-width="3"/>
     <circle cx="264" cy="928" r="6" fill="#F08A24"/>
   </g>

@@ -89,9 +89,10 @@
     <text class="sm" x="930" y="594" text-anchor="end">물만 날아간다</text>
   </g>
 
-  <!-- 4 level: 물이 날아가 수면이 바닥 가까이까지 내려감, 소금은 남은 물에 모임 -->
+  <!-- 4 level: 물이 날아가 수면이 바닥 가까이까지 내려감, 소금은 남은 물에 모임.
+       빈 부분은 불투명하게 덮어 '바닷물' 글자가 물과 함께 사라지게 한다(반투명 덮개는 글자가 유령처럼 비침) -->
   <g id="level">
-    <rect x="140" y="721" width="720" height="254" fill="#0E141B" opacity="0.8" clip-path="url(#bowl)"/>
+    <rect x="140" y="721" width="720" height="254" fill="#151E27" clip-path="url(#bowl)"/>
     <g clip-path="url(#bowl)" stroke="#F4F1EA" stroke-width="2" stroke-dasharray="10 8" opacity="0.55">
       <line x1="140" y1="800" x2="860" y2="800"/>
       <line x1="140" y1="880" x2="860" y2="880"/>

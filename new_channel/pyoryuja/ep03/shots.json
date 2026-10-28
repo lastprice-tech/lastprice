@@ -26,7 +26,7 @@
   "light": {
     "morning": "soft grey overcast morning light after rain, wet glistening rocks",
     "late_morning": "brighter overcast late-morning light with the clouds beginning to break",
-    "afternoon": "warm low afternoon sun from the left, long soft shadows, the rocks drying",
+    "afternoon": "warm low afternoon sun from the left, long soft shadows, the black rocks dry and warm",
     "dusk": "dusk with an orange glow low over the sea and the rocks in cool blue shadow",
     "clear_morning": "clear early-morning sunlight low from the left, long cool shadows, the black rocks dry and the sea bright",
     "late_morning_sun": "bright late-morning sun high in a clear sky, short hard shadows, the black rocks hot and dry",
@@ -52,7 +52,7 @@
     "L01": "Take only the coastline, rocks and distant hills from {L01}.",
     "ABALONE": "Keep the abalone shell's ear shape, rough barnacled outside, curved row of holes along its edge and iridescent inside exactly as in {ABALONE}; whatever it holds is exactly as described above.",
     "COPPER": "Keep the copper sheet's size, dull tarnished reddish-brown colour and row of nails along its edges exactly as in {COPPER}.",
-    "COPPER_PAN": "Keep the copper tray's size, low bent-up sides, pleated corners, row of empty nail holes along its rims and dull reddish-brown copper exactly as in {COPPER_PAN}; any soot, green spots or white crust are exactly as described above."
+    "COPPER_PAN": "Keep the copper tray's size, low bent-up sides, pleated corners, row of empty nail holes along its rims and dull reddish-brown copper exactly as in {COPPER_PAN}; any soot or white crust are exactly as described above."
   },
   "narration_rules": {
     "first_line_at": 0.15,
@@ -118,7 +118,7 @@
     {
       "id": "N10",
       "slot": "FAIL",
-      "text": "담을 그릇이, 없다.",
+      "text": "끓일 그릇이, 없다.",
       "pause_after": 0.6
     },
     {
@@ -208,7 +208,7 @@
     {
       "id": "N27",
       "slot": "COST",
-      "text": "소금 한 줌이 장작 한 짐을 먹는다.",
+      "text": "소금 한 줌이 장작 한 아름을 먹는다.",
       "pause_after": 0.8
     },
     {
@@ -220,12 +220,12 @@
     {
       "id": "N29",
       "slot": "NEXT",
-      "text": "불을 지킬 땔감은 이제 없다."
+      "text": "남은 건 태우지 않을 판자뿐이다."
     },
     {
       "id": "N30",
       "slot": "NEXT",
-      "text": "뭍 쪽 들판 너머로 가는 연기 한 줄이 오른다."
+      "text": "섬 안쪽 들판 너머로 가는 연기 한 줄이 오른다."
     }
   ],
   "shots": [
@@ -247,8 +247,8 @@
       },
       "light": "dusk_after_rain",
       "desc_ko": "EP.2 마지막 프레임(비 갠 해 질 녘, 빗물 고인 널빤지 아랫면 홈 클로즈업)에서 편집 없이 이어서. 프레임 오른쪽 가장자리에서 손이 들어와 연한 조약돌 하나를 홈 옆 젖은 나뭇결 위에 얹고(홈을 가리지 않음) 물러난다. 시리즈 표시 '조약돌' — 이 널빤지는 땔감으로 쓰지 않는다는 표시. 손만 보인다. (QC: 조약돌이 홈을 덮거나 홈이 글자·기호로 읽히면 탈락)",
-      "prompt": "Continuing from {SRC}, a slender matte light-grey porcelain hand reaches in from the right edge of the frame and sets one small pale pebble down on the wet oak beside the water-filled grooves, leaving the grooves uncovered, then withdraws out of frame. Static close-up. It ends with the pale pebble resting beside the grooves, the water in them still catching the last orange light.",
-      "end_state": "널빤지 아랫면 클로즈업: 빗물 고인 홈(F1) 옆 젖은 나뭇결 위에 연한 조약돌 1개(홈은 가리지 않음). 손은 프레임 밖. 비 갠 해 질 녘 마지막 주황빛.",
+      "prompt": "Continuing from {SRC}, a slender matte light-grey porcelain hand reaches in from the right edge of the frame and sets one small pale pebble down on the wet oak beside the water-filled grooves and the small empty square hole where the nail was pulled out, leaving the grooves uncovered, then withdraws out of frame. Static close-up. It ends with the pale pebble resting beside the grooves and the empty nail hole, the water in them still catching the last orange light.",
+      "end_state": "널빤지 아랫면 클로즈업: 빗물 고인 홈(F1)과 빈 못 구멍 옆 젖은 나뭇결 위에 연한 조약돌 1개(홈은 가리지 않음). 손은 프레임 밖. 비 갠 해 질 녘 마지막 주황빛.",
       "sfx": [
         "저녁 파도(작게)",
         "조약돌이 젖은 나무에 닿는 '톡'"
@@ -302,7 +302,7 @@
       ],
       "light": "clear_morning",
       "desc_ko": "앵글 컷(높은 와이드 부감). 갯벌도 모래톱도 없이 검은 현무암 바위와 너럭바위만 바다까지 이어진 만(옛 기록 줄 — '소금 만들 땅이 없는 해안'을 화면으로). 작은 주인공이 물통을 들고 바위 위를 걸어가고 고양이가 몇 걸음 뒤따른다. 사람·염전·배·건물은 없다.",
-      "edit_prompt": "Change the camera to a high wide view angled down along the same cove a moment later, in the clear morning sun: black basalt boulders and flat lava shelves run all the way down to the sea with no beach or mudflat anywhere, the shoreline shaped like the one in {L01}; the figure from {P}, small in the lower middle of the frame, stands on the rocks with the bamboo flask in its hand, and the ginger cat from {C} is a few steps behind it. The shoreline is empty in both directions. Keep the light of {SRC} and both designs exactly as in {P} and {C}.",
+      "edit_prompt": "Change the camera to a high wide view angled down along the same cove a moment later, in the clear morning sun: black basalt boulders and flat lava shelves run unbroken right down into the water, bare rock all the way to the sea's edge along the whole cove, the shoreline shaped like the one in {L01}; the figure from {P}, small in the lower middle of the frame, stands on the rocks with the bamboo flask in its hand, and the ginger cat from {C} is a few steps behind it. The shoreline is empty in both directions. Keep the light of {SRC} and both designs exactly as in {P} and {C}.",
       "prompt": "{SRC} is the first frame. The figure walks slowly along the rocks toward a broad flat lava shelf, and the cat follows a few steps behind. Static high wide camera. It ends with the figure stopping at the edge of the flat shelf, the cat beside it.",
       "end_state": "높은 와이드: 바위뿐인 해안(갯벌 없음). 주인공: 너럭바위 가장자리에 멈춤(작게, 물통). 고양이: 옆. 맑은 아침.",
       "sfx": [
@@ -356,9 +356,9 @@
         "C"
       ],
       "light": "late_morning_sun",
-      "desc_ko": "시간 점프(한낮이 가까움, 볕이 강하다). 와이드(바위 높이보다 조금 위). 밀물이 닿지 않는 높은 너럭바위에 손바닥~팔 길이의 얕은 오목이 흩어져 있다. 밤새 물보라가 채운 오목엔 바닷물이 조금 반짝이고, 가장 얕은 오목들은 말라 가장자리에 얇은 흰 테만 남았다(두꺼운 소금 껍질 금지). 고양이가 전경에서 오목 사이를 골라 걷는다. 주인공은 뒤쪽.",
+      "desc_ko": "시간 점프(한낮이 가까움, 볕이 강하다). 와이드(바위 높이보다 조금 위). 밀물이 닿지 않는 높은 너럭바위에 손바닥~팔 길이의 얕은 오목이 흩어져 있다. 밤새 물보라가 채운 오목엔 바닷물이 조금 반짝이고, 가장 얕은 오목들은 말라 가장자리에 얇은 흰 테만 남았다(두꺼운 소금 껍질 금지). 고양이가 전경에서 오목 사이를 골라 걷다가 흰 앞발로 바닷물 고인 오목의 젖은 가장자리를 밟는다(N07 짠물의 원인). 주인공은 뒤쪽.",
       "edit_prompt": "Change the scene to a wide view, from a little above rock height, of a broad flat basalt shelf high above the reach of the tide on the same cove, later in the morning with strong sun and short hard shadows: shallow hollows from palm-size to arm-length are scattered across the black rock, some still holding a little bright seawater left by the spray, and the shallowest ones dried out, each left with only a thin white ring around its edge; the ginger cat from {C} walks between the hollows in the foreground, and the figure from {P} stands further back near the slab. Keep the coastline, outfit and both designs exactly as in {SRC}, {P} and {C}.",
-      "prompt": "{SRC} is the first frame. The cat picks its way between the hollows, stepping around the water, and stops at the edge of a dry one with a white ring. Static camera. It ends with the cat standing at the dry hollow, its head lowered toward the white ring.",
+      "prompt": "{SRC} is the first frame. The cat picks its way between the hollows, its white front paws splashing through the wet rim of a shallow pool of seawater, and stops at the edge of a dry one with a white ring. Static camera. It ends with the cat standing at the dry hollow, its head lowered toward the white ring.",
       "end_state": "높은 너럭바위 와이드: 얕은 오목들(일부 바닷물, 가장 얕은 것은 말라 얇은 흰 테). 고양이: 마른 오목 가장자리에 서서 흰 테 쪽으로 고개 숙임. 주인공: 뒤쪽. 강한 볕.",
       "sfx": [
         "바람",
@@ -369,7 +369,7 @@
     {
       "id": "S06",
       "slot": "GATHER",
-      "beat": "흰 테에 코를 대는 고양이(고양이 역할 컷) → 손이 들어 옮김",
+      "beat": "흰 테에 코를 대는 고양이(고양이 역할 컷) → 스스로 물러남",
       "start": {
         "line": "N06",
         "edge": "start",
@@ -378,17 +378,13 @@
       "link": "A",
       "from": "S05",
       "refs": [
-        "P",
         "C"
       ],
-      "identity": {
-        "P": "Only the figure's slender matte light-grey porcelain hands and forearms appear, exactly as in {P}; its head stays out of frame."
-      },
       "light": "late_morning_sun",
-      "desc_ko": "앵글 컷(바위 높이 로우 클로즈업). 마른 얕은 오목의 얇은 흰 테(소금기)가 전경에 선명하고, 고양이가 코를 대고 수염을 앞으로 내밀어 냄새를 맡는다(핥지 않음 — 고양이 역할 컷). 이어 두 손이 들어와 가슴과 뒷다리를 받쳐 고양이를 천천히 들어 올려 프레임 밖으로 옮긴다. (QC: 시작 프레임 후보에 인물 전신이 합성되면 탈락 — 손은 영상에서만 들어온다)",
+      "desc_ko": "앵글 컷(바위 높이 로우 클로즈업). 마른 얕은 오목의 얇은 흰 테(소금기)가 전경에 선명하고, 고양이가 코를 대고 수염을 앞으로 내밀어 냄새를 맡는다(핥지 않음 — 고양이 역할 컷). 이어 고양이가 스스로 고개를 들고 오른쪽 프레임 밖으로 걸어 나간다 — 손은 들어오지 않는다(EP.1 S06 원칙). (QC: 시작 프레임 후보에 인물이 합성되면 탈락)",
       "edit_prompt": "Change the camera to a low close-up at rock level, a moment later, across the dry shallow hollow from {SRC}: its thin crusty white ring is sharp in the foreground on the hot black basalt, and the ginger cat from {C} has its head down at the far edge of the hollow, nose close to the white ring and whiskers pushed forward. Only the cat and the rock are in this frame for now. Keep the strong late-morning sun and the cat exactly as in {SRC} and {C}.",
-      "prompt": "{SRC} is the first frame. The cat sniffs along the white ring with its whiskers pushed forward, without licking; then two slender matte light-grey porcelain hands reach in, slide under its chest and hind legs, and lift it gently up and out of the frame. Static camera. It ends with the empty dry hollow and its white ring sharp in the foreground.",
-      "end_state": "마른 오목과 얇은 흰 테(전경, 선명). 고양이와 손은 프레임 밖(들어 옮김). 강한 볕.",
+      "prompt": "{SRC} is the first frame. The cat sniffs along the white ring with its whiskers pushed forward, its nose hovering just above the crust, then lifts its head, turns and trots out of the frame to the right. Static camera. It ends with the empty dry hollow and its white ring sharp in the foreground.",
+      "end_state": "마른 오목과 얇은 흰 테(전경, 선명). 고양이는 프레임 밖(스스로 물러남). 강한 볕.",
       "sfx": [
         "고양이 킁킁(아주 작게)",
         "바람"
@@ -415,10 +411,10 @@
         "P": "Only the figure's slender matte light-grey porcelain hands and forearms appear, exactly as in {P}; its head stays out of frame."
       },
       "light": "late_morning_sun",
-      "desc_ko": "관계 비트(주인공이 고양이를 위해 하는 행동). 로우 클로즈업(손만). 흰 테에서 떨어진 깨끗한 작은 오목 가장자리에 고양이를 내려놓았다. 손이 물통의 민물을 흰 앞발 위로 천천히 부어 헹구고, 물은 깨끗한 오목에 고인다. 고양이가 한쪽 앞발을 털고, 고개를 숙여 오목의 민물을 핥아 마신다(바닷물·소금은 핥지 않음).",
+      "desc_ko": "관계 비트(주인공이 고양이를 위해 하는 행동). 로우 클로즈업(손만). 고양이가 흰 테에서 떨어진 깨끗한 작은 오목 가장자리에 서 있다. 손이 물통의 민물을 흰 앞발 위로 천천히 부어 헹구고, 헹군 물은 바위 아래로 흘러간다. 고양이가 한쪽 앞발을 털고, 고개를 숙여 물통에서 떨어지는 가는 민물 줄기를 핥아 마신다(바닷물·소금은 핥지 않음).",
       "edit_prompt": "Change the camera to a low close-up a moment later beside a small clean hollow in the rock, away from the white rings: the ginger cat from {C} stands with its two white front paws at the edge of the hollow, and the matte light-grey porcelain hands of the figure from {P} hold the bamboo flask from {FLASK}, unplugged, tilted just above the cat's paws. Keep the strong late-morning sun of {SRC} and all designs exactly as in {C} and {FLASK}; only the hands and forearms of the figure appear, its head stays out of frame.",
-      "prompt": "{SRC} is the first frame. The flask pours a slow trickle of fresh water over the cat's white front paws and it runs into the clean hollow; the cat lifts and shakes one paw, then lowers its head and laps the fresh water from the hollow. Static camera. It ends with the cat lapping water from the hollow and the hands holding the flask upright beside it.",
-      "end_state": "깨끗한 오목에 민물이 고임, 고양이가 핥아 마심(흰 앞발 젖음). 손: 물통을 세워 듦(손만, 민물 거의 다 씀). 강한 볕.",
+      "prompt": "{SRC} is the first frame. The flask pours a slow trickle of fresh water over the cat's white front paws and it runs off down the rock; the cat lifts and shakes one paw, then lowers its head and laps from the thin stream still trickling from the flask. Static camera. It ends with the cat lapping from the trickle and the hands holding the flask tilted beside it.",
+      "end_state": "헹군 물은 바위 아래로 흘러감, 고양이가 물통에서 떨어지는 가는 물줄기를 핥음(흰 앞발 젖음). 손: 물통을 기울여 듦(손만, 민물 거의 다 씀). 강한 볕.",
       "sfx": [
         "물 붓는 소리",
         "고양이 발 터는 소리",
@@ -512,16 +508,19 @@
         "edge": "start",
         "offset": -0.2
       },
-      "link": "A",
+      "link": "T",
       "from": "S10",
+      "context": [
+        "S05"
+      ],
       "refs": [
         "P",
         "C",
         "FLASK"
       ],
       "light": "late_morning_sun",
-      "desc_ko": "측면 정렬 구도(바위 높이, 정지 카메라). 높은 너럭바위의 넓고 얕은 오목이 프레임을 가로지르고, 고요한 수면이 밝은 수평선으로 프레임 위에서 약 37%(y≈720)에 놓인다 — 도면의 수면선. 주인공은 오목 건너편에 무릎 꿇고(상단 띠 y300~540, 중앙보다 약간 왼쪽), 물통의 바닷물을 오목에 천천히 붓는다(물통은 웅덩이에서 바닷물로 채움). 고양이는 왼쪽 위 마른 바위. 오른쪽 위는 바다와 하늘(도면의 증발 화살표 자리). 아래 약 60%는 앞쪽의 그늘진 바위 면만(도면, 배경 40% 어둡게).",
-      "edit_prompt": "Change the camera to a side-on view at rock height on the high flat shelf, a little later: a wide, shallow hollow full of still seawater runs across the frame, its water surface a bright level line about thirty-seven percent of the way down the frame; the figure from {P} kneels just beyond the far edge of the hollow, slightly left of centre, its head and shoulders between about a sixth and just over a quarter of the way down the frame, holding the bamboo flask from {FLASK} tilted over the water, and the ginger cat from {C} sits on a dry rock at the upper left, level with the figure; the upper right of the frame is open sea and sky. Leave the lower sixty percent of the frame plain: only the dark, shadowed near face of the rock. Keep the strong late-morning sun and all designs exactly as in {SRC}, {P}, {C} and {FLASK}.",
+      "desc_ko": "측면 정렬 구도(완전한 옆모습, S05 참고 프레임, 바위 높이, 정지 카메라). 높은 너럭바위의 넓고 얕은 오목이 프레임을 가로지르고, 고요한 수면이 밝은 수평선으로 프레임 위에서 약 37%(y≈720)에 놓인다 — 도면의 수면선. 주인공은 오목 건너편에 무릎 꿇고(상단 띠 y300~540, 중앙보다 약간 왼쪽), 물통의 바닷물을 오목에 천천히 붓는다(물통은 웅덩이에서 바닷물로 채움). 고양이는 왼쪽 위 마른 바위. 오른쪽 위는 바다와 하늘(도면의 증발 화살표 자리). 아래 약 60%는 앞쪽의 그늘진 바위 면만(도면, 배경 40% 어둡게).",
+      "edit_prompt": "Change the time to a little later and the place to the high flat shelf from {CTX1} (take only the rock shelf and its hollows from it; the figure and the cat appear only once, where described here), with the camera side-on at rock height: a wide, shallow hollow full of still seawater runs across the frame, its water surface a bright level line about thirty-seven percent of the way down the frame; the figure from {P} kneels just beyond the far edge of the hollow, slightly left of centre, side-on to the camera in full profile, its blank head bowed toward the water, its head and shoulders between about a sixth and just over a quarter of the way down the frame, holding the bamboo flask from {FLASK} tilted over the water, and the ginger cat from {C} sits on a dry rock at the upper left, level with the figure; the upper right of the frame is open sea and sky. Leave the lower sixty percent of the frame plain: only the dark, shadowed near face of the rock. Keep the strong late-morning sun of {SRC} and all designs exactly as in {P}, {C} and {FLASK}.",
       "prompt": "{SRC} is the first frame. A thin stream of seawater runs from the flask into the hollow, sending slow rings across the surface, then the flask tips upright. Static camera. It ends with the same calm composition, the water surface settling still and bright.",
       "end_state": "정렬 구도: 넓은 오목(수면 y≈720, 고요), 건너편에 무릎 꿇은 주인공(상단 띠, 물통 세워 듦), 왼쪽 위 고양이, 오른쪽 위 바다·하늘. 아래 60% 그늘진 바위 면.",
       "sfx": [
@@ -627,7 +626,7 @@
       ],
       "light": "late_morning_sun",
       "desc_ko": "시간 점프(조금 뒤). 재료 인서트(어깨 너머, 뒤통수만). 폭풍이 밀물선 위로 올려 놓고 사흘 볕에 마른 난파 잔해 더미(회색 판자·통판·밧줄) 속, 부서진 판자 한 장에 무광 적갈색 구리판이 가장자리 못 줄로 박혀 있다(배 부엌칸 벽 덧판이라는 허구 설정 — 설명란에만). 천천히 푸시인. 글자·각인·반짝이는 새 구리 없음.",
-      "edit_prompt": "Change the camera to an over-the-shoulder view from behind the figure from {P}, its blank head seen only from the back, a little later, aimed down at the pile of shipwreck debris the storm threw up above the high-tide line: dry, sun-bleached grey planks, split barrel staves and a coil of rope, and among them one broken board with the dull reddish-brown copper sheet from {COPPER} nailed flat to it along its edges. Keep the strong sun, the figure's design and the copper sheet exactly as in {SRC}, {P} and {COPPER}.",
+      "edit_prompt": "Change the camera to an over-the-shoulder view from behind the figure from {P}, its blank head seen only from the back, a little later, aimed down at what is left of the shipwreck debris the storm threw up above the high-tide line: a small heap of dry, sun-bleached grey planks, split barrel staves and a coil of rope, and among them one broken board with the dull reddish-brown copper sheet from {COPPER} nailed flat to it along its edges. Keep the strong sun, the figure's design and the copper sheet exactly as in {SRC}, {P} and {COPPER}.",
       "prompt": "{SRC} is the first frame. The figure holds still as the camera pushes in slowly past its shoulder toward the copper sheet on the board. It ends with the copper sheet clearly visible in the middle of the frame.",
       "end_state": "프레임 중앙: 판자에 못 박힌 구리판(떼기 전). 주변에 마른 판자·통판(땔감). 주인공 어깨는 프레임 가장자리. 강한 볕.",
       "sfx": [
@@ -657,7 +656,7 @@
       "light": "late_morning_sun",
       "desc_ko": "시간 점프(20~40분 뒤 — 쇠못을 지렛대 삼아 못을 뽑고 판을 떼어 냄, 생략). 클로즈업(손만). 평평한 바위 위, 빈 못 구멍이 가장자리에 줄지은 구리판의 세 변이 이미 접혀 올라가 있다. 두 손이 바위 모서리에 대고 마지막 변을 접어 올리고 모서리를 주름 잡아 눌러, 얕은 판을 바위 위에 평평하게 놓는다. 못 구멍은 모두 접어 올린 벽 위쪽(바닥에 구멍 없음).",
       "edit_prompt": "Change the camera to a close-up a while later of a flat black basalt rock: the copper sheet from {COPPER}, now pried off its board, lies on the rock with three of its sides already bent up into low sloping walls with pleated corners, like the tray in {COPPER_PAN}, the row of empty nail holes running along the tops of the walls, and the matte light-grey porcelain hands of the figure from {P} press the last flat side against the rock's edge, ready to bend it up. Keep the strong sun of {SRC}; only the hands and forearms appear, the figure's head stays out of frame.",
-      "prompt": "{SRC} is the first frame. The hands bend the last side up against the rock edge, pinch its corners into pleats, and set the finished shallow tray down level on the flat rock. Static camera. It ends with the copper tray standing on the rock and the hands drawing back.",
+      "prompt": "{SRC} is the first frame. The hands bend the last side up against the rock edge and press its two corners into rough pleats. Static camera. It ends with the finished shallow tray standing level on the rock, the hands drawing back.",
       "end_state": "평평한 바위 위 완성된 얕은 구리판 솥(네 벽, 주름 잡힌 모서리, 벽 위쪽에만 못 구멍). 손은 거둬들임. 강한 볕.",
       "sfx": [
         "얇은 구리 휘는 소리",
@@ -675,6 +674,9 @@
       },
       "link": "T",
       "from": "S16",
+      "context": [
+        "S13"
+      ],
       "refs": [
         "P",
         "C",
@@ -682,7 +684,7 @@
       ],
       "light": "midday_sun",
       "desc_ko": "시간 점프(한낮, 그림자가 가장 짧다). 미디엄. 높은 너럭바위의 오목들 물이 줄어 가장자리에 흰 테가 생기기 시작했다. 주인공이 얕아진 오목에서 물통으로 물을 떠 가운데 깊은 오목 하나에 모아 붓는다(구엄식 단계 농축). 고양이는 큰 바위 그늘에서 잠듦.",
-      "edit_prompt": "Change the time to midday, the sun almost overhead and the shadows very short, at the high shelf, with the camera at a medium distance: the water in the shallow hollows has sunk low and thin white rings are forming around their edges; the figure from {P} crouches between two hollows, dipping the bamboo flask from {FLASK} into a low one, beside one deeper hollow in the middle that holds more water; the ginger cat from {C} sleeps in the shade of the large boulder at the back. Keep the outfit of {SRC} and all designs exactly as in {P}, {C} and {FLASK}.",
+      "edit_prompt": "Change the time to midday, the sun almost overhead and the shadows very short, at the high shelf shown in {CTX1} (take only the rock and the hollows from it; the figure and the cat appear only once, where described here), with the camera at a medium distance: the water in the shallow hollows has sunk low and thin white rings are forming around their edges; the figure from {P} crouches between two hollows, dipping the bamboo flask from {FLASK} into a low one, beside one deeper hollow in the middle that holds more water; the ginger cat from {C} sleeps in the shade of the large boulder at the back. Keep the outfit of {SRC} and all designs exactly as in {P}, {C} and {FLASK}.",
       "prompt": "{SRC} is the first frame. The figure lifts the full flask from the low hollow and pours it into the deeper middle hollow, then dips it again into the next low one. Static camera. It ends with the figure crouched over the next low hollow, the flask in the water.",
       "end_state": "한낮. 주인공: 오목 사이에 쪼그려 물통을 얕은 오목에 담금. 가운데 깊은 오목에 물이 모임, 얕은 오목들은 바닥이 드러나며 흰 테. 고양이: 큰 바위 그늘에서 잠듦.",
       "sfx": [
@@ -703,13 +705,16 @@
       },
       "link": "T",
       "from": "S17",
+      "context": [
+        "S02"
+      ],
       "refs": [
         "P"
       ],
       "light": "afternoon",
-      "desc_ko": "시간 점프(오후, 해가 기울기 시작). 미디엄 와이드. 높은 물때선 위, EP.2의 불자리 바위 오목(큰 바위가 바람을 가림). 오목 둘레에 밀물선 위에서 주운 마른 주먹돌 셋이 받침으로 놓였다(젖은 갯바위 돌 금지 — 불에 터질 수 있음). 주인공이 마른 회색 판자·통판 한 아름을 그 옆에 내려놓고, 판자 하나를 바람 오는 쪽에 세워 돌에 기댄다(바람막이). 홈 난 널빤지는 이 더미에 없다.",
-      "edit_prompt": "Change the time to the afternoon, the sun lower from the left with long soft shadows, and the scene to the bare rock hollow above the high-tide line where yesterday's fire burned, sheltered by a large boulder: three dry, fist-sized stones are set around the hollow as a stand, and the figure from {P} walks in carrying an armful of dry, sun-bleached grey planks and split barrel staves. Keep the outfit and the figure's design exactly as in {SRC} and {P}.",
-      "prompt": "{SRC} is the first frame. The figure sets the armful of wood down beside the hollow and stands one plank on its edge on the windward side, leaning it against a stone as a windbreak. Static camera. It ends with the wood pile beside the hollow, the windbreak plank standing, and the figure kneeling by the three stones.",
+      "desc_ko": "시간 점프(오후, 해가 기울기 시작). 미디엄 와이드. 높은 물때선 위, EP.2의 불자리 바위 오목(큰 바위가 바람을 가림). 오목 둘레에 밀물선 위에서 주운 마른 주먹돌 셋이 받침으로 놓였다(젖은 갯바위 돌 금지 — 불에 터질 수 있음). 주인공이 잔해의 마지막 마른 회색 판자·통판 한 아름을 그 옆에 막 내려놓고 무릎 꿇은 상태에서(시작 프레임), 판자 하나를 바람 오는 쪽에 세워 돌에 기댄다(바람막이). 홈 난 널빤지는 이 더미에 없다.",
+      "edit_prompt": "Change the time to the afternoon, the sun lower from the left with long soft shadows, and the scene to the bare rock hollow from {CTX1} where yesterday's fire burned, above the high-tide line and sheltered by the large boulder (take only the rocks, the large boulder and the hollow from it; the figure appears only once, where described here): three dry, fist-sized stones are set around the hollow as a stand, and the figure from {P} kneels beside the hollow with an armful of dry, sun-bleached grey planks and split barrel staves, the last of the debris, just set down beside it. Keep the outfit and the figure's design exactly as in {SRC} and {P}.",
+      "prompt": "{SRC} is the first frame. The figure stands one plank on its edge on the windward side, leaning it against a stone as a windbreak, and settles back onto its knees. Static camera. It ends with the wood pile beside the hollow, the windbreak plank standing, and the figure kneeling by the three stones.",
       "end_state": "불자리: 오목 둘레 마른 돌 3개(받침), 바람 쪽에 세운 판자 바람막이, 옆에 마른 판자·통판 더미. 주인공: 돌 옆 무릎. 오후.",
       "sfx": [
         "마른 판자 내려놓는 소리",
@@ -736,12 +741,12 @@
         "P": "Only the figure's slender matte light-grey porcelain hands and forearms appear, exactly as in {P}; its head stays out of frame."
       },
       "light": "afternoon",
-      "desc_ko": "익스트림 클로즈업(손만, 불자리 위). 왼손에 깨진 흰 돌(날 위) + 엄지로 누른, 아침 볕에 바삭하게 마른 쑥 솜. 오른손이 쇠못 간 면으로 날을 비스듬히 빠르게 긁어 내린다(손가락을 내리치지 않는 궤적). 세 번째에 불티 하나가 솜에 박혀 주황 점이 번지고 가는 연기 한 줄. (입으로 불지 않는다 — 이후 둥지 흔들기는 생략, 시간 점프)",
+      "desc_ko": "익스트림 클로즈업(손만, 불자리 위). 왼손에 깨진 흰 돌(날 위) + 엄지로 누른, 아침 볕에 바삭하게 마른 쑥 솜. 오른손이 쇠못 간 면으로 날을 비스듬히 빠르게 긁어 내린다(손가락을 내리치지 않는 궤적). 여러 번 친 끝에 불티 하나가 솜에 박혀 주황 점이 번지고 가는 연기 한 줄(볶지 않은 쑥이라 EP.2처럼 쉽게 붙지 않는다). (입으로 불지 않는다 — 이후 둥지 흔들기는 생략, 시간 점프)",
       "edit_prompt": "Change the camera to an extreme close-up a moment later of the figure's matte light-grey porcelain hands from {P} above the fire hollow: the left hand holds the broken white stone from {FLINT} with its sharp glassy edge on top and a pinch of crisp, sun-dried grey-green fluff resting on the stone just behind the edge under the left thumb, and the right hand holds the iron nail from {NAIL} by its head, its bright ground side just above the edge. Keep the afternoon sun of {SRC}; only the hands and forearms appear, the figure's head stays out of frame.",
-      "prompt": "{SRC} is the first frame. The right hand scrapes the nail down the stone's edge in fast glancing strokes; on the third stroke a tiny orange spark lands on the fluff and stays, and a pin-point of orange glow slowly spreads in it as a thin thread of smoke rises. Static macro camera. It ends with the small orange glow in the fluff, the thread of smoke rising and the hands still.",
+      "prompt": "{SRC} is the first frame. The right hand scrapes the nail down the stone's edge in fast glancing strokes, again and again, until at last a tiny orange spark lands on the fluff and stays, and a pin-point of orange glow slowly spreads in it as a thin thread of smoke rises. Static macro camera. It ends with the small orange glow in the fluff, the thread of smoke rising and the hands still.",
       "end_state": "쑥 솜에 주황 불씨 + 가는 연기 한 줄. 두 손 쥐기 자세로 정지(손만). 오후.",
       "sfx": [
-        "'칙' 3번",
+        "'칙' 여러 번",
         "아주 작은 지글거림"
       ]
     },
@@ -756,15 +761,17 @@
       },
       "link": "T",
       "from": "S19",
+      "context": [
+        "S18"
+      ],
       "refs": [
         "P",
         "C",
-        "COPPER_PAN",
-        "FLASK"
+        "COPPER_PAN"
       ],
       "light": "late_afternoon_fire",
       "desc_ko": "시간 점프(한참 뒤, 늦은 오후). 측면 미디엄. 돌 셋 위의 구리판 솥 아래 작은 불(판자 끝, 바람막이), 솥 안의 졸인 물이 맑게 끓으며 흰 김이 바람 아래쪽으로 흐른다. 주인공이 바람 위쪽에 무릎 꿇고 팔을 뻗어 물통의 졸인 물을 솥에 보탠다(솥 높이 2/3). 고양이는 몇 걸음 뒤 큰 바위 그늘 — 불·김과 멀리, 먼저 자리를 피해 있음.",
-      "edit_prompt": "Change the time to much later in the afternoon, the sun low and golden from the left, at the same fire hollow seen in a medium side view: the shallow copper tray from {COPPER_PAN} sits level on the three stones over a small fire of plank ends, the windbreak plank standing behind it, and the liquid in the tray is boiling, white steam drifting away downwind; the figure from {P} kneels on the upwind side, arm stretched out, tilting the bamboo flask from {FLASK} toward the tray; the ginger cat from {C} sits in the shade of the large boulder several steps behind, well away from the fire. Keep all designs exactly as in {P}, {C}, {COPPER_PAN} and {FLASK}.",
+      "edit_prompt": "Change the time to much later in the afternoon, the sun low and golden from the left, at the same fire hollow as in {CTX1} (take only the rocks, the large boulder, the three stones and the windbreak plank from it; the figure appears only once, where described here), seen in a medium side view: the shallow copper tray from {COPPER_PAN} sits level on the three stones over a small fire of plank ends, the windbreak plank standing behind it and a few planks left beside the hollow, and the liquid in the tray is boiling, white steam drifting away downwind; the figure from {P} kneels on the upwind side, arm stretched out, tilting the bamboo flask, a single bamboo section with a dark oak plug, toward the tray; the ginger cat from {C} sits in the shade of the large boulder several steps behind, well away from the fire. Keep all designs exactly as in {P}, {C} and {COPPER_PAN}.",
       "prompt": "{SRC} is the first frame. A stream of liquid from the flask pours into the boiling tray until it is about two-thirds full; the boiling settles for a moment, then rolls up again with more steam. Static camera. It ends with the tray boiling steadily and the figure kneeling back with the flask upright.",
       "end_state": "구리판 솥(돌 셋 위, 2/3 높이)이 끓음, 흰 김은 바람 아래로. 주인공: 바람 위쪽 무릎, 물통 세워 듦. 고양이: 큰 바위 그늘(멀리). 늦은 오후 금빛.",
       "sfx": [
@@ -813,13 +820,16 @@
       },
       "link": "A",
       "from": "S21",
+      "context": [
+        "S20"
+      ],
       "refs": [
         "P",
         "COPPER_PAN"
       ],
       "light": "dusk_fire",
       "desc_ko": "앵글 컷(측면 미디엄). 걸쭉해진 솥에서 작은 방울이 탁탁 튀기 시작한다. 주인공이 몸을 멀리 둔 채 긴 막대로 불타는 판자 끝 두 개를 솥 아래에서 끌어내 불을 줄인다(끝까지 졸이지 않음 — 쓴맛·튐 방지). 맨손으로 솥을 잡지 않는다.",
-      "edit_prompt": "Change the camera to a medium side view a moment later: the figure from {P} kneels at arm's length from the fire on its upwind side, holding a long stick, and the copper tray from {COPPER_PAN} sits on the three stones over the small fire, its thick grey slurry spitting small droplets. Keep the dusk light, the place and all designs exactly as in {SRC}, {P} and {COPPER_PAN}.",
+      "edit_prompt": "Change the camera to a medium side view a moment later: the figure from {P} kneels at arm's length from the fire on its upwind side, holding a long stick, and the copper tray from {COPPER_PAN} sits on the three stones over the small fire, its thick grey slurry spitting small droplets. Keep the dusk light, the place and all designs exactly as in {SRC}, {P} and {COPPER_PAN}. Take only the rocks, the three stones and the windbreak plank from {CTX1}; the figure appears only once, where described here.",
       "prompt": "{SRC} is the first frame. The figure reaches in with the long stick and drags two burning plank ends out from under the tray onto the bare rock, and the spitting slows down; the figure keeps its body well back from the tray. Static camera. It ends with low embers under the tray, the dragged-out plank ends smoking on the rock, and the figure kneeling back with the stick.",
       "end_state": "솥 아래 불은 잦아든 숯불, 끌어낸 판자 끝 두 개가 바위 위에서 연기. 솥 안 걸쭉한 회색 소금죽. 주인공: 바람 위쪽 무릎, 긴 막대. 해 질 녘.",
       "sfx": [
@@ -849,9 +859,9 @@
       },
       "light": "dusk_embers",
       "desc_ko": "시간 점프(조금 뒤, 솥이 식음 — 뜨거운 솥은 막대 두 개로만 옮겼다, 생략). 클로즈업(손만). FAIL의 전복 껍데기가 조약돌 두 개 위에 놓였고, 구멍 위에 마른 풀을 한 겹 깔았다. 손이 납작한 통판 조각으로 식은 솥의 젖은 회색 소금을 떠 껍데기에 옮긴다. 남은 물(간수)이 구멍으로 방울방울 떨어져 바위를 적신다.",
-      "edit_prompt": "Change the camera to a close-up a little later, beside the fire hollow, of the empty abalone shell from {ABALONE} propped on two small pebbles, hollow side up, its holes covered by a thin layer of dry grass, with the copper tray from {COPPER_PAN} cooled on the rock beside it, its underside soot-black, half full of wet grey salt; the matte light-grey porcelain hand of the figure from {P} holds a flat piece of barrel stave over the tray like a scoop. Keep the dusk light of {SRC}; only the hand and forearm appear, the figure's head stays out of frame.",
-      "prompt": "{SRC} is the first frame. The hand scoops a heap of wet grey salt from the tray with the stave and tips it into the grass-lined shell; a moment later clear drops begin to fall from the holes underneath onto the rock. Static camera. It ends with the wet salt heaped in the shell and drops falling steadily from its holes.",
-      "end_state": "전복 껍데기(조약돌 두 개 위, 마른 풀 깔림)에 젖은 회색 소금 수북, 구멍에서 물방울이 떨어짐. 옆에 식은 구리판 솥(바닥 그을음). 손은 통판 조각을 듦(손만). 해 질 녘.",
+      "edit_prompt": "Change the camera to a close-up a little later, beside the fire hollow, of the empty abalone shell from {ABALONE} propped on two small pebbles, hollow side up, its holes covered by a thin layer of dry grass, with the copper tray from {COPPER_PAN} cooled on the rock beside it, its outer walls streaked with soot and a thin layer of wet grey salt across its bottom; the matte light-grey porcelain hand of the figure from {P} holds a flat piece of barrel stave over the tray like a scoop. Keep the dusk light of {SRC}; only the hand and forearm appear, the figure's head stays out of frame.",
+      "prompt": "{SRC} is the first frame. The hand scrapes the thin layer of wet grey salt together with the stave and tips it into the grass-lined shell; a moment later clear drops begin to fall from the holes underneath onto the rock. Static camera. It ends with the wet salt lying in the shell and drops falling steadily from its holes.",
+      "end_state": "전복 껍데기(조약돌 두 개 위, 마른 풀 깔림)에 젖은 회색 소금 한 줌 남짓(껍데기 바닥을 덮을 정도), 구멍에서 물방울이 떨어짐. 옆에 식은 구리판 솥(옆면 그을음). 손은 통판 조각을 듦(손만). 해 질 녘.",
       "sfx": [
         "소금 떠 옮기는 사각 소리",
         "물방울 똑똑"
@@ -896,16 +906,19 @@
       },
       "link": "A",
       "from": "S24",
+      "context": [
+        "S20"
+      ],
       "refs": [
         "P",
         "C",
         "COPPER_PAN"
       ],
       "light": "dusk_embers",
-      "desc_ko": "앵글 컷(와이드, 해 질 녘). 불자리: 잦아든 숯불과 큰 재 더미. 아침에 쌓아 둔 땔감 더미 자리엔 그을린 통판 끝 두세 개뿐. 바닥이 검게 그을고 연녹색 녹 반점이 생긴 구리판 솥이 옆 바위에. 주인공이 숯불 건너편에 앉아 있고, 고양이가 큰 바위 쪽에서 걸어와 숯불 반대쪽 주인공 옆에 앉는다(숯불에서 2m쯤). (경고 오버레이 시작)",
-      "edit_prompt": "Change the camera to a wide view at dusk of the fire hollow and the rock around it: the fire has burned down to a few glowing embers in a big pile of white-grey ash, only two or three charred stave ends lie where the wood pile was, and the copper tray from {COPPER_PAN} sits on a rock beside it, its underside blackened with soot and a few pale green spots on the copper; the figure from {P} sits on the rock beyond the hollow, and the ginger cat from {C} is walking over from the large boulder. Keep the dusk light and all designs exactly as in {SRC}, {P}, {C} and {COPPER_PAN}.",
+      "desc_ko": "앵글 컷(와이드, 해 질 녘). 불자리: 잦아든 숯불과 큰 재 더미. 아침에 쌓아 둔 땔감 더미 자리엔 그을린 통판 끝 두세 개뿐. 옆면이 검게 그을린 구리판 솥이 옆 바위에. 바람막이 판자도 마지막에 태워 돌 셋 바람 쪽은 맨바위. 주인공이 숯불 건너편에 앉아 있고, 고양이가 큰 바위 쪽에서 걸어와 숯불 반대쪽 주인공 옆에 앉는다(숯불에서 2m쯤). (경고 오버레이 시작)",
+      "edit_prompt": "Change the camera to a wide view at dusk of the fire hollow and the rock around it: the fire has burned down to a few glowing embers in a big pile of white-grey ash, only two or three charred stave ends lie where the wood pile was, bare open rock stands on the windward side of the three stones, and the copper tray from {COPPER_PAN} sits on a rock beside it, its sides streaked black with soot; the figure from {P} sits on the rock beyond the hollow, and the ginger cat from {C} is walking over from the large boulder. Take only the rocks, the large boulder and the fire hollow from {CTX1}; the figure and the cat appear only once, where described here. Keep the dusk light and all designs exactly as in {SRC}, {P}, {C} and {COPPER_PAN}.",
       "prompt": "{SRC} is the first frame. The cat walks around to the figure's side away from the embers and sits down beside it, about two metres from the hollow; a thin wisp of smoke rises from the ash. Static wide camera. It ends with the figure and the cat sitting side by side beyond the dying embers.",
-      "end_state": "와이드 해 질 녘: 잦아든 숯불 + 큰 재 더미, 땔감 더미는 그을린 끝 2~3개만. 그을린 구리판 솥(녹색 반점)은 옆 바위. 주인공·고양이 나란히 앉음(숯불 반대편, 2m).",
+      "end_state": "와이드 해 질 녘: 잦아든 숯불 + 큰 재 더미, 땔감 더미는 그을린 끝 2~3개만. 그을린 구리판 솥은 옆 바위, 바람막이 판자 없음. 주인공·고양이 나란히 앉음(숯불 반대편, 2m).",
       "sfx": [
         "숯불 타닥(작게)",
         "저녁 파도"
@@ -970,7 +983,7 @@
     {
       "id": "S28",
       "slot": "NEXT",
-      "beat": "해 진 직후 · 꺼진 재, 땔감 없음 · 뭍 쪽으로 고개",
+      "beat": "해 진 직후 · 꺼진 재, 땔감 없음 · 섬 안쪽으로 고개",
       "start": {
         "line": "N29",
         "edge": "start",
@@ -978,17 +991,19 @@
       },
       "link": "T",
       "from": "S27",
+      "context": [
+        "S25"
+      ],
       "refs": [
         "P",
         "C",
-        "COPPER_PAN",
-        "ABALONE"
+        "COPPER_PAN"
       ],
       "light": "after_sunset",
-      "desc_ko": "시간 점프(해가 다 진 직후). 와이드, 반쯤 실루엣. 불자리의 재에 붉은 기운이 마지막으로 사그라든다. 옆에 그을린 구리판 솥과 소금 껍데기, 땔감은 어디에도 없다. 주인공이 앉아 있고 고양이가 다리에 몸을 붙인다. 주인공이 바다에서 뭍 쪽으로 고개를 돌리고, 고양이도 같은 쪽으로 고개를 든다.",
-      "edit_prompt": "Change the time to just after sunset, the camera pulled back to a wide shot of the same spot: the figure from {P} sits on the rock beside the fire hollow, where only a faint red glow is left in the ash, with the soot-blackened copper tray from {COPPER_PAN} and the abalone shell of salt from {ABALONE} on the rock beside it and the bare rock clear of any wood; the ginger cat from {C} sits pressed against the figure's leg. Both are partly silhouetted against the last thin band of orange low over the sea. Keep all designs exactly as in {P}, {C}, {COPPER_PAN} and {ABALONE}.",
-      "prompt": "{SRC} is the first frame. The last red glow in the ash fades out; the figure's head turns slowly away from the sea toward the land behind the shore, and the cat lifts its head the same way. Static wide camera. It ends with the figure's head turned toward the land, held still, the cat against its leg.",
-      "end_state": "해 진 직후 와이드: 불 꺼진 재, 그을린 구리판 솥·소금 껍데기, 땔감 없음. 주인공: 앉아 뭍 쪽으로 고개. 고양이: 다리에 붙어 같은 쪽으로 고개. 수평선 마지막 주황 띠.",
+      "desc_ko": "시간 점프(해가 다 진 직후). 해안을 따라 옆에서 본 와이드(바다 왼쪽·육지 오른쪽, 인물은 옆모습). 불자리의 재에 붉은 기운이 마지막으로 사그라든다. 옆에 그을린 구리판 솥과 소금 껍데기, 땔감 더미는 없고 그을린 통판 끝 2~3개뿐, 아래 물가에 조약돌 얹은 뒤집힌 널빤지. 주인공이 앉아 있고 고양이가 다리에 몸을 붙인다. 주인공이 옆모습인 채 바다(왼쪽)에서 섬 안쪽(오른쪽)으로 고개를 돌리고, 고양이도 같은 쪽으로 고개를 든다.",
+      "edit_prompt": "Change the time to just after sunset and the camera to a wide shot looking along the shore at the same fire hollow as in {CTX1} (take only the rocks, the large boulder and the fire hollow from it; the figure and the cat appear only once, where described here): the sea with its last thin band of orange is at the left of the frame and the dark land rises at the right; the figure from {P} sits on the rock beside the hollow, seen in profile facing the sea, where only a faint red glow is left in the ash, with the soot-blackened copper tray from {COPPER_PAN} and the abalone shell of salt on the rock beside it and only two or three charred stave ends lying beside the ash; below them, near the waterline, lies the dark overturned plank with one pale pebble on it; the ginger cat from {C} sits pressed against the figure's leg. Both are partly silhouetted against the last light. Keep all designs exactly as in {P}, {C} and {COPPER_PAN}.",
+      "prompt": "{SRC} is the first frame. The last red glow in the ash fades out; the figure's head turns slowly in profile from the sea at the left toward the dark land at the right, and the cat lifts its head the same way. Static wide camera. It ends with the figure's head turned in profile toward the land, held still, the cat against its leg.",
+      "end_state": "해 진 직후 와이드: 불 꺼진 재, 그을린 구리판 솥·소금 껍데기, 그을린 통판 끝 2~3개뿐, 물가에 뒤집힌 널빤지(조약돌 1개). 주인공: 옆모습, 섬 안쪽(프레임 오른쪽)으로 고개. 고양이: 다리에 붙어 같은 쪽으로 고개. 수평선 마지막 주황 띠.",
       "sfx": [
         "저녁 파도",
         "바람"
@@ -997,7 +1012,7 @@
     {
       "id": "S29",
       "slot": "NEXT",
-      "beat": "어깨 너머 — 뭍 쪽 들판 너머 연기 한 줄 (EP3_END)",
+      "beat": "어깨 너머 — 섬 안쪽 들판 너머 연기 한 줄 (EP3_END)",
       "start": {
         "line": "N30",
         "edge": "start",
@@ -1010,10 +1025,10 @@
         "C"
       ],
       "light": "after_sunset",
-      "desc_ko": "앵글 컷(어깨 너머, 뒤통수만). 해안 뒤 풀밭과 어두운 들판, 낮은 오름 능선 너머, 어두워지는 뭍 쪽 하늘로 회백색 연기 한 줄이 곧게 오른다(누구의 불인지 보이지 않음 — 집·사람·불빛을 그리지 않는다). 천천히 푸시인. 연기는 들판에서 프레임 중앙 조금 위까지(위쪽 엔드카드 자리 비움). (EP3_END → EP.4 S01 C 링크 base)",
+      "desc_ko": "앵글 컷(어깨 너머, 뒤통수만). 해안 뒤 풀밭과 어두운 들판, 낮은 오름 능선 너머, 어두워지는 섬 안쪽 하늘로 회백색 연기 한 줄이 곧게 오른다(누구의 불인지 보이지 않음 — 집·사람·불빛을 그리지 않는다). 천천히 푸시인. 연기는 들판에서 프레임 중앙 조금 위까지(위쪽 엔드카드 자리 비움). (EP3_END → EP.4 S01 C 링크 base)",
       "edit_prompt": "Change the camera to an over-the-shoulder view from behind the figure from {P}, its blank head seen only from the back, with the ginger cat from {C} sitting beside it at the bottom edge of the frame, facing inland past the strip of grass behind the shore toward dark fields and the low ridge of a volcanic hill against the fading sky; far away beyond the fields a single thin column of pale grey smoke rises straight up into the dusk, and the land is dark and empty all the way to it. Keep the light and designs exactly as in {SRC}, {P} and {C}.",
       "prompt": "{SRC} is the first frame. The camera pushes in slowly past the figure's shoulder toward the distant column of smoke, which drifts a little at the top as it rises. It ends with the thin column of smoke rising from the dark fields to just above the centre of the frame.",
-      "end_state": "프레임 중앙: 먼 뭍 쪽 들판 너머 회백색 연기 한 줄(들판에서 프레임 중앙 조금 위까지 — 엔드카드 y300~520과 겹치지 않음). 주인공 뒤통수·고양이는 프레임 아래 가장자리. 해 진 직후. (EP3_END → EP.4 S01 C 링크 base)",
+      "end_state": "프레임 중앙: 먼 섬 안쪽 들판 너머 회백색 연기 한 줄(들판에서 프레임 중앙 조금 위까지 — 엔드카드 y300~520과 겹치지 않음). 주인공 뒤통수·고양이는 프레임 아래 가장자리. 해 진 직후. (EP3_END → EP.4 S01 C 링크 base)",
       "sfx": [
         "바람",
         "먼 풀벌레"

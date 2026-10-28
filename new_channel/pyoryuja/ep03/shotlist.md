@@ -11,31 +11,31 @@
 | S03 | NEED | 0:07.95–0:12.85 | 4.90s | 6s | A 앵글 컷(앞 끝 프레임 편집) | S02 | 높은 와이드 — 갯벌 없이 바위뿐인 만, 걸어가는 둘 |
 | S04 | HAVE | 0:12.85–0:17.70 | 4.85s | 6s | T 시간 점프(앞 끝 프레임 편집) | S03 | 젖은 쑥 솜을 볕에 펴 말림 · 가진 것을 나란히 (인벤토리) |
 | S05 | GATHER | 0:17.70–0:20.80 | 3.10s | 5s | T 시간 점프(앞 끝 프레임 편집) | S04 | 밀물이 닿지 않는 높은 너럭바위의 오목들 — 고양이가 먼저 걸어 듦 |
-| S06 | GATHER | 0:20.80–0:25.35 | 4.55s | 6s | A 앵글 컷(앞 끝 프레임 편집) | S05 | 흰 테에 코를 대는 고양이(고양이 역할 컷) → 손이 들어 옮김 |
+| S06 | GATHER | 0:20.80–0:25.35 | 4.55s | 6s | A 앵글 컷(앞 끝 프레임 편집) | S05 | 흰 테에 코를 대는 고양이(고양이 역할 컷) → 스스로 물러남 |
 | S07 | GATHER | 0:25.35–0:29.05 | 3.70s | 5s | A 앵글 컷(앞 끝 프레임 편집) | S06 | 관계 비트 — 흰 앞발을 민물로 헹구고, 남은 물은 고양이 몫 |
 | S08 | FAIL | 0:29.05–0:32.80 | 3.75s | 5s | T 시간 점프(앞 끝 프레임 편집) | S07 | 솥 대신 전복 껍데기로 바닷물을 뜸 — 구멍에서 물줄기 |
 | S09 | FAIL | 0:32.80–0:35.20 | 2.40s | 4s | A 앵글 컷(앞 끝 프레임 편집) | S08 | 매크로 — 구멍마다 물이 샘 |
 | S10 | FAIL | 0:35.20–0:37.75 | 2.55s | 4s | A 앵글 컷(앞 끝 프레임 편집) | S09 | 빈 껍데기를 내려놓고 멈춤 |
-| S11 | PRINCIPLE | 0:37.75–0:43.44 | 5.70s | 7s | A 앵글 컷(앞 끝 프레임 편집) | S10 | 측면 정렬 구도 · 넓은 오목에 바닷물을 부음 (도면 — 수면선 y≈720) |
+| S11 | PRINCIPLE | 0:37.75–0:43.44 | 5.70s | 7s | T 시간 점프(앞 끝 프레임 편집) | S10 +S05 | 측면 정렬 구도 · 넓은 오목에 바닷물을 부음 (도면 — 수면선 y≈720) |
 | S12 | PRINCIPLE | 0:43.44–0:49.60 | 6.15s | 8s | C 이어가기(앞 끝 프레임 그대로) | S11 | 실시간 이어짐 · 수면 위 열기, 고양이가 엎드림 (도면) |
 | S13 | PRINCIPLE | 0:49.60–0:53.86 | 4.26s | 6s | T 시간 점프(앞 끝 프레임 편집) | S12 | 조건 줄(실사) — 오목 대여섯 개를 바닷물로 채움 |
 | S14 | PRINCIPLE | 0:53.86–0:57.07 | 3.21s | 5s | A 앵글 컷(앞 끝 프레임 편집) | S13 | 귀에 남는 문장 — 볕이 끓이는 오목, 맨발이 지나감 |
 | S15 | BUILD | 0:57.07–1:00.82 | 3.75s | 5s | T 시간 점프(앞 끝 프레임 편집) | S14 | (재료 인서트) 잔해 판자에 못 박힌 구리판 |
 | S16 | BUILD | 1:00.82–1:03.97 | 3.15s | 5s | T 시간 점프(앞 끝 프레임 편집) | S15 | 떼어 낸 구리판의 마지막 귀를 접어 얕은 솥 완성 |
-| S17 | BUILD | 1:03.97–1:07.52 | 3.55s | 5s | T 시간 점프(앞 끝 프레임 편집) | S16 | 한낮 — 줄어든 오목의 물을 가운데 깊은 오목으로 모음(단계 농축) |
-| S18 | BUILD | 1:07.52–1:10.67 | 3.15s | 5s | T 시간 점프(앞 끝 프레임 편집) | S17 | 오후 — 어제 불자리에 마른 받침돌 셋 · 마른 판자 땔감 · 바람막이 |
+| S17 | BUILD | 1:03.97–1:07.52 | 3.55s | 5s | T 시간 점프(앞 끝 프레임 편집) | S16 +S13 | 한낮 — 줄어든 오목의 물을 가운데 깊은 오목으로 모음(단계 농축) |
+| S18 | BUILD | 1:07.52–1:10.67 | 3.15s | 5s | T 시간 점프(앞 끝 프레임 편집) | S17 +S02 | 오후 — 어제 불자리에 마른 받침돌 셋 · 마른 판자 땔감 · 바람막이 |
 | S19 | BUILD | 1:10.67–1:14.27 | 3.60s | 5s | A 앵글 컷(앞 끝 프레임 편집) | S18 | 볕에 마른 쑥 솜에 다시 불씨 — 쇠못과 흰 돌 |
-| S20 | TEST | 1:14.27–1:17.92 | 3.65s | 5s | T 시간 점프(앞 끝 프레임 편집) | S19 | 늦은 오후 — 돌 셋 위 구리판 솥이 끓고, 줄면 또 부음 · 고양이는 멀리 |
+| S20 | TEST | 1:14.27–1:17.92 | 3.65s | 5s | T 시간 점프(앞 끝 프레임 편집) | S19 +S18 | 늦은 오후 — 돌 셋 위 구리판 솥이 끓고, 줄면 또 부음 · 고양이는 멀리 |
 | S21 | TEST | 1:17.92–1:20.32 | 2.40s | 4s | T 시간 점프(앞 끝 프레임 편집) | S20 | 해 질 녘 — 솥 가장자리 흰 테, 얇은 결정 막 (결정은 여기서부터) |
-| S22 | TEST | 1:20.32–1:23.27 | 2.95s | 4s | A 앵글 컷(앞 끝 프레임 편집) | S21 | 소금죽이 튐 — 긴 막대로 불을 빼 끝까지 졸이지 않음 |
+| S22 | TEST | 1:20.32–1:23.27 | 2.95s | 4s | A 앵글 컷(앞 끝 프레임 편집) | S21 +S20 | 소금죽이 튐 — 긴 막대로 불을 빼 끝까지 졸이지 않음 |
 | S23 | TEST | 1:23.27–1:27.02 | 3.75s | 5s | T 시간 점프(앞 끝 프레임 편집) | S22 | 실패한 전복 껍데기가 체로 — 젖은 소금을 담자 구멍에서 간수가 떨어짐 |
 | S24 ★ | TEST | 1:27.02–1:30.47 | 3.45s | 5s | A 앵글 컷(앞 끝 프레임 편집) | S23 | 손끝에서 사각거리는 회색 소금 (답 · 히어로) |
-| S25 | COST | 1:30.47–1:33.42 | 2.95s | 4s | A 앵글 컷(앞 끝 프레임 편집) | S24 | 와이드 — 큰 재 더미, 바닥난 땔감, 그을린 솥 · 고양이가 와서 옆에 앉음 |
-| S26 | COST | 1:33.42–1:37.07 | 3.65s | 5s | A 앵글 컷(앞 끝 프레임 편집) | S25 | 대비 — 전경의 작은 소금, 뒤의 큰 재 더미 |
-| S27 | UNLOCK | 1:37.07–1:39.72 | 2.65s | 4s | A 앵글 컷(앞 끝 프레임 편집) | S26 | 소금 껍데기를 손끝으로 톡톡 두 번 (획득 카드) |
-| S28 | NEXT | 1:39.72–1:42.27 | 2.55s | 4s | T 시간 점프(앞 끝 프레임 편집) | S27 | 해 진 직후 · 꺼진 재, 땔감 없음 · 뭍 쪽으로 고개 |
-| S29 | NEXT | 1:42.27–1:46.37 | 4.10s | 6s | A 앵글 컷(앞 끝 프레임 편집) | S28 | 어깨 너머 — 뭍 쪽 들판 너머 연기 한 줄 (EP3_END) |
-| S30 | TAG | 1:46.37–1:48.87 | 2.50s | — | F 정지 프레임 | S29 | 정지 + 엔드카드 |
+| S25 | COST | 1:30.47–1:33.42 | 2.95s | 4s | A 앵글 컷(앞 끝 프레임 편집) | S24 +S20 | 와이드 — 큰 재 더미, 바닥난 땔감, 그을린 솥 · 고양이가 와서 옆에 앉음 |
+| S26 | COST | 1:33.42–1:37.27 | 3.85s | 5s | A 앵글 컷(앞 끝 프레임 편집) | S25 | 대비 — 전경의 작은 소금, 뒤의 큰 재 더미 |
+| S27 | UNLOCK | 1:37.27–1:39.92 | 2.65s | 4s | A 앵글 컷(앞 끝 프레임 편집) | S26 | 소금 껍데기를 손끝으로 톡톡 두 번 (획득 카드) |
+| S28 | NEXT | 1:39.92–1:42.87 | 2.95s | 4s | T 시간 점프(앞 끝 프레임 편집) | S27 +S25 | 해 진 직후 · 꺼진 재, 땔감 없음 · 섬 안쪽으로 고개 |
+| S29 | NEXT | 1:42.87–1:47.17 | 4.30s | 6s | A 앵글 컷(앞 끝 프레임 편집) | S28 | 어깨 너머 — 섬 안쪽 들판 너머 연기 한 줄 (EP3_END) |
+| S30 | TAG | 1:47.17–1:49.67 | 2.50s | — | F 정지 프레임 | S29 | 정지 + 엔드카드 |
 
 ★ = 히어로 샷(재생성 예산 우선 배정)
 
@@ -51,7 +51,7 @@
 - 내레이션: `N01` 불은 꺼졌다. 홈 난 널빤지는 태우지 않는다.
 - 오버레이: `ref_chip` (overlays.json)
 - 효과음: 저녁 파도(작게), 조약돌이 젖은 나무에 닿는 '톡'
-- 끝 상태(다음 샷의 출발점): 널빤지 아랫면 클로즈업: 빗물 고인 홈(F1) 옆 젖은 나뭇결 위에 연한 조약돌 1개(홈은 가리지 않음). 손은 프레임 밖. 비 갠 해 질 녘 마지막 주황빛.
+- 끝 상태(다음 샷의 출발점): 널빤지 아랫면 클로즈업: 빗물 고인 홈(F1)과 빈 못 구멍 옆 젖은 나뭇결 위에 연한 조약돌 1개(홈은 가리지 않음). 손은 프레임 밖. 비 갠 해 질 녘 마지막 주황빛.
 
 **① 시작 프레임** = EP2_END(이전 회차) 승인 클립의 끝 프레임 그대로(편집 없음). 앞 샷은 이 프레임 직전에서 끝나고 이 샷의 첫 프레임이 그 자리를 잇는다.
 
@@ -60,13 +60,13 @@
 이미지: <IMAGE_0> 시작 프레임(image 고정) · <IMAGE_1> 레퍼런스 P · <IMAGE_2> 레퍼런스 PLANK_UNDER
 
 ```text
-Continuing from <IMAGE_0>, a slender matte light-grey porcelain hand reaches in from the right edge of the frame and sets one small pale pebble down on the wet oak beside the water-filled grooves, leaving the grooves uncovered, then withdraws out of frame. Static close-up. It ends with the pale pebble resting beside the grooves, the water in them still catching the last orange light. Pace the action so that this ending is reached at about 3.9 seconds and then held, almost motionless, until the clip ends at 6 seconds. Only the figure's slender matte light-grey porcelain hand and forearm appear, exactly as in <IMAGE_1>; its head stays out of frame. Keep the plank's underside and its row of rough shallow grooves exactly as in <IMAGE_2>, the grooves half hidden by seaweed and too fragmentary to read; the nail is in or out of the wood exactly as described above. Photoreal live-action look, dusk just after a passing shower, a thin band of orange glow under the clouds low over the sea, everything wet and in cool blue shadow, muted natural colours, realistic textures and physics, natural real-time motion, no on-screen text.
+Continuing from <IMAGE_0>, a slender matte light-grey porcelain hand reaches in from the right edge of the frame and sets one small pale pebble down on the wet oak beside the water-filled grooves and the small empty square hole where the nail was pulled out, leaving the grooves uncovered, then withdraws out of frame. Static close-up. It ends with the pale pebble resting beside the grooves and the empty nail hole, the water in them still catching the last orange light. Pace the action so that this ending is reached at about 3.9 seconds and then held, almost motionless, until the clip ends at 6 seconds. Only the figure's slender matte light-grey porcelain hand and forearm appear, exactly as in <IMAGE_1>; its head stays out of frame. Keep the plank's underside and its row of rough shallow grooves exactly as in <IMAGE_2>, the grooves half hidden by seaweed and too fragmentary to read; the nail is in or out of the wood exactly as described above. Photoreal live-action look, dusk just after a passing shower, a thin band of orange glow under the clouds low over the sea, everything wet and in cool blue shadow, muted natural colours, realistic textures and physics, natural real-time motion, no on-screen text.
 ```
 
 <details><summary>레퍼런스 없이 앱에 시작 프레임 1장만 올릴 때</summary>
 
 ```text
-Continuing from the uploaded image, a slender matte light-grey porcelain hand reaches in from the right edge of the frame and sets one small pale pebble down on the wet oak beside the water-filled grooves, leaving the grooves uncovered, then withdraws out of frame. Static close-up. It ends with the pale pebble resting beside the grooves, the water in them still catching the last orange light. Pace the action so that this ending is reached at about 3.9 seconds and then held, almost motionless, until the clip ends at 6 seconds. Only the figure's slender matte light-grey porcelain hand and forearm appear,; its head stays out of frame. The underside of the plank is darker, wetter oak with strands of seaweed and a short row of rough, shallow cut grooves half hidden under the seaweed, too fragmentary to read. Photoreal live-action look, dusk just after a passing shower, a thin band of orange glow under the clouds low over the sea, everything wet and in cool blue shadow, muted natural colours, realistic textures and physics, natural real-time motion, no on-screen text.
+Continuing from the uploaded image, a slender matte light-grey porcelain hand reaches in from the right edge of the frame and sets one small pale pebble down on the wet oak beside the water-filled grooves and the small empty square hole where the nail was pulled out, leaving the grooves uncovered, then withdraws out of frame. Static close-up. It ends with the pale pebble resting beside the grooves and the empty nail hole, the water in them still catching the last orange light. Pace the action so that this ending is reached at about 3.9 seconds and then held, almost motionless, until the clip ends at 6 seconds. Only the figure's slender matte light-grey porcelain hand and forearm appear,; its head stays out of frame. The underside of the plank is darker, wetter oak with strands of seaweed and a short row of rough, shallow cut grooves half hidden under the seaweed, too fragmentary to read. Photoreal live-action look, dusk just after a passing shower, a thin band of orange glow under the clouds low over the sea, everything wet and in cool blue shadow, muted natural colours, realistic textures and physics, natural real-time motion, no on-screen text.
 ```
 
 </details>
@@ -131,7 +131,7 @@ QC: 머리에 이목구비 없음 · 조끼 주황+버클 3개+왼쪽 호루라�
 업로드 순서: 1) S02 끝 프레임 · 2) 레퍼런스 P · 3) 레퍼런스 C · 4) 레퍼런스 L01
 
 ```text
-Change the camera to a high wide view angled down along the same cove a moment later, in the clear morning sun: black basalt boulders and flat lava shelves run all the way down to the sea with no beach or mudflat anywhere, the shoreline shaped like the one in <IMAGE_3>; the figure from <IMAGE_1>, small in the lower middle of the frame, stands on the rocks with the bamboo flask in its hand, and the ginger cat from <IMAGE_2> is a few steps behind it. The shoreline is empty in both directions. Keep the light of <IMAGE_0> and both designs exactly as in <IMAGE_1> and <IMAGE_2>.
+Change the camera to a high wide view angled down along the same cove a moment later, in the clear morning sun: black basalt boulders and flat lava shelves run unbroken right down into the water, bare rock all the way to the sea's edge along the whole cove, the shoreline shaped like the one in <IMAGE_3>; the figure from <IMAGE_1>, small in the lower middle of the frame, stands on the rocks with the bamboo flask in its hand, and the ginger cat from <IMAGE_2> is a few steps behind it. The shoreline is empty in both directions. Keep the light of <IMAGE_0> and both designs exactly as in <IMAGE_1> and <IMAGE_2>.
 ```
 
 **② 영상** (`grok-imagine-video-1.5`, 6s, 9:16, 720p, 오디오 끔)
@@ -196,7 +196,7 @@ QC: 머리에 이목구비 없음 · 조끼 주황+버클 3개+왼쪽 호루라�
 
 ## S05 · GATHER · 밀물이 닿지 않는 높은 너럭바위의 오목들 — 고양이가 먼저 걸어 듦 · 0:17.70–0:20.80 (3.10s)
 
-**장면** 시간 점프(한낮이 가까움, 볕이 강하다). 와이드(바위 높이보다 조금 위). 밀물이 닿지 않는 높은 너럭바위에 손바닥~팔 길이의 얕은 오목이 흩어져 있다. 밤새 물보라가 채운 오목엔 바닷물이 조금 반짝이고, 가장 얕은 오목들은 말라 가장자리에 얇은 흰 테만 남았다(두꺼운 소금 껍질 금지). 고양이가 전경에서 오목 사이를 골라 걷는다. 주인공은 뒤쪽.
+**장면** 시간 점프(한낮이 가까움, 볕이 강하다). 와이드(바위 높이보다 조금 위). 밀물이 닿지 않는 높은 너럭바위에 손바닥~팔 길이의 얕은 오목이 흩어져 있다. 밤새 물보라가 채운 오목엔 바닷물이 조금 반짝이고, 가장 얕은 오목들은 말라 가장자리에 얇은 흰 테만 남았다(두꺼운 소금 껍질 금지). 고양이가 전경에서 오목 사이를 골라 걷다가 흰 앞발로 바닷물 고인 오목의 젖은 가장자리를 밟는다(N07 짠물의 원인). 주인공은 뒤쪽.
 
 - 연결: **T** 시간 점프(앞 끝 프레임 편집) · 출발 S04
 - 빛: late_morning_sun · 레퍼런스: P, C
@@ -218,13 +218,13 @@ Change the scene to a wide view, from a little above rock height, of a broad fla
 이미지: <IMAGE_0> 시작 프레임(image 고정) · <IMAGE_1> 레퍼런스 P · <IMAGE_2> 레퍼런스 C
 
 ```text
-<IMAGE_0> is the first frame. The cat picks its way between the hollows, stepping around the water, and stops at the edge of a dry one with a white ring. Static camera. It ends with the cat standing at the dry hollow, its head lowered toward the white ring. Pace the action so that this ending is reached at about 2.8 seconds and then held, almost motionless, until the clip ends at 5 seconds. Keep the figure exactly as in <IMAGE_1>; its head stays a smooth, blank, featureless matte porcelain egg in every frame, its surface unbroken from crown to neck. Keep the cat exactly as in <IMAGE_2>, moving like a real cat. Photoreal live-action look, bright late-morning sun high in a clear sky, short hard shadows, the black rocks hot and dry, muted natural colours, realistic textures and physics, natural real-time motion, no on-screen text.
+<IMAGE_0> is the first frame. The cat picks its way between the hollows, its white front paws splashing through the wet rim of a shallow pool of seawater, and stops at the edge of a dry one with a white ring. Static camera. It ends with the cat standing at the dry hollow, its head lowered toward the white ring. Pace the action so that this ending is reached at about 2.8 seconds and then held, almost motionless, until the clip ends at 5 seconds. Keep the figure exactly as in <IMAGE_1>; its head stays a smooth, blank, featureless matte porcelain egg in every frame, its surface unbroken from crown to neck. Keep the cat exactly as in <IMAGE_2>, moving like a real cat. Photoreal live-action look, bright late-morning sun high in a clear sky, short hard shadows, the black rocks hot and dry, muted natural colours, realistic textures and physics, natural real-time motion, no on-screen text.
 ```
 
 <details><summary>레퍼런스 없이 앱에 시작 프레임 1장만 올릴 때</summary>
 
 ```text
-The uploaded image is the first frame. The cat picks its way between the hollows, stepping around the water, and stops at the edge of a dry one with a white ring. Static camera. It ends with the cat standing at the dry hollow, its head lowered toward the white ring. Pace the action so that this ending is reached at about 2.8 seconds and then held, almost motionless, until the clip ends at 5 seconds. The figure has a smooth egg-shaped head of matte light-grey porcelain with no facial features, slender porcelain hands, a navy windbreaker with the sleeves pushed up, a safety-orange life vest with three black buckles and a small steel whistle on the left strap, charcoal trousers rolled to the calf and bare porcelain feet; its head stays featureless in every frame. The cat is a lean adult ginger tabby with darker stripes, a white chest and two white front paws, a small notch at the tip of its left ear and a thin braided leather collar with one small brass disc, moving like a real cat. Photoreal live-action look, bright late-morning sun high in a clear sky, short hard shadows, the black rocks hot and dry, muted natural colours, realistic textures and physics, natural real-time motion, no on-screen text.
+The uploaded image is the first frame. The cat picks its way between the hollows, its white front paws splashing through the wet rim of a shallow pool of seawater, and stops at the edge of a dry one with a white ring. Static camera. It ends with the cat standing at the dry hollow, its head lowered toward the white ring. Pace the action so that this ending is reached at about 2.8 seconds and then held, almost motionless, until the clip ends at 5 seconds. The figure has a smooth egg-shaped head of matte light-grey porcelain with no facial features, slender porcelain hands, a navy windbreaker with the sleeves pushed up, a safety-orange life vest with three black buckles and a small steel whistle on the left strap, charcoal trousers rolled to the calf and bare porcelain feet; its head stays featureless in every frame. The cat is a lean adult ginger tabby with darker stripes, a white chest and two white front paws, a small notch at the tip of its left ear and a thin braided leather collar with one small brass disc, moving like a real cat. Photoreal live-action look, bright late-morning sun high in a clear sky, short hard shadows, the black rocks hot and dry, muted natural colours, realistic textures and physics, natural real-time motion, no on-screen text.
 ```
 
 </details>
@@ -233,38 +233,38 @@ QC: 머리에 이목구비 없음 · 조끼 주황+버클 3개+왼쪽 호루라�
 
 ---
 
-## S06 · GATHER · 흰 테에 코를 대는 고양이(고양이 역할 컷) → 손이 들어 옮김 · 0:20.80–0:25.35 (4.55s)
+## S06 · GATHER · 흰 테에 코를 대는 고양이(고양이 역할 컷) → 스스로 물러남 · 0:20.80–0:25.35 (4.55s)
 
-**장면** 앵글 컷(바위 높이 로우 클로즈업). 마른 얕은 오목의 얇은 흰 테(소금기)가 전경에 선명하고, 고양이가 코를 대고 수염을 앞으로 내밀어 냄새를 맡는다(핥지 않음 — 고양이 역할 컷). 이어 두 손이 들어와 가슴과 뒷다리를 받쳐 고양이를 천천히 들어 올려 프레임 밖으로 옮긴다. (QC: 시작 프레임 후보에 인물 전신이 합성되면 탈락 — 손은 영상에서만 들어온다)
+**장면** 앵글 컷(바위 높이 로우 클로즈업). 마른 얕은 오목의 얇은 흰 테(소금기)가 전경에 선명하고, 고양이가 코를 대고 수염을 앞으로 내밀어 냄새를 맡는다(핥지 않음 — 고양이 역할 컷). 이어 고양이가 스스로 고개를 들고 오른쪽 프레임 밖으로 걸어 나간다 — 손은 들어오지 않는다(EP.1 S06 원칙). (QC: 시작 프레임 후보에 인물이 합성되면 탈락)
 
 - 연결: **A** 앵글 컷(앞 끝 프레임 편집) · 출발 S05
-- 빛: late_morning_sun · 레퍼런스: P, C
+- 빛: late_morning_sun · 레퍼런스: C
 - 생성 6s → 사용 구간 0.000–4.550s (아웃 포인트 = 다음 샷 출발 프레임)
 - 내레이션: `N06` 물보라가 채운 얕은 오목이 볕에 말라 흰 테를 남긴다.
 - 오버레이: `label_rim` (overlays.json)
 - 효과음: 고양이 킁킁(아주 작게), 바람
-- 끝 상태(다음 샷의 출발점): 마른 오목과 얇은 흰 테(전경, 선명). 고양이와 손은 프레임 밖(들어 옮김). 강한 볕.
+- 끝 상태(다음 샷의 출발점): 마른 오목과 얇은 흰 테(전경, 선명). 고양이는 프레임 밖(스스로 물러남). 강한 볕.
 
 **① 시작 프레임 편집** (`/v1/images/edits`, 9:16, 2k)
 
-업로드 순서: 1) S05 끝 프레임 · 2) 레퍼런스 P · 3) 레퍼런스 C
+업로드 순서: 1) S05 끝 프레임 · 2) 레퍼런스 C
 
 ```text
-Change the camera to a low close-up at rock level, a moment later, across the dry shallow hollow from <IMAGE_0>: its thin crusty white ring is sharp in the foreground on the hot black basalt, and the ginger cat from <IMAGE_2> has its head down at the far edge of the hollow, nose close to the white ring and whiskers pushed forward. Only the cat and the rock are in this frame for now. Keep the strong late-morning sun and the cat exactly as in <IMAGE_0> and <IMAGE_2>.
+Change the camera to a low close-up at rock level, a moment later, across the dry shallow hollow from <IMAGE_0>: its thin crusty white ring is sharp in the foreground on the hot black basalt, and the ginger cat from <IMAGE_1> has its head down at the far edge of the hollow, nose close to the white ring and whiskers pushed forward. Only the cat and the rock are in this frame for now. Keep the strong late-morning sun and the cat exactly as in <IMAGE_0> and <IMAGE_1>.
 ```
 
 **② 영상** (`grok-imagine-video-1.5`, 6s, 9:16, 720p, 오디오 끔)
 
-이미지: <IMAGE_0> 시작 프레임(image 고정) · <IMAGE_1> 레퍼런스 P · <IMAGE_2> 레퍼런스 C
+이미지: <IMAGE_0> 시작 프레임(image 고정) · <IMAGE_1> 레퍼런스 C
 
 ```text
-<IMAGE_0> is the first frame. The cat sniffs along the white ring with its whiskers pushed forward, without licking; then two slender matte light-grey porcelain hands reach in, slide under its chest and hind legs, and lift it gently up and out of the frame. Static camera. It ends with the empty dry hollow and its white ring sharp in the foreground. Pace the action so that this ending is reached at about 4.2 seconds and then held, almost motionless, until the clip ends at 6 seconds. Only the figure's slender matte light-grey porcelain hands and forearms appear, exactly as in <IMAGE_1>; its head stays out of frame. Keep the cat exactly as in <IMAGE_2>, moving like a real cat. Photoreal live-action look, bright late-morning sun high in a clear sky, short hard shadows, the black rocks hot and dry, muted natural colours, realistic textures and physics, natural real-time motion, no on-screen text.
+<IMAGE_0> is the first frame. The cat sniffs along the white ring with its whiskers pushed forward, its nose hovering just above the crust, then lifts its head, turns and trots out of the frame to the right. Static camera. It ends with the empty dry hollow and its white ring sharp in the foreground. Pace the action so that this ending is reached at about 4.2 seconds and then held, almost motionless, until the clip ends at 6 seconds. Keep the cat exactly as in <IMAGE_1>, moving like a real cat. Photoreal live-action look, bright late-morning sun high in a clear sky, short hard shadows, the black rocks hot and dry, muted natural colours, realistic textures and physics, natural real-time motion, no on-screen text.
 ```
 
 <details><summary>레퍼런스 없이 앱에 시작 프레임 1장만 올릴 때</summary>
 
 ```text
-The uploaded image is the first frame. The cat sniffs along the white ring with its whiskers pushed forward, without licking; then two slender matte light-grey porcelain hands reach in, slide under its chest and hind legs, and lift it gently up and out of the frame. Static camera. It ends with the empty dry hollow and its white ring sharp in the foreground. Pace the action so that this ending is reached at about 4.2 seconds and then held, almost motionless, until the clip ends at 6 seconds. Only the figure's slender matte light-grey porcelain hands and forearms appear,; its head stays out of frame. The cat is a lean adult ginger tabby with darker stripes, a white chest and two white front paws, a small notch at the tip of its left ear and a thin braided leather collar with one small brass disc, moving like a real cat. Photoreal live-action look, bright late-morning sun high in a clear sky, short hard shadows, the black rocks hot and dry, muted natural colours, realistic textures and physics, natural real-time motion, no on-screen text.
+The uploaded image is the first frame. The cat sniffs along the white ring with its whiskers pushed forward, its nose hovering just above the crust, then lifts its head, turns and trots out of the frame to the right. Static camera. It ends with the empty dry hollow and its white ring sharp in the foreground. Pace the action so that this ending is reached at about 4.2 seconds and then held, almost motionless, until the clip ends at 6 seconds. The cat is a lean adult ginger tabby with darker stripes, a white chest and two white front paws, a small notch at the tip of its left ear and a thin braided leather collar with one small brass disc, moving like a real cat. Photoreal live-action look, bright late-morning sun high in a clear sky, short hard shadows, the black rocks hot and dry, muted natural colours, realistic textures and physics, natural real-time motion, no on-screen text.
 ```
 
 </details>
@@ -275,14 +275,14 @@ QC: 머리에 이목구비 없음 · 조끼 주황+버클 3개+왼쪽 호루라�
 
 ## S07 · GATHER · 관계 비트 — 흰 앞발을 민물로 헹구고, 남은 물은 고양이 몫 · 0:25.35–0:29.05 (3.70s)
 
-**장면** 관계 비트(주인공이 고양이를 위해 하는 행동). 로우 클로즈업(손만). 흰 테에서 떨어진 깨끗한 작은 오목 가장자리에 고양이를 내려놓았다. 손이 물통의 민물을 흰 앞발 위로 천천히 부어 헹구고, 물은 깨끗한 오목에 고인다. 고양이가 한쪽 앞발을 털고, 고개를 숙여 오목의 민물을 핥아 마신다(바닷물·소금은 핥지 않음).
+**장면** 관계 비트(주인공이 고양이를 위해 하는 행동). 로우 클로즈업(손만). 고양이가 흰 테에서 떨어진 깨끗한 작은 오목 가장자리에 서 있다. 손이 물통의 민물을 흰 앞발 위로 천천히 부어 헹구고, 헹군 물은 바위 아래로 흘러간다. 고양이가 한쪽 앞발을 털고, 고개를 숙여 물통에서 떨어지는 가는 민물 줄기를 핥아 마신다(바닷물·소금은 핥지 않음).
 
 - 연결: **A** 앵글 컷(앞 끝 프레임 편집) · 출발 S06
 - 빛: late_morning_sun · 레퍼런스: P, C, FLASK
 - 생성 5s → 사용 구간 0.000–3.700s (아웃 포인트 = 다음 샷 출발 프레임)
 - 내레이션: `N07` 고양이 발에 묻은 짠물은 민물로 헹군다.
 - 효과음: 물 붓는 소리, 고양이 발 터는 소리, 할짝이는 소리(작게)
-- 끝 상태(다음 샷의 출발점): 깨끗한 오목에 민물이 고임, 고양이가 핥아 마심(흰 앞발 젖음). 손: 물통을 세워 듦(손만, 민물 거의 다 씀). 강한 볕.
+- 끝 상태(다음 샷의 출발점): 헹군 물은 바위 아래로 흘러감, 고양이가 물통에서 떨어지는 가는 물줄기를 핥음(흰 앞발 젖음). 손: 물통을 기울여 듦(손만, 민물 거의 다 씀). 강한 볕.
 
 **① 시작 프레임 편집** (`/v1/images/edits`, 9:16, 2k)
 
@@ -297,13 +297,13 @@ Change the camera to a low close-up a moment later beside a small clean hollow i
 이미지: <IMAGE_0> 시작 프레임(image 고정) · <IMAGE_1> 레퍼런스 P · <IMAGE_2> 레퍼런스 C · <IMAGE_3> 레퍼런스 FLASK
 
 ```text
-<IMAGE_0> is the first frame. The flask pours a slow trickle of fresh water over the cat's white front paws and it runs into the clean hollow; the cat lifts and shakes one paw, then lowers its head and laps the fresh water from the hollow. Static camera. It ends with the cat lapping water from the hollow and the hands holding the flask upright beside it. Pace the action so that this ending is reached at about 3.4 seconds and then held, almost motionless, until the clip ends at 5 seconds. Only the figure's slender matte light-grey porcelain hands and forearms appear, exactly as in <IMAGE_1>; its head stays out of frame. Keep the cat exactly as in <IMAGE_2>, moving like a real cat. Keep the bamboo flask's bamboo, node, size and dark oak plug exactly as in <IMAGE_3>, with the plug in or out of its open end exactly as described above. Photoreal live-action look, bright late-morning sun high in a clear sky, short hard shadows, the black rocks hot and dry, muted natural colours, realistic textures and physics, natural real-time motion, no on-screen text.
+<IMAGE_0> is the first frame. The flask pours a slow trickle of fresh water over the cat's white front paws and it runs off down the rock; the cat lifts and shakes one paw, then lowers its head and laps from the thin stream still trickling from the flask. Static camera. It ends with the cat lapping from the trickle and the hands holding the flask tilted beside it. Pace the action so that this ending is reached at about 3.4 seconds and then held, almost motionless, until the clip ends at 5 seconds. Only the figure's slender matte light-grey porcelain hands and forearms appear, exactly as in <IMAGE_1>; its head stays out of frame. Keep the cat exactly as in <IMAGE_2>, moving like a real cat. Keep the bamboo flask's bamboo, node, size and dark oak plug exactly as in <IMAGE_3>, with the plug in or out of its open end exactly as described above. Photoreal live-action look, bright late-morning sun high in a clear sky, short hard shadows, the black rocks hot and dry, muted natural colours, realistic textures and physics, natural real-time motion, no on-screen text.
 ```
 
 <details><summary>레퍼런스 없이 앱에 시작 프레임 1장만 올릴 때</summary>
 
 ```text
-The uploaded image is the first frame. The flask pours a slow trickle of fresh water over the cat's white front paws and it runs into the clean hollow; the cat lifts and shakes one paw, then lowers its head and laps the fresh water from the hollow. Static camera. It ends with the cat lapping water from the hollow and the hands holding the flask upright beside it. Pace the action so that this ending is reached at about 3.4 seconds and then held, almost motionless, until the clip ends at 5 seconds. Only the figure's slender matte light-grey porcelain hands and forearms appear,; its head stays out of frame. The cat is a lean adult ginger tabby with darker stripes, a white chest and two white front paws, a small notch at the tip of its left ear and a thin braided leather collar with one small brass disc, moving like a real cat. The bamboo flask is a single thirty-centimetre bamboo section closed at the bottom by its node, with a removable rough dark oak plug that is in its open end only when described so. Photoreal live-action look, bright late-morning sun high in a clear sky, short hard shadows, the black rocks hot and dry, muted natural colours, realistic textures and physics, natural real-time motion, no on-screen text.
+The uploaded image is the first frame. The flask pours a slow trickle of fresh water over the cat's white front paws and it runs off down the rock; the cat lifts and shakes one paw, then lowers its head and laps from the thin stream still trickling from the flask. Static camera. It ends with the cat lapping from the trickle and the hands holding the flask tilted beside it. Pace the action so that this ending is reached at about 3.4 seconds and then held, almost motionless, until the clip ends at 5 seconds. Only the figure's slender matte light-grey porcelain hands and forearms appear,; its head stays out of frame. The cat is a lean adult ginger tabby with darker stripes, a white chest and two white front paws, a small notch at the tip of its left ear and a thin braided leather collar with one small brass disc, moving like a real cat. The bamboo flask is a single thirty-centimetre bamboo section closed at the bottom by its node, with a removable rough dark oak plug that is in its open end only when described so. Photoreal live-action look, bright late-morning sun high in a clear sky, short hard shadows, the black rocks hot and dry, muted natural colours, realistic textures and physics, natural real-time motion, no on-screen text.
 ```
 
 </details>
@@ -398,7 +398,7 @@ QC: 머리에 이목구비 없음 · 조끼 주황+버클 3개+왼쪽 호루라�
 - 연결: **A** 앵글 컷(앞 끝 프레임 편집) · 출발 S09
 - 빛: late_morning_sun · 레퍼런스: P, ABALONE
 - 생성 4s → 사용 구간 0.000–2.550s (아웃 포인트 = 다음 샷 출발 프레임)
-- 내레이션: `N10` 담을 그릇이, 없다.
+- 내레이션: `N10` 끓일 그릇이, 없다.
 - 효과음: 껍데기 내려놓는 소리, 정적 — 파도만
 - 끝 상태(다음 샷의 출발점): 주인공: 웅덩이 옆 무릎, 두 손 무릎 위, 고개 숙임. 빈 전복 껍데기는 옆 바위 위. 강한 볕.
 
@@ -432,9 +432,9 @@ QC: 머리에 이목구비 없음 · 조끼 주황+버클 3개+왼쪽 호루라�
 
 ## S11 · PRINCIPLE · 측면 정렬 구도 · 넓은 오목에 바닷물을 부음 (도면 — 수면선 y≈720) · 0:37.75–0:43.44 (5.70s)
 
-**장면** 측면 정렬 구도(바위 높이, 정지 카메라). 높은 너럭바위의 넓고 얕은 오목이 프레임을 가로지르고, 고요한 수면이 밝은 수평선으로 프레임 위에서 약 37%(y≈720)에 놓인다 — 도면의 수면선. 주인공은 오목 건너편에 무릎 꿇고(상단 띠 y300~540, 중앙보다 약간 왼쪽), 물통의 바닷물을 오목에 천천히 붓는다(물통은 웅덩이에서 바닷물로 채움). 고양이는 왼쪽 위 마른 바위. 오른쪽 위는 바다와 하늘(도면의 증발 화살표 자리). 아래 약 60%는 앞쪽의 그늘진 바위 면만(도면, 배경 40% 어둡게).
+**장면** 측면 정렬 구도(완전한 옆모습, S05 참고 프레임, 바위 높이, 정지 카메라). 높은 너럭바위의 넓고 얕은 오목이 프레임을 가로지르고, 고요한 수면이 밝은 수평선으로 프레임 위에서 약 37%(y≈720)에 놓인다 — 도면의 수면선. 주인공은 오목 건너편에 무릎 꿇고(상단 띠 y300~540, 중앙보다 약간 왼쪽), 물통의 바닷물을 오목에 천천히 붓는다(물통은 웅덩이에서 바닷물로 채움). 고양이는 왼쪽 위 마른 바위. 오른쪽 위는 바다와 하늘(도면의 증발 화살표 자리). 아래 약 60%는 앞쪽의 그늘진 바위 면만(도면, 배경 40% 어둡게).
 
-- 연결: **A** 앵글 컷(앞 끝 프레임 편집) · 출발 S10
+- 연결: **T** 시간 점프(앞 끝 프레임 편집) · 출발 S10 · 참고 프레임 S05
 - 빛: late_morning_sun · 레퍼런스: P, C, FLASK
 - 생성 7s → 사용 구간 0.000–5.698s (아웃 포인트 = 다음 샷 출발 프레임)
 - 내레이션: `N11` 바닷물 1리터엔 소금이 약 35그램 녹아 있다. / `N12` 물만 날려 보내면 소금은 남는다.
@@ -444,10 +444,10 @@ QC: 머리에 이목구비 없음 · 조끼 주황+버클 3개+왼쪽 호루라�
 
 **① 시작 프레임 편집** (`/v1/images/edits`, 9:16, 2k)
 
-업로드 순서: 1) S10 끝 프레임 · 2) 레퍼런스 P · 3) 레퍼런스 C · 4) 레퍼런스 FLASK
+업로드 순서: 1) S10 끝 프레임 · 2) S05 끝 프레임 · 3) 레퍼런스 P · 4) 레퍼런스 C · 5) 레퍼런스 FLASK
 
 ```text
-Change the camera to a side-on view at rock height on the high flat shelf, a little later: a wide, shallow hollow full of still seawater runs across the frame, its water surface a bright level line about thirty-seven percent of the way down the frame; the figure from <IMAGE_1> kneels just beyond the far edge of the hollow, slightly left of centre, its head and shoulders between about a sixth and just over a quarter of the way down the frame, holding the bamboo flask from <IMAGE_3> tilted over the water, and the ginger cat from <IMAGE_2> sits on a dry rock at the upper left, level with the figure; the upper right of the frame is open sea and sky. Leave the lower sixty percent of the frame plain: only the dark, shadowed near face of the rock. Keep the strong late-morning sun and all designs exactly as in <IMAGE_0>, <IMAGE_1>, <IMAGE_2> and <IMAGE_3>.
+Change the time to a little later and the place to the high flat shelf from <IMAGE_1> (take only the rock shelf and its hollows from it; the figure and the cat appear only once, where described here), with the camera side-on at rock height: a wide, shallow hollow full of still seawater runs across the frame, its water surface a bright level line about thirty-seven percent of the way down the frame; the figure from <IMAGE_2> kneels just beyond the far edge of the hollow, slightly left of centre, side-on to the camera in full profile, its blank head bowed toward the water, its head and shoulders between about a sixth and just over a quarter of the way down the frame, holding the bamboo flask from <IMAGE_4> tilted over the water, and the ginger cat from <IMAGE_3> sits on a dry rock at the upper left, level with the figure; the upper right of the frame is open sea and sky. Leave the lower sixty percent of the frame plain: only the dark, shadowed near face of the rock. Keep the strong late-morning sun of <IMAGE_0> and all designs exactly as in <IMAGE_2>, <IMAGE_3> and <IMAGE_4>.
 ```
 
 **② 영상** (`grok-imagine-video-1.5`, 7s, 9:16, 720p, 오디오 끔)
@@ -598,7 +598,7 @@ QC: 머리에 이목구비 없음 · 조끼 주황+버클 3개+왼쪽 호루라�
 업로드 순서: 1) S14 끝 프레임 · 2) 레퍼런스 P · 3) 레퍼런스 COPPER
 
 ```text
-Change the camera to an over-the-shoulder view from behind the figure from <IMAGE_1>, its blank head seen only from the back, a little later, aimed down at the pile of shipwreck debris the storm threw up above the high-tide line: dry, sun-bleached grey planks, split barrel staves and a coil of rope, and among them one broken board with the dull reddish-brown copper sheet from <IMAGE_2> nailed flat to it along its edges. Keep the strong sun, the figure's design and the copper sheet exactly as in <IMAGE_0>, <IMAGE_1> and <IMAGE_2>.
+Change the camera to an over-the-shoulder view from behind the figure from <IMAGE_1>, its blank head seen only from the back, a little later, aimed down at what is left of the shipwreck debris the storm threw up above the high-tide line: a small heap of dry, sun-bleached grey planks, split barrel staves and a coil of rope, and among them one broken board with the dull reddish-brown copper sheet from <IMAGE_2> nailed flat to it along its edges. Keep the strong sun, the figure's design and the copper sheet exactly as in <IMAGE_0>, <IMAGE_1> and <IMAGE_2>.
 ```
 
 **② 영상** (`grok-imagine-video-1.5`, 5s, 9:16, 720p, 오디오 끔)
@@ -612,7 +612,7 @@ Change the camera to an over-the-shoulder view from behind the figure from <IMAG
 <details><summary>레퍼런스 없이 앱에 시작 프레임 1장만 올릴 때</summary>
 
 ```text
-The uploaded image is the first frame. The figure holds still as the camera pushes in slowly past its shoulder toward the copper sheet on the board. It ends with the copper sheet clearly visible in the middle of the frame. Pace the action so that this ending is reached at about 3.5 seconds and then held, almost motionless, until the clip ends at 5 seconds. The figure has a smooth egg-shaped head of matte light-grey porcelain with no facial features, slender porcelain hands, a navy windbreaker with the sleeves pushed up, a safety-orange life vest with three black buckles and a small steel whistle on the left strap, charcoal trousers rolled to the calf and bare porcelain feet; its head stays featureless in every frame. The copper sheet is a thin, dull reddish-brown sheet about forty by thirty centimetres, tarnished dark with a few small pale-green spots, nailed along its edges to a broken oak board. Photoreal live-action look, bright late-morning sun high in a clear sky, short hard shadows, the black rocks hot and dry, muted natural colours, realistic textures and physics, natural real-time motion, no on-screen text.
+The uploaded image is the first frame. The figure holds still as the camera pushes in slowly past its shoulder toward the copper sheet on the board. It ends with the copper sheet clearly visible in the middle of the frame. Pace the action so that this ending is reached at about 3.5 seconds and then held, almost motionless, until the clip ends at 5 seconds. The figure has a smooth egg-shaped head of matte light-grey porcelain with no facial features, slender porcelain hands, a navy windbreaker with the sleeves pushed up, a safety-orange life vest with three black buckles and a small steel whistle on the left strap, charcoal trousers rolled to the calf and bare porcelain feet; its head stays featureless in every frame. The copper sheet is a thin, dull reddish-brown sheet about forty by thirty centimetres, tarnished dark, nailed along its edges to a broken oak board. Photoreal live-action look, bright late-morning sun high in a clear sky, short hard shadows, the black rocks hot and dry, muted natural colours, realistic textures and physics, natural real-time motion, no on-screen text.
 ```
 
 </details>
@@ -645,13 +645,13 @@ Change the camera to a close-up a while later of a flat black basalt rock: the c
 이미지: <IMAGE_0> 시작 프레임(image 고정) · <IMAGE_1> 레퍼런스 P · <IMAGE_2> 레퍼런스 COPPER · <IMAGE_3> 레퍼런스 COPPER_PAN
 
 ```text
-<IMAGE_0> is the first frame. The hands bend the last side up against the rock edge, pinch its corners into pleats, and set the finished shallow tray down level on the flat rock. Static camera. It ends with the copper tray standing on the rock and the hands drawing back. Pace the action so that this ending is reached at about 2.9 seconds and then held, almost motionless, until the clip ends at 5 seconds. Only the figure's slender matte light-grey porcelain hands and forearms appear, exactly as in <IMAGE_1>; its head stays out of frame. Keep the copper sheet's size, dull tarnished reddish-brown colour and row of nails along its edges exactly as in <IMAGE_2>. Keep the copper tray's size, low bent-up sides, pleated corners, row of empty nail holes along its rims and dull reddish-brown copper exactly as in <IMAGE_3>; any soot, green spots or white crust are exactly as described above. Photoreal live-action look, bright late-morning sun high in a clear sky, short hard shadows, the black rocks hot and dry, muted natural colours, realistic textures and physics, natural real-time motion, no on-screen text.
+<IMAGE_0> is the first frame. The hands bend the last side up against the rock edge and press its two corners into rough pleats. Static camera. It ends with the finished shallow tray standing level on the rock, the hands drawing back. Pace the action so that this ending is reached at about 2.9 seconds and then held, almost motionless, until the clip ends at 5 seconds. Only the figure's slender matte light-grey porcelain hands and forearms appear, exactly as in <IMAGE_1>; its head stays out of frame. Keep the copper sheet's size, dull tarnished reddish-brown colour and row of nails along its edges exactly as in <IMAGE_2>. Keep the copper tray's size, low bent-up sides, pleated corners, row of empty nail holes along its rims and dull reddish-brown copper exactly as in <IMAGE_3>; any soot or white crust are exactly as described above. Photoreal live-action look, bright late-morning sun high in a clear sky, short hard shadows, the black rocks hot and dry, muted natural colours, realistic textures and physics, natural real-time motion, no on-screen text.
 ```
 
 <details><summary>레퍼런스 없이 앱에 시작 프레임 1장만 올릴 때</summary>
 
 ```text
-The uploaded image is the first frame. The hands bend the last side up against the rock edge, pinch its corners into pleats, and set the finished shallow tray down level on the flat rock. Static camera. It ends with the copper tray standing on the rock and the hands drawing back. Pace the action so that this ending is reached at about 2.9 seconds and then held, almost motionless, until the clip ends at 5 seconds. Only the figure's slender matte light-grey porcelain hands and forearms appear,; its head stays out of frame. The copper sheet is a thin, dull reddish-brown sheet about forty by thirty centimetres, tarnished dark with a few small pale-green spots, nailed along its edges to a broken oak board. The copper tray is the same thin dull reddish-brown copper sheet bent by hand into a shallow open tray about thirty-five by twenty-five centimetres, with low sloping sides about five centimetres high, rough pleated corners and a row of empty nail holes along the tops of its sides. Photoreal live-action look, bright late-morning sun high in a clear sky, short hard shadows, the black rocks hot and dry, muted natural colours, realistic textures and physics, natural real-time motion, no on-screen text.
+The uploaded image is the first frame. The hands bend the last side up against the rock edge and press its two corners into rough pleats. Static camera. It ends with the finished shallow tray standing level on the rock, the hands drawing back. Pace the action so that this ending is reached at about 2.9 seconds and then held, almost motionless, until the clip ends at 5 seconds. Only the figure's slender matte light-grey porcelain hands and forearms appear,; its head stays out of frame. The copper sheet is a thin, dull reddish-brown sheet about forty by thirty centimetres, tarnished dark, nailed along its edges to a broken oak board. The copper tray is the same thin dull reddish-brown copper sheet bent by hand into a shallow open tray about thirty-five by twenty-five centimetres, with low sloping sides about five centimetres high, rough pleated corners and a row of empty nail holes along the tops of its sides. Photoreal live-action look, bright late-morning sun high in a clear sky, short hard shadows, the black rocks hot and dry, muted natural colours, realistic textures and physics, natural real-time motion, no on-screen text.
 ```
 
 </details>
@@ -664,7 +664,7 @@ QC: 머리에 이목구비 없음 · 조끼 주황+버클 3개+왼쪽 호루라�
 
 **장면** 시간 점프(한낮, 그림자가 가장 짧다). 미디엄. 높은 너럭바위의 오목들 물이 줄어 가장자리에 흰 테가 생기기 시작했다. 주인공이 얕아진 오목에서 물통으로 물을 떠 가운데 깊은 오목 하나에 모아 붓는다(구엄식 단계 농축). 고양이는 큰 바위 그늘에서 잠듦.
 
-- 연결: **T** 시간 점프(앞 끝 프레임 편집) · 출발 S16
+- 연결: **T** 시간 점프(앞 끝 프레임 편집) · 출발 S16 · 참고 프레임 S13
 - 빛: midday_sun · 레퍼런스: P, C, FLASK
 - 생성 5s → 사용 구간 0.000–3.550s (아웃 포인트 = 다음 샷 출발 프레임)
 - 내레이션: `N18` 물이 줄면 더 적은 오목으로 모아 붓는다.
@@ -674,10 +674,10 @@ QC: 머리에 이목구비 없음 · 조끼 주황+버클 3개+왼쪽 호루라�
 
 **① 시작 프레임 편집** (`/v1/images/edits`, 9:16, 2k)
 
-업로드 순서: 1) S16 끝 프레임 · 2) 레퍼런스 P · 3) 레퍼런스 C · 4) 레퍼런스 FLASK
+업로드 순서: 1) S16 끝 프레임 · 2) S13 끝 프레임 · 3) 레퍼런스 P · 4) 레퍼런스 C · 5) 레퍼런스 FLASK
 
 ```text
-Change the time to midday, the sun almost overhead and the shadows very short, at the high shelf, with the camera at a medium distance: the water in the shallow hollows has sunk low and thin white rings are forming around their edges; the figure from <IMAGE_1> crouches between two hollows, dipping the bamboo flask from <IMAGE_3> into a low one, beside one deeper hollow in the middle that holds more water; the ginger cat from <IMAGE_2> sleeps in the shade of the large boulder at the back. Keep the outfit of <IMAGE_0> and all designs exactly as in <IMAGE_1>, <IMAGE_2> and <IMAGE_3>.
+Change the time to midday, the sun almost overhead and the shadows very short, at the high shelf shown in <IMAGE_1> (take only the rock and the hollows from it; the figure and the cat appear only once, where described here), with the camera at a medium distance: the water in the shallow hollows has sunk low and thin white rings are forming around their edges; the figure from <IMAGE_2> crouches between two hollows, dipping the bamboo flask from <IMAGE_4> into a low one, beside one deeper hollow in the middle that holds more water; the ginger cat from <IMAGE_3> sleeps in the shade of the large boulder at the back. Keep the outfit of <IMAGE_0> and all designs exactly as in <IMAGE_2>, <IMAGE_3> and <IMAGE_4>.
 ```
 
 **② 영상** (`grok-imagine-video-1.5`, 5s, 9:16, 720p, 오디오 끔)
@@ -702,9 +702,9 @@ QC: 머리에 이목구비 없음 · 조끼 주황+버클 3개+왼쪽 호루라�
 
 ## S18 · BUILD · 오후 — 어제 불자리에 마른 받침돌 셋 · 마른 판자 땔감 · 바람막이 · 1:07.52–1:10.67 (3.15s)
 
-**장면** 시간 점프(오후, 해가 기울기 시작). 미디엄 와이드. 높은 물때선 위, EP.2의 불자리 바위 오목(큰 바위가 바람을 가림). 오목 둘레에 밀물선 위에서 주운 마른 주먹돌 셋이 받침으로 놓였다(젖은 갯바위 돌 금지 — 불에 터질 수 있음). 주인공이 마른 회색 판자·통판 한 아름을 그 옆에 내려놓고, 판자 하나를 바람 오는 쪽에 세워 돌에 기댄다(바람막이). 홈 난 널빤지는 이 더미에 없다.
+**장면** 시간 점프(오후, 해가 기울기 시작). 미디엄 와이드. 높은 물때선 위, EP.2의 불자리 바위 오목(큰 바위가 바람을 가림). 오목 둘레에 밀물선 위에서 주운 마른 주먹돌 셋이 받침으로 놓였다(젖은 갯바위 돌 금지 — 불에 터질 수 있음). 주인공이 잔해의 마지막 마른 회색 판자·통판 한 아름을 그 옆에 막 내려놓고 무릎 꿇은 상태에서(시작 프레임), 판자 하나를 바람 오는 쪽에 세워 돌에 기댄다(바람막이). 홈 난 널빤지는 이 더미에 없다.
 
-- 연결: **T** 시간 점프(앞 끝 프레임 편집) · 출발 S17
+- 연결: **T** 시간 점프(앞 끝 프레임 편집) · 출발 S17 · 참고 프레임 S02
 - 빛: afternoon · 레퍼런스: P
 - 생성 5s → 사용 구간 0.000–3.150s (아웃 포인트 = 다음 샷 출발 프레임)
 - 내레이션: `N19` 땔감은 폭풍이 올려 둔 마른 판자다.
@@ -713,10 +713,10 @@ QC: 머리에 이목구비 없음 · 조끼 주황+버클 3개+왼쪽 호루라�
 
 **① 시작 프레임 편집** (`/v1/images/edits`, 9:16, 2k)
 
-업로드 순서: 1) S17 끝 프레임 · 2) 레퍼런스 P
+업로드 순서: 1) S17 끝 프레임 · 2) S02 끝 프레임 · 3) 레퍼런스 P
 
 ```text
-Change the time to the afternoon, the sun lower from the left with long soft shadows, and the scene to the bare rock hollow above the high-tide line where yesterday's fire burned, sheltered by a large boulder: three dry, fist-sized stones are set around the hollow as a stand, and the figure from <IMAGE_1> walks in carrying an armful of dry, sun-bleached grey planks and split barrel staves. Keep the outfit and the figure's design exactly as in <IMAGE_0> and <IMAGE_1>.
+Change the time to the afternoon, the sun lower from the left with long soft shadows, and the scene to the bare rock hollow from <IMAGE_1> where yesterday's fire burned, above the high-tide line and sheltered by the large boulder (take only the rocks, the large boulder and the hollow from it; the figure appears only once, where described here): three dry, fist-sized stones are set around the hollow as a stand, and the figure from <IMAGE_2> kneels beside the hollow with an armful of dry, sun-bleached grey planks and split barrel staves, the last of the debris, just set down beside it. Keep the outfit and the figure's design exactly as in <IMAGE_0> and <IMAGE_2>.
 ```
 
 **② 영상** (`grok-imagine-video-1.5`, 5s, 9:16, 720p, 오디오 끔)
@@ -724,13 +724,13 @@ Change the time to the afternoon, the sun lower from the left with long soft sha
 이미지: <IMAGE_0> 시작 프레임(image 고정) · <IMAGE_1> 레퍼런스 P
 
 ```text
-<IMAGE_0> is the first frame. The figure sets the armful of wood down beside the hollow and stands one plank on its edge on the windward side, leaning it against a stone as a windbreak. Static camera. It ends with the wood pile beside the hollow, the windbreak plank standing, and the figure kneeling by the three stones. Pace the action so that this ending is reached at about 2.9 seconds and then held, almost motionless, until the clip ends at 5 seconds. Keep the figure exactly as in <IMAGE_1>; its head stays a smooth, blank, featureless matte porcelain egg in every frame, its surface unbroken from crown to neck. Photoreal live-action look, warm low afternoon sun from the left, long soft shadows, the rocks drying, muted natural colours, realistic textures and physics, natural real-time motion, no on-screen text.
+<IMAGE_0> is the first frame. The figure stands one plank on its edge on the windward side, leaning it against a stone as a windbreak, and settles back onto its knees. Static camera. It ends with the wood pile beside the hollow, the windbreak plank standing, and the figure kneeling by the three stones. Pace the action so that this ending is reached at about 2.9 seconds and then held, almost motionless, until the clip ends at 5 seconds. Keep the figure exactly as in <IMAGE_1>; its head stays a smooth, blank, featureless matte porcelain egg in every frame, its surface unbroken from crown to neck. Photoreal live-action look, warm low afternoon sun from the left, long soft shadows, the black rocks dry and warm, muted natural colours, realistic textures and physics, natural real-time motion, no on-screen text.
 ```
 
 <details><summary>레퍼런스 없이 앱에 시작 프레임 1장만 올릴 때</summary>
 
 ```text
-The uploaded image is the first frame. The figure sets the armful of wood down beside the hollow and stands one plank on its edge on the windward side, leaning it against a stone as a windbreak. Static camera. It ends with the wood pile beside the hollow, the windbreak plank standing, and the figure kneeling by the three stones. Pace the action so that this ending is reached at about 2.9 seconds and then held, almost motionless, until the clip ends at 5 seconds. The figure has a smooth egg-shaped head of matte light-grey porcelain with no facial features, slender porcelain hands, a navy windbreaker with the sleeves pushed up, a safety-orange life vest with three black buckles and a small steel whistle on the left strap, charcoal trousers rolled to the calf and bare porcelain feet; its head stays featureless in every frame. Photoreal live-action look, warm low afternoon sun from the left, long soft shadows, the rocks drying, muted natural colours, realistic textures and physics, natural real-time motion, no on-screen text.
+The uploaded image is the first frame. The figure stands one plank on its edge on the windward side, leaning it against a stone as a windbreak, and settles back onto its knees. Static camera. It ends with the wood pile beside the hollow, the windbreak plank standing, and the figure kneeling by the three stones. Pace the action so that this ending is reached at about 2.9 seconds and then held, almost motionless, until the clip ends at 5 seconds. The figure has a smooth egg-shaped head of matte light-grey porcelain with no facial features, slender porcelain hands, a navy windbreaker with the sleeves pushed up, a safety-orange life vest with three black buckles and a small steel whistle on the left strap, charcoal trousers rolled to the calf and bare porcelain feet; its head stays featureless in every frame. Photoreal live-action look, warm low afternoon sun from the left, long soft shadows, the black rocks dry and warm, muted natural colours, realistic textures and physics, natural real-time motion, no on-screen text.
 ```
 
 </details>
@@ -741,13 +741,13 @@ QC: 머리에 이목구비 없음 · 조끼 주황+버클 3개+왼쪽 호루라�
 
 ## S19 · BUILD · 볕에 마른 쑥 솜에 다시 불씨 — 쇠못과 흰 돌 · 1:10.67–1:14.27 (3.60s)
 
-**장면** 익스트림 클로즈업(손만, 불자리 위). 왼손에 깨진 흰 돌(날 위) + 엄지로 누른, 아침 볕에 바삭하게 마른 쑥 솜. 오른손이 쇠못 간 면으로 날을 비스듬히 빠르게 긁어 내린다(손가락을 내리치지 않는 궤적). 세 번째에 불티 하나가 솜에 박혀 주황 점이 번지고 가는 연기 한 줄. (입으로 불지 않는다 — 이후 둥지 흔들기는 생략, 시간 점프)
+**장면** 익스트림 클로즈업(손만, 불자리 위). 왼손에 깨진 흰 돌(날 위) + 엄지로 누른, 아침 볕에 바삭하게 마른 쑥 솜. 오른손이 쇠못 간 면으로 날을 비스듬히 빠르게 긁어 내린다(손가락을 내리치지 않는 궤적). 여러 번 친 끝에 불티 하나가 솜에 박혀 주황 점이 번지고 가는 연기 한 줄(볶지 않은 쑥이라 EP.2처럼 쉽게 붙지 않는다). (입으로 불지 않는다 — 이후 둥지 흔들기는 생략, 시간 점프)
 
 - 연결: **A** 앵글 컷(앞 끝 프레임 편집) · 출발 S18
 - 빛: afternoon · 레퍼런스: P, NAIL, FLINT
 - 생성 5s → 사용 구간 0.000–3.600s (아웃 포인트 = 다음 샷 출발 프레임)
 - 내레이션: `N20` 어제 익힌 쇠와 돌로 다시 불을 깨운다.
-- 효과음: '칙' 3번, 아주 작은 지글거림
+- 효과음: '칙' 여러 번, 아주 작은 지글거림
 - 끝 상태(다음 샷의 출발점): 쑥 솜에 주황 불씨 + 가는 연기 한 줄. 두 손 쥐기 자세로 정지(손만). 오후.
 
 **① 시작 프레임 편집** (`/v1/images/edits`, 9:16, 2k)
@@ -763,13 +763,13 @@ Change the camera to an extreme close-up a moment later of the figure's matte li
 이미지: <IMAGE_0> 시작 프레임(image 고정) · <IMAGE_1> 레퍼런스 P · <IMAGE_2> 레퍼런스 NAIL · <IMAGE_3> 레퍼런스 FLINT
 
 ```text
-<IMAGE_0> is the first frame. The right hand scrapes the nail down the stone's edge in fast glancing strokes; on the third stroke a tiny orange spark lands on the fluff and stays, and a pin-point of orange glow slowly spreads in it as a thin thread of smoke rises. Static macro camera. It ends with the small orange glow in the fluff, the thread of smoke rising and the hands still. Pace the action so that this ending is reached at about 3.3 seconds and then held, almost motionless, until the clip ends at 5 seconds. Only the figure's slender matte light-grey porcelain hands and forearms appear, exactly as in <IMAGE_1>; its head stays out of frame. Keep the nail's length, tapering square shank and lumpy hand-forged square head exactly as in <IMAGE_2>; its rust and any bright ground side are exactly as described above. Keep the stone's chalky white rind, dark grey glassy inside and size exactly as in <IMAGE_3>; it is whole or broken exactly as described above. Photoreal live-action look, warm low afternoon sun from the left, long soft shadows, the rocks drying, muted natural colours, realistic textures and physics, natural real-time motion, no on-screen text.
+<IMAGE_0> is the first frame. The right hand scrapes the nail down the stone's edge in fast glancing strokes, again and again, until at last a tiny orange spark lands on the fluff and stays, and a pin-point of orange glow slowly spreads in it as a thin thread of smoke rises. Static macro camera. It ends with the small orange glow in the fluff, the thread of smoke rising and the hands still. Pace the action so that this ending is reached at about 3.3 seconds and then held, almost motionless, until the clip ends at 5 seconds. Only the figure's slender matte light-grey porcelain hands and forearms appear, exactly as in <IMAGE_1>; its head stays out of frame. Keep the nail's length, tapering square shank and lumpy hand-forged square head exactly as in <IMAGE_2>; its rust and any bright ground side are exactly as described above. Keep the stone's chalky white rind, dark grey glassy inside and size exactly as in <IMAGE_3>; it is whole or broken exactly as described above. Photoreal live-action look, warm low afternoon sun from the left, long soft shadows, the black rocks dry and warm, muted natural colours, realistic textures and physics, natural real-time motion, no on-screen text.
 ```
 
 <details><summary>레퍼런스 없이 앱에 시작 프레임 1장만 올릴 때</summary>
 
 ```text
-The uploaded image is the first frame. The right hand scrapes the nail down the stone's edge in fast glancing strokes; on the third stroke a tiny orange spark lands on the fluff and stays, and a pin-point of orange glow slowly spreads in it as a thin thread of smoke rises. Static macro camera. It ends with the small orange glow in the fluff, the thread of smoke rising and the hands still. Pace the action so that this ending is reached at about 3.3 seconds and then held, almost motionless, until the clip ends at 5 seconds. Only the figure's slender matte light-grey porcelain hands and forearms appear,; its head stays out of frame. The nail is a hand-forged iron nail about twelve centimetres long with a tapering square shank and a lumpy square head, rusted orange-brown, with one side ground to bright grey metal only when described so. The stone is a palm-sized flint nodule with a knobbly chalky white rind; where broken it shows dark grey glassy stone with smooth curved shell-like surfaces and a thin sharp edge. Photoreal live-action look, warm low afternoon sun from the left, long soft shadows, the rocks drying, muted natural colours, realistic textures and physics, natural real-time motion, no on-screen text.
+The uploaded image is the first frame. The right hand scrapes the nail down the stone's edge in fast glancing strokes, again and again, until at last a tiny orange spark lands on the fluff and stays, and a pin-point of orange glow slowly spreads in it as a thin thread of smoke rises. Static macro camera. It ends with the small orange glow in the fluff, the thread of smoke rising and the hands still. Pace the action so that this ending is reached at about 3.3 seconds and then held, almost motionless, until the clip ends at 5 seconds. Only the figure's slender matte light-grey porcelain hands and forearms appear,; its head stays out of frame. The nail is a hand-forged iron nail about twelve centimetres long with a tapering square shank and a lumpy square head, rusted orange-brown, with one side ground to bright grey metal only when described so. The stone is a palm-sized flint nodule with a knobbly chalky white rind; where broken it shows dark grey glassy stone with smooth curved shell-like surfaces and a thin sharp edge. Photoreal live-action look, warm low afternoon sun from the left, long soft shadows, the black rocks dry and warm, muted natural colours, realistic textures and physics, natural real-time motion, no on-screen text.
 ```
 
 </details>
@@ -782,8 +782,8 @@ QC: 머리에 이목구비 없음 · 조끼 주황+버클 3개+왼쪽 호루라�
 
 **장면** 시간 점프(한참 뒤, 늦은 오후). 측면 미디엄. 돌 셋 위의 구리판 솥 아래 작은 불(판자 끝, 바람막이), 솥 안의 졸인 물이 맑게 끓으며 흰 김이 바람 아래쪽으로 흐른다. 주인공이 바람 위쪽에 무릎 꿇고 팔을 뻗어 물통의 졸인 물을 솥에 보탠다(솥 높이 2/3). 고양이는 몇 걸음 뒤 큰 바위 그늘 — 불·김과 멀리, 먼저 자리를 피해 있음.
 
-- 연결: **T** 시간 점프(앞 끝 프레임 편집) · 출발 S19
-- 빛: late_afternoon_fire · 레퍼런스: P, C, COPPER_PAN, FLASK
+- 연결: **T** 시간 점프(앞 끝 프레임 편집) · 출발 S19 · 참고 프레임 S18
+- 빛: late_afternoon_fire · 레퍼런스: P, C, COPPER_PAN
 - 생성 5s → 사용 구간 0.000–3.650s (아웃 포인트 = 다음 샷 출발 프레임)
 - 내레이션: `N21` 끓어 줄면, 또 붓는다. / `N22` 해가 기울 무렵, 가장자리에 흰 테가 선다.
 - 오버레이: `time_card_late` (overlays.json)
@@ -792,24 +792,24 @@ QC: 머리에 이목구비 없음 · 조끼 주황+버클 3개+왼쪽 호루라�
 
 **① 시작 프레임 편집** (`/v1/images/edits`, 9:16, 2k)
 
-업로드 순서: 1) S19 끝 프레임 · 2) 레퍼런스 P · 3) 레퍼런스 C · 4) 레퍼런스 COPPER_PAN · 5) 레퍼런스 FLASK
+업로드 순서: 1) S19 끝 프레임 · 2) S18 끝 프레임 · 3) 레퍼런스 P · 4) 레퍼런스 C · 5) 레퍼런스 COPPER_PAN
 
 ```text
-Change the time to much later in the afternoon, the sun low and golden from the left, at the same fire hollow seen in a medium side view: the shallow copper tray from <IMAGE_3> sits level on the three stones over a small fire of plank ends, the windbreak plank standing behind it, and the liquid in the tray is boiling, white steam drifting away downwind; the figure from <IMAGE_1> kneels on the upwind side, arm stretched out, tilting the bamboo flask from <IMAGE_4> toward the tray; the ginger cat from <IMAGE_2> sits in the shade of the large boulder several steps behind, well away from the fire. Keep all designs exactly as in <IMAGE_1>, <IMAGE_2>, <IMAGE_3> and <IMAGE_4>.
+Change the time to much later in the afternoon, the sun low and golden from the left, at the same fire hollow as in <IMAGE_1> (take only the rocks, the large boulder, the three stones and the windbreak plank from it; the figure appears only once, where described here), seen in a medium side view: the shallow copper tray from <IMAGE_4> sits level on the three stones over a small fire of plank ends, the windbreak plank standing behind it and a few planks left beside the hollow, and the liquid in the tray is boiling, white steam drifting away downwind; the figure from <IMAGE_2> kneels on the upwind side, arm stretched out, tilting the bamboo flask, a single bamboo section with a dark oak plug, toward the tray; the ginger cat from <IMAGE_3> sits in the shade of the large boulder several steps behind, well away from the fire. Keep all designs exactly as in <IMAGE_2>, <IMAGE_3> and <IMAGE_4>.
 ```
 
 **② 영상** (`grok-imagine-video-1.5`, 5s, 9:16, 720p, 오디오 끔)
 
-이미지: <IMAGE_0> 시작 프레임(image 고정) · <IMAGE_1> 레퍼런스 P · <IMAGE_2> 레퍼런스 C · <IMAGE_3> 레퍼런스 COPPER_PAN · <IMAGE_4> 레퍼런스 FLASK
+이미지: <IMAGE_0> 시작 프레임(image 고정) · <IMAGE_1> 레퍼런스 P · <IMAGE_2> 레퍼런스 C · <IMAGE_3> 레퍼런스 COPPER_PAN
 
 ```text
-<IMAGE_0> is the first frame. A stream of liquid from the flask pours into the boiling tray until it is about two-thirds full; the boiling settles for a moment, then rolls up again with more steam. Static camera. It ends with the tray boiling steadily and the figure kneeling back with the flask upright. Pace the action so that this ending is reached at about 3.4 seconds and then held, almost motionless, until the clip ends at 5 seconds. Keep the figure exactly as in <IMAGE_1>; its head stays a smooth, blank, featureless matte porcelain egg in every frame, its surface unbroken from crown to neck. Keep the cat exactly as in <IMAGE_2>, moving like a real cat. Keep the copper tray's size, low bent-up sides, pleated corners, row of empty nail holes along its rims and dull reddish-brown copper exactly as in <IMAGE_3>; any soot, green spots or white crust are exactly as described above. Keep the bamboo flask's bamboo, node, size and dark oak plug exactly as in <IMAGE_4>, with the plug in or out of its open end exactly as described above. Photoreal live-action look, low golden late-afternoon sun from the left, long shadows, the small fire glowing warm under the copper tray, muted natural colours, realistic textures and physics, natural real-time motion, no on-screen text.
+<IMAGE_0> is the first frame. A stream of liquid from the flask pours into the boiling tray until it is about two-thirds full; the boiling settles for a moment, then rolls up again with more steam. Static camera. It ends with the tray boiling steadily and the figure kneeling back with the flask upright. Pace the action so that this ending is reached at about 3.4 seconds and then held, almost motionless, until the clip ends at 5 seconds. Keep the figure exactly as in <IMAGE_1>; its head stays a smooth, blank, featureless matte porcelain egg in every frame, its surface unbroken from crown to neck. Keep the cat exactly as in <IMAGE_2>, moving like a real cat. Keep the copper tray's size, low bent-up sides, pleated corners, row of empty nail holes along its rims and dull reddish-brown copper exactly as in <IMAGE_3>; any soot or white crust are exactly as described above. Photoreal live-action look, low golden late-afternoon sun from the left, long shadows, the small fire glowing warm under the copper tray, muted natural colours, realistic textures and physics, natural real-time motion, no on-screen text.
 ```
 
 <details><summary>레퍼런스 없이 앱에 시작 프레임 1장만 올릴 때</summary>
 
 ```text
-The uploaded image is the first frame. A stream of liquid from the flask pours into the boiling tray until it is about two-thirds full; the boiling settles for a moment, then rolls up again with more steam. Static camera. It ends with the tray boiling steadily and the figure kneeling back with the flask upright. Pace the action so that this ending is reached at about 3.4 seconds and then held, almost motionless, until the clip ends at 5 seconds. The figure has a smooth egg-shaped head of matte light-grey porcelain with no facial features, slender porcelain hands, a navy windbreaker with the sleeves pushed up, a safety-orange life vest with three black buckles and a small steel whistle on the left strap, charcoal trousers rolled to the calf and bare porcelain feet; its head stays featureless in every frame. The cat is a lean adult ginger tabby with darker stripes, a white chest and two white front paws, a small notch at the tip of its left ear and a thin braided leather collar with one small brass disc, moving like a real cat. The copper tray is the same thin dull reddish-brown copper sheet bent by hand into a shallow open tray about thirty-five by twenty-five centimetres, with low sloping sides about five centimetres high, rough pleated corners and a row of empty nail holes along the tops of its sides. The bamboo flask is a single thirty-centimetre bamboo section closed at the bottom by its node, with a removable rough dark oak plug that is in its open end only when described so. Photoreal live-action look, low golden late-afternoon sun from the left, long shadows, the small fire glowing warm under the copper tray, muted natural colours, realistic textures and physics, natural real-time motion, no on-screen text.
+The uploaded image is the first frame. A stream of liquid from the flask pours into the boiling tray until it is about two-thirds full; the boiling settles for a moment, then rolls up again with more steam. Static camera. It ends with the tray boiling steadily and the figure kneeling back with the flask upright. Pace the action so that this ending is reached at about 3.4 seconds and then held, almost motionless, until the clip ends at 5 seconds. The figure has a smooth egg-shaped head of matte light-grey porcelain with no facial features, slender porcelain hands, a navy windbreaker with the sleeves pushed up, a safety-orange life vest with three black buckles and a small steel whistle on the left strap, charcoal trousers rolled to the calf and bare porcelain feet; its head stays featureless in every frame. The cat is a lean adult ginger tabby with darker stripes, a white chest and two white front paws, a small notch at the tip of its left ear and a thin braided leather collar with one small brass disc, moving like a real cat. The copper tray is the same thin dull reddish-brown copper sheet bent by hand into a shallow open tray about thirty-five by twenty-five centimetres, with low sloping sides about five centimetres high, rough pleated corners and a row of empty nail holes along the tops of its sides. Photoreal live-action look, low golden late-afternoon sun from the left, long shadows, the small fire glowing warm under the copper tray, muted natural colours, realistic textures and physics, natural real-time motion, no on-screen text.
 ```
 
 </details>
@@ -841,7 +841,7 @@ Change the time to dusk and the camera to a close-up angled steeply down into th
 이미지: <IMAGE_0> 시작 프레임(image 고정) · <IMAGE_1> 레퍼런스 P · <IMAGE_2> 레퍼런스 COPPER_PAN
 
 ```text
-<IMAGE_0> is the first frame. The stick stirs slowly through the liquid, breaking the thin crystal skin into flakes and showing small grey-white grains settled on the bottom, as steam rises. Static camera. It ends with the stick resting on the rim and the liquid thick with grains. Pace the action so that this ending is reached at about 2.1 seconds and then held, almost motionless, until the clip ends at 4 seconds. Only the figure's slender matte light-grey porcelain hand and forearm appear, exactly as in <IMAGE_1>; its head stays out of frame. Keep the copper tray's size, low bent-up sides, pleated corners, row of empty nail holes along its rims and dull reddish-brown copper exactly as in <IMAGE_2>; any soot, green spots or white crust are exactly as described above. Photoreal live-action look, dusk with an orange glow low over the sea and the rocks in cool blue shadow, the small fire under the copper tray the warmest light in the frame, muted natural colours, realistic textures and physics, natural real-time motion, no on-screen text.
+<IMAGE_0> is the first frame. The stick stirs slowly through the liquid, breaking the thin crystal skin into flakes and showing small grey-white grains settled on the bottom, as steam rises. Static camera. It ends with the stick resting on the rim and the liquid thick with grains. Pace the action so that this ending is reached at about 2.1 seconds and then held, almost motionless, until the clip ends at 4 seconds. Only the figure's slender matte light-grey porcelain hand and forearm appear, exactly as in <IMAGE_1>; its head stays out of frame. Keep the copper tray's size, low bent-up sides, pleated corners, row of empty nail holes along its rims and dull reddish-brown copper exactly as in <IMAGE_2>; any soot or white crust are exactly as described above. Photoreal live-action look, dusk with an orange glow low over the sea and the rocks in cool blue shadow, the small fire under the copper tray the warmest light in the frame, muted natural colours, realistic textures and physics, natural real-time motion, no on-screen text.
 ```
 
 <details><summary>레퍼런스 없이 앱에 시작 프레임 1장만 올릴 때</summary>
@@ -860,7 +860,7 @@ QC: 머리에 이목구비 없음 · 조끼 주황+버클 3개+왼쪽 호루라�
 
 **장면** 앵글 컷(측면 미디엄). 걸쭉해진 솥에서 작은 방울이 탁탁 튀기 시작한다. 주인공이 몸을 멀리 둔 채 긴 막대로 불타는 판자 끝 두 개를 솥 아래에서 끌어내 불을 줄인다(끝까지 졸이지 않음 — 쓴맛·튐 방지). 맨손으로 솥을 잡지 않는다.
 
-- 연결: **A** 앵글 컷(앞 끝 프레임 편집) · 출발 S21
+- 연결: **A** 앵글 컷(앞 끝 프레임 편집) · 출발 S21 · 참고 프레임 S20
 - 빛: dusk_fire · 레퍼런스: P, COPPER_PAN
 - 생성 4s → 사용 구간 0.000–2.950s (아웃 포인트 = 다음 샷 출발 프레임)
 - 내레이션: `N23` 끝까지 졸이면, 쓴맛이 남는다.
@@ -869,10 +869,10 @@ QC: 머리에 이목구비 없음 · 조끼 주황+버클 3개+왼쪽 호루라�
 
 **① 시작 프레임 편집** (`/v1/images/edits`, 9:16, 2k)
 
-업로드 순서: 1) S21 끝 프레임 · 2) 레퍼런스 P · 3) 레퍼런스 COPPER_PAN
+업로드 순서: 1) S21 끝 프레임 · 2) S20 끝 프레임 · 3) 레퍼런스 P · 4) 레퍼런스 COPPER_PAN
 
 ```text
-Change the camera to a medium side view a moment later: the figure from <IMAGE_1> kneels at arm's length from the fire on its upwind side, holding a long stick, and the copper tray from <IMAGE_2> sits on the three stones over the small fire, its thick grey slurry spitting small droplets. Keep the dusk light, the place and all designs exactly as in <IMAGE_0>, <IMAGE_1> and <IMAGE_2>.
+Change the camera to a medium side view a moment later: the figure from <IMAGE_2> kneels at arm's length from the fire on its upwind side, holding a long stick, and the copper tray from <IMAGE_3> sits on the three stones over the small fire, its thick grey slurry spitting small droplets. Keep the dusk light, the place and all designs exactly as in <IMAGE_0>, <IMAGE_2> and <IMAGE_3>. Take only the rocks, the three stones and the windbreak plank from <IMAGE_1>; the figure appears only once, where described here.
 ```
 
 **② 영상** (`grok-imagine-video-1.5`, 4s, 9:16, 720p, 오디오 끔)
@@ -880,7 +880,7 @@ Change the camera to a medium side view a moment later: the figure from <IMAGE_1
 이미지: <IMAGE_0> 시작 프레임(image 고정) · <IMAGE_1> 레퍼런스 P · <IMAGE_2> 레퍼런스 COPPER_PAN
 
 ```text
-<IMAGE_0> is the first frame. The figure reaches in with the long stick and drags two burning plank ends out from under the tray onto the bare rock, and the spitting slows down; the figure keeps its body well back from the tray. Static camera. It ends with low embers under the tray, the dragged-out plank ends smoking on the rock, and the figure kneeling back with the stick. Pace the action so that this ending is reached at about 2.7 seconds and then held, almost motionless, until the clip ends at 4 seconds. Keep the figure exactly as in <IMAGE_1>; its head stays a smooth, blank, featureless matte porcelain egg in every frame, its surface unbroken from crown to neck. Keep the copper tray's size, low bent-up sides, pleated corners, row of empty nail holes along its rims and dull reddish-brown copper exactly as in <IMAGE_2>; any soot, green spots or white crust are exactly as described above. Photoreal live-action look, dusk with an orange glow low over the sea and the rocks in cool blue shadow, the small fire under the copper tray the warmest light in the frame, muted natural colours, realistic textures and physics, natural real-time motion, no on-screen text.
+<IMAGE_0> is the first frame. The figure reaches in with the long stick and drags two burning plank ends out from under the tray onto the bare rock, and the spitting slows down; the figure keeps its body well back from the tray. Static camera. It ends with low embers under the tray, the dragged-out plank ends smoking on the rock, and the figure kneeling back with the stick. Pace the action so that this ending is reached at about 2.7 seconds and then held, almost motionless, until the clip ends at 4 seconds. Keep the figure exactly as in <IMAGE_1>; its head stays a smooth, blank, featureless matte porcelain egg in every frame, its surface unbroken from crown to neck. Keep the copper tray's size, low bent-up sides, pleated corners, row of empty nail holes along its rims and dull reddish-brown copper exactly as in <IMAGE_2>; any soot or white crust are exactly as described above. Photoreal live-action look, dusk with an orange glow low over the sea and the rocks in cool blue shadow, the small fire under the copper tray the warmest light in the frame, muted natural colours, realistic textures and physics, natural real-time motion, no on-screen text.
 ```
 
 <details><summary>레퍼런스 없이 앱에 시작 프레임 1장만 올릴 때</summary>
@@ -904,14 +904,14 @@ QC: 머리에 이목구비 없음 · 조끼 주황+버클 3개+왼쪽 호루라�
 - 생성 5s → 사용 구간 0.000–3.750s (아웃 포인트 = 다음 샷 출발 프레임)
 - 내레이션: `N24` 구멍 난 전복 껍데기가, 이번엔 체가 된다.
 - 효과음: 소금 떠 옮기는 사각 소리, 물방울 똑똑
-- 끝 상태(다음 샷의 출발점): 전복 껍데기(조약돌 두 개 위, 마른 풀 깔림)에 젖은 회색 소금 수북, 구멍에서 물방울이 떨어짐. 옆에 식은 구리판 솥(바닥 그을음). 손은 통판 조각을 듦(손만). 해 질 녘.
+- 끝 상태(다음 샷의 출발점): 전복 껍데기(조약돌 두 개 위, 마른 풀 깔림)에 젖은 회색 소금 한 줌 남짓(껍데기 바닥을 덮을 정도), 구멍에서 물방울이 떨어짐. 옆에 식은 구리판 솥(옆면 그을음). 손은 통판 조각을 듦(손만). 해 질 녘.
 
 **① 시작 프레임 편집** (`/v1/images/edits`, 9:16, 2k)
 
 업로드 순서: 1) S22 끝 프레임 · 2) 레퍼런스 P · 3) 레퍼런스 ABALONE · 4) 레퍼런스 COPPER_PAN
 
 ```text
-Change the camera to a close-up a little later, beside the fire hollow, of the empty abalone shell from <IMAGE_2> propped on two small pebbles, hollow side up, its holes covered by a thin layer of dry grass, with the copper tray from <IMAGE_3> cooled on the rock beside it, its underside soot-black, half full of wet grey salt; the matte light-grey porcelain hand of the figure from <IMAGE_1> holds a flat piece of barrel stave over the tray like a scoop. Keep the dusk light of <IMAGE_0>; only the hand and forearm appear, the figure's head stays out of frame.
+Change the camera to a close-up a little later, beside the fire hollow, of the empty abalone shell from <IMAGE_2> propped on two small pebbles, hollow side up, its holes covered by a thin layer of dry grass, with the copper tray from <IMAGE_3> cooled on the rock beside it, its outer walls streaked with soot and a thin layer of wet grey salt across its bottom; the matte light-grey porcelain hand of the figure from <IMAGE_1> holds a flat piece of barrel stave over the tray like a scoop. Keep the dusk light of <IMAGE_0>; only the hand and forearm appear, the figure's head stays out of frame.
 ```
 
 **② 영상** (`grok-imagine-video-1.5`, 5s, 9:16, 720p, 오디오 끔)
@@ -919,13 +919,13 @@ Change the camera to a close-up a little later, beside the fire hollow, of the e
 이미지: <IMAGE_0> 시작 프레임(image 고정) · <IMAGE_1> 레퍼런스 P · <IMAGE_2> 레퍼런스 ABALONE · <IMAGE_3> 레퍼런스 COPPER_PAN
 
 ```text
-<IMAGE_0> is the first frame. The hand scoops a heap of wet grey salt from the tray with the stave and tips it into the grass-lined shell; a moment later clear drops begin to fall from the holes underneath onto the rock. Static camera. It ends with the wet salt heaped in the shell and drops falling steadily from its holes. Pace the action so that this ending is reached at about 3.5 seconds and then held, almost motionless, until the clip ends at 5 seconds. Only the figure's slender matte light-grey porcelain hand and forearm appear, exactly as in <IMAGE_1>; its head stays out of frame. Keep the abalone shell's ear shape, rough barnacled outside, curved row of holes along its edge and iridescent inside exactly as in <IMAGE_2>; whatever it holds is exactly as described above. Keep the copper tray's size, low bent-up sides, pleated corners, row of empty nail holes along its rims and dull reddish-brown copper exactly as in <IMAGE_3>; any soot, green spots or white crust are exactly as described above. Photoreal live-action look, late dusk with a fading orange glow low over the sea and the rocks in deep blue shadow, the last embers of the fire glowing faintly, muted natural colours, realistic textures and physics, natural real-time motion, no on-screen text.
+<IMAGE_0> is the first frame. The hand scrapes the thin layer of wet grey salt together with the stave and tips it into the grass-lined shell; a moment later clear drops begin to fall from the holes underneath onto the rock. Static camera. It ends with the wet salt lying in the shell and drops falling steadily from its holes. Pace the action so that this ending is reached at about 3.5 seconds and then held, almost motionless, until the clip ends at 5 seconds. Only the figure's slender matte light-grey porcelain hand and forearm appear, exactly as in <IMAGE_1>; its head stays out of frame. Keep the abalone shell's ear shape, rough barnacled outside, curved row of holes along its edge and iridescent inside exactly as in <IMAGE_2>; whatever it holds is exactly as described above. Keep the copper tray's size, low bent-up sides, pleated corners, row of empty nail holes along its rims and dull reddish-brown copper exactly as in <IMAGE_3>; any soot or white crust are exactly as described above. Photoreal live-action look, late dusk with a fading orange glow low over the sea and the rocks in deep blue shadow, the last embers of the fire glowing faintly, muted natural colours, realistic textures and physics, natural real-time motion, no on-screen text.
 ```
 
 <details><summary>레퍼런스 없이 앱에 시작 프레임 1장만 올릴 때</summary>
 
 ```text
-The uploaded image is the first frame. The hand scoops a heap of wet grey salt from the tray with the stave and tips it into the grass-lined shell; a moment later clear drops begin to fall from the holes underneath onto the rock. Static camera. It ends with the wet salt heaped in the shell and drops falling steadily from its holes. Pace the action so that this ending is reached at about 3.5 seconds and then held, almost motionless, until the clip ends at 5 seconds. Only the figure's slender matte light-grey porcelain hand and forearm appear,; its head stays out of frame. The abalone shell is a single ear-shaped shell about fourteen centimetres long, rough brown-grey and barnacled outside with a curved row of small open holes along one edge, smooth iridescent mother-of-pearl inside. The copper tray is the same thin dull reddish-brown copper sheet bent by hand into a shallow open tray about thirty-five by twenty-five centimetres, with low sloping sides about five centimetres high, rough pleated corners and a row of empty nail holes along the tops of its sides. Photoreal live-action look, late dusk with a fading orange glow low over the sea and the rocks in deep blue shadow, the last embers of the fire glowing faintly, muted natural colours, realistic textures and physics, natural real-time motion, no on-screen text.
+The uploaded image is the first frame. The hand scrapes the thin layer of wet grey salt together with the stave and tips it into the grass-lined shell; a moment later clear drops begin to fall from the holes underneath onto the rock. Static camera. It ends with the wet salt lying in the shell and drops falling steadily from its holes. Pace the action so that this ending is reached at about 3.5 seconds and then held, almost motionless, until the clip ends at 5 seconds. Only the figure's slender matte light-grey porcelain hand and forearm appear,; its head stays out of frame. The abalone shell is a single ear-shaped shell about fourteen centimetres long, rough brown-grey and barnacled outside with a curved row of small open holes along one edge, smooth iridescent mother-of-pearl inside. The copper tray is the same thin dull reddish-brown copper sheet bent by hand into a shallow open tray about thirty-five by twenty-five centimetres, with low sloping sides about five centimetres high, rough pleated corners and a row of empty nail holes along the tops of its sides. Photoreal live-action look, late dusk with a fading orange glow low over the sea and the rocks in deep blue shadow, the last embers of the fire glowing faintly, muted natural colours, realistic textures and physics, natural real-time motion, no on-screen text.
 ```
 
 </details>
@@ -975,22 +975,22 @@ QC: 머리에 이목구비 없음 · 조끼 주황+버클 3개+왼쪽 호루라�
 
 ## S25 · COST · 와이드 — 큰 재 더미, 바닥난 땔감, 그을린 솥 · 고양이가 와서 옆에 앉음 · 1:30.47–1:33.42 (2.95s)
 
-**장면** 앵글 컷(와이드, 해 질 녘). 불자리: 잦아든 숯불과 큰 재 더미. 아침에 쌓아 둔 땔감 더미 자리엔 그을린 통판 끝 두세 개뿐. 바닥이 검게 그을고 연녹색 녹 반점이 생긴 구리판 솥이 옆 바위에. 주인공이 숯불 건너편에 앉아 있고, 고양이가 큰 바위 쪽에서 걸어와 숯불 반대쪽 주인공 옆에 앉는다(숯불에서 2m쯤). (경고 오버레이 시작)
+**장면** 앵글 컷(와이드, 해 질 녘). 불자리: 잦아든 숯불과 큰 재 더미. 아침에 쌓아 둔 땔감 더미 자리엔 그을린 통판 끝 두세 개뿐. 옆면이 검게 그을린 구리판 솥이 옆 바위에. 바람막이 판자도 마지막에 태워 돌 셋 바람 쪽은 맨바위. 주인공이 숯불 건너편에 앉아 있고, 고양이가 큰 바위 쪽에서 걸어와 숯불 반대쪽 주인공 옆에 앉는다(숯불에서 2m쯤). (경고 오버레이 시작)
 
-- 연결: **A** 앵글 컷(앞 끝 프레임 편집) · 출발 S24
+- 연결: **A** 앵글 컷(앞 끝 프레임 편집) · 출발 S24 · 참고 프레임 S20
 - 빛: dusk_embers · 레퍼런스: P, C, COPPER_PAN
 - 생성 4s → 사용 구간 0.000–2.950s (아웃 포인트 = 다음 샷 출발 프레임)
 - 내레이션: `N26` 하루 해와 땔감 더미가 다 들었다.
 - 오버레이: `warning_salt` (overlays.json)
 - 효과음: 숯불 타닥(작게), 저녁 파도
-- 끝 상태(다음 샷의 출발점): 와이드 해 질 녘: 잦아든 숯불 + 큰 재 더미, 땔감 더미는 그을린 끝 2~3개만. 그을린 구리판 솥(녹색 반점)은 옆 바위. 주인공·고양이 나란히 앉음(숯불 반대편, 2m).
+- 끝 상태(다음 샷의 출발점): 와이드 해 질 녘: 잦아든 숯불 + 큰 재 더미, 땔감 더미는 그을린 끝 2~3개만. 그을린 구리판 솥은 옆 바위, 바람막이 판자 없음. 주인공·고양이 나란히 앉음(숯불 반대편, 2m).
 
 **① 시작 프레임 편집** (`/v1/images/edits`, 9:16, 2k)
 
-업로드 순서: 1) S24 끝 프레임 · 2) 레퍼런스 P · 3) 레퍼런스 C · 4) 레퍼런스 COPPER_PAN
+업로드 순서: 1) S24 끝 프레임 · 2) S20 끝 프레임 · 3) 레퍼런스 P · 4) 레퍼런스 C · 5) 레퍼런스 COPPER_PAN
 
 ```text
-Change the camera to a wide view at dusk of the fire hollow and the rock around it: the fire has burned down to a few glowing embers in a big pile of white-grey ash, only two or three charred stave ends lie where the wood pile was, and the copper tray from <IMAGE_3> sits on a rock beside it, its underside blackened with soot and a few pale green spots on the copper; the figure from <IMAGE_1> sits on the rock beyond the hollow, and the ginger cat from <IMAGE_2> is walking over from the large boulder. Keep the dusk light and all designs exactly as in <IMAGE_0>, <IMAGE_1>, <IMAGE_2> and <IMAGE_3>.
+Change the camera to a wide view at dusk of the fire hollow and the rock around it: the fire has burned down to a few glowing embers in a big pile of white-grey ash, only two or three charred stave ends lie where the wood pile was, bare open rock stands on the windward side of the three stones, and the copper tray from <IMAGE_4> sits on a rock beside it, its sides streaked black with soot; the figure from <IMAGE_2> sits on the rock beyond the hollow, and the ginger cat from <IMAGE_3> is walking over from the large boulder. Take only the rocks, the large boulder and the fire hollow from <IMAGE_1>; the figure and the cat appear only once, where described here. Keep the dusk light and all designs exactly as in <IMAGE_0>, <IMAGE_2>, <IMAGE_3> and <IMAGE_4>.
 ```
 
 **② 영상** (`grok-imagine-video-1.5`, 4s, 9:16, 720p, 오디오 끔)
@@ -998,7 +998,7 @@ Change the camera to a wide view at dusk of the fire hollow and the rock around 
 이미지: <IMAGE_0> 시작 프레임(image 고정) · <IMAGE_1> 레퍼런스 P · <IMAGE_2> 레퍼런스 C · <IMAGE_3> 레퍼런스 COPPER_PAN
 
 ```text
-<IMAGE_0> is the first frame. The cat walks around to the figure's side away from the embers and sits down beside it, about two metres from the hollow; a thin wisp of smoke rises from the ash. Static wide camera. It ends with the figure and the cat sitting side by side beyond the dying embers. Pace the action so that this ending is reached at about 2.7 seconds and then held, almost motionless, until the clip ends at 4 seconds. Keep the figure exactly as in <IMAGE_1>; its head stays a smooth, blank, featureless matte porcelain egg in every frame, its surface unbroken from crown to neck. Keep the cat exactly as in <IMAGE_2>, moving like a real cat. Keep the copper tray's size, low bent-up sides, pleated corners, row of empty nail holes along its rims and dull reddish-brown copper exactly as in <IMAGE_3>; any soot, green spots or white crust are exactly as described above. Photoreal live-action look, late dusk with a fading orange glow low over the sea and the rocks in deep blue shadow, the last embers of the fire glowing faintly, muted natural colours, realistic textures and physics, natural real-time motion, no on-screen text.
+<IMAGE_0> is the first frame. The cat walks around to the figure's side away from the embers and sits down beside it, about two metres from the hollow; a thin wisp of smoke rises from the ash. Static wide camera. It ends with the figure and the cat sitting side by side beyond the dying embers. Pace the action so that this ending is reached at about 2.7 seconds and then held, almost motionless, until the clip ends at 4 seconds. Keep the figure exactly as in <IMAGE_1>; its head stays a smooth, blank, featureless matte porcelain egg in every frame, its surface unbroken from crown to neck. Keep the cat exactly as in <IMAGE_2>, moving like a real cat. Keep the copper tray's size, low bent-up sides, pleated corners, row of empty nail holes along its rims and dull reddish-brown copper exactly as in <IMAGE_3>; any soot or white crust are exactly as described above. Photoreal live-action look, late dusk with a fading orange glow low over the sea and the rocks in deep blue shadow, the last embers of the fire glowing faintly, muted natural colours, realistic textures and physics, natural real-time motion, no on-screen text.
 ```
 
 <details><summary>레퍼런스 없이 앱에 시작 프레임 1장만 올릴 때</summary>
@@ -1013,14 +1013,14 @@ QC: 머리에 이목구비 없음 · 조끼 주황+버클 3개+왼쪽 호루라�
 
 ---
 
-## S26 · COST · 대비 — 전경의 작은 소금, 뒤의 큰 재 더미 · 1:33.42–1:37.07 (3.65s)
+## S26 · COST · 대비 — 전경의 작은 소금, 뒤의 큰 재 더미 · 1:33.42–1:37.27 (3.85s)
 
 **장면** 앵글 컷(로우 클로즈업, 바위 높이). 전경에 소금이 담긴 전복 껍데기(작다, 손바닥 두세 줌), 그 뒤로 불자리의 큰 재 더미가 산처럼 차지한다. 초점이 소금에서 재 더미로 천천히 옮겨 가고 마지막 숯불 하나가 사그라든다. 인물 없음.
 
 - 연결: **A** 앵글 컷(앞 끝 프레임 편집) · 출발 S25
 - 빛: dusk_embers · 레퍼런스: ABALONE
-- 생성 5s → 사용 구간 0.000–3.650s (아웃 포인트 = 다음 샷 출발 프레임)
-- 내레이션: `N27` 소금 한 줌이 장작 한 짐을 먹는다.
+- 생성 5s → 사용 구간 0.000–3.850s (아웃 포인트 = 다음 샷 출발 프레임)
+- 내레이션: `N27` 소금 한 줌이 장작 한 아름을 먹는다.
 - 오버레이: `warning_salt` (overlays.json)
 - 효과음: 숯불 사그라드는 소리, 바람
 - 끝 상태(다음 샷의 출발점): 로우: 전경 소금 껍데기(초점 밖, 작음), 뒤 큰 재 더미(초점), 마지막 숯불이 꺼져 감. 해 질 녘.
@@ -1038,13 +1038,13 @@ Change the camera to a low close-up at rock level a moment later: in the near fo
 이미지: <IMAGE_0> 시작 프레임(image 고정) · <IMAGE_1> 레퍼런스 ABALONE
 
 ```text
-<IMAGE_0> is the first frame. The focus slowly shifts from the small heap of salt in the shell back to the big ash pile behind it, where a last ember fades. Static camera. It ends with the ash pile sharp and the shell of salt soft in the foreground. Pace the action so that this ending is reached at about 3.4 seconds and then held, almost motionless, until the clip ends at 5 seconds. Keep the abalone shell's ear shape, rough barnacled outside, curved row of holes along its edge and iridescent inside exactly as in <IMAGE_1>; whatever it holds is exactly as described above. Photoreal live-action look, late dusk with a fading orange glow low over the sea and the rocks in deep blue shadow, the last embers of the fire glowing faintly, muted natural colours, realistic textures and physics, natural real-time motion, no on-screen text.
+<IMAGE_0> is the first frame. The focus slowly shifts from the small heap of salt in the shell back to the big ash pile behind it, where a last ember fades. Static camera. It ends with the ash pile sharp and the shell of salt soft in the foreground. Pace the action so that this ending is reached at about 3.6 seconds and then held, almost motionless, until the clip ends at 5 seconds. Keep the abalone shell's ear shape, rough barnacled outside, curved row of holes along its edge and iridescent inside exactly as in <IMAGE_1>; whatever it holds is exactly as described above. Photoreal live-action look, late dusk with a fading orange glow low over the sea and the rocks in deep blue shadow, the last embers of the fire glowing faintly, muted natural colours, realistic textures and physics, natural real-time motion, no on-screen text.
 ```
 
 <details><summary>레퍼런스 없이 앱에 시작 프레임 1장만 올릴 때</summary>
 
 ```text
-The uploaded image is the first frame. The focus slowly shifts from the small heap of salt in the shell back to the big ash pile behind it, where a last ember fades. Static camera. It ends with the ash pile sharp and the shell of salt soft in the foreground. Pace the action so that this ending is reached at about 3.4 seconds and then held, almost motionless, until the clip ends at 5 seconds. The abalone shell is a single ear-shaped shell about fourteen centimetres long, rough brown-grey and barnacled outside with a curved row of small open holes along one edge, smooth iridescent mother-of-pearl inside. Photoreal live-action look, late dusk with a fading orange glow low over the sea and the rocks in deep blue shadow, the last embers of the fire glowing faintly, muted natural colours, realistic textures and physics, natural real-time motion, no on-screen text.
+The uploaded image is the first frame. The focus slowly shifts from the small heap of salt in the shell back to the big ash pile behind it, where a last ember fades. Static camera. It ends with the ash pile sharp and the shell of salt soft in the foreground. Pace the action so that this ending is reached at about 3.6 seconds and then held, almost motionless, until the clip ends at 5 seconds. The abalone shell is a single ear-shaped shell about fourteen centimetres long, rough brown-grey and barnacled outside with a curved row of small open holes along one edge, smooth iridescent mother-of-pearl inside. Photoreal live-action look, late dusk with a fading orange glow low over the sea and the rocks in deep blue shadow, the last embers of the fire glowing faintly, muted natural colours, realistic textures and physics, natural real-time motion, no on-screen text.
 ```
 
 </details>
@@ -1053,7 +1053,7 @@ QC: 머리에 이목구비 없음 · 조끼 주황+버클 3개+왼쪽 호루라�
 
 ---
 
-## S27 · UNLOCK · 소금 껍데기를 손끝으로 톡톡 두 번 (획득 카드) · 1:37.07–1:39.72 (2.65s)
+## S27 · UNLOCK · 소금 껍데기를 손끝으로 톡톡 두 번 (획득 카드) · 1:37.27–1:39.92 (2.65s)
 
 **장면** 클로즈업(손만). 조약돌 두 개 위 전복 껍데기의 회색 소금(구멍 아래 아직 물방울). 첫 1초에 오른손 손끝이 껍데기 가장자리를 두 번 톡톡(습관). 손이 물러나고 물방울 하나가 더 떨어진다. 위쪽 40%는 어두워지는 바위와 하늘뿐(획득 카드 자리).
 
@@ -1093,37 +1093,37 @@ QC: 머리에 이목구비 없음 · 조끼 주황+버클 3개+왼쪽 호루라�
 
 ---
 
-## S28 · NEXT · 해 진 직후 · 꺼진 재, 땔감 없음 · 뭍 쪽으로 고개 · 1:39.72–1:42.27 (2.55s)
+## S28 · NEXT · 해 진 직후 · 꺼진 재, 땔감 없음 · 섬 안쪽으로 고개 · 1:39.92–1:42.87 (2.95s)
 
-**장면** 시간 점프(해가 다 진 직후). 와이드, 반쯤 실루엣. 불자리의 재에 붉은 기운이 마지막으로 사그라든다. 옆에 그을린 구리판 솥과 소금 껍데기, 땔감은 어디에도 없다. 주인공이 앉아 있고 고양이가 다리에 몸을 붙인다. 주인공이 바다에서 뭍 쪽으로 고개를 돌리고, 고양이도 같은 쪽으로 고개를 든다.
+**장면** 시간 점프(해가 다 진 직후). 해안을 따라 옆에서 본 와이드(바다 왼쪽·육지 오른쪽, 인물은 옆모습). 불자리의 재에 붉은 기운이 마지막으로 사그라든다. 옆에 그을린 구리판 솥과 소금 껍데기, 땔감 더미는 없고 그을린 통판 끝 2~3개뿐, 아래 물가에 조약돌 얹은 뒤집힌 널빤지. 주인공이 앉아 있고 고양이가 다리에 몸을 붙인다. 주인공이 옆모습인 채 바다(왼쪽)에서 섬 안쪽(오른쪽)으로 고개를 돌리고, 고양이도 같은 쪽으로 고개를 든다.
 
-- 연결: **T** 시간 점프(앞 끝 프레임 편집) · 출발 S27
-- 빛: after_sunset · 레퍼런스: P, C, COPPER_PAN, ABALONE
-- 생성 4s → 사용 구간 0.000–2.550s (아웃 포인트 = 다음 샷 출발 프레임)
-- 내레이션: `N29` 불을 지킬 땔감은 이제 없다.
+- 연결: **T** 시간 점프(앞 끝 프레임 편집) · 출발 S27 · 참고 프레임 S25
+- 빛: after_sunset · 레퍼런스: P, C, COPPER_PAN
+- 생성 4s → 사용 구간 0.000–2.950s (아웃 포인트 = 다음 샷 출발 프레임)
+- 내레이션: `N29` 남은 건 태우지 않을 판자뿐이다.
 - 효과음: 저녁 파도, 바람
-- 끝 상태(다음 샷의 출발점): 해 진 직후 와이드: 불 꺼진 재, 그을린 구리판 솥·소금 껍데기, 땔감 없음. 주인공: 앉아 뭍 쪽으로 고개. 고양이: 다리에 붙어 같은 쪽으로 고개. 수평선 마지막 주황 띠.
+- 끝 상태(다음 샷의 출발점): 해 진 직후 와이드: 불 꺼진 재, 그을린 구리판 솥·소금 껍데기, 그을린 통판 끝 2~3개뿐, 물가에 뒤집힌 널빤지(조약돌 1개). 주인공: 옆모습, 섬 안쪽(프레임 오른쪽)으로 고개. 고양이: 다리에 붙어 같은 쪽으로 고개. 수평선 마지막 주황 띠.
 
 **① 시작 프레임 편집** (`/v1/images/edits`, 9:16, 2k)
 
-업로드 순서: 1) S27 끝 프레임 · 2) 레퍼런스 P · 3) 레퍼런스 C · 4) 레퍼런스 COPPER_PAN · 5) 레퍼런스 ABALONE
+업로드 순서: 1) S27 끝 프레임 · 2) S25 끝 프레임 · 3) 레퍼런스 P · 4) 레퍼런스 C · 5) 레퍼런스 COPPER_PAN
 
 ```text
-Change the time to just after sunset, the camera pulled back to a wide shot of the same spot: the figure from <IMAGE_1> sits on the rock beside the fire hollow, where only a faint red glow is left in the ash, with the soot-blackened copper tray from <IMAGE_3> and the abalone shell of salt from <IMAGE_4> on the rock beside it and the bare rock clear of any wood; the ginger cat from <IMAGE_2> sits pressed against the figure's leg. Both are partly silhouetted against the last thin band of orange low over the sea. Keep all designs exactly as in <IMAGE_1>, <IMAGE_2>, <IMAGE_3> and <IMAGE_4>.
+Change the time to just after sunset and the camera to a wide shot looking along the shore at the same fire hollow as in <IMAGE_1> (take only the rocks, the large boulder and the fire hollow from it; the figure and the cat appear only once, where described here): the sea with its last thin band of orange is at the left of the frame and the dark land rises at the right; the figure from <IMAGE_2> sits on the rock beside the hollow, seen in profile facing the sea, where only a faint red glow is left in the ash, with the soot-blackened copper tray from <IMAGE_4> and the abalone shell of salt on the rock beside it and only two or three charred stave ends lying beside the ash; below them, near the waterline, lies the dark overturned plank with one pale pebble on it; the ginger cat from <IMAGE_3> sits pressed against the figure's leg. Both are partly silhouetted against the last light. Keep all designs exactly as in <IMAGE_2>, <IMAGE_3> and <IMAGE_4>.
 ```
 
 **② 영상** (`grok-imagine-video-1.5`, 4s, 9:16, 720p, 오디오 끔)
 
-이미지: <IMAGE_0> 시작 프레임(image 고정) · <IMAGE_1> 레퍼런스 P · <IMAGE_2> 레퍼런스 C · <IMAGE_3> 레퍼런스 COPPER_PAN · <IMAGE_4> 레퍼런스 ABALONE
+이미지: <IMAGE_0> 시작 프레임(image 고정) · <IMAGE_1> 레퍼런스 P · <IMAGE_2> 레퍼런스 C · <IMAGE_3> 레퍼런스 COPPER_PAN
 
 ```text
-<IMAGE_0> is the first frame. The last red glow in the ash fades out; the figure's head turns slowly away from the sea toward the land behind the shore, and the cat lifts its head the same way. Static wide camera. It ends with the figure's head turned toward the land, held still, the cat against its leg. Pace the action so that this ending is reached at about 2.2 seconds and then held, almost motionless, until the clip ends at 4 seconds. Keep the figure exactly as in <IMAGE_1>; its head stays a smooth, blank, featureless matte porcelain egg in every frame, its surface unbroken from crown to neck. Keep the cat exactly as in <IMAGE_2>, moving like a real cat. Keep the copper tray's size, low bent-up sides, pleated corners, row of empty nail holes along its rims and dull reddish-brown copper exactly as in <IMAGE_3>; any soot, green spots or white crust are exactly as described above. Keep the abalone shell's ear shape, rough barnacled outside, curved row of holes along its edge and iridescent inside exactly as in <IMAGE_4>; whatever it holds is exactly as described above. Photoreal live-action look, just after sunset, a last thin band of orange on the horizon fading into deep blue, the land dark and the sky still faintly bright, muted natural colours, realistic textures and physics, natural real-time motion, no on-screen text.
+<IMAGE_0> is the first frame. The last red glow in the ash fades out; the figure's head turns slowly in profile from the sea at the left toward the dark land at the right, and the cat lifts its head the same way. Static wide camera. It ends with the figure's head turned in profile toward the land, held still, the cat against its leg. Pace the action so that this ending is reached at about 2.7 seconds and then held, almost motionless, until the clip ends at 4 seconds. Keep the figure exactly as in <IMAGE_1>; its head stays a smooth, blank, featureless matte porcelain egg in every frame, its surface unbroken from crown to neck. Keep the cat exactly as in <IMAGE_2>, moving like a real cat. Keep the copper tray's size, low bent-up sides, pleated corners, row of empty nail holes along its rims and dull reddish-brown copper exactly as in <IMAGE_3>; any soot or white crust are exactly as described above. Photoreal live-action look, just after sunset, a last thin band of orange on the horizon fading into deep blue, the land dark and the sky still faintly bright, muted natural colours, realistic textures and physics, natural real-time motion, no on-screen text.
 ```
 
 <details><summary>레퍼런스 없이 앱에 시작 프레임 1장만 올릴 때</summary>
 
 ```text
-The uploaded image is the first frame. The last red glow in the ash fades out; the figure's head turns slowly away from the sea toward the land behind the shore, and the cat lifts its head the same way. Static wide camera. It ends with the figure's head turned toward the land, held still, the cat against its leg. Pace the action so that this ending is reached at about 2.2 seconds and then held, almost motionless, until the clip ends at 4 seconds. The figure has a smooth egg-shaped head of matte light-grey porcelain with no facial features, slender porcelain hands, a navy windbreaker with the sleeves pushed up, a safety-orange life vest with three black buckles and a small steel whistle on the left strap, charcoal trousers rolled to the calf and bare porcelain feet; its head stays featureless in every frame. The cat is a lean adult ginger tabby with darker stripes, a white chest and two white front paws, a small notch at the tip of its left ear and a thin braided leather collar with one small brass disc, moving like a real cat. The copper tray is the same thin dull reddish-brown copper sheet bent by hand into a shallow open tray about thirty-five by twenty-five centimetres, with low sloping sides about five centimetres high, rough pleated corners and a row of empty nail holes along the tops of its sides. The abalone shell is a single ear-shaped shell about fourteen centimetres long, rough brown-grey and barnacled outside with a curved row of small open holes along one edge, smooth iridescent mother-of-pearl inside. Photoreal live-action look, just after sunset, a last thin band of orange on the horizon fading into deep blue, the land dark and the sky still faintly bright, muted natural colours, realistic textures and physics, natural real-time motion, no on-screen text.
+The uploaded image is the first frame. The last red glow in the ash fades out; the figure's head turns slowly in profile from the sea at the left toward the dark land at the right, and the cat lifts its head the same way. Static wide camera. It ends with the figure's head turned in profile toward the land, held still, the cat against its leg. Pace the action so that this ending is reached at about 2.7 seconds and then held, almost motionless, until the clip ends at 4 seconds. The figure has a smooth egg-shaped head of matte light-grey porcelain with no facial features, slender porcelain hands, a navy windbreaker with the sleeves pushed up, a safety-orange life vest with three black buckles and a small steel whistle on the left strap, charcoal trousers rolled to the calf and bare porcelain feet; its head stays featureless in every frame. The cat is a lean adult ginger tabby with darker stripes, a white chest and two white front paws, a small notch at the tip of its left ear and a thin braided leather collar with one small brass disc, moving like a real cat. The copper tray is the same thin dull reddish-brown copper sheet bent by hand into a shallow open tray about thirty-five by twenty-five centimetres, with low sloping sides about five centimetres high, rough pleated corners and a row of empty nail holes along the tops of its sides. Photoreal live-action look, just after sunset, a last thin band of orange on the horizon fading into deep blue, the land dark and the sky still faintly bright, muted natural colours, realistic textures and physics, natural real-time motion, no on-screen text.
 ```
 
 </details>
@@ -1132,16 +1132,16 @@ QC: 머리에 이목구비 없음 · 조끼 주황+버클 3개+왼쪽 호루라�
 
 ---
 
-## S29 · NEXT · 어깨 너머 — 뭍 쪽 들판 너머 연기 한 줄 (EP3_END) · 1:42.27–1:46.37 (4.10s)
+## S29 · NEXT · 어깨 너머 — 섬 안쪽 들판 너머 연기 한 줄 (EP3_END) · 1:42.87–1:47.17 (4.30s)
 
-**장면** 앵글 컷(어깨 너머, 뒤통수만). 해안 뒤 풀밭과 어두운 들판, 낮은 오름 능선 너머, 어두워지는 뭍 쪽 하늘로 회백색 연기 한 줄이 곧게 오른다(누구의 불인지 보이지 않음 — 집·사람·불빛을 그리지 않는다). 천천히 푸시인. 연기는 들판에서 프레임 중앙 조금 위까지(위쪽 엔드카드 자리 비움). (EP3_END → EP.4 S01 C 링크 base)
+**장면** 앵글 컷(어깨 너머, 뒤통수만). 해안 뒤 풀밭과 어두운 들판, 낮은 오름 능선 너머, 어두워지는 섬 안쪽 하늘로 회백색 연기 한 줄이 곧게 오른다(누구의 불인지 보이지 않음 — 집·사람·불빛을 그리지 않는다). 천천히 푸시인. 연기는 들판에서 프레임 중앙 조금 위까지(위쪽 엔드카드 자리 비움). (EP3_END → EP.4 S01 C 링크 base)
 
 - 연결: **A** 앵글 컷(앞 끝 프레임 편집) · 출발 S28
 - 빛: after_sunset · 레퍼런스: P, C
-- 생성 6s → 사용 구간 0.000–4.100s (아웃 포인트 = 다음 샷 출발 프레임)
-- 내레이션: `N30` 뭍 쪽 들판 너머로 가는 연기 한 줄이 오른다.
+- 생성 6s → 사용 구간 0.000–4.300s (아웃 포인트 = 다음 샷 출발 프레임)
+- 내레이션: `N30` 섬 안쪽 들판 너머로 가는 연기 한 줄이 오른다.
 - 효과음: 바람, 먼 풀벌레
-- 끝 상태(다음 샷의 출발점): 프레임 중앙: 먼 뭍 쪽 들판 너머 회백색 연기 한 줄(들판에서 프레임 중앙 조금 위까지 — 엔드카드 y300~520과 겹치지 않음). 주인공 뒤통수·고양이는 프레임 아래 가장자리. 해 진 직후. (EP3_END → EP.4 S01 C 링크 base)
+- 끝 상태(다음 샷의 출발점): 프레임 중앙: 먼 섬 안쪽 들판 너머 회백색 연기 한 줄(들판에서 프레임 중앙 조금 위까지 — 엔드카드 y300~520과 겹치지 않음). 주인공 뒤통수·고양이는 프레임 아래 가장자리. 해 진 직후. (EP3_END → EP.4 S01 C 링크 base)
 
 **① 시작 프레임 편집** (`/v1/images/edits`, 9:16, 2k)
 
@@ -1156,13 +1156,13 @@ Change the camera to an over-the-shoulder view from behind the figure from <IMAG
 이미지: <IMAGE_0> 시작 프레임(image 고정) · <IMAGE_1> 레퍼런스 P · <IMAGE_2> 레퍼런스 C
 
 ```text
-<IMAGE_0> is the first frame. The camera pushes in slowly past the figure's shoulder toward the distant column of smoke, which drifts a little at the top as it rises. It ends with the thin column of smoke rising from the dark fields to just above the centre of the frame. Pace the action so that this ending is reached at about 3.8 seconds and then held, almost motionless, until the clip ends at 6 seconds. Keep the figure exactly as in <IMAGE_1>; its head stays a smooth, blank, featureless matte porcelain egg in every frame, its surface unbroken from crown to neck. Keep the cat exactly as in <IMAGE_2>, moving like a real cat. Photoreal live-action look, just after sunset, a last thin band of orange on the horizon fading into deep blue, the land dark and the sky still faintly bright, muted natural colours, realistic textures and physics, natural real-time motion, no on-screen text.
+<IMAGE_0> is the first frame. The camera pushes in slowly past the figure's shoulder toward the distant column of smoke, which drifts a little at the top as it rises. It ends with the thin column of smoke rising from the dark fields to just above the centre of the frame. Pace the action so that this ending is reached at about 4.0 seconds and then held, almost motionless, until the clip ends at 6 seconds. Keep the figure exactly as in <IMAGE_1>; its head stays a smooth, blank, featureless matte porcelain egg in every frame, its surface unbroken from crown to neck. Keep the cat exactly as in <IMAGE_2>, moving like a real cat. Photoreal live-action look, just after sunset, a last thin band of orange on the horizon fading into deep blue, the land dark and the sky still faintly bright, muted natural colours, realistic textures and physics, natural real-time motion, no on-screen text.
 ```
 
 <details><summary>레퍼런스 없이 앱에 시작 프레임 1장만 올릴 때</summary>
 
 ```text
-The uploaded image is the first frame. The camera pushes in slowly past the figure's shoulder toward the distant column of smoke, which drifts a little at the top as it rises. It ends with the thin column of smoke rising from the dark fields to just above the centre of the frame. Pace the action so that this ending is reached at about 3.8 seconds and then held, almost motionless, until the clip ends at 6 seconds. The figure has a smooth egg-shaped head of matte light-grey porcelain with no facial features, slender porcelain hands, a navy windbreaker with the sleeves pushed up, a safety-orange life vest with three black buckles and a small steel whistle on the left strap, charcoal trousers rolled to the calf and bare porcelain feet; its head stays featureless in every frame. The cat is a lean adult ginger tabby with darker stripes, a white chest and two white front paws, a small notch at the tip of its left ear and a thin braided leather collar with one small brass disc, moving like a real cat. Photoreal live-action look, just after sunset, a last thin band of orange on the horizon fading into deep blue, the land dark and the sky still faintly bright, muted natural colours, realistic textures and physics, natural real-time motion, no on-screen text.
+The uploaded image is the first frame. The camera pushes in slowly past the figure's shoulder toward the distant column of smoke, which drifts a little at the top as it rises. It ends with the thin column of smoke rising from the dark fields to just above the centre of the frame. Pace the action so that this ending is reached at about 4.0 seconds and then held, almost motionless, until the clip ends at 6 seconds. The figure has a smooth egg-shaped head of matte light-grey porcelain with no facial features, slender porcelain hands, a navy windbreaker with the sleeves pushed up, a safety-orange life vest with three black buckles and a small steel whistle on the left strap, charcoal trousers rolled to the calf and bare porcelain feet; its head stays featureless in every frame. The cat is a lean adult ginger tabby with darker stripes, a white chest and two white front paws, a small notch at the tip of its left ear and a thin braided leather collar with one small brass disc, moving like a real cat. Photoreal live-action look, just after sunset, a last thin band of orange on the horizon fading into deep blue, the land dark and the sky still faintly bright, muted natural colours, realistic textures and physics, natural real-time motion, no on-screen text.
 ```
 
 </details>
@@ -1171,7 +1171,7 @@ QC: 머리에 이목구비 없음 · 조끼 주황+버클 3개+왼쪽 호루라�
 
 ---
 
-## S30 · TAG · 정지 + 엔드카드 · 1:46.37–1:48.87 (2.50s)
+## S30 · TAG · 정지 + 엔드카드 · 1:47.17–1:49.67 (2.50s)
 
 **장면** S29 끝 프레임 정지 + 엔드카드 「표류자 EP.3」 · 기록 03 / ?. 음성 없음, 바람 소리만.
 
