@@ -184,7 +184,7 @@ def biz_toc(corp, pdf, text_rel):
         for i, pg in enumerate(d, 1):
             for ln in pg.get_text().splitlines():
                 n = nows(ln)
-                if "임원겸직현황" in n and len(n) <= 60:
+                if "임원겸직현황" in n and len(n) <= 60 and "참조" not in n:
                     hits.append((i, ln.strip()))
         for i, ln in hits:
             inside = ix is not None and i >= ix and (nxt is None or i < nxt)
@@ -261,6 +261,53 @@ def cmd_pack():
     print(f"MANIFEST {len(man)}행 · 사업보고서 목차 {len(biz_rows)}행 · 작성 {datetime.now(KST):%Y-%m-%d %H:%M} KST")
 
 
+def page_texts():
+    """텍스트 md → {text_path: {쪽: 글}} (「## p.N」 머리로 나눔)."""
+    out = {}
+    for fn in os.listdir(TEXT):
+        cur, buf, pages = None, [], {}
+        for ln in open(os.path.join(TEXT, fn), encoding="utf-8"):
+            if ln.startswith("## p."):
+                if cur is not None:
+                    pages[cur] = "".join(buf)
+                cur, buf = int(ln.split()[1][2:]), []
+            elif cur is not None:
+                buf.append(ln)
+        if cur is not None:
+            pages[cur] = "".join(buf)
+        out["텍스트/" + fn] = pages
+    return out
+
+
+NUMPFX = __import__("re").compile(r"^\s*(?:제\s*\d+\s*[장절]|[IVX]+\.|\d+(?:-\d+)?\.|\d+\)|[가-하]\.|[가-하]\)|\(\d+\)|[①-⑳]|□|○|●|■)\s*")
+
+
+def autonote(rows, PT):
+    """start_page 쪽 글에 제목이 나오는지 자동 대조 — 안 나오면 사실만 note 에 덧붙임(제목·쪽은 그대로)."""
+    n_add = 0
+    for r in rows:
+        t, sp = nows(r["title"]), r["start_page"]
+        if not t or not str(sp).strip().lstrip("-").isdigit():
+            continue
+        sp = int(sp)
+        pages = PT.get(r["text_path"], {})
+        here = nows(pages.get(sp, ""))
+        if t in here:
+            continue
+        bare = nows(NUMPFX.sub("", r["title"]))
+        if bare and bare != t and bare in here:
+            add = "자동 대조: start_page 쪽 본문에는 번호(머리 기호) 없이 「%s」로 나옴" % NUMPFX.sub("", r["title"]).strip()
+        elif t in nows(pages.get(sp + 1, "")):
+            add = "자동 대조: 같은 제목 줄은 다음 쪽 p.%d 에 나옴(이동 쪽은 그 앞 쪽)" % (sp + 1)
+        else:
+            add = "자동 대조: start_page 쪽 글에 같은 제목 줄이 나오지 않음(공백 무시)"
+        if add.split(":")[0] in r["note"]:
+            continue
+        r["note"] = (r["note"] + "; " if r["note"] else "") + add
+        n_add += 1
+    return n_add
+
+
 def cmd_toc():
     rows = []
     order = {"사업보고서": 0, "경영공시": 1, "연차보고서": 2}
@@ -271,8 +318,9 @@ def cmd_toc():
                 for r in csv.DictReader(f):
                     rows.append(r)
     rows.sort(key=lambda r: (order.get(r["doc_kind"], 9), corp_order.get(r["corp"], 99)))  # 안정 정렬 — 조각 안 순서 유지
+    n_add = autonote(rows, page_texts())
     write_csv(os.path.join(OUT, "목차표.csv"), TOC_COLS, rows)
-    print(f"목차표 {len(rows)}행")
+    print(f"목차표 {len(rows)}행 · 자동 대조 note 덧붙임 {n_add}행")
 
 
 def zip_write(zpath, items):
