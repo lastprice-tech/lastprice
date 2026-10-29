@@ -129,6 +129,13 @@ __pycache__/
 # 14차(지주 조직도 × 조직별 인원 × 겸직) — md·CSV 산출물. 조직도 그림(PNG)·원본 PDF 는 dart_out/raw/(무시)
 !/handoff/14차_조직인원겸직/
 
+# 13차_지주관리유형(9차 원본 묶기·전체 텍스트, 새 수집 없음) — 목차표·MANIFEST·텍스트 zip 만 커밋.
+# 원본 묶음(PDF·HTML·XML 약 320MB)과 원본 zip 은 커밋하지 않는다(용량·원본 PDF 커밋 금지). 텍스트 md 는 zip 으로만.
+!/handoff/13차_지주관리유형/
+/handoff/13차_지주관리유형/원본/
+/handoff/13차_지주관리유형/텍스트/
+/handoff/13차_지주관리유형/13차_지주관리유형_원본.zip
+
 # selftest 임시 산출물
 /dart_out/_selftest/
 
