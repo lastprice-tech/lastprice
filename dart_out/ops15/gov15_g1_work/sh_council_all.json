@@ -1,0 +1,1494 @@
+[
+ {
+  "year": 2019,
+  "title": "신한금융지주회사 임원 사임 공시",
+  "baseDt": "2019.12.31",
+  "fileList": [
+   {
+    "attachNo": "71db0651402a11ef8f590050569e8ab2",
+    "fileSeq": "1",
+    "fileType": "PDF",
+    "originalFileName": "임원사임공시(191231)_fixed.pdf"
+   }
+  ],
+  "board": "https://www.shinhangroup.com/kr/governance/director/disclosure",
+  "list_url": "https://www.shinhangroup.com/api/v1/governance/council_disclosure/list",
+  "list_post": {
+   "pageType": "FRONT",
+   "lang": "KOR",
+   "current": "1",
+   "year": "2019"
+  },
+  "list_fetched_at": "2026-11-02T16:15:11+09:00"
+ },
+ {
+  "year": 2019,
+  "title": "신한금융지주회사 「지배구조 내부규범」 개정 공시",
+  "baseDt": "2019.12.20",
+  "fileList": [
+   {
+    "attachNo": "71db0336402a11ef8f590050569e8ab2",
+    "fileSeq": "1",
+    "fileType": "PDF",
+    "originalFileName": "지배구조내부규범(2019.12.13).pdf"
+   }
+  ],
+  "board": "https://www.shinhangroup.com/kr/governance/director/disclosure",
+  "list_url": "https://www.shinhangroup.com/api/v1/governance/council_disclosure/list",
+  "list_post": {
+   "pageType": "FRONT",
+   "lang": "KOR",
+   "current": "1",
+   "year": "2019"
+  },
+  "list_fetched_at": "2026-11-02T16:15:11+09:00"
+ },
+ {
+  "year": 2019,
+  "title": "신한금융지주회사 임원 선임 공시",
+  "baseDt": "2019.12.19",
+  "fileList": [
+   {
+    "attachNo": "71db014c402a11ef8f590050569e8ab2",
+    "fileSeq": "1",
+    "fileType": "PDF",
+    "originalFileName": "임원선임공시(191219).pdf"
+   }
+  ],
+  "board": "https://www.shinhangroup.com/kr/governance/director/disclosure",
+  "list_url": "https://www.shinhangroup.com/api/v1/governance/council_disclosure/list",
+  "list_post": {
+   "pageType": "FRONT",
+   "lang": "KOR",
+   "current": "1",
+   "year": "2019"
+  },
+  "list_fetched_at": "2026-11-02T16:15:11+09:00"
+ },
+ {
+  "year": 2019,
+  "title": "신한금융지주회사 대표이사 후보자 추천내역 공시 ",
+  "baseDt": "2019.12.13",
+  "fileList": [
+   {
+    "attachNo": "71dafe61402a11ef8f590050569e8ab2",
+    "fileSeq": "1",
+    "fileType": "PDF",
+    "originalFileName": "신한금융지주_대표이사회장_후보추천_공시.pdf"
+   }
+  ],
+  "board": "https://www.shinhangroup.com/kr/governance/director/disclosure",
+  "list_url": "https://www.shinhangroup.com/api/v1/governance/council_disclosure/list",
+  "list_post": {
+   "pageType": "FRONT",
+   "lang": "KOR",
+   "current": "1",
+   "year": "2019"
+  },
+  "list_fetched_at": "2026-11-02T16:15:11+09:00"
+ },
+ {
+  "year": 2019,
+  "title": "사외이사 후보 주주추천공모제 시행 안내",
+  "baseDt": "2019.11.27",
+  "fileList": [
+   {
+    "attachNo": "71dafc78402a11ef8f590050569e8ab2",
+    "fileSeq": "1",
+    "fileType": "PPTX",
+    "originalFileName": "★사외이사 후보 추천서(양식).pptx"
+   },
+   {
+    "attachNo": "71dafc78402a11ef8f590050569e8ab2",
+    "fileSeq": "2",
+    "fileType": "PDF",
+    "originalFileName": "★신용정보 수집이용제공 동의서.pdf"
+   }
+  ],
+  "board": "https://www.shinhangroup.com/kr/governance/director/disclosure",
+  "list_url": "https://www.shinhangroup.com/api/v1/governance/council_disclosure/list",
+  "list_post": {
+   "pageType": "FRONT",
+   "lang": "KOR",
+   "current": "1",
+   "year": "2019"
+  },
+  "list_fetched_at": "2026-11-02T16:15:11+09:00"
+ },
+ {
+  "year": 2019,
+  "title": "신한금융지주회사 사외이사 후보 추천내역 정정공시",
+  "baseDt": "2019.08.26",
+  "fileList": [
+   {
+    "attachNo": "71dafb05402a11ef8f590050569e8ab2",
+    "fileSeq": "1",
+    "fileType": "PDF",
+    "originalFileName": "★2018년_사외이사_후보_추천내역_정정공시.pdf"
+   }
+  ],
+  "board": "https://www.shinhangroup.com/kr/governance/director/disclosure",
+  "list_url": "https://www.shinhangroup.com/api/v1/governance/council_disclosure/list",
+  "list_post": {
+   "pageType": "FRONT",
+   "lang": "KOR",
+   "current": "1",
+   "year": "2019"
+  },
+  "list_fetched_at": "2026-11-02T16:15:11+09:00"
+ },
+ {
+  "year": 2019,
+  "title": "신한금융지주회사 2018 지배구조 및 보수체계 연차보고서 정정 공시",
+  "baseDt": "2019.08.26",
+  "fileList": [
+   {
+    "attachNo": "71daf83d402a11ef8f590050569e8ab2",
+    "fileSeq": "1",
+    "fileType": "PDF",
+    "originalFileName": "★SFG_2018CGAR_190306(수정).pdf"
+   }
+  ],
+  "board": "https://www.shinhangroup.com/kr/governance/director/disclosure",
+  "list_url": "https://www.shinhangroup.com/api/v1/governance/council_disclosure/list",
+  "list_post": {
+   "pageType": "FRONT",
+   "lang": "KOR",
+   "current": "1",
+   "year": "2019"
+  },
+  "list_fetched_at": "2026-11-02T16:15:11+09:00"
+ },
+ {
+  "year": 2019,
+  "title": "사외이사 후보 주주추천공모제 시행 안내",
+  "baseDt": "2019.06.17",
+  "fileList": [
+   {
+    "attachNo": "71daf49c402a11ef8f590050569e8ab2",
+    "fileSeq": "1",
+    "fileType": "PPTX",
+    "originalFileName": "★Independent Director Recommendation Form(kor)2.pptx"
+   },
+   {
+    "attachNo": "71daf49c402a11ef8f590050569e8ab2",
+    "fileSeq": "2",
+    "fileType": "PDF",
+    "originalFileName": "★신용정보_수집이용제공_동의서1.pdf"
+   }
+  ],
+  "board": "https://www.shinhangroup.com/kr/governance/director/disclosure",
+  "list_url": "https://www.shinhangroup.com/api/v1/governance/council_disclosure/list",
+  "list_post": {
+   "pageType": "FRONT",
+   "lang": "KOR",
+   "current": "1",
+   "year": "2019"
+  },
+  "list_fetched_at": "2026-11-02T16:15:11+09:00"
+ },
+ {
+  "year": 2019,
+  "title": "신한금융지주회사 임원 선임 공시",
+  "baseDt": "2019.06.03",
+  "fileList": [
+   {
+    "attachNo": "71daf3fc402a11ef8f590050569e8ab2",
+    "fileSeq": "1",
+    "fileType": "PDF",
+    "originalFileName": "신한금융지주_임원선임공시(190601).pdf"
+   }
+  ],
+  "board": "https://www.shinhangroup.com/kr/governance/director/disclosure",
+  "list_url": "https://www.shinhangroup.com/api/v1/governance/council_disclosure/list",
+  "list_post": {
+   "pageType": "FRONT",
+   "lang": "KOR",
+   "current": "1",
+   "year": "2019"
+  },
+  "list_fetched_at": "2026-11-02T16:15:11+09:00"
+ },
+ {
+  "year": 2019,
+  "title": "신한금융지주회사 「지배구조 내부규범」 개정 공시 ",
+  "baseDt": "2019.03.29",
+  "fileList": [
+   {
+    "attachNo": "71daf129402a11ef8f590050569e8ab2",
+    "fileSeq": "1",
+    "fileType": "PDF",
+    "originalFileName": "지배구조내부규범_20190327.pdf"
+   }
+  ],
+  "board": "https://www.shinhangroup.com/kr/governance/director/disclosure",
+  "list_url": "https://www.shinhangroup.com/api/v1/governance/council_disclosure/list",
+  "list_post": {
+   "pageType": "FRONT",
+   "lang": "KOR",
+   "current": "1",
+   "year": "2019"
+  },
+  "list_fetched_at": "2026-11-02T16:15:11+09:00"
+ },
+ {
+  "year": 2019,
+  "title": "신한금융지주회사 임원 선임 공시",
+  "baseDt": "2019.03.27",
+  "fileList": [
+   {
+    "attachNo": "71daeee7402a11ef8f590050569e8ab2",
+    "fileSeq": "1",
+    "fileType": "PDF",
+    "originalFileName": "임원 선임 및 퇴임 공시(190327).pdf"
+   }
+  ],
+  "board": "https://www.shinhangroup.com/kr/governance/director/disclosure",
+  "list_url": "https://www.shinhangroup.com/api/v1/governance/council_disclosure/list",
+  "list_post": {
+   "pageType": "FRONT",
+   "lang": "KOR",
+   "current": "2",
+   "year": "2019"
+  },
+  "list_fetched_at": "2026-11-02T16:15:13+09:00"
+ },
+ {
+  "year": 2019,
+  "title": "신한금융지주회사 2018 지배구조 및 보수체계 연차보고서 공시",
+  "baseDt": "2019.03.06",
+  "fileList": [
+   {
+    "attachNo": "71daecdf402a11ef8f590050569e8ab2",
+    "fileSeq": "1",
+    "fileType": "PDF",
+    "originalFileName": "★2018지배구조연차보고서.pdf"
+   }
+  ],
+  "board": "https://www.shinhangroup.com/kr/governance/director/disclosure",
+  "list_url": "https://www.shinhangroup.com/api/v1/governance/council_disclosure/list",
+  "list_post": {
+   "pageType": "FRONT",
+   "lang": "KOR",
+   "current": "2",
+   "year": "2019"
+  },
+  "list_fetched_at": "2026-11-02T16:15:13+09:00"
+ },
+ {
+  "year": 2019,
+  "title": "신한금융지주회사 임원 선임 공시",
+  "baseDt": "2019.02.26",
+  "fileList": [
+   {
+    "attachNo": "71daea95402a11ef8f590050569e8ab2",
+    "fileSeq": "1",
+    "fileType": "PDF",
+    "originalFileName": "신한금융지주_임원선임공시(190226).pdf"
+   }
+  ],
+  "board": "https://www.shinhangroup.com/kr/governance/director/disclosure",
+  "list_url": "https://www.shinhangroup.com/api/v1/governance/council_disclosure/list",
+  "list_post": {
+   "pageType": "FRONT",
+   "lang": "KOR",
+   "current": "2",
+   "year": "2019"
+  },
+  "list_fetched_at": "2026-11-02T16:15:13+09:00"
+ },
+ {
+  "year": 2019,
+  "title": "신한금융지주회사 사외이사 후보 추천내역 공시",
+  "baseDt": "2019.02.26",
+  "fileList": [
+   {
+    "attachNo": "71dae86a402a11ef8f590050569e8ab2",
+    "fileSeq": "1",
+    "fileType": "PDF",
+    "originalFileName": "★2019년 사외이사 후보 추천내역 공시.pdf"
+   }
+  ],
+  "board": "https://www.shinhangroup.com/kr/governance/director/disclosure",
+  "list_url": "https://www.shinhangroup.com/api/v1/governance/council_disclosure/list",
+  "list_post": {
+   "pageType": "FRONT",
+   "lang": "KOR",
+   "current": "2",
+   "year": "2019"
+  },
+  "list_fetched_at": "2026-11-02T16:15:13+09:00"
+ },
+ {
+  "year": 2019,
+  "title": "사외이사 후보 주주추천공모제 시행 안내",
+  "baseDt": "2019.01.07",
+  "fileList": [
+   {
+    "attachNo": "71dae64d402a11ef8f590050569e8ab2",
+    "fileSeq": "1",
+    "fileType": "PPTX",
+    "originalFileName": "★Independent Director Recommendation Form(kor)2.pptx"
+   },
+   {
+    "attachNo": "71dae64d402a11ef8f590050569e8ab2",
+    "fileSeq": "2",
+    "fileType": "PDF",
+    "originalFileName": "★Agreement for Personal Information(kor).pdf"
+   }
+  ],
+  "board": "https://www.shinhangroup.com/kr/governance/director/disclosure",
+  "list_url": "https://www.shinhangroup.com/api/v1/governance/council_disclosure/list",
+  "list_post": {
+   "pageType": "FRONT",
+   "lang": "KOR",
+   "current": "2",
+   "year": "2019"
+  },
+  "list_fetched_at": "2026-11-02T16:15:13+09:00"
+ },
+ {
+  "year": 2020,
+  "title": "신한금융지주회사 임원 선임 공시",
+  "baseDt": "2020.12.17",
+  "fileList": [
+   {
+    "attachNo": "71db185a402a11ef8f590050569e8ab2",
+    "fileSeq": "1",
+    "fileType": "PDF",
+    "originalFileName": "임원선임공시(201217).pdf"
+   }
+  ],
+  "board": "https://www.shinhangroup.com/kr/governance/director/disclosure",
+  "list_url": "https://www.shinhangroup.com/api/v1/governance/council_disclosure/list",
+  "list_post": {
+   "pageType": "FRONT",
+   "lang": "KOR",
+   "current": "1",
+   "year": "2020"
+  },
+  "list_fetched_at": "2026-11-02T16:15:15+09:00"
+ },
+ {
+  "year": 2020,
+  "title": "신한금융지주회사 「지배구조 내부규범」 개정 공시",
+  "baseDt": "2020.12.17",
+  "fileList": [
+   {
+    "attachNo": "71db1597402a11ef8f590050569e8ab2",
+    "fileSeq": "1",
+    "fileType": "DOC",
+    "originalFileName": "지배구조내부규범(2020.12.17)_개정.doc"
+   }
+  ],
+  "board": "https://www.shinhangroup.com/kr/governance/director/disclosure",
+  "list_url": "https://www.shinhangroup.com/api/v1/governance/council_disclosure/list",
+  "list_post": {
+   "pageType": "FRONT",
+   "lang": "KOR",
+   "current": "1",
+   "year": "2020"
+  },
+  "list_fetched_at": "2026-11-02T16:15:15+09:00"
+ },
+ {
+  "year": 2020,
+  "title": "신한금융지주회사 「지배구조 내부규범」 개정 공시",
+  "baseDt": "2020.05.21",
+  "fileList": [
+   {
+    "attachNo": "71db13f0402a11ef8f590050569e8ab2",
+    "fileSeq": "1",
+    "fileType": "PDF",
+    "originalFileName": "지배구조 내부규범 개정 후 전문 (2020.05.21).pdf"
+   }
+  ],
+  "board": "https://www.shinhangroup.com/kr/governance/director/disclosure",
+  "list_url": "https://www.shinhangroup.com/api/v1/governance/council_disclosure/list",
+  "list_post": {
+   "pageType": "FRONT",
+   "lang": "KOR",
+   "current": "1",
+   "year": "2020"
+  },
+  "list_fetched_at": "2026-11-02T16:15:15+09:00"
+ },
+ {
+  "year": 2020,
+  "title": "신한금융지주회사 2019 지배구조 및 보수체계 연차보고서 추가공시",
+  "baseDt": "2020.04.06",
+  "fileList": [
+   {
+    "attachNo": "71db11c1402a11ef8f590050569e8ab2",
+    "fileSeq": "1",
+    "fileType": "PDF",
+    "originalFileName": "★2019지배구조연차보고서_국문(추가공시).pdf"
+   }
+  ],
+  "board": "https://www.shinhangroup.com/kr/governance/director/disclosure",
+  "list_url": "https://www.shinhangroup.com/api/v1/governance/council_disclosure/list",
+  "list_post": {
+   "pageType": "FRONT",
+   "lang": "KOR",
+   "current": "1",
+   "year": "2020"
+  },
+  "list_fetched_at": "2026-11-02T16:15:15+09:00"
+ },
+ {
+  "year": 2020,
+  "title": "신한금융지주회사 임원 선임 및 퇴임 공시",
+  "baseDt": "2020.03.26",
+  "fileList": [
+   {
+    "attachNo": "71db0fa0402a11ef8f590050569e8ab2",
+    "fileSeq": "1",
+    "fileType": "PDF",
+    "originalFileName": "★임원 선임 및 퇴임 공시(200326).pdf"
+   }
+  ],
+  "board": "https://www.shinhangroup.com/kr/governance/director/disclosure",
+  "list_url": "https://www.shinhangroup.com/api/v1/governance/council_disclosure/list",
+  "list_post": {
+   "pageType": "FRONT",
+   "lang": "KOR",
+   "current": "1",
+   "year": "2020"
+  },
+  "list_fetched_at": "2026-11-02T16:15:15+09:00"
+ },
+ {
+  "year": 2020,
+  "title": "신한금융지주회사 2019 지배구조 및 보수체계 연차보고서 공시",
+  "baseDt": "2020.03.06",
+  "fileList": [
+   {
+    "attachNo": "71db0cb5402a11ef8f590050569e8ab2",
+    "fileSeq": "1",
+    "fileType": "PDF",
+    "originalFileName": "★FY2019_지배구조및보수체계연차보고서.pdf"
+   }
+  ],
+  "board": "https://www.shinhangroup.com/kr/governance/director/disclosure",
+  "list_url": "https://www.shinhangroup.com/api/v1/governance/council_disclosure/list",
+  "list_post": {
+   "pageType": "FRONT",
+   "lang": "KOR",
+   "current": "1",
+   "year": "2020"
+  },
+  "list_fetched_at": "2026-11-02T16:15:15+09:00"
+ },
+ {
+  "year": 2020,
+  "title": "신한금융지주회사 사외이사 후보 추천내역 공시",
+  "baseDt": "2020.03.05",
+  "fileList": [
+   {
+    "attachNo": "71db0aca402a11ef8f590050569e8ab2",
+    "fileSeq": "1",
+    "fileType": "PDF",
+    "originalFileName": "★200305 사외이사 후보 추천내역 공시.pdf"
+   }
+  ],
+  "board": "https://www.shinhangroup.com/kr/governance/director/disclosure",
+  "list_url": "https://www.shinhangroup.com/api/v1/governance/council_disclosure/list",
+  "list_post": {
+   "pageType": "FRONT",
+   "lang": "KOR",
+   "current": "1",
+   "year": "2020"
+  },
+  "list_fetched_at": "2026-11-02T16:15:15+09:00"
+ },
+ {
+  "year": 2020,
+  "title": "신한금융지주회사 임원 선임 공시",
+  "baseDt": "2020.02.05",
+  "fileList": [
+   {
+    "attachNo": "71db0899402a11ef8f590050569e8ab2",
+    "fileSeq": "1",
+    "fileType": "PDF",
+    "originalFileName": "임원선임공시(200205).pdf"
+   }
+  ],
+  "board": "https://www.shinhangroup.com/kr/governance/director/disclosure",
+  "list_url": "https://www.shinhangroup.com/api/v1/governance/council_disclosure/list",
+  "list_post": {
+   "pageType": "FRONT",
+   "lang": "KOR",
+   "current": "1",
+   "year": "2020"
+  },
+  "list_fetched_at": "2026-11-02T16:15:15+09:00"
+ },
+ {
+  "year": 2021,
+  "title": "신한금융지주회사 임원 사임 공시",
+  "baseDt": "2021.12.31",
+  "fileList": [
+   {
+    "attachNo": "71db2aad402a11ef8f590050569e8ab2",
+    "fileSeq": "1",
+    "fileType": "PDF",
+    "originalFileName": "신한금융지주회사 임원해임(사임)공시(211231).pdf"
+   }
+  ],
+  "board": "https://www.shinhangroup.com/kr/governance/director/disclosure",
+  "list_url": "https://www.shinhangroup.com/api/v1/governance/council_disclosure/list",
+  "list_post": {
+   "pageType": "FRONT",
+   "lang": "KOR",
+   "current": "1",
+   "year": "2021"
+  },
+  "list_fetched_at": "2026-11-02T16:15:17+09:00"
+ },
+ {
+  "year": 2021,
+  "title": "신한금융지주회사 임원 선임 공시",
+  "baseDt": "2021.12.24",
+  "fileList": [
+   {
+    "attachNo": "71db2887402a11ef8f590050569e8ab2",
+    "fileSeq": "1",
+    "fileType": "PDF",
+    "originalFileName": "임원선임공시(211224)_ 김명희.pdf"
+   }
+  ],
+  "board": "https://www.shinhangroup.com/kr/governance/director/disclosure",
+  "list_url": "https://www.shinhangroup.com/api/v1/governance/council_disclosure/list",
+  "list_post": {
+   "pageType": "FRONT",
+   "lang": "KOR",
+   "current": "1",
+   "year": "2021"
+  },
+  "list_fetched_at": "2026-11-02T16:15:17+09:00"
+ },
+ {
+  "year": 2021,
+  "title": "신한금융지주회사 임원 선임 공시",
+  "baseDt": "2021.12.16",
+  "fileList": [
+   {
+    "attachNo": "71db2617402a11ef8f590050569e8ab2",
+    "fileSeq": "1",
+    "fileType": "PDF",
+    "originalFileName": "신한금융지주회사_ 임원선임공시(211216).pdf"
+   }
+  ],
+  "board": "https://www.shinhangroup.com/kr/governance/director/disclosure",
+  "list_url": "https://www.shinhangroup.com/api/v1/governance/council_disclosure/list",
+  "list_post": {
+   "pageType": "FRONT",
+   "lang": "KOR",
+   "current": "1",
+   "year": "2021"
+  },
+  "list_fetched_at": "2026-11-02T16:15:17+09:00"
+ },
+ {
+  "year": 2021,
+  "title": "신한금융지주회사 2020 지배구조 및 보수체계 연차보고서 추가공시",
+  "baseDt": "2021.04.05",
+  "fileList": [
+   {
+    "attachNo": "71db2412402a11ef8f590050569e8ab2",
+    "fileSeq": "1",
+    "fileType": "PDF",
+    "originalFileName": "2020지배구조연차보고서_국문_추가공시.pdf"
+   }
+  ],
+  "board": "https://www.shinhangroup.com/kr/governance/director/disclosure",
+  "list_url": "https://www.shinhangroup.com/api/v1/governance/council_disclosure/list",
+  "list_post": {
+   "pageType": "FRONT",
+   "lang": "KOR",
+   "current": "1",
+   "year": "2021"
+  },
+  "list_fetched_at": "2026-11-02T16:15:17+09:00"
+ },
+ {
+  "year": 2021,
+  "title": "신한금융지주회사 임원 선임 및 퇴임 공시",
+  "baseDt": "2021.03.25",
+  "fileList": [
+   {
+    "attachNo": "71db21cd402a11ef8f590050569e8ab2",
+    "fileSeq": "1",
+    "fileType": "PDF",
+    "originalFileName": "임원 선임 및 퇴임 공시(210325).pdf"
+   }
+  ],
+  "board": "https://www.shinhangroup.com/kr/governance/director/disclosure",
+  "list_url": "https://www.shinhangroup.com/api/v1/governance/council_disclosure/list",
+  "list_post": {
+   "pageType": "FRONT",
+   "lang": "KOR",
+   "current": "1",
+   "year": "2021"
+  },
+  "list_fetched_at": "2026-11-02T16:15:17+09:00"
+ },
+ {
+  "year": 2021,
+  "title": "신한금융지주 지배구조 내부규범 개정 공시",
+  "baseDt": "2021.03.25",
+  "fileList": [
+   {
+    "attachNo": "71db1fd1402a11ef8f590050569e8ab2",
+    "fileSeq": "1",
+    "fileType": "PDF",
+    "originalFileName": "신한금융지주 지배구조 내부규범_개정 후 전문(2021.3.25).pdf"
+   }
+  ],
+  "board": "https://www.shinhangroup.com/kr/governance/director/disclosure",
+  "list_url": "https://www.shinhangroup.com/api/v1/governance/council_disclosure/list",
+  "list_post": {
+   "pageType": "FRONT",
+   "lang": "KOR",
+   "current": "1",
+   "year": "2021"
+  },
+  "list_fetched_at": "2026-11-02T16:15:17+09:00"
+ },
+ {
+  "year": 2021,
+  "title": "신한금융지주회사 2020 지배구조 및 보수체계 연차보고서 공시",
+  "baseDt": "2021.03.05",
+  "fileList": [
+   {
+    "attachNo": "71db1dbf402a11ef8f590050569e8ab2",
+    "fileSeq": "1",
+    "fileType": "PDF",
+    "originalFileName": "★SFG_2020CGAR_210305.pdf"
+   }
+  ],
+  "board": "https://www.shinhangroup.com/kr/governance/director/disclosure",
+  "list_url": "https://www.shinhangroup.com/api/v1/governance/council_disclosure/list",
+  "list_post": {
+   "pageType": "FRONT",
+   "lang": "KOR",
+   "current": "1",
+   "year": "2021"
+  },
+  "list_fetched_at": "2026-11-02T16:15:17+09:00"
+ },
+ {
+  "year": 2021,
+  "title": "신한금융지주회사 사외이사 후보 추천내역 공시",
+  "baseDt": "2021.03.03",
+  "fileList": [
+   {
+    "attachNo": "71db1af8402a11ef8f590050569e8ab2",
+    "fileSeq": "1",
+    "fileType": "PDF",
+    "originalFileName": "★210303_사외이사_후보_추천내역_공시.pdf"
+   }
+  ],
+  "board": "https://www.shinhangroup.com/kr/governance/director/disclosure",
+  "list_url": "https://www.shinhangroup.com/api/v1/governance/council_disclosure/list",
+  "list_post": {
+   "pageType": "FRONT",
+   "lang": "KOR",
+   "current": "1",
+   "year": "2021"
+  },
+  "list_fetched_at": "2026-11-02T16:15:17+09:00"
+ },
+ {
+  "year": 2022,
+  "title": "신한금융지주회사 임원 선임 공시",
+  "baseDt": "2022.12.20",
+  "fileList": [
+   {
+    "attachNo": "71db3e5b402a11ef8f590050569e8ab2",
+    "fileSeq": "1",
+    "fileType": "PDF",
+    "originalFileName": "SFG_ Imwon_ 20221220.pdf"
+   }
+  ],
+  "board": "https://www.shinhangroup.com/kr/governance/director/disclosure",
+  "list_url": "https://www.shinhangroup.com/api/v1/governance/council_disclosure/list",
+  "list_post": {
+   "pageType": "FRONT",
+   "lang": "KOR",
+   "current": "1",
+   "year": "2022"
+  },
+  "list_fetched_at": "2026-11-02T16:15:19+09:00"
+ },
+ {
+  "year": 2022,
+  "title": "신한금융지주회사 대표이사 후보자 추천내역 공시",
+  "baseDt": "2022.12.08",
+  "fileList": [
+   {
+    "attachNo": "71db3cd3402a11ef8f590050569e8ab2",
+    "fileSeq": "1",
+    "fileType": "PDF",
+    "originalFileName": "신한금융지주회사 대표이사 회장 후보 추천 공시.pdf"
+   }
+  ],
+  "board": "https://www.shinhangroup.com/kr/governance/director/disclosure",
+  "list_url": "https://www.shinhangroup.com/api/v1/governance/council_disclosure/list",
+  "list_post": {
+   "pageType": "FRONT",
+   "lang": "KOR",
+   "current": "1",
+   "year": "2022"
+  },
+  "list_fetched_at": "2026-11-02T16:15:19+09:00"
+ },
+ {
+  "year": 2022,
+  "title": "신한금융지주 2021 지배구조 및 보수체계 연차보고서 추가공시",
+  "baseDt": "2022.03.31",
+  "fileList": [
+   {
+    "attachNo": "71db3aa7402a11ef8f590050569e8ab2",
+    "fileSeq": "1",
+    "fileType": "PDF",
+    "originalFileName": "2021년 지배구조 및 보수체계 연차보고서 추가공시(국문).pdf"
+   }
+  ],
+  "board": "https://www.shinhangroup.com/kr/governance/director/disclosure",
+  "list_url": "https://www.shinhangroup.com/api/v1/governance/council_disclosure/list",
+  "list_post": {
+   "pageType": "FRONT",
+   "lang": "KOR",
+   "current": "1",
+   "year": "2022"
+  },
+  "list_fetched_at": "2026-11-02T16:15:19+09:00"
+ },
+ {
+  "year": 2022,
+  "title": "신한금융지주회사 임원 선임 및 퇴임 공시",
+  "baseDt": "2022.03.24",
+  "fileList": [
+   {
+    "attachNo": "71db37d1402a11ef8f590050569e8ab2",
+    "fileSeq": "1",
+    "fileType": "PDF",
+    "originalFileName": "임원 선임 및 퇴임 공시(220324).pdf"
+   }
+  ],
+  "board": "https://www.shinhangroup.com/kr/governance/director/disclosure",
+  "list_url": "https://www.shinhangroup.com/api/v1/governance/council_disclosure/list",
+  "list_post": {
+   "pageType": "FRONT",
+   "lang": "KOR",
+   "current": "1",
+   "year": "2022"
+  },
+  "list_fetched_at": "2026-11-02T16:15:19+09:00"
+ },
+ {
+  "year": 2022,
+  "title": "신한금융지주회사 2021 지배구조 및 보수체계 연차보고서 공시",
+  "baseDt": "2022.03.04",
+  "fileList": [
+   {
+    "attachNo": "71db328b402a11ef8f590050569e8ab2",
+    "fileSeq": "1",
+    "fileType": "PDF",
+    "originalFileName": "2021년 지배구조 및 보수체계 연차보고서_신한지주.pdf"
+   }
+  ],
+  "board": "https://www.shinhangroup.com/kr/governance/director/disclosure",
+  "list_url": "https://www.shinhangroup.com/api/v1/governance/council_disclosure/list",
+  "list_post": {
+   "pageType": "FRONT",
+   "lang": "KOR",
+   "current": "1",
+   "year": "2022"
+  },
+  "list_fetched_at": "2026-11-02T16:15:19+09:00"
+ },
+ {
+  "year": 2022,
+  "title": "신한금융지주회사 사외이사 후보 추천내역 공시",
+  "baseDt": "2022.03.03",
+  "fileList": [
+   {
+    "attachNo": "71db3074402a11ef8f590050569e8ab2",
+    "fileSeq": "1",
+    "fileType": "PDF",
+    "originalFileName": "220303 사외이사 후보 추천내역 공시.pdf"
+   }
+  ],
+  "board": "https://www.shinhangroup.com/kr/governance/director/disclosure",
+  "list_url": "https://www.shinhangroup.com/api/v1/governance/council_disclosure/list",
+  "list_post": {
+   "pageType": "FRONT",
+   "lang": "KOR",
+   "current": "1",
+   "year": "2022"
+  },
+  "list_fetched_at": "2026-11-02T16:15:19+09:00"
+ },
+ {
+  "year": 2022,
+  "title": "신한금융지주회사 지배구조 내부규범 개정 공시 ",
+  "baseDt": "2022.03.02",
+  "fileList": [
+   {
+    "attachNo": "71db2eee402a11ef8f590050569e8ab2",
+    "fileSeq": "1",
+    "fileType": "PDF",
+    "originalFileName": "지배구조 내부규범(2022.3.2)_개정.pdf"
+   }
+  ],
+  "board": "https://www.shinhangroup.com/kr/governance/director/disclosure",
+  "list_url": "https://www.shinhangroup.com/api/v1/governance/council_disclosure/list",
+  "list_post": {
+   "pageType": "FRONT",
+   "lang": "KOR",
+   "current": "1",
+   "year": "2022"
+  },
+  "list_fetched_at": "2026-11-02T16:15:19+09:00"
+ },
+ {
+  "year": 2022,
+  "title": "신한금융지주회사 임원 사임 공시",
+  "baseDt": "2022.02.11",
+  "fileList": [
+   {
+    "attachNo": "71db2cd5402a11ef8f590050569e8ab2",
+    "fileSeq": "1",
+    "fileType": "PDF",
+    "originalFileName": "신한금융지주회사 임원해임(사임)공시(220210).pdf"
+   }
+  ],
+  "board": "https://www.shinhangroup.com/kr/governance/director/disclosure",
+  "list_url": "https://www.shinhangroup.com/api/v1/governance/council_disclosure/list",
+  "list_post": {
+   "pageType": "FRONT",
+   "lang": "KOR",
+   "current": "1",
+   "year": "2022"
+  },
+  "list_fetched_at": "2026-11-02T16:15:19+09:00"
+ },
+ {
+  "year": 2023,
+  "title": "신한금융지주회사 임원 선임 공시",
+  "baseDt": "2023.12.19",
+  "fileList": [
+   {
+    "attachNo": "71db58be402a11ef8f590050569e8ab2",
+    "fileSeq": "1",
+    "fileType": "PDF",
+    "originalFileName": "임원선임공시_231219_.pdf"
+   }
+  ],
+  "board": "https://www.shinhangroup.com/kr/governance/director/disclosure",
+  "list_url": "https://www.shinhangroup.com/api/v1/governance/council_disclosure/list",
+  "list_post": {
+   "pageType": "FRONT",
+   "lang": "KOR",
+   "current": "1",
+   "year": "2023"
+  },
+  "list_fetched_at": "2026-11-02T16:15:21+09:00"
+ },
+ {
+  "year": 2023,
+  "title": "신한금융지주회사 임원 선임 공시",
+  "baseDt": "2023.06.30",
+  "fileList": [
+   {
+    "attachNo": "71db5624402a11ef8f590050569e8ab2",
+    "fileSeq": "1",
+    "fileType": "PDF",
+    "originalFileName": "신한금융지주회사 임원 선임 공시.pdf"
+   }
+  ],
+  "board": "https://www.shinhangroup.com/kr/governance/director/disclosure",
+  "list_url": "https://www.shinhangroup.com/api/v1/governance/council_disclosure/list",
+  "list_post": {
+   "pageType": "FRONT",
+   "lang": "KOR",
+   "current": "1",
+   "year": "2023"
+  },
+  "list_fetched_at": "2026-11-02T16:15:21+09:00"
+ },
+ {
+  "year": 2023,
+  "title": "신한금융지주 2022 지배구조 및 보수체계 연차보고서 추가공시",
+  "baseDt": "2023.03.28",
+  "fileList": [
+   {
+    "attachNo": "71db532a402a11ef8f590050569e8ab2",
+    "fileSeq": "1",
+    "fileType": "PDF",
+    "originalFileName": "2022년 지배구조 및 보수체계 연차보고서(국문)_신한지주(추가공시).pdf"
+   }
+  ],
+  "board": "https://www.shinhangroup.com/kr/governance/director/disclosure",
+  "list_url": "https://www.shinhangroup.com/api/v1/governance/council_disclosure/list",
+  "list_post": {
+   "pageType": "FRONT",
+   "lang": "KOR",
+   "current": "1",
+   "year": "2023"
+  },
+  "list_fetched_at": "2026-11-02T16:15:21+09:00"
+ },
+ {
+  "year": 2023,
+  "title": "신한금융지주회사 「지배구조 내부규범」 개정 공시&#40;기재오류 수정&#41;",
+  "baseDt": "2023.03.23",
+  "fileList": [
+   {
+    "attachNo": "71db50d4402a11ef8f590050569e8ab2",
+    "fileSeq": "1",
+    "fileType": "DOCX",
+    "originalFileName": "지배구조_내부규범_2023.3.23__개정nv.docx"
+   }
+  ],
+  "board": "https://www.shinhangroup.com/kr/governance/director/disclosure",
+  "list_url": "https://www.shinhangroup.com/api/v1/governance/council_disclosure/list",
+  "list_post": {
+   "pageType": "FRONT",
+   "lang": "KOR",
+   "current": "1",
+   "year": "2023"
+  },
+  "list_fetched_at": "2026-11-02T16:15:21+09:00"
+ },
+ {
+  "year": 2023,
+  "title": "신한금융지주회사 임원 선임 및 퇴임 공시",
+  "baseDt": "2023.03.23",
+  "fileList": [
+   {
+    "attachNo": "71db4e6f402a11ef8f590050569e8ab2",
+    "fileSeq": "1",
+    "fileType": "PDF",
+    "originalFileName": "임원 선임 및 퇴임 공시(230323).pdf"
+   }
+  ],
+  "board": "https://www.shinhangroup.com/kr/governance/director/disclosure",
+  "list_url": "https://www.shinhangroup.com/api/v1/governance/council_disclosure/list",
+  "list_post": {
+   "pageType": "FRONT",
+   "lang": "KOR",
+   "current": "1",
+   "year": "2023"
+  },
+  "list_fetched_at": "2026-11-02T16:15:21+09:00"
+ },
+ {
+  "year": 2023,
+  "title": "신한금융지주회사 「지배구조 내부규범」 개정 공시",
+  "baseDt": "2023.03.23",
+  "fileList": [
+   {
+    "attachNo": "71db4bda402a11ef8f590050569e8ab2",
+    "fileSeq": "1",
+    "fileType": "PDF",
+    "originalFileName": "지배구조_내부규범_2023.3.23__개정.pdf"
+   }
+  ],
+  "board": "https://www.shinhangroup.com/kr/governance/director/disclosure",
+  "list_url": "https://www.shinhangroup.com/api/v1/governance/council_disclosure/list",
+  "list_post": {
+   "pageType": "FRONT",
+   "lang": "KOR",
+   "current": "1",
+   "year": "2023"
+  },
+  "list_fetched_at": "2026-11-02T16:15:21+09:00"
+ },
+ {
+  "year": 2023,
+  "title": "신한금융지주회사 2022 지배구조 및 보수체계 연차보고서 공시",
+  "baseDt": "2023.03.02",
+  "fileList": [
+   {
+    "attachNo": "71db4913402a11ef8f590050569e8ab2",
+    "fileSeq": "1",
+    "fileType": "PDF",
+    "originalFileName": "2022년 지배구조 및 보수체계 연차보고서_신한지주.pdf"
+   }
+  ],
+  "board": "https://www.shinhangroup.com/kr/governance/director/disclosure",
+  "list_url": "https://www.shinhangroup.com/api/v1/governance/council_disclosure/list",
+  "list_post": {
+   "pageType": "FRONT",
+   "lang": "KOR",
+   "current": "1",
+   "year": "2023"
+  },
+  "list_fetched_at": "2026-11-02T16:15:21+09:00"
+ },
+ {
+  "year": 2023,
+  "title": "신한금융지주회사 사외이사 후보 추천내역 공시",
+  "baseDt": "2023.02.28",
+  "fileList": [
+   {
+    "attachNo": "71db45a8402a11ef8f590050569e8ab2",
+    "fileSeq": "1",
+    "fileType": "PDF",
+    "originalFileName": "230228_사외이사_후보_추천내역_공시.pdf"
+   }
+  ],
+  "board": "https://www.shinhangroup.com/kr/governance/director/disclosure",
+  "list_url": "https://www.shinhangroup.com/api/v1/governance/council_disclosure/list",
+  "list_post": {
+   "pageType": "FRONT",
+   "lang": "KOR",
+   "current": "1",
+   "year": "2023"
+  },
+  "list_fetched_at": "2026-11-02T16:15:21+09:00"
+ },
+ {
+  "year": 2023,
+  "title": "신한금융지주회사 임원 사임 공시",
+  "baseDt": "2023.01.13",
+  "fileList": [
+   {
+    "attachNo": "71db42c5402a11ef8f590050569e8ab2",
+    "fileSeq": "1",
+    "fileType": "PDF",
+    "originalFileName": "신한금융지주 지배구조공시.pdf"
+   }
+  ],
+  "board": "https://www.shinhangroup.com/kr/governance/director/disclosure",
+  "list_url": "https://www.shinhangroup.com/api/v1/governance/council_disclosure/list",
+  "list_post": {
+   "pageType": "FRONT",
+   "lang": "KOR",
+   "current": "1",
+   "year": "2023"
+  },
+  "list_fetched_at": "2026-11-02T16:15:21+09:00"
+ },
+ {
+  "year": 2023,
+  "title": "신한금융지주회사 임원 사임 공시",
+  "baseDt": "2023.01.03",
+  "fileList": [
+   {
+    "attachNo": "71db4140402a11ef8f590050569e8ab2",
+    "fileSeq": "1",
+    "fileType": "PDF",
+    "originalFileName": "신한금융지주회사 임원 사임 공시.pdf"
+   }
+  ],
+  "board": "https://www.shinhangroup.com/kr/governance/director/disclosure",
+  "list_url": "https://www.shinhangroup.com/api/v1/governance/council_disclosure/list",
+  "list_post": {
+   "pageType": "FRONT",
+   "lang": "KOR",
+   "current": "1",
+   "year": "2023"
+  },
+  "list_fetched_at": "2026-11-02T16:15:21+09:00"
+ },
+ {
+  "year": 2024,
+  "title": "신한금융지주회사 임원선임 및 책무변경 공시",
+  "baseDt": "2024.12.27",
+  "fileList": [
+   {
+    "attachNo": "f1c938ecd06544f7839bb481681b9626",
+    "fileSeq": "1",
+    "fileType": "PDF",
+    "originalFileName": "신한금융지주회사_임원_선임_및_책무_변경_공시.pdf"
+   }
+  ],
+  "board": "https://www.shinhangroup.com/kr/governance/director/disclosure",
+  "list_url": "https://www.shinhangroup.com/api/v1/governance/council_disclosure/list",
+  "list_post": {
+   "pageType": "FRONT",
+   "lang": "KOR",
+   "current": "1",
+   "year": "2024"
+  },
+  "list_fetched_at": "2026-11-02T16:15:22+09:00"
+ },
+ {
+  "year": 2024,
+  "title": "신한금융지주회사 「지배구조 내부규범」 개정 공시",
+  "baseDt": "2024.11.01",
+  "fileList": [
+   {
+    "attachNo": "eb3706caf4fd46469f3e323dcb9e2eaf",
+    "fileSeq": "1",
+    "fileType": "PDF",
+    "originalFileName": "지배구조_내부규범_2024.10.28__개정.pdf"
+   }
+  ],
+  "board": "https://www.shinhangroup.com/kr/governance/director/disclosure",
+  "list_url": "https://www.shinhangroup.com/api/v1/governance/council_disclosure/list",
+  "list_post": {
+   "pageType": "FRONT",
+   "lang": "KOR",
+   "current": "1",
+   "year": "2024"
+  },
+  "list_fetched_at": "2026-11-02T16:15:22+09:00"
+ },
+ {
+  "year": 2024,
+  "title": "신한금융지주 2023 지배구조 및 보수체계 연차보고서 추가공시",
+  "baseDt": "2024.04.02",
+  "fileList": [
+   {
+    "attachNo": "71db628a402a11ef8f590050569e8ab2",
+    "fileSeq": "1",
+    "fileType": "PDF",
+    "originalFileName": "2023년 지배구조 및 보수체계 연차보고서_신한금융지주(추가공시).pdf"
+   }
+  ],
+  "board": "https://www.shinhangroup.com/kr/governance/director/disclosure",
+  "list_url": "https://www.shinhangroup.com/api/v1/governance/council_disclosure/list",
+  "list_post": {
+   "pageType": "FRONT",
+   "lang": "KOR",
+   "current": "1",
+   "year": "2024"
+  },
+  "list_fetched_at": "2026-11-02T16:15:22+09:00"
+ },
+ {
+  "year": 2024,
+  "title": "신한금융지주회사 임원 선임 및 퇴임 공시",
+  "baseDt": "2024.03.26",
+  "fileList": [
+   {
+    "attachNo": "71db5fcc402a11ef8f590050569e8ab2",
+    "fileSeq": "1",
+    "fileType": "PDF",
+    "originalFileName": "임원_선임_및_퇴임_공시_240326__신한금융지주.pdf"
+   }
+  ],
+  "board": "https://www.shinhangroup.com/kr/governance/director/disclosure",
+  "list_url": "https://www.shinhangroup.com/api/v1/governance/council_disclosure/list",
+  "list_post": {
+   "pageType": "FRONT",
+   "lang": "KOR",
+   "current": "1",
+   "year": "2024"
+  },
+  "list_fetched_at": "2026-11-02T16:15:22+09:00"
+ },
+ {
+  "year": 2024,
+  "title": "신한금융지주회사 2023 지배구조 및 보수체계 연차보고서 공시",
+  "baseDt": "2024.03.05",
+  "fileList": [
+   {
+    "attachNo": "71db5db3402a11ef8f590050569e8ab2",
+    "fileSeq": "1",
+    "fileType": "PDF",
+    "originalFileName": "2023 지배구조 및 보수체계 연차보고서.pdf"
+   }
+  ],
+  "board": "https://www.shinhangroup.com/kr/governance/director/disclosure",
+  "list_url": "https://www.shinhangroup.com/api/v1/governance/council_disclosure/list",
+  "list_post": {
+   "pageType": "FRONT",
+   "lang": "KOR",
+   "current": "1",
+   "year": "2024"
+  },
+  "list_fetched_at": "2026-11-02T16:15:22+09:00"
+ },
+ {
+  "year": 2024,
+  "title": "신한금융지주회사 사외이사 후보 추천내역 공시",
+  "baseDt": "2024.03.04",
+  "fileList": [
+   {
+    "attachNo": "71db5b2a402a11ef8f590050569e8ab2",
+    "fileSeq": "1",
+    "fileType": "PDF",
+    "originalFileName": "240304__사외이사_후보_추천내역_공시.pdf"
+   }
+  ],
+  "board": "https://www.shinhangroup.com/kr/governance/director/disclosure",
+  "list_url": "https://www.shinhangroup.com/api/v1/governance/council_disclosure/list",
+  "list_post": {
+   "pageType": "FRONT",
+   "lang": "KOR",
+   "current": "1",
+   "year": "2024"
+  },
+  "list_fetched_at": "2026-11-02T16:15:22+09:00"
+ },
+ {
+  "year": 2025,
+  "title": "신한금융지주회사 임원선임 및 책무변경 공시",
+  "baseDt": "2025.12.23",
+  "fileList": [
+   {
+    "attachNo": "c05812e053184b0592b26c2d3b57f117",
+    "fileSeq": "1",
+    "fileType": "PDF",
+    "originalFileName": "251218__신한금융지주회사_임원_선임_및_책무_변경_공시.pdf"
+   }
+  ],
+  "board": "https://www.shinhangroup.com/kr/governance/director/disclosure",
+  "list_url": "https://www.shinhangroup.com/api/v1/governance/council_disclosure/list",
+  "list_post": {
+   "pageType": "FRONT",
+   "lang": "KOR",
+   "current": "1",
+   "year": "2025"
+  },
+  "list_fetched_at": "2026-11-02T16:15:24+09:00"
+ },
+ {
+  "year": 2025,
+  "title": "신한금융지주회사 대표이사 후보자 추천내역 공시",
+  "baseDt": "2025.12.04",
+  "fileList": [
+   {
+    "attachNo": "ebc5d34f852f4fee98d75fc41a7e86a3",
+    "fileSeq": "1",
+    "fileType": "PDF",
+    "originalFileName": "신한금융지주회사 대표이사 회장 후보 추천 공시.pdf"
+   }
+  ],
+  "board": "https://www.shinhangroup.com/kr/governance/director/disclosure",
+  "list_url": "https://www.shinhangroup.com/api/v1/governance/council_disclosure/list",
+  "list_post": {
+   "pageType": "FRONT",
+   "lang": "KOR",
+   "current": "1",
+   "year": "2025"
+  },
+  "list_fetched_at": "2026-11-02T16:15:24+09:00"
+ },
+ {
+  "year": 2025,
+  "title": "신한금융지주회사 임원선임 및 책무변경 공시",
+  "baseDt": "2025.09.26",
+  "fileList": [
+   {
+    "attachNo": "ab9591733cff492998e99f2b9a666e27",
+    "fileSeq": "1",
+    "fileType": "PDF",
+    "originalFileName": "250926_신한금융지주회사 임원선임 및 책무변경 공시.pdf"
+   }
+  ],
+  "board": "https://www.shinhangroup.com/kr/governance/director/disclosure",
+  "list_url": "https://www.shinhangroup.com/api/v1/governance/council_disclosure/list",
+  "list_post": {
+   "pageType": "FRONT",
+   "lang": "KOR",
+   "current": "1",
+   "year": "2025"
+  },
+  "list_fetched_at": "2026-11-02T16:15:24+09:00"
+ },
+ {
+  "year": 2025,
+  "title": "신한금융지주회사 임원 선임 공시",
+  "baseDt": "2025.08.28",
+  "fileList": [
+   {
+    "attachNo": "b0d59e9f332940ee92355c021026c464",
+    "fileSeq": "1",
+    "fileType": "PDF",
+    "originalFileName": "250828_신한금융지주회사_임원_선임_공시.pdf"
+   }
+  ],
+  "board": "https://www.shinhangroup.com/kr/governance/director/disclosure",
+  "list_url": "https://www.shinhangroup.com/api/v1/governance/council_disclosure/list",
+  "list_post": {
+   "pageType": "FRONT",
+   "lang": "KOR",
+   "current": "1",
+   "year": "2025"
+  },
+  "list_fetched_at": "2026-11-02T16:15:24+09:00"
+ },
+ {
+  "year": 2025,
+  "title": "신한금융지주회사 임원 책무 변경 공시",
+  "baseDt": "2025.07.25",
+  "fileList": [
+   {
+    "attachNo": "f1fe8fe420274ed097f15cfda4b1608c",
+    "fileSeq": "1",
+    "fileType": "PDF",
+    "originalFileName": "250725_신한금융지주회사_임원_책무_변경_공시.pdf"
+   }
+  ],
+  "board": "https://www.shinhangroup.com/kr/governance/director/disclosure",
+  "list_url": "https://www.shinhangroup.com/api/v1/governance/council_disclosure/list",
+  "list_post": {
+   "pageType": "FRONT",
+   "lang": "KOR",
+   "current": "1",
+   "year": "2025"
+  },
+  "list_fetched_at": "2026-11-02T16:15:24+09:00"
+ },
+ {
+  "year": 2025,
+  "title": "신한금융지주회사 임원 선임 및 책무 변경 공시",
+  "baseDt": "2025.04.25",
+  "fileList": [
+   {
+    "attachNo": "afa6ef0275904b3198409f4a56f92be4",
+    "fileSeq": "1",
+    "fileType": "PDF",
+    "originalFileName": "250425__신한금융지주회사_임원_선임_및_책무_변경_공시.pdf"
+   }
+  ],
+  "board": "https://www.shinhangroup.com/kr/governance/director/disclosure",
+  "list_url": "https://www.shinhangroup.com/api/v1/governance/council_disclosure/list",
+  "list_post": {
+   "pageType": "FRONT",
+   "lang": "KOR",
+   "current": "1",
+   "year": "2025"
+  },
+  "list_fetched_at": "2026-11-02T16:15:24+09:00"
+ },
+ {
+  "year": 2025,
+  "title": "신한금융지주 2024 지배구조 및 보수체계 연차보고서 추가공시",
+  "baseDt": "2025.03.31",
+  "fileList": [
+   {
+    "attachNo": "7729d787f8314307b4af6eb88e3db129",
+    "fileSeq": "1",
+    "fileType": "PDF",
+    "originalFileName": "2024 지배구조 및 보수체계 연차보고서(추가공시).pdf"
+   }
+  ],
+  "board": "https://www.shinhangroup.com/kr/governance/director/disclosure",
+  "list_url": "https://www.shinhangroup.com/api/v1/governance/council_disclosure/list",
+  "list_post": {
+   "pageType": "FRONT",
+   "lang": "KOR",
+   "current": "1",
+   "year": "2025"
+  },
+  "list_fetched_at": "2026-11-02T16:15:24+09:00"
+ },
+ {
+  "year": 2025,
+  "title": "신한금융지주회사 임원 책무변경 공시",
+  "baseDt": "2025.03.26",
+  "fileList": [
+   {
+    "attachNo": "292e52f1d5934953a5650b334f4b209e",
+    "fileSeq": "1",
+    "fileType": "PDF",
+    "originalFileName": "신한금융지주회사_임원_책무_변경_공시__v1.0.pdf"
+   }
+  ],
+  "board": "https://www.shinhangroup.com/kr/governance/director/disclosure",
+  "list_url": "https://www.shinhangroup.com/api/v1/governance/council_disclosure/list",
+  "list_post": {
+   "pageType": "FRONT",
+   "lang": "KOR",
+   "current": "1",
+   "year": "2025"
+  },
+  "list_fetched_at": "2026-11-02T16:15:24+09:00"
+ },
+ {
+  "year": 2025,
+  "title": "신한금융지주회사 「지배구조 내부규범」 개정 공시",
+  "baseDt": "2025.03.26",
+  "fileList": [
+   {
+    "attachNo": "d4aa563ae99040f78a344ad94d976d91",
+    "fileSeq": "1",
+    "fileType": "PDF",
+    "originalFileName": "지배구조_내부규범_2025.03.04_개정.pdf"
+   }
+  ],
+  "board": "https://www.shinhangroup.com/kr/governance/director/disclosure",
+  "list_url": "https://www.shinhangroup.com/api/v1/governance/council_disclosure/list",
+  "list_post": {
+   "pageType": "FRONT",
+   "lang": "KOR",
+   "current": "1",
+   "year": "2025"
+  },
+  "list_fetched_at": "2026-11-02T16:15:24+09:00"
+ },
+ {
+  "year": 2025,
+  "title": "신한금융지주회사 임원 선임 및 퇴임 공시",
+  "baseDt": "2025.03.26",
+  "fileList": [
+   {
+    "attachNo": "fdfbfd53dec34c3087df3077c2274a55",
+    "fileSeq": "1",
+    "fileType": "PDF",
+    "originalFileName": "250326_임원_선임_및_퇴임_공시_신한금융지주.pdf"
+   }
+  ],
+  "board": "https://www.shinhangroup.com/kr/governance/director/disclosure",
+  "list_url": "https://www.shinhangroup.com/api/v1/governance/council_disclosure/list",
+  "list_post": {
+   "pageType": "FRONT",
+   "lang": "KOR",
+   "current": "1",
+   "year": "2025"
+  },
+  "list_fetched_at": "2026-11-02T16:15:24+09:00"
+ },
+ {
+  "year": 2025,
+  "title": "신한금융지주회사 2024 지배구조 및 보수체계 연차보고서 공시",
+  "baseDt": "2025.03.05",
+  "fileList": [
+   {
+    "attachNo": "89c02dba8a00489786c9fbb6c301a0ee",
+    "fileSeq": "1",
+    "fileType": "PDF",
+    "originalFileName": "2024 지배구조 및 보수체계 연차보고서.pdf"
+   }
+  ],
+  "board": "https://www.shinhangroup.com/kr/governance/director/disclosure",
+  "list_url": "https://www.shinhangroup.com/api/v1/governance/council_disclosure/list",
+  "list_post": {
+   "pageType": "FRONT",
+   "lang": "KOR",
+   "current": "2",
+   "year": "2025"
+  },
+  "list_fetched_at": "2026-11-02T16:15:26+09:00"
+ },
+ {
+  "year": 2025,
+  "title": "신한금융지주회사 사외이사 후보 추천내역 공시 ",
+  "baseDt": "2025.03.04",
+  "fileList": [
+   {
+    "attachNo": "bd6aea45a05f4c7d9ff2910290760daa",
+    "fileSeq": "1",
+    "fileType": "PDF",
+    "originalFileName": "250304_사외이사_후보_추천내역_공시.pdf"
+   }
+  ],
+  "board": "https://www.shinhangroup.com/kr/governance/director/disclosure",
+  "list_url": "https://www.shinhangroup.com/api/v1/governance/council_disclosure/list",
+  "list_post": {
+   "pageType": "FRONT",
+   "lang": "KOR",
+   "current": "2",
+   "year": "2025"
+  },
+  "list_fetched_at": "2026-11-02T16:15:26+09:00"
+ }
+]

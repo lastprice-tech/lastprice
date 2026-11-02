@@ -1,0 +1,464 @@
+[
+ {
+  "bltcId": 15026,
+  "titl": "KB금융지주 「2025년 지배구조 및 보수체계 연차보고서」 추가 공시",
+  "rgcrYms": "2026-04-15 00:00:00.0",
+  "rsrvYms": "2026-04-15 17:00:00.0",
+  "tgtYr": "2026",
+  "pdfFileId": 14548,
+  "files": [
+   {
+    "fileId": 14548,
+    "fileNm": "110004.pdf",
+    "orglFileNm": "2025년 KB금융지주 「지배구조 및 보수체계 연차보고서」(추가공시).pdf",
+    "fileTyp": "application/pdf",
+    "fileSize": 5578553,
+    "rgcrYms": "2026-04-15 11:00:04.0"
+   }
+  ],
+  "board": "https://www.kbfg.com/kor/about/governance/board-directors/list.htm",
+  "list_url": "https://www.kbfg.com/api/kbfg/posts?bulbdId=6&page=1&pageSize=10",
+  "list_fetched_at": "2026-11-02T16:12:20+09:00"
+ },
+ {
+  "bltcId": 14973,
+  "titl": "KB금융지주 「2025년 지배구조 및 보수체계 연차보고서」 공시",
+  "rgcrYms": "2026-03-04 00:00:00.0",
+  "rsrvYms": "2026-03-05 17:00:00.0",
+  "tgtYr": "2026",
+  "pdfFileId": 14406,
+  "files": [
+   {
+    "fileId": 14406,
+    "fileNm": "134351.pdf",
+    "orglFileNm": "2025년 KB금융지주 「지배구조 및 보수체계 연차보고서」_VF.pdf",
+    "fileTyp": "application/pdf",
+    "fileSize": 5669325,
+    "rgcrYms": "2026-03-05 13:43:51.0"
+   }
+  ],
+  "board": "https://www.kbfg.com/kor/about/governance/board-directors/list.htm",
+  "list_url": "https://www.kbfg.com/api/kbfg/posts?bulbdId=6&page=1&pageSize=10",
+  "list_fetched_at": "2026-11-02T16:12:20+09:00"
+ },
+ {
+  "bltcId": 14699,
+  "titl": "KB금융지주 「2024년 지배구조 및 보수체계 연차보고서」 (추가공시)",
+  "rgcrYms": "2025-04-15 00:00:00.0",
+  "rsrvYms": null,
+  "tgtYr": "2025",
+  "pdfFileId": 13406,
+  "files": [
+   {
+    "fileId": 13406,
+    "fileNm": "134354.pdf",
+    "orglFileNm": "2024년 지배구조 및 보수체계 연차보고서_Final(추가공시).pdf",
+    "fileTyp": "application/pdf",
+    "fileSize": 5233092,
+    "rgcrYms": "2025-04-15 13:43:54.0"
+   }
+  ],
+  "board": "https://www.kbfg.com/kor/about/governance/board-directors/list.htm",
+  "list_url": "https://www.kbfg.com/api/kbfg/posts?bulbdId=6&page=1&pageSize=10",
+  "list_fetched_at": "2026-11-02T16:12:20+09:00"
+ },
+ {
+  "bltcId": 14655,
+  "titl": "KB금융지주 「2024년 지배구조 및 보수체계 연차보고서」 공시",
+  "rgcrYms": "2025-03-05 00:00:00.0",
+  "rsrvYms": "2025-03-05 17:10:00.0",
+  "tgtYr": "2025",
+  "pdfFileId": 13249,
+  "files": [
+   {
+    "fileId": 13249,
+    "fileNm": "090545.pdf",
+    "orglFileNm": "2024년 지배구조 및 보수체계 연차보고서.pdf",
+    "fileTyp": "application/pdf",
+    "fileSize": 5227868,
+    "rgcrYms": "2025-03-05 09:05:45.0"
+   }
+  ],
+  "board": "https://www.kbfg.com/kor/about/governance/board-directors/list.htm",
+  "list_url": "https://www.kbfg.com/api/kbfg/posts?bulbdId=6&page=2&pageSize=10",
+  "list_fetched_at": "2026-11-02T16:12:23+09:00"
+ },
+ {
+  "bltcId": 14364,
+  "titl": "KB금융지주 「2023년 지배구조 및 보수체계 연차보고서」 (추가공시)",
+  "rgcrYms": "2024-04-11 00:00:00.0",
+  "rsrvYms": "2024-04-11 17:00:00.0",
+  "tgtYr": "2024",
+  "pdfFileId": 12067,
+  "files": [
+   {
+    "fileId": 12067,
+    "fileNm": "162033.pdf",
+    "orglFileNm": "2023년 지배구조 및 보수체계 연차보고서(추가 공시).pdf",
+    "fileTyp": "application/pdf",
+    "fileSize": 5030829,
+    "rgcrYms": "2024-04-11 16:20:33.0"
+   }
+  ],
+  "board": "https://www.kbfg.com/kor/about/governance/board-directors/list.htm",
+  "list_url": "https://www.kbfg.com/api/kbfg/posts?bulbdId=6&page=2&pageSize=10",
+  "list_fetched_at": "2026-11-02T16:12:23+09:00"
+ },
+ {
+  "bltcId": 14323,
+  "titl": "KB금융지주 「2023년 지배구조 및 보수체계 연차보고서」 공시",
+  "rgcrYms": "2024-02-29 00:00:00.0",
+  "rsrvYms": "2024-02-29 17:40:00.0",
+  "tgtYr": "2024",
+  "pdfFileId": 11933,
+  "files": [
+   {
+    "fileId": 11933,
+    "fileNm": "171802.pdf",
+    "orglFileNm": "2023년 지배구조 및 보수체계 연차보고서.pdf",
+    "fileTyp": "application/pdf",
+    "fileSize": 5031504,
+    "rgcrYms": "2024-02-29 17:18:02.0"
+   }
+  ],
+  "board": "https://www.kbfg.com/kor/about/governance/board-directors/list.htm",
+  "list_url": "https://www.kbfg.com/api/kbfg/posts?bulbdId=6&page=3&pageSize=10",
+  "list_fetched_at": "2026-11-02T16:12:25+09:00"
+ },
+ {
+  "bltcId": 437,
+  "titl": "KB금융지주 「2022년 지배구조 및 보수체계 연차보고서」(추가공시)",
+  "rgcrYms": "2023-04-14 00:00:00.0",
+  "rsrvYms": null,
+  "tgtYr": null,
+  "pdfFileId": 0,
+  "files": [
+   {
+    "fileId": 255,
+    "fileNm": "/kor/ir/governance/boardnotice/__attachFile/KB금융지주 2022년 지배구조 및 보수체계 연차보고서_추가 공시.pdf",
+    "orglFileNm": "KB금융지주 2022년 지배구조 및 보수체계 연차보고서_추가 공시.pdf",
+    "fileTyp": "image/pdf",
+    "fileSize": 16069,
+    "rgcrYms": "2023-04-14 00:00:00.0"
+   }
+  ],
+  "board": "https://www.kbfg.com/kor/about/governance/board-directors/list.htm",
+  "list_url": "https://www.kbfg.com/api/kbfg/posts?bulbdId=6&page=3&pageSize=10",
+  "list_fetched_at": "2026-11-02T16:12:25+09:00"
+ },
+ {
+  "bltcId": 433,
+  "titl": "KB금융지주 「2022년 지배구조 및 보수체계 연차보고서」 공시",
+  "rgcrYms": "2023-03-03 00:00:00.0",
+  "rsrvYms": null,
+  "tgtYr": null,
+  "pdfFileId": 0,
+  "files": [
+   {
+    "fileId": 259,
+    "fileNm": "/kor/ir/governance/boardnotice/__attachFile/KB금융지주 2022년 지배구조 및 보수체계 연차보고서.pdf",
+    "orglFileNm": "KB금융지주 2022년 지배구조 및 보수체계 연차보고서.pdf",
+    "fileTyp": "image/pdf",
+    "fileSize": 16069,
+    "rgcrYms": "2023-03-03 00:00:00.0"
+   }
+  ],
+  "board": "https://www.kbfg.com/kor/about/governance/board-directors/list.htm",
+  "list_url": "https://www.kbfg.com/api/kbfg/posts?bulbdId=6&page=4&pageSize=10",
+  "list_fetched_at": "2026-11-02T16:12:28+09:00"
+ },
+ {
+  "bltcId": 428,
+  "titl": "KB금융지주 「2021년 지배구조 및 보수체계 연차보고서」(추가공시)",
+  "rgcrYms": "2022-04-13 00:00:00.0",
+  "rsrvYms": null,
+  "tgtYr": null,
+  "pdfFileId": 0,
+  "files": [
+   {
+    "fileId": 264,
+    "fileNm": "/kor/ir/governance/boardnotice/__attachFile/KB금융지주 2021년 지배구조 및 보수체계 연차보고서_추가 공시.pdf",
+    "orglFileNm": "KB금융지주 2021년 지배구조 및 보수체계 연차보고서_추가 공시.pdf",
+    "fileTyp": "image/pdf",
+    "fileSize": 16069,
+    "rgcrYms": "2022-04-13 00:00:00.0"
+   }
+  ],
+  "board": "https://www.kbfg.com/kor/about/governance/board-directors/list.htm",
+  "list_url": "https://www.kbfg.com/api/kbfg/posts?bulbdId=6&page=4&pageSize=10",
+  "list_fetched_at": "2026-11-02T16:12:28+09:00"
+ },
+ {
+  "bltcId": 424,
+  "titl": "KB금융지주 「2021년 지배구조 및 보수체계 연차보고서」공시",
+  "rgcrYms": "2022-03-03 00:00:00.0",
+  "rsrvYms": null,
+  "tgtYr": null,
+  "pdfFileId": 0,
+  "files": [
+   {
+    "fileId": 268,
+    "fileNm": "/kor/ir/governance/boardnotice/__attachFile/KB금융지주 2021년 지배구조 및 보수체계 연차보고서.pdf",
+    "orglFileNm": "KB금융지주 2021년 지배구조 및 보수체계 연차보고서.pdf",
+    "fileTyp": "image/pdf",
+    "fileSize": 16069,
+    "rgcrYms": "2022-03-03 00:00:00.0"
+   }
+  ],
+  "board": "https://www.kbfg.com/kor/about/governance/board-directors/list.htm",
+  "list_url": "https://www.kbfg.com/api/kbfg/posts?bulbdId=6&page=5&pageSize=10",
+  "list_fetched_at": "2026-11-02T16:12:30+09:00"
+ },
+ {
+  "bltcId": 414,
+  "titl": "KB금융지주 「2020년 지배구조 및 보수체계 연차보고서」(추가 공시)",
+  "rgcrYms": "2021-04-15 00:00:00.0",
+  "rsrvYms": null,
+  "tgtYr": null,
+  "pdfFileId": 0,
+  "files": [
+   {
+    "fileId": 278,
+    "fileNm": "/kor/ir/governance/boardnotice/__attachFile/2020년 KB금융지주 지배구조연차보고서 추가공시.pdf",
+    "orglFileNm": "2020년 KB금융지주 지배구조연차보고서 추가공시.pdf",
+    "fileTyp": "image/pdf",
+    "fileSize": 16069,
+    "rgcrYms": "2021-04-15 00:00:00.0"
+   }
+  ],
+  "board": "https://www.kbfg.com/kor/about/governance/board-directors/list.htm",
+  "list_url": "https://www.kbfg.com/api/kbfg/posts?bulbdId=6&page=6&pageSize=10",
+  "list_fetched_at": "2026-11-02T16:12:33+09:00"
+ },
+ {
+  "bltcId": 411,
+  "titl": "KB금융지주 「2020년 지배구조 및 보수체계 연차보고서」공시",
+  "rgcrYms": "2021-03-05 00:00:00.0",
+  "rsrvYms": null,
+  "tgtYr": null,
+  "pdfFileId": 0,
+  "files": [
+   {
+    "fileId": 281,
+    "fileNm": "/kor/ir/governance/boardnotice/__attachFile/KB금융지주2020년지배구조및보수체계연차보고서.pdf",
+    "orglFileNm": "KB금융지주2020년지배구조및보수체계연차보고서.pdf",
+    "fileTyp": "image/pdf",
+    "fileSize": 4954002,
+    "rgcrYms": "2021-03-05 00:00:00.0"
+   }
+  ],
+  "board": "https://www.kbfg.com/kor/about/governance/board-directors/list.htm",
+  "list_url": "https://www.kbfg.com/api/kbfg/posts?bulbdId=6&page=6&pageSize=10",
+  "list_fetched_at": "2026-11-02T16:12:33+09:00"
+ },
+ {
+  "bltcId": 403,
+  "titl": "KB금융지주 「2019년 지배구조 및 보수체계 연차보고서」(추가 공시)",
+  "rgcrYms": "2020-04-08 00:00:00.0",
+  "rsrvYms": null,
+  "tgtYr": null,
+  "pdfFileId": 0,
+  "files": [
+   {
+    "fileId": 289,
+    "fileNm": "/kor/ir/governance/boardnotice/__attachFile/KB금융지주 _2019년 지배구조 및 보수체계 연차보고서_추가 공시.pdf",
+    "orglFileNm": "KB금융지주 _2019년 지배구조 및 보수체계 연차보고서_추가 공시.pdf",
+    "fileTyp": "image/pdf",
+    "fileSize": 16071,
+    "rgcrYms": "2020-04-08 00:00:00.0"
+   }
+  ],
+  "board": "https://www.kbfg.com/kor/about/governance/board-directors/list.htm",
+  "list_url": "https://www.kbfg.com/api/kbfg/posts?bulbdId=6&page=7&pageSize=10",
+  "list_fetched_at": "2026-11-02T16:12:35+09:00"
+ },
+ {
+  "bltcId": 399,
+  "titl": "KB금융지주 「2019년 지배구조 및 보수체계 연차보고서」",
+  "rgcrYms": "2020-02-28 00:00:00.0",
+  "rsrvYms": null,
+  "tgtYr": null,
+  "pdfFileId": 0,
+  "files": [
+   {
+    "fileId": 293,
+    "fileNm": "/kor/ir/governance/boardnotice/__attachFile/KB금융지주 「2019년 지배구조 및 보수체계 연차보고서」.pdf",
+    "orglFileNm": "KB금융지주 「2019년 지배구조 및 보수체계 연차보고서」.pdf",
+    "fileTyp": "image/pdf",
+    "fileSize": 16069,
+    "rgcrYms": "2020-02-28 00:00:00.0"
+   }
+  ],
+  "board": "https://www.kbfg.com/kor/about/governance/board-directors/list.htm",
+  "list_url": "https://www.kbfg.com/api/kbfg/posts?bulbdId=6&page=7&pageSize=10",
+  "list_fetched_at": "2026-11-02T16:12:35+09:00"
+ },
+ {
+  "bltcId": 395,
+  "titl": "KB금융지주 「2018년 지배구조 및 보수체계 연차보고서」(추가공시)",
+  "rgcrYms": "2019-04-01 00:00:00.0",
+  "rsrvYms": null,
+  "tgtYr": null,
+  "pdfFileId": 0,
+  "files": [
+   {
+    "fileId": 297,
+    "fileNm": "/kor/ir/governance/boardnotice/__attachFile/KB금융지주 2018년 지배구조 및 보수체계 연차보고서_추가공시.pdf",
+    "orglFileNm": "KB금융지주 2018년 지배구조 및 보수체계 연차보고서_추가공시.pdf",
+    "fileTyp": "image/pdf",
+    "fileSize": 16071,
+    "rgcrYms": "2019-04-01 00:00:00.0"
+   }
+  ],
+  "board": "https://www.kbfg.com/kor/about/governance/board-directors/list.htm",
+  "list_url": "https://www.kbfg.com/api/kbfg/posts?bulbdId=6&page=8&pageSize=10",
+  "list_fetched_at": "2026-11-02T16:12:38+09:00"
+ },
+ {
+  "bltcId": 393,
+  "titl": "KB금융지주 「2018년 지배구조 및 보수체계 연차보고서」",
+  "rgcrYms": "2019-03-06 00:00:00.0",
+  "rsrvYms": null,
+  "tgtYr": null,
+  "pdfFileId": 0,
+  "files": [
+   {
+    "fileId": 299,
+    "fileNm": "/kor/ir/governance/boardnotice/__attachFile/KB금융지주 2018년 지배구조 및 보수체계 연차보고서.pdf",
+    "orglFileNm": "KB금융지주 2018년 지배구조 및 보수체계 연차보고서.pdf",
+    "fileTyp": "image/pdf",
+    "fileSize": 16069,
+    "rgcrYms": "2019-03-06 00:00:00.0"
+   }
+  ],
+  "board": "https://www.kbfg.com/kor/about/governance/board-directors/list.htm",
+  "list_url": "https://www.kbfg.com/api/kbfg/posts?bulbdId=6&page=8&pageSize=10",
+  "list_fetched_at": "2026-11-02T16:12:38+09:00"
+ },
+ {
+  "bltcId": 388,
+  "titl": "KB금융지주 「2017년 지배구조 및 보수체계 연차보고서」(추가공시)",
+  "rgcrYms": "2018-04-13 00:00:00.0",
+  "rsrvYms": null,
+  "tgtYr": null,
+  "pdfFileId": 0,
+  "files": [
+   {
+    "fileId": 304,
+    "fileNm": "/kor/ir/governance/boardnotice/__attachFile/KB금융지주_2017년지배구조및보수체계 연차보고서_추가공시부문.pdf",
+    "orglFileNm": "KB금융지주_2017년지배구조및보수체계 연차보고서_추가공시부문.pdf",
+    "fileTyp": "image/pdf",
+    "fileSize": 16069,
+    "rgcrYms": "2018-04-13 00:00:00.0"
+   }
+  ],
+  "board": "https://www.kbfg.com/kor/about/governance/board-directors/list.htm",
+  "list_url": "https://www.kbfg.com/api/kbfg/posts?bulbdId=6&page=8&pageSize=10",
+  "list_fetched_at": "2026-11-02T16:12:38+09:00"
+ },
+ {
+  "bltcId": 385,
+  "titl": "KB금융지주 「2017년 지배구조 및 보수체계 연차보고서」",
+  "rgcrYms": "2018-03-02 00:00:00.0",
+  "rsrvYms": null,
+  "tgtYr": null,
+  "pdfFileId": 0,
+  "files": [
+   {
+    "fileId": 307,
+    "fileNm": "/kor/ir/governance/boardnotice/__attachFile/KB금융지주_2017년지배구조및보수체계 연차보고서.pdf",
+    "orglFileNm": "KB금융지주_2017년지배구조및보수체계 연차보고서.pdf",
+    "fileTyp": "image/pdf",
+    "fileSize": 16071,
+    "rgcrYms": "2018-03-02 00:00:00.0"
+   }
+  ],
+  "board": "https://www.kbfg.com/kor/about/governance/board-directors/list.htm",
+  "list_url": "https://www.kbfg.com/api/kbfg/posts?bulbdId=6&page=9&pageSize=10",
+  "list_fetched_at": "2026-11-02T16:12:40+09:00"
+ },
+ {
+  "bltcId": 373,
+  "titl": "KB금융지주 「2016년 지배구조 및 보수체계 연차보고서」(추가공시)",
+  "rgcrYms": "2017-04-14 00:00:00.0",
+  "rsrvYms": null,
+  "tgtYr": null,
+  "pdfFileId": 0,
+  "files": [
+   {
+    "fileId": 319,
+    "fileNm": "/kor/ir/governance/boardnotice/__icsFiles/afieldfile/2017/04/14/KBFG_BOD_20170414.pdf",
+    "orglFileNm": "KBFG_BOD_20170414.pdf",
+    "fileTyp": "image/pdf",
+    "fileSize": 228886,
+    "rgcrYms": "2017-04-14 00:00:00.0"
+   }
+  ],
+  "board": "https://www.kbfg.com/kor/about/governance/board-directors/list.htm",
+  "list_url": "https://www.kbfg.com/api/kbfg/posts?bulbdId=6&page=10&pageSize=10",
+  "list_fetched_at": "2026-11-02T16:12:42+09:00"
+ },
+ {
+  "bltcId": 369,
+  "titl": "KB금융지주 「2016년 지배구조 및 보수체계 연차보고서」",
+  "rgcrYms": "2017-03-03 00:00:00.0",
+  "rsrvYms": null,
+  "tgtYr": null,
+  "pdfFileId": 0,
+  "files": [
+   {
+    "fileId": 323,
+    "fileNm": "/kor/ir/governance/boardnotice/__icsFiles/afieldfile/2017/09/11/KBFG_BOD_20170303_1.pdf",
+    "orglFileNm": "KBFG_BOD_20170303_1.pdf",
+    "fileTyp": "image/pdf",
+    "fileSize": 3445544,
+    "rgcrYms": "2017-03-03 00:00:00.0"
+   }
+  ],
+  "board": "https://www.kbfg.com/kor/about/governance/board-directors/list.htm",
+  "list_url": "https://www.kbfg.com/api/kbfg/posts?bulbdId=6&page=10&pageSize=10",
+  "list_fetched_at": "2026-11-02T16:12:42+09:00"
+ },
+ {
+  "bltcId": 355,
+  "titl": "2015년 KB금융지주 지배구조 연차보고서",
+  "rgcrYms": "2016-03-04 00:00:00.0",
+  "rsrvYms": null,
+  "tgtYr": null,
+  "pdfFileId": 0,
+  "files": [
+   {
+    "fileId": 337,
+    "fileNm": "/kor/ir/governance/boardnotice/__icsFiles/afieldfile/2016/03/04/KBFG_BOD_20160304.pdf",
+    "orglFileNm": "KBFG_BOD_20160304.pdf",
+    "fileTyp": "image/pdf",
+    "fileSize": 3465252,
+    "rgcrYms": "2016-03-04 00:00:00.0"
+   }
+  ],
+  "board": "https://www.kbfg.com/kor/about/governance/board-directors/list.htm",
+  "list_url": "https://www.kbfg.com/api/kbfg/posts?bulbdId=6&page=12&pageSize=10",
+  "list_fetched_at": "2026-11-02T16:12:47+09:00"
+ },
+ {
+  "bltcId": 339,
+  "titl": "2014년 지배구조 연차보고서",
+  "rgcrYms": "2015-03-06 00:00:00.0",
+  "rsrvYms": null,
+  "tgtYr": null,
+  "pdfFileId": 0,
+  "files": [
+   {
+    "fileId": 353,
+    "fileNm": "/kor/ir/governance/boardnotice/__icsFiles/afieldfile/2015/03/06/KBFG_BOD_20150306.pdf",
+    "orglFileNm": "KBFG_BOD_20150306.pdf",
+    "fileTyp": "image/pdf",
+    "fileSize": 3904060,
+    "rgcrYms": "2015-03-06 00:00:00.0"
+   }
+  ],
+  "board": "https://www.kbfg.com/kor/about/governance/board-directors/list.htm",
+  "list_url": "https://www.kbfg.com/api/kbfg/posts?bulbdId=6&page=13&pageSize=10",
+  "list_fetched_at": "2026-11-02T16:12:49+09:00"
+ }
+]

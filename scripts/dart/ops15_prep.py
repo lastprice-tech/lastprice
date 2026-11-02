@@ -166,6 +166,8 @@ class Dart2MD(HTMLParser):
         elif tag == "TR" and self.depth_table:
             self.row = []
         elif tag in ("TD", "TH", "TU", "TE") and self.depth_table:
+            if self.row is None:  # TR 없이 칸이 나오는 문서(실측: BNK FY2021) — 행을 새로 엶
+                self.row = []
             self.cell = []
         elif tag in ("BR",):
             (self.cell if self.cell is not None else self.buf).append("<br>")
@@ -182,6 +184,8 @@ class Dart2MD(HTMLParser):
             self.out.append(f"### [절 {self.n_title}] {t}")
             self.mode = None
         elif tag in ("TD", "TH", "TU", "TE") and self.cell is not None:
+            if self.row is None:
+                self.row = []
             self.row.append("".join(self.cell).strip().replace("|", "｜").replace("\n", "<br>"))
             self.cell = None
         elif tag == "TR" and self.row is not None:
