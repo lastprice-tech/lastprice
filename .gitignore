@@ -157,3 +157,6 @@ scripts/dart/dart_out/
 !/law_archive/**/0_체계도/체계도.md
 # 법령 단위 zip 은 로컬 인계용이다(커밋하지 않는다).
 /law_archive_zip/
+
+# 15차(지주 운영방식) — 6차 kit 에서 푼 연차보고서 섹션 CSV(40MB, kit zip 에 이미 있음)는 커밋하지 않는다
+/dart_out/ops15/kit56/
