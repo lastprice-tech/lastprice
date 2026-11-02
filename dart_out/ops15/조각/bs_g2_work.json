@@ -1,0 +1,103 @@
+{
+ "probs": [],
+ "judg": [],
+ "h5": [],
+ "corr": [],
+ "sections": {},
+ "written": [
+  "dart_out/ops15/원문/A/NH농협금융지주__FY2019__사업보고서.md",
+  "dart_out/ops15/원문/A/NH농협금융지주__FY2020__사업보고서.md",
+  "dart_out/ops15/원문/A/NH농협금융지주__FY2021__사업보고서.md",
+  "dart_out/ops15/원문/A/NH농협금융지주__FY2022__사업보고서.md",
+  "dart_out/ops15/원문/A/NH농협금융지주__FY2023__사업보고서.md",
+  "dart_out/ops15/원문/A/NH농협금융지주__FY2024__사업보고서.md",
+  "dart_out/ops15/원문/A/NH농협금융지주__FY2025__사업보고서.md",
+  "dart_out/ops15/원문/A/iM금융지주__FY2019__사업보고서.md",
+  "dart_out/ops15/원문/A/iM금융지주__FY2020__사업보고서.md",
+  "dart_out/ops15/원문/A/iM금융지주__FY2021__사업보고서.md",
+  "dart_out/ops15/원문/A/iM금융지주__FY2022__사업보고서.md",
+  "dart_out/ops15/원문/A/iM금융지주__FY2023__사업보고서.md",
+  "dart_out/ops15/원문/A/iM금융지주__FY2024__사업보고서.md",
+  "dart_out/ops15/원문/A/iM금융지주__FY2025__사업보고서.md",
+  "dart_out/ops15/원문/A/메리츠금융지주__FY2019__사업보고서.md",
+  "dart_out/ops15/원문/A/메리츠금융지주__FY2020__사업보고서.md",
+  "dart_out/ops15/원문/A/메리츠금융지주__FY2021__사업보고서.md",
+  "dart_out/ops15/원문/A/메리츠금융지주__FY2022__사업보고서.md",
+  "dart_out/ops15/원문/A/메리츠금융지주__FY2023__사업보고서.md",
+  "dart_out/ops15/원문/A/메리츠금융지주__FY2024__사업보고서.md",
+  "dart_out/ops15/원문/A/메리츠금융지주__FY2025__사업보고서.md",
+  "dart_out/ops15/원문/B/NH농협금융지주__FY2019__사업보고서.md",
+  "dart_out/ops15/원문/B/NH농협금융지주__FY2020__사업보고서.md",
+  "dart_out/ops15/원문/B/NH농협금융지주__FY2021__사업보고서.md",
+  "dart_out/ops15/원문/B/NH농협금융지주__FY2022__사업보고서.md",
+  "dart_out/ops15/원문/B/NH농협금융지주__FY2023__사업보고서.md",
+  "dart_out/ops15/원문/B/NH농협금융지주__FY2024__사업보고서.md",
+  "dart_out/ops15/원문/B/NH농협금융지주__FY2025__사업보고서.md",
+  "dart_out/ops15/원문/B/iM금융지주__2026.2Q__경영공시.md",
+  "dart_out/ops15/원문/B/iM금융지주__FY2019__사업보고서.md",
+  "dart_out/ops15/원문/B/iM금융지주__FY2020__사업보고서.md",
+  "dart_out/ops15/원문/B/iM금융지주__FY2021__사업보고서.md",
+  "dart_out/ops15/원문/B/iM금융지주__FY2022__사업보고서.md",
+  "dart_out/ops15/원문/B/iM금융지주__FY2023__사업보고서.md",
+  "dart_out/ops15/원문/B/iM금융지주__FY2024__사업보고서.md",
+  "dart_out/ops15/원문/B/iM금융지주__FY2025__사업보고서.md",
+  "dart_out/ops15/원문/B/메리츠금융지주__FY2019__사업보고서.md",
+  "dart_out/ops15/원문/B/메리츠금융지주__FY2020__사업보고서.md",
+  "dart_out/ops15/원문/B/메리츠금융지주__FY2021__사업보고서.md",
+  "dart_out/ops15/원문/B/메리츠금융지주__FY2022__사업보고서.md",
+  "dart_out/ops15/원문/B/메리츠금융지주__FY2023__사업보고서.md",
+  "dart_out/ops15/원문/B/메리츠금융지주__FY2024__사업보고서.md",
+  "dart_out/ops15/원문/B/메리츠금융지주__FY2025__사업보고서.md",
+  "dart_out/ops15/원문/D/NH농협금융지주__FY2021__사업보고서.md",
+  "dart_out/ops15/원문/D/NH농협금융지주__FY2022__사업보고서.md",
+  "dart_out/ops15/원문/D/NH농협금융지주__FY2023__사업보고서.md",
+  "dart_out/ops15/원문/D/NH농협금융지주__FY2024__사업보고서.md",
+  "dart_out/ops15/원문/D/NH농협금융지주__FY2025__사업보고서.md",
+  "dart_out/ops15/원문/D/메리츠금융지주__FY2021__사업보고서.md",
+  "dart_out/ops15/원문/D/메리츠금융지주__FY2022__사업보고서.md"
+ ],
+ "counts": {
+  "A": {
+   "NH농협금융지주": {
+    "rows": 144,
+    "문서에 없음": 0
+   },
+   "메리츠금융지주": {
+    "rows": 102,
+    "문서에 없음": 0
+   },
+   "iM금융지주": {
+    "rows": 107,
+    "문서에 없음": 0
+   }
+  },
+  "B": {
+   "NH농협금융지주": {
+    "rows": 21,
+    "문서에 없음": 1
+   },
+   "메리츠금융지주": {
+    "rows": 13,
+    "문서에 없음": 1
+   },
+   "iM금융지주": {
+    "rows": 70,
+    "문서에 없음": 0
+   }
+  },
+  "D": {
+   "NH농협금융지주": {
+    "rows": 9,
+    "문서에 없음": 3
+   },
+   "메리츠금융지주": {
+    "rows": 8,
+    "문서에 없음": 6
+   },
+   "iM금융지주": {
+    "rows": 8,
+    "문서에 없음": 8
+   }
+  }
+ }
+}
