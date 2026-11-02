@@ -160,3 +160,6 @@ scripts/dart/dart_out/
 
 # 15차(지주 운영방식) — 6차 kit 에서 푼 연차보고서 섹션 CSV(40MB, kit zip 에 이미 있음)는 커밋하지 않는다
 /dart_out/ops15/kit56/
+
+# 15차(지주 운영방식 — 겸직·파견·전적·위수탁 원문) — 합본 CSV·원문 md·보고
+!/handoff/원문_지주운영방식/
