@@ -137,8 +137,8 @@ def fetch(co, url, name, referer="", data=None, headers=None, extra=None):
 
 # ── 게시판 목록 ─────────────────────────────────────────────────────────────
 BOARD = {
-    "KB금융지주": "https://www.kbfg.com/kor/ir/disclosure/management/list.htm",
-    "신한금융지주": "https://www.shinhangroup.com/kr/ir/disclosure/management",
+    "KB금융지주": "https://www.kbfg.com/kor/ir/disclosure/mgt/list.htm",
+    "신한금융지주": "https://www.shinhangroup.com/kr/ir/disclosure/pillarDisclosure",
     "하나금융지주": "https://www.hanafn.com/ir/disclosure/managementList.do",
     "우리금융지주": "https://www.woorifg.com/kor/investor/disclosure/operation/list.do",
     "NH농협금융지주": "https://www.nhfngroup.com/user/indexSub.do?codyMenuSeq=1218157519&siteId=nhfngroup",
@@ -305,36 +305,99 @@ def _abs(co, u):
     return u
 
 
+def cd_name(cd):
+    """Content-Disposition 의 파일 이름(filename* 우선)."""
+    m = re.search(r"filename\*\s*=\s*([^']*)'[^']*'([^;]+)", cd or "")
+    if m:
+        return urllib.parse.unquote(m.group(2).strip().strip('"'), encoding=m.group(1) or "utf-8")
+    m = re.search(r'filename\s*=\s*"?([^";]+)"?', cd or "")
+    return urllib.parse.unquote(m.group(1)) if m else ""
+
+
+def _role(cd):
+    """(판단) 첨부 파일 이름에 「정정내역」이 있으면 정정 안내 파일, 아니면 본문."""
+    return "정정내역" if "정정내역" in cd_name(cd) else "본문"
+
+
+def _existing(co, listed):
+    """dart_out/raw/mgmt15/<co>/ 에서 목록_url 이 같은 받은 파일(경로, meta)."""
+    import glob
+    for mp in glob.glob(os.path.join(RAW, co, "*_경영공시_FY*.meta.json")):
+        m = json.load(open(mp, encoding="utf-8"))
+        if m.get("목록_url") == listed and os.path.exists(mp[:-len(".meta.json")]):
+            return mp[:-len(".meta.json")], m
+    return None, None
+
+
+def _place(co, fy, items):
+    """한 게시글의 받은 파일들을 역할 이름으로 옮김: 본문 → <co>_경영공시_FY<fy>.pdf, 정정 안내 → …_정정내역.pdf."""
+    want, nmain = {}, 0
+    for rec in items:
+        if not rec["path"]:
+            continue
+        if rec["role"] == "정정내역":
+            nm = "%s_경영공시_FY%d_정정내역.pdf" % (co, fy)
+        else:
+            nmain += 1
+            nm = "%s_경영공시_FY%d%s.pdf" % (co, fy, "" if nmain == 1 else "_file%d" % rec["file_no"])
+        want[rec["path"]] = os.path.join(RAW, co, nm)
+    if all(k == v for k, v in want.items()):
+        return
+    tmp = {}
+    for src in want:
+        os.replace(src, src + ".mv")
+        os.replace(src + ".meta.json", src + ".mv.meta.json")
+        tmp[src] = src + ".mv"
+    for rec in items:
+        if rec["path"] in want:
+            src, dst = tmp[rec["path"]], want[rec["path"]]
+            os.replace(src, dst)
+            m = json.load(open(src + ".meta.json", encoding="utf-8"))
+            m["저장경로"] = dst
+            with open(dst + ".meta.json", "w", encoding="utf-8") as f:
+                json.dump(m, f, ensure_ascii=False, indent=1)
+            os.remove(src + ".meta.json")
+            rec["path"] = dst
+
+
 def download(force=False):
-    """candidates.json 의 파일을 받는다(robots 허용일 때만, Web.get 3회 시도). 이미 받은 파일(같은 url)은 다시 받지 않음."""
+    """candidates.json 의 파일을 받는다(robots 허용일 때만, Web.get 3회 시도). 이미 받은 파일(같은 목록 url)은 다시 받지 않음."""
     _, web13 = _net()
     cands = json.load(open(os.path.join(WORK, "candidates.json"), encoding="utf-8"))
+    dj = os.path.join(WORK, "download.json")
+    prev_fail = {r["listed_url"]: r for r in (json.load(open(dj, encoding="utf-8")) if os.path.exists(dj) else [])
+                 if r.get("status") == "실패"}
     res = []
     for c in cands:
         co, fy = c["co"], c["fy"]
+        items = []
         for i, f in enumerate(c["files"], 1):
             listed = _abs(co, f["file_url"])
             urls = [listed]
             pu = urllib.parse.urlparse(listed)
             if pu.port:            # 하나 :8002 — 그 포트 robots 가 접속 실패면 같은 호스트 443 의 같은 경로(13차·gov_g1 와 같음)
                 urls.append(urllib.parse.urlunparse(pu._replace(netloc=pu.hostname)))
-            name = "%s_경영공시_FY%d%s.pdf" % (co, fy, "" if i == 1 else "_file%d" % i)
-            p = os.path.join(RAW, co, name)
-            rec = dict(co=co, fy=fy, title=c["title"], file_no=i, n_files=len(c["files"]), listed_url=listed, url="",
-                       posted_at=f.get("posted_at", ""), list_file_name=f.get("file_name", ""),
+            rec = dict(co=co, fy=fy, title=c["title"], file_no=i, n_files=len(c["files"]), role="", listed_url=listed,
+                       url="", posted_at=f.get("posted_at", ""), list_file_name=f.get("file_name", ""),
                        list_file_size=f.get("file_size", ""), board=f.get("board", ""), list_url=f.get("list_url", ""),
                        list_post=f.get("list_post", ""), list_fetched_at=f.get("list_fetched_at", ""),
                        path="", bytes="", sha256="", fetched_at="", http="", content_type="", content_disposition="",
                        robots="", status="", errors=[])
-            if not force and os.path.exists(p) and os.path.exists(p + ".meta.json"):
-                m = json.load(open(p + ".meta.json", encoding="utf-8"))
-                if m.get("목록_url") == listed:
-                    rec.update(url=m["url"], path=p, bytes=m["바이트"], sha256=m["sha256"], fetched_at=m["fetched_at"],
-                               http=m["http"], content_type=m["content_type"], content_disposition=m["content_disposition"],
-                               robots=m["robots"], status="받음", errors=m.get("시도", []))
-                    res.append(rec)
-                    print(co, fy, i, "있음", rec["bytes"])
-                    continue
+            p, m = (None, None) if force else _existing(co, listed)
+            if not p and not force and listed in prev_fail:
+                # 같은 파일 재시도는 2회까지(Web.get 1회 = 3번 시도) — 앞서 실패한 파일은 다시 받지 않고 기록을 이어 씀
+                rec.update(status="실패", errors=prev_fail[listed]["errors"],
+                           fetched_at=prev_fail[listed].get("fetched_at", ""))
+                items.append(rec)
+                print(co, fy, i, "앞서 실패 — 다시 받지 않음")
+                continue
+            if p:
+                rec.update(url=m["url"], path=p, bytes=m["바이트"], sha256=m["sha256"], fetched_at=m["fetched_at"],
+                           http=m["http"], content_type=m["content_type"], content_disposition=m["content_disposition"],
+                           robots=m["robots"], status="받음", errors=m.get("시도", []), role=_role(m["content_disposition"]))
+                items.append(rec)
+                print(co, fy, i, "있음", rec["bytes"])
+                continue
             for u in urls:
                 r = robots_for(u, co)
                 if not r.allowed(u):
@@ -349,15 +412,17 @@ def download(force=False):
                             게시일=f.get("posted_at", ""), FY=fy, http=st, content_type=hd.get("Content-Type", ""),
                             content_disposition=hd.get("Content-Disposition", ""), 목록_파일명=f.get("file_name", ""),
                             목록_크기=f.get("file_size", ""), robots=r.status, fetched_at=web13.now(), 시도=rec["errors"])
-                p, m = save(co, name, b, meta)
+                p, m = save(co, "%s_경영공시_FY%d_file%d.pdf.dl" % (co, fy, i), b, meta)
                 rec.update(url=u, path=p, bytes=len(b), sha256=m["sha256"], fetched_at=meta["fetched_at"], http=st,
                            content_type=meta["content_type"], content_disposition=meta["content_disposition"],
-                           robots=r.status, status="받음")
+                           robots=r.status, status="받음", role=_role(meta["content_disposition"]))
                 break
             if not rec["path"]:
                 rec["status"] = "실패"
-            res.append(rec)
-            print(co, fy, i, rec["status"], rec["bytes"], rec["url"][-50:], "; ".join(rec["errors"])[:120])
+            items.append(rec)
+            print(co, fy, i, rec["status"], rec["bytes"], rec["url"][-50:], "; ".join(rec["errors"])[:160], flush=True)
+        _place(co, fy, items)
+        res.extend(items)
     _dump("download.json", res)
     return res
 
@@ -416,6 +481,14 @@ TERMS_NOTE = {
                 "고객정보취급방침·신용정보활용체제뿐(이용약관·저작권정책 쪽 없음), 자동 수집 금지 문구 없음"),
     "NH농협금융지주": "확인 못 함 — 사이트가 이 환경 요청을 HTTP 400 「Request Blocked」로 막아 약관 쪽을 열 수 없음",
 }
+def _nh_robots_at():
+    try:
+        return json.load(open(os.path.join(WORK, "robots.json"), encoding="utf-8"))["www.nhfngroup.com"]["checked_at"]
+    except Exception:  # noqa: BLE001
+        return "?"
+
+
+NH_ROBOTS_AT = _nh_robots_at()
 LIST_COLS = ["corp_label", "fy", "period_원문", "url", "posted_at", "fetched_at", "bytes", "pages", "sha256",
              "robots_verdict", "terms_note", "status", "note"]
 
@@ -428,7 +501,8 @@ def listcsv():
     tp = os.path.join(WORK, "text.json")
     if os.path.exists(tp):
         tx = {(t["co"], t["fy"], t["file_no"]): t for t in json.load(open(tp, encoding="utf-8"))}
-    nh = nh_check()
+    nhp = os.path.join(WORK, "nh_check.json")
+    nh = json.load(open(nhp, encoding="utf-8")) if os.path.exists(nhp) else []   # 네트워크는 fetch 단계에서만
     rows = []
     for co in COS:
         for fy in FYS:
@@ -436,7 +510,9 @@ def listcsv():
             if co == "NH농협금융지주":
                 rows.append(dict(base, period_원문="", url="", posted_at="", fetched_at="", bytes="", pages="", sha256="",
                                  status="막힘",
-                                 note=("받지 않음 — 다시 시도(한 번씩): " + "; ".join(
+                                 note=("받지 않음 — 다시 시도(요청마다 Web.get 3번 시도): ① 탐색 단계 robots.txt 2회(2026-11-03 "
+                                       "10:19·%s KST)·경영공시 목록 쪽 1회(10:20 KST 무렵) 모두 HTTP 400 「Request Blocked」; "
+                                       "② nh_check: " % NH_ROBOTS_AT[11:19] + "; ".join(
                                      "%s %s → %s (%s)" % (x["what"], x["url"], x["result"], x["started_at"]) for x in nh)
                                      + ". 2026-11-02 16:07~16:30 KST(gov_g1)에도 같은 차단. 다른 UA·호스트·캐시로 우회하지 않음 — "
                                        "게시판 목록을 못 열어 FY%d 12월말 기준분이 누리집에 있는지도 확인 못 함" % fy)))
@@ -448,13 +524,21 @@ def listcsv():
                                  status="누리집에 없음",
                                  note="게시판 %s 전체 목록에 FY%d 12월말(연간) 기준분 게시글 없음" % (BOARD[co], fy)))
                 continue
-            for r in recs:
+            side = [r for r in recs if r.get("role") == "정정내역"]
+            for r in [r for r in recs if r.get("role") != "정정내역"]:
                 notes = []
                 if r["url"] and r["url"] != r["listed_url"]:
                     notes.append("(판단) 목록 링크 %s 의 포트 8002 는 robots.txt 확인 실패(접속 끊김 — RFC 9309 상 받지 않음) → 같은 "
                                  "호스트 443 의 같은 경로(robots.txt 404 = 제한 없음)로 받음(13차·gov_g1 와 같은 방식)" % r["listed_url"])
                 if r["n_files"] > 1:
-                    notes.append("게시글에 첨부 파일 %d개 — 이 행은 %d번째 파일" % (r["n_files"], r["file_no"]))
+                    notes.append("게시글에 첨부 파일 %d개 — 이 행은 %d번째 파일(본문, 첨부 이름 「%s」)"
+                                 % (r["n_files"], r["file_no"], cd_name(r["content_disposition"])))
+                for x in side:
+                    tx2 = tx.get((co, fy, x["file_no"]), {})
+                    notes.append("(판단) %d번째 첨부는 정정 안내 파일(첨부 이름 「%s」에 「정정내역」) — 따로 받아 둠(%s, %s bytes, "
+                                 "sha256 %s, %s쪽, 받은 시각 %s, dart_out/raw/mgmt15/%s/%s); 조각은 본문 파일에서만 뽑음"
+                                 % (x["file_no"], cd_name(x["content_disposition"]), x["url"], x["bytes"], x["sha256"],
+                                    tx2.get("pages", ""), x["fetched_at"], co, os.path.basename(x["path"])))
                 if not r["posted_at"]:
                     notes.append("목록에 게시일 칸 없음(연도 선택 %s 쪽에서 찾음)" % (r.get("list_post") or ""))
                 elif r["posted_at"].startswith("1999-12-31"):
@@ -466,17 +550,28 @@ def listcsv():
                     notes.append("(판단) 정정판 게시글을 받음(게시판에 올라 있는 가장 늦은 판)")
                 if r["list_file_name"]:
                     notes.append("목록 파일명 「%s」" % r["list_file_name"])
+                sm = re.search(r"saveFileNm=(\d{8})", r["listed_url"])
+                if sm and r["posted_at"] and sm.group(1) != r["posted_at"].replace("-", ""):
+                    notes.append("(참고) 파일 저장 이름의 날짜(%s)가 게시일(%s)과 다름 — 게시 뒤 파일이 바뀌었을 수 있음(판단)"
+                                 % (sm.group(1), r["posted_at"]))
                 if r["list_file_size"] and r["bytes"] and str(r["list_file_size"]) != str(r["bytes"]):
                     notes.append("목록 크기 %s ≠ 받은 크기 %s" % (r["list_file_size"], r["bytes"]))
                 t = tx.get((co, fy, r["file_no"]), {})
                 if t.get("fail"):
                     notes.append("글 뽑기 실패: " + t["fail"])
                 if t.get("empty_pages"):
-                    notes.append("글자 없는 쪽: " + t["empty_pages"])
+                    notes.append("글자 없는 쪽(pymupdf 글 0자): " + t["empty_pages"] + " — 그 쪽은 글을 뽑지 못해 찾지 못함(글을 지어내지 않음)")
                 if r["status"] != "받음":
-                    notes.append("시도: " + "; ".join(r["errors"]))
-                notes.append("게시판 %s · 목록 %s %s(목록 받은 시각 %s)" % (r["board"], r["list_url"], r["list_post"] or "",
+                    nxt = [x["fetched_at"] for x in dl if x["co"] == co and x["fetched_at"] and x["fy"] > fy]
+                    notes.append("받지 못함 — Web.get 1회(3번 시도 = 재시도 2회) 모두 실패: " + "; ".join(r["errors"])
+                                 + " · 시도 시각은 따로 남기지 않음(%s 파일 목록 받은 %s 뒤, 다음 FY 파일 받은 %s 앞) · "
+                                   "재시도 한도(2회)를 써서 다시 받지 않음, 다른 주소·캐시로 돌지 않음"
+                                 % (co, r["list_fetched_at"], min(nxt) if nxt else "?"))
+                notes.append("게시판 %s · 목록 %s %s(목록 받은 시각 %s)" % (BOARD[co], r["list_url"], r["list_post"] or "",
                                                                        r["list_fetched_at"]))
+                if r["board"] and r["board"] != BOARD[co]:
+                    notes.append("(참고) 2026-11-03 목록·파일 요청의 Referer 머리에는 게시판 주소를 잘못 짐작한 값(%s)을 보냄 — "
+                                 "UA 는 그대로, 받은 내용과 robots 판정에는 영향 없음" % r["board"])
                 rows.append(dict(base, period_원문=c["title"], url=r["url"] or r["listed_url"], posted_at=r["posted_at"],
                                  fetched_at=r["fetched_at"], bytes=r["bytes"], pages=t.get("pages", ""),
                                  sha256=r["sha256"], status=r["status"] if not t.get("fail") else "받음(글 뽑기 실패)",
@@ -491,8 +586,8 @@ def listcsv():
 
 
 # ── 글 뽑기(PDF → 「## p.N」 md) ─────────────────────────────────────────────
-def text_path(co, fy, file_no=1):
-    return os.path.join(TEXT, "경영공시__%s__FY%d%s.md" % (co, fy, "" if file_no == 1 else "__file%d" % file_no))
+def text_path(co, fy, role="본문"):
+    return os.path.join(TEXT, "경영공시__%s__FY%d%s.md" % (co, fy, "" if role == "본문" else "__" + role))
 
 
 HANGUL = re.compile(r"[가-힣]")
@@ -502,7 +597,8 @@ JUNK = re.compile(r"[�-]")
 def cmd_text(paths=None):
     """받은 PDF → md(「## p.N」= PDF 쪽 순번, page.get_text() 그대로; 글자 없는 쪽은 「## p.N (글자 없음)」).
     venv 파이썬 -I 로 돌림. paths 를 주면 그 파일만(download.json 의 path 와 같아야 함).
-    (판단) 글자층 판정: 글자 있는 쪽이 절반 미만이거나, 글자 가운데 한글 비율 20% 미만·깨진 글자(U+FFFD·사용자 영역) 5% 이상이면 실패."""
+    (판단) 글자층 판정: 모든 쪽에 글자가 없거나, 글자 가운데 한글 비율 20% 미만·깨진 글자(U+FFFD·사용자 영역) 5% 이상이면 실패.
+    일부 쪽만 글자가 없으면(그림 쪽) 글자 있는 쪽만 쓰고 글자 없는 쪽을 목록·「문서에 없음」 행 note 에 밝힘(글을 지어내지 않음)."""
     import pymupdf
     dl = json.load(open(os.path.join(WORK, "download.json"), encoding="utf-8"))
     tp_json = os.path.join(WORK, "text.json")
@@ -529,7 +625,7 @@ def cmd_text(paths=None):
             rec["fail"] = "PDF 열기 실패: %s: %s" % (type(e).__name__, str(e)[:120])
             old[key] = rec
             continue
-        tp = text_path(*key)
+        tp = text_path(r["co"], r["fy"], r.get("role") or "본문")
         empty, nh, nj, nall = [], 0, 0, 0
         with open(tp + ".part", "w", encoding="utf-8") as f:
             f.write("# 경영공시 %s FY%d — 「%s」\n\n" % (r["co"], r["fy"], r["title"]))
@@ -553,13 +649,439 @@ def cmd_text(paths=None):
         rec.update(text_path=tp, pages=n, empty_pages=(",".join(map(str, empty)) if len(empty) < 30 else
                                                         "%d쪽(%s…)" % (len(empty), ",".join(map(str, empty[:10])))),
                    hangul_ratio=round(nh / nall, 3) if nall else 0, junk_ratio=round(nj / nall, 3) if nall else 0)
-        if n == 0 or len(empty) * 2 > n:
-            rec["fail"] = "글자층 없음 — %d쪽 가운데 %d쪽이 글자 없음(스캔 그림으로 보임)" % (n, len(empty))
+        if n == 0 or len(empty) == n:
+            rec["fail"] = "글자층 없음 — %d쪽 모두 글자 없음(스캔 그림으로 보임)" % n
         elif rec["hangul_ratio"] < 0.2 or rec["junk_ratio"] >= 0.05:
             rec["fail"] = "글자층 깨짐 — 한글 비율 %s, 깨진 글자 비율 %s" % (rec["hangul_ratio"], rec["junk_ratio"])
         old[key] = rec
         print(*key, n, "빈쪽", len(empty), "한글", rec["hangul_ratio"], "깨짐", rec["junk_ratio"], rec["fail"])
     _dump("text.json", sorted(old.values(), key=lambda t: (COS.index(t["co"]), t["fy"], t["file_no"])))
+
+
+# ── 조각 추출 ──────────────────────────────────────────────────────────────
+NONE = "문서에 없음"
+B_COLS = ["corp_label", "fy", "employees_total", "regular", "contract", "keyword", "source_text", "doc_kind",
+          "rcept_no_or_url", "page", "note", "doc_name", "collected_at"]
+D_COLS = ["corp_label", "fy", "counterparty", "contract_type", "amount", "source_text", "doc_kind", "rcept_no_or_url",
+          "page", "note", "doc_name", "collected_at"]
+B_KWS = ["겸직", "파견", "출향", "전출", "전적", "겸무"]
+D_TERMS = ["업무위탁", "경영자문", "공동사용", "위탁", "용역", "전산"]
+AFFIL = re.compile(r"자회사|손자회사|계열사|그룹사")
+CTRL = re.compile(r"[\x00-\x08\x0b-\x1f\x7f]")
+END_RE = re.compile(r"(다\.|요\.|음\.|함\.|됨\.|임\.|\.|(임|다|음|함)\))\s*$")
+BULLET_RE = re.compile(r"^\s*(\d{4}\.\s?\d{1,2}\.|[-*•·ㆍ□■○●▶◦※]|주\s?\d+\)|\(?\d{1,2}\)|[①-⑳]|[가-하]\.|\([가-하]\)|\d{1,2}\.|\([가-하IVX]+\))\s*")
+
+
+def load_pages(tp):
+    """text md → [(쪽 번호, 그 쪽 글)] — 「## p.N」 머리 다음 빈 줄부터 다음 머리 앞까지(쓴 그대로)."""
+    s = open(tp, encoding="utf-8").read()
+    out = []
+    parts = re.split(r"^## p\.(\d+)( \(글자 없음\))?\n\n", s, flags=re.M)
+    for k in range(1, len(parts), 3):
+        n, empty, body = int(parts[k]), parts[k + 1], parts[k + 2]
+        out.append((n, "" if empty else body))
+    return out
+
+
+def _flat(lines):
+    """공백·줄바꿈을 지운 글과, 그 글자마다의 줄 번호."""
+    chars, idx = [], []
+    for i, l in enumerate(lines):
+        for ch in l:
+            if not ch.isspace():
+                chars.append(ch)
+                idx.append(i)
+    return "".join(chars), idx
+
+
+def find_terms(lines, terms, check=None):
+    """줄 넘김·공백을 무시하고 terms 를 찾음 → [(낱말, 시작 줄, 끝 줄)]. 긴 낱말이 먼저 — 겹친 짧은 낱말은 뺌."""
+    S, idx = _flat(lines)
+    taken, out = set(), []
+    for t in terms:
+        for m in re.finditer(re.escape(t), S):
+            span = set(range(m.start(), m.end()))
+            if span & taken:
+                continue
+            if check and not check(t, S, m):
+                continue
+            taken |= span
+            out.append((t, idx[m.start()], idx[m.end() - 1], m.start()))
+    out.sort(key=lambda x: x[3])
+    return [(t, a, b) for t, a, b, _ in out]
+
+
+def b_check(t, S, m):
+    """(판단) 「전적」은 앞이 한글이 아니고 뒤가 「으로·인·합」이 아닐 때만(「완전적용」「전적으로」 제외)."""
+    if t != "전적":
+        return True
+    if m.start() > 0 and re.match(r"[가-힣]", S[m.start() - 1]):
+        return False
+    return not re.match(r"으로|인|합", S[m.end():m.end() + 2])
+
+
+def unit(lines, i0, i1, maxback=4, maxfwd=4):
+    """검색어가 든 문장(PDF 줄 단위로 앞뒤로 넓힘) → (s, e, kind). 문장이 아니고 짧은 줄(표 칸)이면 앞뒤 2줄 창."""
+    s = i0
+    for _ in range(maxback):
+        if s == 0:
+            break
+        prev = lines[s - 1]
+        if not prev.strip() or END_RE.search(prev) or BULLET_RE.match(lines[s] or "") or len(prev.strip()) < 20:
+            break
+        s -= 1
+    e = i1
+    for _ in range(maxfwd):
+        cur = lines[e]
+        if END_RE.search(cur) or e + 1 >= len(lines):
+            break
+        if BULLET_RE.match(cur) and len(cur.strip()) < 45:
+            break
+        nxt = lines[e + 1]
+        if not nxt.strip() or BULLET_RE.match(nxt) or nxt.strip().startswith("(") \
+                or (len(nxt.strip()) < 12 and not nxt.strip().endswith(".")):
+            break
+        e += 1
+    txt = " ".join(lines[s:e + 1])
+    if s == e and len(lines[s].strip()) < 25 and not END_RE.search(lines[s]):
+        if len(re.sub(r"\s", "", " ".join(lines[i0:i1 + 1]))) >= 12:
+            return i0, i1, "cell"           # 글이 충분한 표 칸·목록 줄은 그 줄만
+        a, b = max(0, i0 - 2), min(len(lines) - 1, i1 + 2)
+        while a < i0 and not lines[a].strip():
+            a += 1
+        while b > i1 and not lines[b].strip():
+            b -= 1
+        return a, b, "cell"
+    return s, e, ("sent" if END_RE.search(lines[e]) or len(txt) >= 40 else "cell")
+
+
+def clean(txt):
+    """보이지 않는 제어문자(줄바꿈·탭 말고)만 지움 → (글, 지웠는지)."""
+    t2 = CTRL.sub("", txt)
+    return t2, t2 != txt
+
+
+def docs_for_extract():
+    """받고 글 뽑기에 성공한 본문 파일 → [(co, fy, dl rec, text rec)]."""
+    dl = json.load(open(os.path.join(WORK, "download.json"), encoding="utf-8"))
+    tx = {(t["co"], t["fy"], t["file_no"]): t for t in json.load(open(os.path.join(WORK, "text.json"), encoding="utf-8"))}
+    out = []
+    for r in dl:
+        if r["status"] != "받음" or r.get("role") == "정정내역":
+            continue
+        t = tx.get((r["co"], r["fy"], r["file_no"]))
+        if not t or t.get("fail") or not t.get("text_path"):
+            continue
+        out.append((r["co"], r["fy"], r, t))
+    return out
+
+
+def _base(co, fy, r, t):
+    return dict(corp_label=co, fy=str(fy), doc_kind="경영공시", rcept_no_or_url=r["url"], doc_name=r["title"],
+                collected_at=r["fetched_at"])
+
+
+def _common(co, fy, t):
+    c = "FY%d 경영공시 PDF 글(%s, pymupdf page.get_text() 그대로 — 「## p.N」= PDF 쪽)" % (fy, os.path.basename(t["text_path"]))
+    m = re.match(r"(\d+)쪽\(", t.get("empty_pages") or "")
+    if m and int(m.group(1)) >= 10:
+        c += "; 이 문서의 글자 없는 쪽 %s 은 그림이라 찾지 못함" % t["empty_pages"]
+    return c
+
+
+def extract_B(docs, sect):
+    rows = []
+    for co, fy, r, t in docs:
+        pages = load_pages(t["text_path"])
+        base, common = _base(co, fy, r, t), _common(co, fy, t)
+        seen = {}
+        mine = []
+        for n, body in pages:
+            lines = body.split("\n")
+            units = {}
+            for kw, a, b in find_terms(lines, B_KWS, b_check):
+                units.setdefault(kw, []).append(list(unit(lines, a, b)))
+            merged = []
+            for kw, us in units.items():
+                us.sort()
+                mk = []
+                for u in us:            # 겹치거나(같은 문장) 바로 붙은 표 칸 줄은 한 행으로 합침(이어진 글 그대로)
+                    if mk and (u[0] <= mk[-1][1] or (u[2] == mk[-1][2] == "cell" and u[0] == mk[-1][1] + 1)) \
+                            and len(" ".join(lines[mk[-1][0]:u[1] + 1])) < 1500:
+                        mk[-1][1] = max(mk[-1][1], u[1])
+                        mk[-1][2] = "cell" if mk[-1][2] == u[2] == "cell" else "sent"
+                    else:
+                        mk.append(u)
+                merged.extend((s_, e_, k_, kw) for s_, e_, k_ in mk)
+            merged.sort()
+            for s, e, kind, kw in merged:
+                raw = "\n".join(lines[s:e + 1]).strip()
+                txt, cut = clean(raw)
+                key = (kw, re.sub(r"\s", "", txt))
+                if key in seen:
+                    if ("p.%d" % n) not in seen[key]["_also"] and ("p.%d" % n) != seen[key]["page"]:
+                        seen[key]["_also"].append("p.%d" % n)
+                    continue
+                notes = [common]
+                if kind == "cell":
+                    notes.append("(판단) 문장이 아닌 표 칸·목록 줄 — 검색어가 든 줄(바로 붙은 같은 검색어 줄은 합침; 글이 12자 "
+                                 "미만이면 앞뒤 2줄까지)을 PDF 줄바꿈 그대로 옮김")
+                if cut:
+                    notes.append("제어문자 지움")
+                notes.append("직원 수는 같은 FY 사업보고서 행")
+                row = dict(base, employees_total="", regular="", contract="", keyword=kw, source_text=txt,
+                           page="p.%d" % n, note="", _notes=notes, _also=[])
+                seen[key] = row
+                mine.append(row)
+                sect.setdefault(("B", co, fy), set()).add(n)
+        for row in mine:
+            if row["_also"]:
+                row["_notes"].insert(1, "같은 글이 %s 에도 있음(한 번만 옮김)" % ",".join(row["_also"]))
+            row["note"] = "; ".join(row.pop("_notes"))
+            row.pop("_also")
+        if not mine:
+            mine.append(dict(base, employees_total="", regular="", contract="", keyword="없음", source_text=NONE,
+                             page="p.1~p.%d(경영공시 전체 — 찾은 범위)" % len(pages),
+                             note="; ".join([common, "찾은 범위: FY%d 경영공시 전체 %d쪽(글자 없는 쪽 %s) · 검색어 %s(공백·줄바꿈 무시, "
+                                                     "「전적으로」「완전적용」 같은 다른 낱말 속 「전적」은 뺌) · 없음"
+                                             % (fy, len(pages), t.get("empty_pages") or "없음", "·".join(B_KWS)),
+                                             "직원 수는 같은 FY 사업보고서 행"])))
+        rows.extend(mine)
+    return rows
+
+
+HOLDCO = {
+    "KB금융지주": r"KB금융지주|KB금융그룹|케이비금융지주",
+    "신한금융지주": r"신한금융지주",
+    "하나금융지주": r"하나금융지주",
+    "우리금융지주": r"우리금융지주",
+}
+TOK_RE = re.compile(r"^\s*(채권\s*[·ㆍ]?\s*채무|수익\s*[·ㆍ]?\s*비용|매매\s*거래|자산\s*매매|신용\s*공여|기타\s*거래|자산\s*양수도)"
+                    r"\s*(\(.*\))?\s*$")
+ROW_END_RE = re.compile(r"^\s*(합\s*계|소\s*계|주\s*\d?\)|\(주\)|※|\(단위|[가-하]\.\s|[①-⑳]|\(\d+\)|\d\.\s)")
+AMT_RE = re.compile(r"^\s*(\(?[△▲\-]?\s*\d[\d,]*(\.\d+)?\)?|-)\s*$")   # 금액 칸(날짜 「2020-06-16」 꼴은 아님)
+PROSE_HOLD = r"지주|당사|당\s?그룹"
+
+
+def _nb(lines, k, step, lim):
+    """k 에서 step 방향으로 빈 줄(공백만 있는 표 칸)을 건너뛴 다음 글 줄 번호(lim 줄 안), 없으면 None."""
+    for _ in range(lim):
+        k += step
+        if k < 0 or k >= len(lines):
+            return None
+        if lines[k].strip():
+            return k
+    return None
+
+
+def _party(line):
+    """(판단) 당사자 칸 꼴: 금액·거래구분 칸이 아니고, 숫자·괄호로 시작하지 않고, 글자 2자 이상, 30자 미만."""
+    t = line.strip()
+    return (not AMT_RE.match(t) and not TOK_RE.match(t) and not re.match(r"[\d(]", t)
+            and re.search(r"[가-힣A-Za-z]{2}", t) is not None and len(t) < 30)
+
+
+def table_row(lines, h):
+    """(판단) 거래 표의 한 행 → (s, e, 방식) 또는 None. 셋 가운데 처음 맞는 것:
+    ① 거래구분 칸(채권·채무·수익·비용·매매거래 등)이 행마다 있는 표 — 검색어 줄 위 8줄 안의 거래구분 칸부터 다음 거래구분 칸·합계·주석 줄 앞까지
+    ② 거래구분 칸이 합쳐진 표의 [당사자, 당사자, 금액, 계정과목] 행 — 검색어 줄 바로 위가 금액 칸, 그 위 두 줄이 당사자 칸 꼴
+    ③ [당사자, 당사자, 계정과목, 금액] 행 — 검색어 줄 바로 아래가 금액 칸, 위 두 줄이 당사자 칸 꼴
+    (빈 줄 = 공백만 있는 표 칸은 건너뜀)"""
+    st, k = None, h
+    for _ in range(9):
+        if k is None:
+            break
+        if TOK_RE.match(lines[k]):
+            st = k
+            break
+        if k < h and ROW_END_RE.match(lines[k]):
+            break
+        k = _nb(lines, k, -1, 3)
+    if st is not None:
+        en = st + 1
+        while en < len(lines) and en - st < 10 and not TOK_RE.match(lines[en]) and not ROW_END_RE.match(lines[en]):
+            en += 1
+        if en > h:
+            e = en - 1
+            while e > h and not lines[e].strip():
+                e -= 1
+            return st, e, "①"
+    up1 = _nb(lines, h, -1, 3)
+    if up1 is not None and AMT_RE.match(lines[up1]):
+        p2 = _nb(lines, up1, -1, 3)
+        p1 = _nb(lines, p2, -1, 3) if p2 is not None else None
+        if p1 is not None and all(_party(lines[x]) for x in (p1, p2)):
+            return p1, h, "②"
+    dn1 = _nb(lines, h, 1, 3)
+    if dn1 is not None and AMT_RE.match(lines[dn1]):
+        p2 = _nb(lines, h, -1, 3)
+        p1 = _nb(lines, p2, -1, 3) if p2 is not None else None
+        if p1 is not None and all(_party(lines[x]) for x in (p1, p2)):
+            return p1, dn1, "③"
+    return None
+
+
+ROW_HOW = {"①": "거래구분 칸부터 다음 거래구분 칸 앞까지", "②": "거래구분 칸이 합쳐진 표의 [당사자, 당사자, 금액, 계정과목] 줄",
+           "③": "[당사자, 당사자, 계정과목, 금액] 줄"}
+# (판단) 지주·계열사 사이 글이 아니라고 본 문장 — 검색어·계열사 낱말·지주 낱말이 한 문장에 있으나 뜻이 다른 것. 빼고 work 의
+# D_제외문장.csv 에 남김. (공백 지운 글의 앞부분, 사유)
+D_EXCLUDE = [
+    ("신한리츠운용주식회사는", "자회사 소개 글 — 「위탁」은 부동산투자회사(REITs)가 그 자회사에 맡긴 업무(지주·계열사 사이 거래 아님)"),
+    ("신한신용정보주식회사는", "자회사 소개 글 — 「용역」은 그 자회사가 하는 민원용역 대행 업무(지주·계열사 사이 거래 아님)"),
+]
+
+
+def _excluded(txt0):
+    for k, why in D_EXCLUDE:
+        if txt0.startswith(k) or k in txt0[:60]:
+            return why
+    return ""
+
+
+def extract_D(docs, sect):
+    rows, excl = [], []
+    for co, fy, r, t in docs:
+        pages = load_pages(t["text_path"])
+        base, common = _base(co, fy, r, t), _common(co, fy, t)
+        hold = re.compile(HOLDCO[co])
+        seen, mine = {}, []
+        for n, body in pages:
+            lines = body.split("\n")
+            for term, a, b in find_terms(lines, D_TERMS):
+                tr = table_row(lines, a)
+                if tr:
+                    s, e, how = tr
+                    cells = [x.strip() for x in lines[s:e + 1] if x.strip()]
+                    body_c = cells[1:] if how == "①" else cells
+                    nonamt = [x for x in body_c if not AMT_RE.match(x)]
+                    parties = nonamt[:2]
+                    if not any(hold.search(re.sub(r"\s", "", x)) for x in parties):
+                        if any(hold.search(re.sub(r"\s", "", x)) for x in cells):
+                            excl.append(dict(co=co, fy=fy, page="p.%d" % n, term=term, how=how,
+                                             text="\n".join(lines[s:e + 1]).strip(),
+                                             why="표 행에 지주 이름이 있으나 당사자 칸(앞 두 칸)이 아님"))
+                        continue
+                    ctl = [x for x in nonamt[2:]]
+                    ct = "\n".join(ctl) if any(term in re.sub(r"\s", "", x) for x in ctl) else ""
+                    amts = [x for x in body_c if AMT_RE.match(x)]
+                    others = [x for x in parties if not hold.search(re.sub(r"\s", "", x))]
+                    extra = {"counterparty": others[0] if len(others) == 1 else "", "contract_type": ct,
+                             "amount": amts[0] if len(amts) == 1 else ""}
+                    xn = ["(판단) 표 행 %s = %s(PDF 줄 그대로); counterparty 는 지주가 아닌 당사자 칸, contract_type 은 "
+                          "검색어가 든 계정과목·비고 칸(줄이 나뉜 칸은 줄바꿈 그대로), amount 는 금액 칸(원문 글 그대로)"
+                          % (how, ROW_HOW[how])]
+                    if cells and how == "①":
+                        xn.append("거래구분 칸 「%s」" % cells[0])
+                    if len(others) != 1:
+                        xn.append("상대방 칸을 하나로 못 정해 counterparty 비움")
+                    if not ct:
+                        xn.append("검색어가 계정과목·비고 칸 밖에 있어 contract_type 비움")
+                else:
+                    s, e, kind = unit(lines, a, b)
+                    txt0 = re.sub(r"\s", "", " ".join(lines[s:e + 1]))
+                    if kind == "cell":
+                        if not hold.search(txt0):
+                            continue
+                        xn = ["(판단) 거래 표 행 꼴이 아닌 표 칸·짧은 줄 — 검색어 줄의 앞뒤 2줄까지 이어 옮김(지주 이름이 그 안에 있음)"]
+                    else:
+                        if not (AFFIL.search(txt0) or "금융지주회사등" in txt0) or not re.search(PROSE_HOLD + "|" + HOLDCO[co], txt0):
+                            continue
+                        why = _excluded(txt0)
+                        if why:
+                            excl.append(dict(co=co, fy=fy, page="p.%d" % n, term=term, how="문장",
+                                             text="\n".join(lines[s:e + 1]).strip(), why=why))
+                            continue
+                        xn = ["(판단) 검색어 「%s」와 계열사 낱말(자회사·손자회사·계열사·그룹사·금융지주회사등)과 지주 낱말(지주·당사·"
+                              "당그룹·회사 이름)이 한 문장에 있음" % term]
+                        if "금융지주회사등은" in txt0 and "대통령령으로" in txt0:
+                            xn.append("(판단) 법 조문을 옮긴 글(경영공시의 관련 법규 부분)")
+                    extra = {"counterparty": "", "contract_type": "", "amount": ""}
+                raw = "\n".join(lines[s:e + 1]).strip()
+                txt, cut = clean(raw)
+                key = re.sub(r"\s", "", txt)
+                if key in seen:
+                    if ("p.%d" % n) != seen[key]["page"] and ("p.%d" % n) not in seen[key]["_also"]:
+                        seen[key]["_also"].append("p.%d" % n)
+                    continue
+                notes = [common, "검색어 「%s」" % term] + xn + (["제어문자 지움"] if cut else [])
+                row = dict(base, source_text=txt, page="p.%d" % n, _notes=notes, _also=[], **extra)
+                seen[key] = row
+                mine.append(row)
+                sect.setdefault(("D", co, fy), set()).add(n)
+        for row in mine:
+            if row["_also"]:
+                row["_notes"].insert(1, "같은 글이 %s 에도 있음(한 번만 옮김)" % ",".join(row["_also"]))
+            row["note"] = "; ".join(row.pop("_notes"))
+            row.pop("_also")
+        if not mine:
+            mine.append(dict(base, counterparty="", contract_type="", amount="", source_text=NONE,
+                             page="p.1~p.%d(경영공시 전체 — 찾은 범위)" % len(pages),
+                             note="; ".join([common, "찾은 범위: FY%d 경영공시 전체 %d쪽(글자 없는 쪽 %s — 그림이라 찾지 못함) · 검색어 %s"
+                                                     "(공백·줄바꿈 무시) · 지주가 당사자인 거래 표 행이나 지주·계열사 사이 문장 없음"
+                                             % (fy, len(pages), t.get("empty_pages") or "없음", "·".join(D_TERMS))]
+                                            + _none_hint(co, fy, excl))))
+        rows.extend(mine)
+    with open(os.path.join(WORK, "D_제외문장.csv"), "w", encoding="utf-8-sig", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=["co", "fy", "page", "term", "how", "text", "why"], lineterminator="\n")
+        w.writeheader()
+        w.writerows(excl)
+    return rows
+
+
+def _none_hint(co, fy, excl):
+    x = [e for e in excl if e["co"] == co and e["fy"] == fy]
+    if not x:
+        return []
+    return ["(판단) 뺀 글 %d곳(%s) — %s/D_제외문장.csv" % (len(x), ",".join(sorted({e["page"] for e in x})), WORK)]
+
+
+def write_frag(path, rows, cols):
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path + ".tmp", "w", encoding="utf-8-sig", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=cols, extrasaction="ignore", lineterminator="\n")
+        w.writeheader()
+        for r in rows:
+            w.writerow({c: r.get(c, "") for c in cols})
+    os.replace(path + ".tmp", path)
+
+
+def write_orig(sect, docs):
+    """원문 md: dart_out/ops15/원문/<B|D>/<회사>__FY<fy>__경영공시.md — 머리 출처 줄 + 행이 나온 쪽 글 그대로(같은 쪽은 한 번)."""
+    dmap = {(co, fy): (r, t) for co, fy, r, t in docs}
+    for task in ("B", "D"):
+        d0 = os.path.join(ORIG, task)
+        os.makedirs(d0, exist_ok=True)
+        for fn in os.listdir(d0):     # 이 스크립트 몫(g1 4개사 FY 경영공시)만 지우고 다시 씀
+            if re.fullmatch(r"(%s)__FY20\d\d__경영공시\.md" % "|".join(COS), fn):
+                os.remove(os.path.join(d0, fn))
+    n = 0
+    for (task, co, fy), pgs in sorted(sect.items(), key=lambda x: (x[0][0], COS.index(x[0][1]), x[0][2])):
+        r, t = dmap[(co, fy)]
+        pages = dict(load_pages(t["text_path"]))
+        out = ["# %s FY%d 경영공시 — 작업 %s 원문(행이 나온 쪽 전체)" % (co, fy, task), "",
+               "- 출처: 「%s」 · %s · 받은 시각 %s(KST) · 원본 sha256 %s" % (r["title"], r["url"], r["fetched_at"], r["sha256"]),
+               "- 글: `%s`(pymupdf page.get_text() 그대로) — 쪽 「## p.N」= PDF 쪽" % t["text_path"], ""]
+        for p in sorted(pgs):
+            out.append("## p.%d" % p)
+            out.append("")
+            out.append(pages[p].rstrip("\n"))
+            out.append("")
+        with open(os.path.join(ORIG, task, "%s__FY%d__경영공시.md" % (co, fy)), "w", encoding="utf-8") as f:
+            f.write("\n".join(out))
+        n += 1
+    return n
+
+
+def cmd_extract():
+    docs = docs_for_extract()
+    sect = {}
+    B = extract_B(docs, sect)
+    D = extract_D(docs, sect)
+    write_frag(os.path.join(FRAG, "B_mgmt_g1.csv"), B, B_COLS)
+    write_frag(os.path.join(FRAG, "D_mgmt_g1.csv"), D, D_COLS)
+    n = write_orig(sect, docs)
+    print("docs", len(docs), "B", len(B), "B 없음", sum(r["source_text"] == NONE for r in B),
+          "D", len(D), "D 없음", sum(r["source_text"] == NONE for r in D), "원문 md", n)
 
 
 def cmd_fetch():
@@ -578,6 +1100,9 @@ def main(argv):
     cmd = argv[1] if len(argv) > 1 else ""
     if cmd == "fetch":
         cmd_fetch()
+        return 0
+    if cmd == "extract":
+        cmd_extract()
         return 0
     if cmd == "text":
         cmd_text([os.path.relpath(os.path.abspath(a), ROOT) for a in argv[2:]] or None)
