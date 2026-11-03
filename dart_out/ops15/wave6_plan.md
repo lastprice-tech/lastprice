@@ -7,3 +7,5 @@
   3. vmgmt_g1, vmgmt_g2(경영공시 조각 독립 검증 — 수집 보고는 dart_out/ops15/wave4_results.json)
   4. F_g1, F_g2, G_g2, G_g1, I, X2, A_ext, H_g1, H_g2, J_g1, J_g2, G2(각각 수집 → 독립 검증)
 - 그 뒤 wave7 = 전체 합본(13 CSV + 원문 md zip + 조직도 그림 + 보고) → 비평.
+
+- 2026-11-03 03:54 UTC 시작: task wpn09m9dt, run wf_24f59e4e-764, 스크립트 사본 dart_out/ops15/wf/ops15-wave6.js(원본 scratchpad/ops15-wave6.js). 멈추면 Workflow({scriptPath, resumeFromRunId: "wf_24f59e4e-764"}).
