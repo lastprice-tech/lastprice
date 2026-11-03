@@ -7,7 +7,7 @@
   dart_out/ops15/사업보고서_원문.csv 의 세 회사 행(본·정정) → text_path md(OpenDART XML 을 옮긴 것, 「### [절 n]」·「[표 n]」).
   handoff/13차_지주관리유형/13차_지주관리유형_텍스트.zip — 한국투자금융지주 FY2025 사업보고서 본문 PDF 텍스트(쪽 번호 찾기)와
     경영공시 2026.2Q PDF 텍스트(작업 B·D 의 2026.2Q 행). 경영공시 출처 url·fetched_at 은 dart_out/risk8/경영공시_2026_2Q.csv.
-    BNK·JB 는 13차 텍스트가 없음(사업보고서 PDF 쪽·경영공시 모두) — 경영공시는 「미수집」 note 행.
+    BNK·JB 는 13차 텍스트가 없음(사업보고서 PDF 쪽·경영공시 모두) — 경영공시는 행 없이 work json 「missing」(15차 검증 고침).
   handoff/겸직현황_정리.csv — 5차 겸직 행(대조용, FY2023~2025).
 산출:
   dart_out/ops15/조각/A_bs_g3.csv · B_bs_g3.csv · D_bs_g3.csv (utf-8-sig)
@@ -65,6 +65,29 @@ D_RE = re.compile(r"업무\s*위\s*[·ㆍ]?\s*수탁|업무\s*위탁|업무\s*�
                   r"전산\s*공동|IT\s*공동|공동\s*전산")
 D_BROAD = re.compile(r"위탁|수탁|자문|전산|(?<![A-Za-z])IT(?![A-Za-z])|공동")
 D_TERMS = "업무위탁·업무수탁·위수탁·위ㆍ수탁·위탁계약·수탁계약·용역·경영자문·자문계약·자문료·자문수수료·공동사용·공동이용·시스템 공동·전산 공동·IT 공동"
+
+
+# 생성기에 들어간 판단(규칙) — work json 「judg_rules」 로도 남김(15차 검증 때 정리). 행마다의 판단은 note 「(판단)」, 보고서별은 「judg」.
+JUDG_RULES = [
+    "A 겸직 표: Ⅷ·Ⅸ 의 「성명|대상회사(대상 계열사)|직책|선임시기|비고」 표와 한국투자 「직명|성명|회사명|직책|상근여부」 표를 겸직 표로 읽음",
+    "A 지난해 기준 겸직 표(앞 글·앞 작은 표의 기준 날짜가 보고 FY 보다 이른 표 — JB 는 Ⅸ 에 지난 2개년 표가 붙음)는 그 해 보고서 몫이라 넣지 않음(work json past_tables)",
+    "A 기준일 표시를 못 찾은 겸직 표는 작성기준일 표로 봄; 날짜가 둘이면 「현재·기준」이 붙은 날짜; 앞 작은 표는 「기준·현재」 낱말이 있을 때만",
+    "A 표 안에 머리 행이 한 번 더 나오면 그 뒤 행은 작성기준일 이후 겸직 행으로 봄(BNK FY2025 Ⅷ [표 1411])",
+    "A 같은 사람·회사·직책(또는 같은 선임시기) 행이 여러 겸직 표(Ⅷ·Ⅸ, 기준일·이후)에 나오면 기준일 표·앞 표 1행으로 묶고 note 「같은 행: …」",
+    "A 겸직 표의 지주 자기 직위 줄(대상 회사가 지주 자신 — JB 표 꼴)은 겸직 행이 아님(이름 줄로 source_text 에 함께 둠); 다른 회사 줄이 없는 사람은 그 줄을 행으로",
+    "A 「| - | 해당사항없음 | - |…」 자리 행은 겸직 행이 아님(BNK FY2020 [표 1174])",
+    "A 임원 현황 표 주요경력 칸의 현직 표시((現)·(현)·(현재)·~현재) 조각과 한국투자 「임원약력」 표의 기간 「현재」 행을 겸직 행으로 넣음(지주 자신 조각·같은 사람의 겸직 표 회사와 같은 조각은 뺌); "
+    "회사·직위는 회사 끝말 낱말(은행·증권·지주·법인·대학 등) 또는 마지막 띄어쓰기에서 나누고 연월은 경력 칸 연월 → concurrent_since",
+    "A 담당업무 칸에 「겸직·겸무」가 있고 겸직 표에 그 사람이 없으면 회사 빈칸 1행",
+    "A 지주 칸(직위·담당업무·등기·상근·출생년월)은 같은 보고서 임원 현황 표 같은 성명 행(이후 겸직 행은 이후 임원 표 먼저); 같은 성명 출생년월 여럿·해마다 다르면 note (판단), 동일인 여부는 가리지 않음",
+    "A reason_text: 사업보고서에 특정 겸직의 사유 글이 없어 모두 「문서에 없음」(연차보고서 사유는 gov 조각 몫)",
+    "A·B·D 정정판: 본 보고서를 기준으로 옮기고 정정판과 비교해 다른 행만 정정판 접수번호로 따로 1행(JB FY2023 정정 2건은 같은 새 사외이사 행이 정정판마다 1행씩)",
+    "B 키워드 겸직·파견·출향·전출·전적·겸무를 Ⅷ 전체 줄에서; 「전적」 오탐(전적으로·전적인·사전적·완전적) 뺌; 300자 넘는 문단은 그 문장만; 직원 수는 직원 표 마지막 합계 행",
+    "D Ⅹ~Ⅺ(Ⅻ 상세표 전)에서 계약 낱말(" + "업무위탁·업무수탁·위수탁·위탁계약·수탁계약·용역·경영자문·자문계약·자문료·자문수수료·공동사용·공동이용·시스템/전산/IT 공동" + ") 줄을 행으로 — "
+    "소송·제재 표 행(계열사·제3자 일)도 들어가며 note (판단); 「…」 법규·내규 이름 속 낱말은 뺌; 넓은 낱말(위탁·수탁·자문·전산·IT·공동)만 있는 줄과 지주–자회사 거래 낱말(수수료·브랜드 등) 줄은 note 에만; "
+    "counterparty 는 원고·피고·상대방 칸이 있을 때만",
+    "경영공시 2026.2Q: 13차 텍스트가 있는 한국투자만 — BNK·JB 는 원문이 없어 행을 만들지 않고 work json missing 에 적음",
+]
 
 
 # ================================================================ 공통 도구
@@ -288,13 +311,19 @@ DATE_RE = re.compile(r"(\d{4})\s*(?:년|\.)\s*(\d{1,2})\s*(?:월|\.)?\s*(말|\d{
 
 
 def basis_of(d, t, cap):
-    """겸직 표 기준일 원문과 (연, 월). 앞 작은 표·앞 글줄에서 찾음."""
+    """겸직 표 기준일 원문과 (연, 월). 앞 작은 표·앞 글줄에서 찾음.
+    15차 검증 고침: 앞 작은 표는 「기준·현재」 낱말이 있을 때만 씀 — JB FY2023 [표 1881] 앞 1행 임원 표(박종춘 출생년월
+    「1969년 03월」)를 기준일로 잘못 읽어 「지난해」 표로 빼던 것."""
     srcs = [d.prev_small(t)] + cap
-    for s in srcs:
+    for k, s in enumerate(srcs):
         s2 = re.sub(r"(<br>|&cr;)", " ", s or "")
         if not re.search(r"기준|현재|\d{4}\s*[년.]\s*\d", s2):
             continue
-        m = DATE_RE.search(s2)
+        if k == 0 and not re.search(r"기준|현재", s2):
+            continue
+        # 15차 검증 고침: 「…작성기준일(2025.12.31) 이후 … 겸직현황(2026.03.17 현재)」처럼 날짜가 둘이면 「현재·기준」이 바로 붙은 날짜를 씀
+        m = next((x for x in DATE_RE.finditer(s2) if re.match(r"\S{0,2}\s*(현재|기준)", s2[x.end():])), None) \
+            or DATE_RE.search(s2)
         if m:
             return m.group(0).strip(), (int(m.group(1)), int(m.group(2)))
     return "", None
@@ -367,7 +396,9 @@ def norm_marks(t):
     return t
 
 
-def split_entries(corp, t):
+def split_entries(corp, t, with_lead=False):
+    """경력 칸 → 조각들. with_lead=True 면 (조각, 새 경력 줄 시작인지) — 「- 」 뒤·날짜로 시작·현직 표시 뒤 조각이 새 줄
+    (15차 검증 보탬: JB 칸은 한 경력 줄 안에서도 <br>·&cr; 로 줄을 바꿔 「(주)전북은행 <br>부<br>행장보(現)」처럼 끊김)."""
     t = norm_marks(t)
     parts = re.split(r"<br>|&cr;|\n", t)
     out = []
@@ -375,10 +406,11 @@ def split_entries(corp, t):
         p = p.strip()
         if not p:
             continue
-        for s in re.split(r"(?:^|\s)-\s+", p):
+        for ci, s in enumerate(re.split(r"(?:^|\s)-\s+", p)):
             s = s.strip()
             if not s:
                 continue
+            lead0 = ci > 0
             # 날짜로 시작하는 경력이 줄바꿈 없이 붙은 칸: 날짜 앞에서 나눔
             segs = re.split(r"(?<![\d.~/])(?=\d{2}\.\d{2}\s)" if corp == "BNK금융지주" else r"(?!)", s)
             segs2 = []
@@ -390,31 +422,47 @@ def split_entries(corp, t):
                     segs3 += re.split(r"(?=\(현\))", x)          # 한국투자: 「(현) 회사 직위」 앞 표시
                 else:
                     segs3 += re.split(r"(?<=現\))|(?<=\(현\))|(?<=\(현재\))", x)   # BNK·JB: 「회사 직위(現)」 뒤 표시
-            out += [x.strip() for x in segs3 if x.strip()]
-    return out
+            first = True
+            for x in segs3:
+                x = x.strip()
+                if not x:
+                    continue
+                lead = (lead0 if first else True) or bool(LEAD_DATE.match(x) or PERIOD_NOW.match(x))
+                first = False
+                out.append((x, lead))
+    return out if with_lead else [x for x, l in out]
 
 
 def split_cn(body):
-    """경력 조각 → (회사, 직위). 회사 끝말(은행·증권·지주·대학 등)이 붙은 첫 낱말까지를 회사로, 없으면 마지막 띄어쓰기에서 나눔."""
+    """경력 조각 → (회사, 직위). 회사 끝말(은행·증권·지주·대학 등)이 붙은 첫 낱말까지를 회사로, 없으면 마지막 띄어쓰기에서 나눔.
+    15차 검증 보탬: 「법무법인 태환 대표변호사」처럼 끝말 낱말이 법인 종류 이름뿐이면 다음 낱말(법인 이름)까지 회사로,
+    회사 끝 쉼표(「구글코리아,」)는 뺌."""
     w = body.split()
     for k, x in enumerate(w[:-1]):
         if CO_END.search(x):
-            return " ".join(w[:k + 1]), " ".join(w[k + 1:])
+            if re.fullmatch(r"(법무법인|회계법인|세무법인|법률사무소)(\(유\))?", x) and k + 2 < len(w):
+                k += 1
+            return " ".join(w[:k + 1]).rstrip(","), " ".join(w[k + 1:])
+    if len(w) >= 3 and w[-1].startswith("("):       # 「구글코리아, 전무 (디렉터)」: 끝 괄호 낱말은 직위에 붙임
+        return " ".join(w[:-2]).rstrip(","), " ".join(w[-2:])
     if len(w) >= 2:
-        return " ".join(w[:-1]), w[-1]
+        return " ".join(w[:-1]).rstrip(","), w[-1]
     return body, ""
 
 
 def career_items(corp, raw):
     """경력 칸에서 현직 표시가 붙은 조각: [dict(seg, body, mark, since, gyeom)]."""
     out = []
-    for s in split_entries(corp, raw):
+    pend = []          # 같은 경력 줄 안에서 현직 표시 앞에 끊겨 나온 조각들
+    for s, lead in split_entries(corp, raw, with_lead=True):
+        if lead:
+            pend = []
         mark, since, body, gyeom = "", "", s, ""
         m = PERIOD_NOW.match(s)
         if m:
             mark, since, body = m.group(0).strip(), m.group(0).strip(), s[m.end():]
         elif corp == "한국투자금융지주" and s.startswith("(현)"):
-            mark, body = "(현)", s[4:]
+            mark, body = "(현)", s[3:]       # 15차 검증 고침: s[4:] 는 「(현)」(3글자) 바로 뒤 회사 이름 첫 글자를 잘랐음(「(현)한국투자증권」→「국투자증권」)
         else:
             m = SUF.search(s)
             if m:
@@ -426,7 +474,15 @@ def career_items(corp, raw):
                 if m:
                     mark, body = m.group(0).strip(), s[m.end():]
         if not mark:
+            pend.append(s)
             continue
+        seg = s
+        # 15차 검증 고침: 현직 표시 조각에 회사 끝말 낱말이 없고 같은 경력 줄 앞 조각이 있으면 이어 붙임
+        # (JB 「- 2019 (주)전북은행 <br>부<br>행장보(現)」 → 「행장보」 를 회사로 적던 것, 「Ltd.&cr; Managing Partner(現)」)
+        if pend and not lead and not any(CO_END.search(x) for x in body.split()[:-1] or body.split()):
+            seg = " ".join(pend + [s])
+            body = " ".join(pend + [body])
+        pend = []
         body = body.strip(" ,·ㆍ-")
         m = LEAD_DATE.match(body)
         if m:
@@ -438,7 +494,7 @@ def career_items(corp, raw):
         if not body:
             continue
         co, ti = split_cn(body)
-        out.append(dict(seg=s, body=body, mark=mark, since=since, gyeom=gyeom, co=co, ti=ti))
+        out.append(dict(seg=seg, body=body, mark=mark, since=since, gyeom=gyeom, co=co, ti=ti))
     return out
 
 
@@ -470,6 +526,9 @@ def concurrent_tables(d, rngs):
         rows, prev, prev_title, seg_after = [], None, "", False
         ncol = len(hdr)
         for i, c in t["rows"][1:]:
+            if all(norm(x) in ("-", "해당사항없음", "해당없음", "없음", "") for x in c):
+                rows.append(dict(line=i, empty=True, cells=c))     # 15차 검증 고침: 「| - | 해당사항없음 | - |…」 자리 행은 겸직 행이 아님
+                continue
             if [norm(x) for x in c] == hdr:
                 seg_after = True        # 표 안 두 번째 머리 행(뒤는 다른 기준일 표가 붙은 것) — (판단)
                 prev = None
@@ -555,8 +614,12 @@ def extract_A(d):
     use = [ct for ct in cts if ct["when"] != "지난해"]
     order = sorted([(ct, r) for ct in use for r in ct["rows"]],
                    key=lambda x: (x[1].get("when", "") == "이후", x[0]["table"]["start"], x[1]["line"]))
-    kept, selfs = [], {}
+    kept, selfs, empties = [], {}, []
     for ct, rec in order:
+        if rec.get("empty"):
+            empties.append("%s [표 %d]%s 「%s」" % (where(ct["table"]), ct["table"]["no"],
+                                                 "(기준 %s)" % ct["basis"] if ct["basis"] else "", d.L[rec["line"]].strip()))
+            continue
         if rec.get("bad"):
             res["probs"].append("겸직 표 행 칸 수 다름 [표 %d] 줄 %d: %s" % (ct["table"]["no"], rec["line"] + 1, rec["cells"]))
             continue
@@ -698,6 +761,11 @@ def extract_A(d):
                        cmp=re.sub(r"[·,.\-]", "", norm(e["name"] + e["bkey"] + it["body"])))
             seen[k] = row
             res["rows"].append(row)
+    if empties:
+        # 15차 검증 고침: 자료 행 없이 「해당사항없음」 자리 행만 있는 겸직 표 — 행으로 넣지 않고 그 보고서 행 note·work json judg 에
+        res["judg"].append("「해당사항없음」 자리 행만 있는 겸직 표 — 겸직 행으로 넣지 않음: " + ", ".join(empties))
+        for r in res["rows"]:
+            r["note"].append("(판단) 같은 보고서의 「해당사항없음」 자리 행만 있는 겸직 표는 행으로 넣지 않음: " + ", ".join(empties))
     return res
 
 
@@ -864,18 +932,31 @@ def d_fields(d, x, bnote, corr_D, corr_notes):
                 page=d.loc(i) + p13, note="; ".join(note))
 
 
+def range_page(d, rng):
+    """「문서에 없음」 행의 page: 찾은 범위(절 번호·제목). (15차 검증 고침 — g2 와 같은 꼴)"""
+    secs = [(n, t.strip()) for i, n, t in d.heads if rng[0] <= i < rng[1]]
+    if not secs:
+        return ""
+    return "XML [절 %d]~[절 %d] 「%s」~「%s」 전체(찾은 범위 — 해당 글 없음)" % (secs[0][0], secs[-1][0], secs[0][1], secs[-1][1])
+
+
+def mg_range(P):
+    """경영공시 「문서에 없음」 행의 page: 찾은 PDF 쪽 범위. (15차 검증 고침 — g1·g2 와 같은 꼴)"""
+    ps = [p for p, ls, nt in P["pages"]]
+    return "p.%d~p.%d 전체(찾은 범위, PDF 쪽 — 해당 글 없음)" % (min(ps), max(ps)) if ps else ""
+
+
 # ================================================================ 경영공시 2026.2Q
 def mgmt_rows(corp):
-    """13차 경영공시 2026.2Q PDF 텍스트 — 작업 B 키워드 문장, 작업 D 업무위탁 현황. BNK·JB 는 미수집 note 행."""
-    out = dict(B=[], D=[], sec={})
+    """13차 경영공시 2026.2Q PDF 텍스트 — 작업 B 키워드 문장, 작업 D 업무위탁 현황.
+    BNK·JB 는 경영공시 원문이 없어 행을 만들지 않고 누락 목록(work json 「missing」)에만 적음
+    (15차 검증 고침: 출처·page·doc_name·collected_at 이 빈 「미수집」 행은 「모든 행에 출처」 규칙에 어긋남)."""
+    out = dict(B=[], D=[], sec={}, missing=[])
     if corp in MGMT_NONE:
-        nb = ("경영공시 미수집(이번 범위에서 받지 않음) — 13차 경영공시 2026.2Q 텍스트는 8개사뿐이고 %s 는 없음"
-              "(handoff/13차_지주관리유형/13차_지주관리유형_텍스트.zip 에 경영공시__%s.md 없음)" % (corp, corp))
-        out["B"].append(dict(corp_label=corp, fy="2026.2Q", employees_total="", regular="", contract="", keyword="",
-                             source_text="", doc_kind="경영공시", rcept_no_or_url="", page="", note=nb,
-                             doc_name="", collected_at=""))
-        out["D"].append(dict(corp_label=corp, fy="2026.2Q", counterparty="", contract_type="", amount="", source_text="",
-                             doc_kind="경영공시", rcept_no_or_url="", page="", note=nb, doc_name="", collected_at=""))
+        out["missing"].append(
+            "B·D %s 경영공시 2026.2Q 미수집 — 13차 경영공시 2026.2Q 텍스트는 8개사뿐이고 %s 는 없음"
+            "(handoff/13차_지주관리유형/13차_지주관리유형_텍스트.zip 에 경영공시__%s.md 없음, dart_out/risk8/경영공시_2026_2Q.csv 에도 행 없음); "
+            "이번 단계는 새 웹 수집 없음 — 행을 만들지 않음" % (corp, corp, corp))
         return out
     meta = next((r for r in csv.DictReader(open(MGMT_CSV, encoding="utf-8-sig")) if r["corp_label"] == corp), None)
     P = t13_pages("경영공시", corp)
@@ -909,7 +990,7 @@ def mgmt_rows(corp):
                              note="직원 수 칸 빈칸(경영공시에서 키워드 문장만 모음); 문장이 PDF 줄에서 끊긴 곳은 줄바꿈만 붙여 씀; " + pdfnote))
         out["sec"][("mgmt", p)] = ("mgmt", corp, p, ls, url, name, coll)
     if not hits:
-        out["B"].append(dict(b, keyword="없음", source_text=NONE, page="",
+        out["B"].append(dict(b, keyword="없음", source_text=NONE, page=mg_range(P),
                              note="찾은 범위: 경영공시 2026.2Q PDF 텍스트 전 쪽(%d쪽), 검색어 겸직·파견·출향·전출·전적·겸무"
                                   "(「전적」은 전적으로 등 오탐 뺌) — 없음; %s" % (len(P["pages"]), pdfnote)))
     dh = []
@@ -924,7 +1005,7 @@ def mgmt_rows(corp):
         out["sec"][("mgmt", p)] = ("mgmt", corp, p, ls, url, name, coll)
     if not dh:
         out["D"].append(dict(corp_label=corp, fy="2026.2Q", counterparty="", contract_type="", amount="", source_text=NONE,
-                             doc_kind="경영공시", rcept_no_or_url=url, page="", doc_name=name, collected_at=coll,
+                             doc_kind="경영공시", rcept_no_or_url=url, page=mg_range(P), doc_name=name, collected_at=coll,
                              note="찾은 범위: 경영공시 2026.2Q PDF 텍스트 전 쪽(%d쪽, 공백 무시), 검색어 %s — 「업무위탁」 현황 없음"
                                   "(「위탁매매」「투자자문」 같은 업종·회사 이름 낱말만 있음); %s" % (len(P["pages"]), D_TERMS, pdfnote)))
     return out
@@ -941,7 +1022,7 @@ def main():
     for r in lst:
         if r["text_path"] and os.path.exists(r["text_path"]):
             docs[r["rcept_no"]] = Doc(r)
-    work = dict(probs=[], judg=[], h5=[], h5_selfline=[], corr=[], past_tables=[], ctabs={}, sections={})
+    work = dict(probs=[], missing=[], judg=[], h5=[], h5_selfline=[], corr=[], past_tables=[], ctabs={}, sections={})
     A, B, D = [], [], []
     sections = {}       # (task, corp, fy) -> {(rcept, head line): (doc, s, e, n, title)}
     h5_all = list(csv.DictReader(open(H5_CSV, encoding="utf-8-sig")))
@@ -987,6 +1068,7 @@ def main():
             ra = extract_A(dm)
             work["ctabs"]["%s FY%d %s" % (corp, fy, dm.rcept)] = ra.get("ctabs", [])
             work["probs"] += ["A %s FY%d %s: %s" % (corp, fy, dm.rcept, p) for p in ra["probs"]]
+            work["judg"] += ["A %s FY%d %s: %s" % (corp, fy, dm.rcept, j) for j in ra["judg"]]
             if ra["past"]:
                 work["past_tables"].append("%s FY%d %s: %s" % (corp, fy, dm.rcept, ", ".join(ra["past"])))
             corr_A = [(dc, extract_A(dc)) for dc in corr_docs]
@@ -1013,7 +1095,8 @@ def main():
                 work["corr"].append("A %s FY%d 정정 %s: 본과 다른 겸직 행 %d개" % (corp, fy, dc.rcept, nd))
             past_note = ("; 넣지 않은 지난해 기준 겸직 표: " + ", ".join(ra["past"])) if ra["past"] else ""
             if not rowsA:
-                A.append(dict(base(dm), person="", reason_text=NONE, source_text=NONE, page="",
+                A.append(dict(base(dm), person="", reason_text=NONE, source_text=NONE,
+                              page=range_page(dm, (ra["r8"][0], (ra.get("r9") or ra["r8"])[1])) if ra.get("r8") else "",
                               note="찾은 범위: Ⅷ 임원 현황 표(주요경력·담당업무 칸)·「회사와 계열회사간 임원 겸직 현황」 표, Ⅸ 겸직 표"
                                    " — 겸직 행 없음" + past_note + ("; " + "; ".join(corr_notes) if corr_notes else "")))
             for d, x, note in rowsA:
@@ -1137,8 +1220,19 @@ def main():
                 bnote = ("(판단) 넓은 검색어(위탁·수탁·자문·전산·IT·공동)가 나온 %d줄은 계약·거래 뜻 낱말이 아니라(매매 위탁·위탁자·"
                          "전산 관련 제재·공동대표 등) 행으로 넣지 않음: %s" % (
                              len(broad), " / ".join(ex[:6]) + (" 외 %d줄" % (len(ex) - 6) if len(ex) > 6 else "")))
+            # 15차 검증 보탬(g2 tx_note 와 같은 뜻): 지주–자회사 거래 낱말(수수료·브랜드·상표·임대차)이 자회사·계열 낱말과 붙은 줄 — 행은 아니고 note 에만
+            txl = []
+            for i in range(*(rd["rng"] or (0, 0))):
+                l = re.sub(r"<br>|&cr;", " ", dm.L[i])
+                m = re.search(r"(자회사|계열사|계열회사)\S{0,3}\s*(수수료|브랜드|상표|임대차)[^|]{0,12}", l)
+                if m and not dm.L[i].startswith("### "):
+                    txl.append("%s「%s」" % (dm.loc(i).replace("XML ", ""), re.sub(r"\s+", " ", m.group(0)).strip()))
+            if txl:
+                bnote = "; ".join(x for x in [bnote, "(판단) 지주–자회사 거래 낱말이 있는 줄 %d개는 요청 계약 종류(업무위탁·용역·경영자문·전산 공동사용)가 "
+                                              "아니어서 행으로 넣지 않음(범위에 넣을지는 메인 판단): %s" % (len(txl), " / ".join(txl[:4]))] if x)
             if not rd["rows"]:
-                D.append(dict(base(dm), counterparty="", contract_type="", amount="", source_text=NONE, page="",
+                D.append(dict(base(dm), counterparty="", contract_type="", amount="", source_text=NONE,
+                              page=range_page(dm, rd["rng"]) if rd["rng"] else "",
                               note="; ".join(x for x in [
                                   "찾은 범위: 「%s」~「%s」 절 전체(표·문단)" % (
                                       dm.head_of(rd["rng"][0])[2].strip() if rd["rng"] else "Ⅹ",
@@ -1159,6 +1253,7 @@ def main():
 
         # ---------------- 경영공시 2026.2Q (B·D)
         mg = mgmt_rows(corp)
+        work.setdefault("missing", []).extend(mg["missing"])
         B += mg["B"]
         D += mg["D"]
         if mg["sec"]:
@@ -1168,9 +1263,21 @@ def main():
             if dsec:
                 sections.setdefault(("D", corp, "2026.2Q"), {}).update(dsec)
 
+    # 15차 검증 보탬: 같은 회사 다른 해 보고서에서 같은 성명의 출생년월이 다르면 note(동명이인 규칙 — 애매하면 note)
+    pb = {}
+    for a in A:
+        if a.get("birth_ym"):
+            pb.setdefault((a["corp_label"], pname(a["person"])), set()).add(bnorm(a["birth_ym"]))
+    for a in A:
+        bs = pb.get((a["corp_label"], pname(a.get("person", ""))), set())
+        if a.get("birth_ym") and len(bs) > 1:
+            a["note"] += ("; (판단) 같은 회사 다른 해 보고서에 같은 성명이 출생년월 %s 로 적힘 — 출생년월은 이 보고서 원문 그대로, "
+                          "동일인 여부는 원문으로 가리지 않음" % "·".join(sorted(bs)))
+            work["judg"].append("A %s FY%s %s: 해마다 출생년월 다름 %s" % (a["corp_label"], a["fy"], a["person"], "·".join(sorted(bs))))
     write_csv(os.path.join(OUT, "A_bs_g3.csv"), A, A_COLS)
     write_csv(os.path.join(OUT, "B_bs_g3.csv"), B, B_COLS)
     write_csv(os.path.join(OUT, "D_bs_g3.csv"), D, D_COLS)
+    work["judg_rules"] = JUDG_RULES
     work["written"] = write_md(sections)
     work["counts"] = {t: count(rows) for t, rows in (("A", A), ("B", B), ("D", D))}
     json.dump(work, open(WORK, "w", encoding="utf-8"), ensure_ascii=False, indent=1)

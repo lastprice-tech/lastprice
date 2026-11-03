@@ -1,0 +1,58 @@
+# 15차 합본 검증(verify15.py)
+
+- 실행 2026-11-03 09:47 KST · 합본 폴더 handoff/원문_지주운영방식 · 조각 dart_out/ops15/조각
+
+## (1) 조각 검증 6개 실행
+- verify15_bs_g1.py exit 0 (6초) — verify15_bs_g1: 통과 — 문제 0건 → dart_out/ops15/verify15_bs_g1.txt
+- verify15_bs_g2.py exit 0 (4초) — verify15_bs_g2: 실패 0건 → dart_out/ops15/verify15_bs_g2.txt
+- verify15_bs_g3.py exit 0 (6초) — verify15_bs_g3: 실패 0건 → dart_out/ops15/verify15_bs_g3.txt
+- verify15_gov_g1.py exit 0 (4초) — 실패 0 — dart_out/ops15/verify15_gov_g1.txt
+- verify15_gov_g2.py exit 0 (2초) — 문제 0건 → dart_out/ops15/verify15_gov_g2.txt
+- verify15_C.py exit 0 (82초) — verify15_C: OK → dart_out/ops15/verify15_C.txt
+
+## (2) 합본 CSV = 조각 이어 붙임
+- 작업 A 원문_지주임원겸직.csv: 합본 1945행 = 조각 A_bs_g1+A_bs_g2+A_bs_g3+A_gov_g1+A_gov_g2 합 1945행, 짝 없음 0, 바뀐 칸 {'A reason_text 이음': 7, 'A note 만(사유 덮지 않음)': 1}, 정렬 맞음
+- 작업 B 원문_지주직원현황.csv: 합본 554행 = 조각 B_bs_g1+B_bs_g2+B_bs_g3+B_gov_g1+B_gov_g2 합 554행, 짝 없음 0, 바뀐 칸 {'B 연차보고서 note': 228}, 정렬 맞음
+- 작업 C 원문_지주설립_인력계획.csv: 합본 769행 = 조각 C 합 769행, 짝 없음 0, 바뀐 칸 없음, 정렬 맞음
+- 작업 D 원문_지주위수탁.csv: 합본 160행 = 조각 D_bs_g1+D_bs_g2+D_bs_g3 합 160행, 짝 없음 0, 바뀐 칸 없음, 정렬 맞음
+
+## (3) 합본 모든 행의 source_text·reason_text 가 출처 텍스트에 그대로(전수)
+- A · 6차 섹션 글: 46행 맞음
+- A · 문서에 없음(대조 없음): 30행 맞음
+- A · 사업보고서 XML md: 1593행 맞음
+- A · 사업보고서 XML md — 줄·조각별로 차례대로: 98행 맞음
+- A · 연차보고서 쪽 텍스트: 171행 맞음
+- A · 판독 글(VISUAL 대조): 7행 맞음
+- A reason_text · 사업보고서(자기 행): 3행 맞음
+- A reason_text · 연차보고서(이은 행): 7행 맞음
+- A reason_text · 연차보고서(자기 행): 9행 맞음
+- B · 13차 경영공시 텍스트: 3행 맞음
+- B · 6차 섹션 글: 62행 맞음
+- B · 문서에 없음(대조 없음): 16행 맞음
+- B · 사업보고서 XML md: 318행 맞음
+- B · 연차보고서 쪽 텍스트: 154행 맞음
+- B · 판독 글(VISUAL 대조): 1행 맞음
+- C · 문서에 없음(대조 없음): 7행 맞음
+- C · 신고서 XML md: 734행 맞음
+- C · 웹 회수본(kit zip): 28행 맞음
+- D · 13차 경영공시 텍스트: 2행 맞음
+- D · 문서에 없음(대조 없음): 34행 맞음
+- D · 사업보고서 XML md: 124행 맞음
+
+## (4) 15차_보고.md 숫자 = 합본에서 다시 센 값
+- A: 1945행 중 「문서에 없음」 30 (1.5%) — 보고와 같음
+- B: 554행 중 「문서에 없음」 16 (2.9%) — 보고와 같음
+- C: 769행 중 「문서에 없음」 7 (0.9%) — 보고와 같음
+- D: 160행 중 「문서에 없음」 34 (21.2%) — 보고와 같음
+- A reason_text: 1945행 중 「문서에 없음」 1926 (99.0%) — 보고와 같음
+- 사유 잇기 7행 — 보고와 같음
+
+## (5) 키·비밀값, PDF, 원문 md 사본
+- 검사한 파일·zip 항목 708개(합본 폴더 전체 + ops15_merge.py·verify15.py): 걸린 것 0
+- PDF(확장자·%PDF- 머리): 0개
+- 원문 md 사본 350개·zip 항목 350개가 dart_out/ops15/원문 과 바이트까지 같음, zip 이름 UTF-8 표시 있음
+
+## 결과
+
+- 조각 검증 exit: bs_g1 0 · bs_g2 0 · bs_g3 0 · gov_g1 0 · gov_g2 0 · C 0
+- 실패 0건 → exit 0

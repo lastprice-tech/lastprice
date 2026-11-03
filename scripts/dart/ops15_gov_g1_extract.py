@@ -209,6 +209,34 @@ def split_sents(joined):
     return [s.strip() for s in out if s.strip()]
 
 
+# 15차 검증(verify15_gov_g1)에서 찾은 「줄 끝에서 잘린 문장」 — sentence() 가 짧은 다음 줄(12자 미만)을 표 칸으로 보고 끊은 곳.
+# (회사, 잘린 문장 끝(공백 뺀 글), 이어지는 줄들(공백 뺀 글)): 바로 다음 줄(최대 3줄)이 정확히 이 글이면 그 줄까지 문장에 넣음. 글자는 원문 그대로.
+CUT_FIX = [
+    ("KB금융지주", "근로소득지급명세서를관할세무서에제출하는겸직", "임직원제외)"),          # 6차 섹션 FY2024·2025 주3)
+    ("신한금융지주", "겸직사업부문활성화를위해경영진신규선임에관한", "사항을결의하였습니다"),  # FY2019 p.25
+    ("NH농협금융지주", "그룹임직원겸직에관한규정일부개정규정(안):그룹임직원겸직에관한", "규정일부개정규정"),  # FY2025 본공시
+]
+# 6차 섹션 글에서 문장 끝에 붙은 쪽 바닥글(「NH농협금융지주 39」 꼴)은 문장이 아니므로 뗌(앞부분은 원문 그대로)
+FOOTER_RE = re.compile(r"\s*(?:KB금융지주|신한금융지주|하나금융지주|우리금융지주|NH농협금융지주)\s+\d{1,3}\s*$")
+
+
+def extend_cut(co, texts, joined, e):
+    """CUT_FIX 에 맞으면 (True, 새 끝 줄), 아니면 (None, e)."""
+    nj = norm(joined)
+    for c, tail, cont in CUT_FIX:
+        if c != co or not nj.endswith(tail):
+            continue
+        acc, k = "", e
+        while k + 1 < len(texts) and k - e < 3 and texts[k + 1] is not None:
+            k += 1
+            acc += norm(texts[k])
+            if acc == cont:
+                return True, k
+            if not cont.startswith(acc):
+                break
+    return None, e
+
+
 def collect_hits(d):
     """문서의 키워드 문장(중복 없이)."""
     res, seen = [], set()
@@ -234,8 +262,12 @@ def collect_hits(d):
             else:
                 _, s, e = sentence(texts, i)
                 joined = "".join(texts[j] for j in range(s, e + 1) if texts[j] is not None)
+                s_, e = extend_cut(d["co"], texts, joined, e)
+                if s_ is not None:
+                    joined = "".join(texts[j] for j in range(s, e + 1) if texts[j] is not None)
                 pieces = split_sents(joined)
                 mode = "prose"
+            pieces = [FOOTER_RE.sub("", p) for p in pieces]
             for snt in pieces:
                 k = kws_in(snt)
                 if not k:
@@ -324,14 +356,16 @@ SH_REASON2 = rx("창립이래 당사는") + ANY + rx("선임하고 있습니다.
 NOTE_REASON = ("(판단) reason_text 는 같은 문단의 비상임이사 선임 이유 문장(원문 그대로) — 은행장의 지주 비상임이사 겸직에 "
                "대한 서술로 보아 옮김")
 NOTE_OD = "사외이사 후보 추천 관련 사항 — 후보 본인 소명 「3) 현재 겸직 업무」 칸(표 칸은 「 | 」로 이음)"
+NOTE_OD_AUDIT = ("감사위원 후보 추천 관련 사항(감사위원후보추천위원회 절 — 감사위원이 되는 사외이사 후보) — 「(사) 감사위원후보 본인 소명」 "
+                 "「3) 현재 겸직 업무」 칸(표 칸은 「 | 」로 이음)")
 
 
-def od(co, year, line, text, person, birth, pairs, unit=None, ahead=None, note=""):
-    """사외이사 후보 본인 소명 「현재 겸직 업무」 칸."""
+def od(co, year, line, text, person, birth, pairs, unit=None, ahead=None, note="", audit=False):
+    """사외이사 후보 본인 소명 「현재 겸직 업무」 칸. audit=True 는 감사위원 후보 추천 부분의 「(사) 감사위원후보 본인 소명」 칸."""
     src = rx("3) 현재 겸직 업무") + r"\*?\s*" + r"\s*".join(rx(t) for t in text)
     if ahead:
         src += r"(?=[\s\S]{0,900}?" + rx(ahead) + ")"
-    n = NOTE_OD + ("; birth_ym 은 출생연도만(월 없음)" if birth else "") + ("; " + note if note else "") + \
+    n = (NOTE_OD_AUDIT if audit else NOTE_OD) + ("; birth_ym 은 출생연도만(월 없음)" if birth else "") + ("; " + note if note else "") + \
         "; (판단) concurrent_company·title 은 원문 한 칸을 회사·직위로 나눔" + \
         ("; 원문 「… 외 겸직사항 없음」" if any("외 겸직사항 없음" in t for t in text) else "")
     return A(co, year, src, person=person, birth=birth, title="사외이사 후보", pairs=pairs, join_how="table",
@@ -371,13 +405,13 @@ A_SPECS = [
     A("신한금융지주", 2021, rx("결의-나.이사 아닌 경영진 선임의 건 : 지주회사와 신한DS 대표이사를 겸직하는 "
                              "그룹디지털부문장을 선임하였습니다."),
       title="그룹디지털부문장", pairs=[("신한DS", "대표이사")], note="이사회 활동내역(결의 안건) — 원문에 성명 없음"),
-    od("신한금융지주", 2020, 4323, ["성균관대학교 외 겸직사항 없음"], "성재호", "1960", [("성균관대학교", "")]),
+    od("신한금융지주", 2020, 4323, ["성균관대학교 외 겸직사항 없음"], "성재호", "1960", [("성균관대학교", "")], audit=True),
     od("신한금융지주", 2020, 5263, ["(유)프리메르코리아 외 겸직사항 없음"], "히라카와 유키", "1960", [("(유)프리메르코리아", "")]),
     od("신한금융지주", 2021, 5295, ["(유)프리메르코리아 외 겸직사항 없음"], "히라카와 유키", "1960", [("(유)프리메르코리아", "")]),
     od("신한금융지주", 2021, 5504, ["㈜CYS 대표이사 외 겸직사항 없음"], "최경록", "1966", [("㈜CYS", "대표이사")]),
     od("신한금융지주", 2021, 5621, ["홍익대학교 외 겸직사항 없음"], "윤재원", "1970", [("홍익대학교", "")]),
     od("신한금융지주", 2021, 5727, ["㈜페도라 외 겸직사항 없음"], "진현덕", "1955", [("㈜페도라", "")]),
-    od("신한금융지주", 2022, 4139, ["성균관대학교 외 겸직사항 없음"], "성재호", "1960", [("성균관대학교", "")]),
+    od("신한금융지주", 2022, 4139, ["성균관대학교 외 겸직사항 없음"], "성재호", "1960", [("성균관대학교", "")], audit=True),
     od("신한금융지주", 2022, 5002, ["㈜CYS 대표이사 외 겸직사항 없음"], "최경록", "1966", [("㈜CYS", "대표이사")]),
     od("신한금융지주", 2022, 5244, ["First Bridge Strategy Ltd. CEO 외 겸직사항 없음"], "허용학", "1958",
        [("First Bridge Strategy Ltd.", "CEO")]),
@@ -387,8 +421,8 @@ A_SPECS = [
     od("신한금융지주", 2023, 5334, ["홍익대학교 외 겸직사항 없음"], "윤재원", "1970", [("홍익대학교", "")],
        note="같은 문서 감사위원 후보 부분(p.82)에도 같은 칸"),
     od("신한금융지주", 2023, 5443, ["오사카상업대학교 외 겸직사항 없음"], "김조설", "1957", [("오사카상업대학교", "")]),
-    od("신한금융지주", 2023, 5521, ["성균관대학교 외 겸직사항 없음"], "성재호", "1960", [("성균관대학교", "")]),
-    od("신한금융지주", 2023, 5619, ["변호사법인 오르비스 외 겸직사항 없음"], "배훈", "1953", [("변호사법인 오르비스", "")]),
+    od("신한금융지주", 2023, 5521, ["성균관대학교 외 겸직사항 없음"], "성재호", "1960", [("성균관대학교", "")], audit=True),
+    od("신한금융지주", 2023, 5619, ["변호사법인 오르비스 외 겸직사항 없음"], "배훈", "1953", [("변호사법인 오르비스", "")], audit=True),
     # ── 하나금융지주: 리스크관리집행위원회 구성 표 + 주5
     *[A("하나금융지주", y, rx(nm) + r"\s*" + rx(ttl + "주5") + r"\s*" + rx(dt) + r"\s*" + rx("위원장"), person=nm, title=ttl,
         pairs=[("하나은행", cttl)], join_how="table", extra=rx("주5) 하나은행 " + cttl + " 겸직"),
@@ -694,7 +728,7 @@ def build():
                     c = "A"
                 cats[c] = cats.get(c, 0) + 1
                 if c != "B":
-                    excl_log.append(dict(co=co, year=year, kind=d["kind"], page=h["page"], cat=c, sent=h["sent"][:300]))
+                    excl_log.append(dict(co=co, year=year, kind=d["kind"], page=h["page"], cat=c, sent=h["sent"]))
                     continue
                 notes = [base_note(d)]
                 if h.get("mode") == "table":

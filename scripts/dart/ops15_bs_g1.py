@@ -12,6 +12,8 @@
   (진단) 표준출력 요약 — 다시 돌리면 같은 결과(입력이 같으면 바이트까지 같음).
 사용: python3 scripts/dart/ops15_bs_g1.py
 규칙: source_text 는 md 줄(표 행 「| … |」 또는 글 줄) 그대로. 해석·판단은 note(판단 표시 「(판단)」).
+15차 검증 보정(scripts/dart/verify15_bs_g1.py, 2026-11-03): 경영공시 「문서에 없음」 page 채움, 겸직 사유를 Ⅷ·Ⅸ 밖 사람별 표 칸까지 찾음,
+  묶인 겸직 행의 다른 글을 note 에 옮김, 같은 성명 다른 출생년월 note, D 「문서에 없음」 넓은 낱말 결과 note.
 """
 from __future__ import annotations
 
@@ -52,6 +54,11 @@ NONE = "문서에 없음"
 # ================================================================ 글자 정규화(비교용 — 출력 글은 손대지 않음)
 def nz(s):
     return re.sub(r"\s|&cr;|<br>", "", s or "")
+
+
+def nzs(s):
+    """글자 그대로 비교(공백·줄바꿈·「|」만 무시 — &cr;·<br> 은 글자로 셈). 「같은 행」 판정용."""
+    return re.sub(r"[\s|]", "", s or "")
 
 
 def name_key(s):
@@ -518,6 +525,31 @@ D_TERMS = "업무위탁·업무수탁·위수탁·위ㆍ수탁·위탁계약·�
 CT_RE = re.compile(r"계약|거래|약정|수수료|체결")
 
 
+D_BROAD = re.compile(r"위탁|수탁|용역|자문|아웃소싱|외주|대행|공동")
+
+
+def broad_d_note(d, s, e):
+    """(15차 검증 보정) D 「문서에 없음」 행 — 같은 범위를 넓은 낱말로 다시 찾은 결과(줄마다 공백 무시). 행으로는 넣지 않음."""
+    cnt, ex, info = {}, {}, None
+    for i in range(s, e):
+        t = re.sub(r"\s", "", d.L[i])
+        for m in D_BROAD.finditer(t):
+            w = m.group(0)
+            cnt[w] = cnt.get(w, 0) + 1
+            if w not in ex:
+                ex[w] = "md %d행 「…%s…」" % (i + 1, t[max(0, m.start() - 15):m.end() + 15])
+        m = re.search(r"(?:고객|개인|신용)\(?(?:신용)?\)?정보.{0,12}위탁|위탁업체", t)
+        if m and info is None:
+            info = "md %d행 「…%s…」" % (i + 1, t[max(0, m.start() - 10):m.end() + 25])
+    if not cnt:
+        return "넓은 낱말(위탁·수탁·용역·자문·아웃소싱·외주·대행·공동) 다시 찾기: 0곳"
+    return ("넓은 낱말(위탁·수탁·용역·자문·아웃소싱·외주·대행·공동) 다시 찾기(공백 무시): %s — 낱말별 첫 곳 %s%s; "
+            "(판단) 모두 D 검색어 꼴(업무위탁·위수탁·위탁계약·용역계약·경영자문·공동사용 등)이 아님. 고객·개인(신용)정보 처리 위탁 글은 "
+            "KB·신한 보고서의 같은 꼴 글도 행으로 넣지 않았으므로 같은 기준으로 행에 넣지 않음"
+            % (" ".join("%s %d" % kv for kv in sorted(cnt.items(), key=lambda x: -x[1])), " · ".join(ex.values()),
+               (" · 정보 처리 위탁 글 " + info) if info else ""))
+
+
 def contract_type(line, m):
     """(판단) 검색어가 든 낱말 덩어리(원문) — 왼쪽은 조사·어미 글자 앞까지(8자 안), 오른쪽은 조사·어미 글자 앞까지."""
     a = m.start()
@@ -718,14 +750,20 @@ def build():
                 notes.append("(판단) 병합 칸 — %s 은(는) 윗줄 값(윗줄: %s)" % (
                     "·".join({"person": "성명", "company": "회사"}.get(x, x) for x in r["carried"]), r["prev_line"][:120]))
                 judg.add("겸직 표 병합 칸(칸 수가 머리행보다 적은 행)은 앞 칸을 윗줄 값으로 채움(오른쪽 맞춤)")
-            dup = ["[표 %d](%s)" % (x["table"], d.page(x["line"]).split(" [표")[0]) for x in rs[1:]]
+            dup = ["[표 %d](%s)" % (x["table"], d.page(x["line"]).split(" [표")[0]) for x in rs[1:] if nzs(x["src"]) == nzs(r["src"])]
             if dup:
                 notes.append("같은 행이 %s 에도" % ", ".join(dup))
+            # (15차 검증 보정) 사람·회사·직위는 같고 글(선임일·병합 칸 등)이 다른 행은 그 글을 note 에 옮김
+            dup2 = ["[표 %d](%s) 「%s」" % (x["table"], d.page(x["line"]).split(" [표")[0], x["src"]) for x in rs[1:] if nzs(x["src"]) != nzs(r["src"])]
+            if dup2:
+                notes.append("같은 사람·회사·직위 행(글 다름)이 %s 에도" % ", ".join(dup2))
             if not after:
                 ak = (kind, k[2], k[3], k[4])
                 same_after = [x for kk in order if kk[0] and (kk[1], kk[2], kk[3], kk[4]) == ak for x in groups[kk]]
                 if same_after:
-                    notes.append("작성기준일 이후 표(%s)에도 같은 행" % ", ".join("[표 %d]" % x["table"] for x in same_after))
+                    notes.append("작성기준일 이후 표(%s)에도 같은 행" % ", ".join(
+                        "[표 %d]" % x["table"] + ("" if nzs(x["src"]) == nzs(r["src"]) else "(글 다름: 「%s」)" % x["src"])
+                        for x in same_after))
                 elif kind in has_after:
                     notes.append("작성기준일 이후 표에는 이 행 없음")
             notes.append(how)
@@ -1080,7 +1118,8 @@ def build():
                 xs = [h for h in dm.heads if ds <= h[0] < de and h[3] == 1]
                 row.update(counterparty="", contract_type="", amount="", source_text=NONE,
                            page="XML " + " · ".join("[절 %d] 「%s」" % (h[1], h[2]) for h in xs),
-                           note="찾은 범위: %s 전체(표·글) · 검색어: %s · 없음" % (" ~ ".join(h[2] for h in xs), D_TERMS))
+                           note="찾은 범위: %s 전체(표·글) · 검색어: %s · 없음" % (" ~ ".join(h[2] for h in xs), D_TERMS)
+                           + "; " + broad_d_note(dm, ds, de))
                 row["_line"] = ds
                 row["_key"] = ("none",)
                 d_main = [row]
@@ -1089,6 +1128,79 @@ def build():
                     r["note"] += "; " + "; ".join(dnotes)
             register(d_main + d_extra)
             D_rows.extend(d_main + d_extra)
+
+    # ------------------------------------------------------------ (15차 검증 보정) 겸직 사유 — Ⅷ·Ⅸ 밖까지 넓혀 찾기
+    # ① 사람별 표 칸: 표 행 첫 칸이 성명이고, 다른 칸에 「겸직/겸임」과 사유 표현이 함께 있음(예: 이사 현황 「선임 배경」 칸)
+    #    → 같은 보고서·같은 성명·그 칸에 겸직 회사 이름이 나오는 A 행의 reason_text 로 옮김(칸 글 그대로)
+    # ② 사람 없는 글 줄: 「위해/위하여 … 겸직」 — reason_text 에 넣지 않고 그 보고서 A 행 note 에만 적음
+    RSN = re.compile(r"겸(?:직|임)[^|]{0,60}?(?:고려|위하여|위해|위한|목적|사유|이유|배경|가능할 것으로|필요)"
+                     r"|(?:고려하여|위하여|위해|목적|사유|이유)[^|]{0,60}?겸(?:직|임)")
+    GEN_RSN = re.compile(r"(?:위해|위하여)[^.|]{0,40}?겸직")
+    r_cells, r_lines = {}, {}
+
+    def person_key(c0):
+        return re.sub(r"\(\W*\)|[^가-힣]", "", nz(c0))
+
+    for rc, d in docs.items():
+        cs, gl = [], []
+        r8, r9 = d.chapter("VIII"), d.chapter("IX")
+        for t in d.tables:
+            hdr = t["rows"][0][1] if t["rows"] else []
+            for (i, c) in t["rows"][1:]:
+                if not c or not re.fullmatch(r"[가-힣]{2,4}", person_key(c[0])):
+                    continue
+                for ci, cell in enumerate(c[1:], 1):
+                    if len(nz(cell)) > 20 and RSN.search(cell) and not re.search(r"겸직하고\s?있지\s?않|겸직\s?제한", cell):
+                        cs.append((person_key(c[0]), cell, i, t["no"], hdr[ci] if len(hdr) == len(c) else ""))
+        for i, l in enumerate(d.L):
+            if i in d.tab_of or any(r and r[0] <= i < r[1] for r in (r8, r9)):
+                continue
+            m = GEN_RSN.search(l)
+            if m:
+                # 그 글 줄에서 맞은 곳이 든 문장만(앞 「다.」·&cr; 다음 ~ 뒤 「다.」까지) — 글자 그대로
+                a = max(l.rfind("다.", 0, m.start()) + 2 if l.rfind("다.", 0, m.start()) >= 0 else 0,
+                        l.rfind("&cr;", 0, m.start()) + 4 if l.rfind("&cr;", 0, m.start()) >= 0 else 0)
+                b = l.find("다.", m.end())
+                gl.append((i, l[a:(b + 2 if b >= 0 else len(l))].strip()))
+        r_cells[rc], r_lines[rc] = cs, gl
+    for r in A_rows:
+        d = docs.get(r["rcept_no_or_url"])
+        if not d or r["reason_text"] != NONE:
+            continue
+        hit = [x for x in r_cells[d.rcept] if x[0] == person_key(r["person"]) and nz(r["concurrent_company"])
+               and nz(r["concurrent_company"]) in nz(x[1])]
+        if hit:
+            pk, cell, i, tno, hn = hit[0]
+            r["reason_text"] = cell
+            r["note"] = r["note"].replace("겸직 사유 글: 이 보고서 Ⅷ·Ⅸ에 없음",
+                                          "reason_text: 같은 보고서 %s 「%s」 칸(성명 「%s」 행) — (판단) 「겸직」과 사유 표현(고려하여·위하여 등)이 함께 적힌 "
+                                          "사람별 칸이고 그 칸에 겸직 회사 「%s」가 나와 이 행의 겸직 사유로 옮김"
+                                          % (d.page(i), hn, cells_of(d.L[i])[0], r["concurrent_company"]))
+            s0, _ = d.section_span(i)
+            sections.setdefault(("A", d.label, d.fy), {}).setdefault(d.rcept, set()).add(s0)
+            judg.add("겸직 사유: Ⅷ·Ⅸ 밖 사람별 표 칸(이사 현황 「선임 배경」 등)에 「겸직」과 사유 표현이 함께 있고 겸직 회사 이름이 나오면 reason_text 로 옮김")
+        elif r_lines[d.rcept]:
+            i, l = r_lines[d.rcept][0]
+            r["note"] = r["note"].replace("겸직 사유 글: 이 보고서 Ⅷ·Ⅸ에 없음",
+                                          "겸직 사유 글: 이 보고서 Ⅷ·Ⅸ에 없음 — 넓혀 찾음: %s 글 「%s」이 있으나 사람별 사유가 아니라 reason_text 에 넣지 않음(판단)"
+                                          % (d.page(i), l.strip()))
+            judg.add("겸직 사유: 사람이 정해지지 않은 「…위해 … 겸직체계」 같은 글은 reason_text 에 넣지 않고 그 보고서 A 행 note 에만 적음")
+        else:
+            r["note"] = r["note"].replace("겸직 사유 글: 이 보고서 Ⅷ·Ⅸ에 없음",
+                                          "겸직 사유 글: 이 보고서 Ⅷ·Ⅸ에 없음(보고서 전체의 사람별 표 칸·「위해 … 겸직」 글로 넓혀 찾아도 없음)")
+
+    # ------------------------------------------------------------ (15차 검증 보정) 같은 회사·같은 성명 출생년월 원문이 둘 이상
+    byname = {}
+    for r in A_rows:
+        if r["birth_ym"]:
+            byname.setdefault((r["corp_label"], name_key(r["person"])), {}).setdefault(r["birth_ym"].rstrip("."), set()).add(r["fy"])
+    for r in A_rows:
+        bs = byname.get((r["corp_label"], name_key(r["person"])), {})
+        if len(bs) > 1:
+            r["note"] += ("; (판단) 동명이인 확인: 같은 회사 겸직 행에서 같은 성명의 출생년월 원문이 보고서마다 다름 — %s; "
+                          "원문만으로 같은 사람인지 가를 수 없어 행마다 그 보고서 임원 현황 표 값을 둠(애매)"
+                          % " · ".join("%s(FY%s)" % (b, "·FY".join(sorted(f))) for b, f in sorted(bs.items())))
+            judg.add("동명이인 확인: 같은 회사·같은 성명에 출생년월 원문이 둘 이상이면 행 note 에 FY별 값을 적고 애매로 표시")
 
     # ------------------------------------------------------------ 13차 경영공시 2026.2Q (B·D)
     for co in COS:
@@ -1128,7 +1240,8 @@ def build():
                     sections.setdefault(("B", co, "2026.2Q"), {}).setdefault("mgmt", set()).add(p)
         if not brow:
             r = dict(mb)
-            r.update(employees_total="", regular="", contract="", keyword="없음", source_text=NONE, page="",
+            r.update(employees_total="", regular="", contract="", keyword="없음", source_text=NONE,
+                     page="p.1~p.%d(경영공시 전체 — 찾은 범위)" % len(pdf.pages),
                      note="; ".join([common, "찾은 범위: 경영공시 2026.2Q 전체 %d쪽 · 검색어 겸직·파견·출향·전출·전적·겸무 · 없음" % len(pdf.pages),
                                      "직원 수 칸은 비움(사업보고서 행 참조)"]))
             r["_line"] = 0
@@ -1155,7 +1268,8 @@ def build():
                     sections.setdefault(("D", co, "2026.2Q"), {}).setdefault("mgmt", set()).add(p)
         if not drow:
             r = dict(mb)
-            r.update(counterparty="", contract_type="", amount="", source_text=NONE, page="",
+            r.update(counterparty="", contract_type="", amount="", source_text=NONE,
+                     page="p.1~p.%d(경영공시 전체 — 찾은 범위)" % len(pdf.pages),
                      note="; ".join([common, "찾은 범위: 경영공시 2026.2Q 전체 %d쪽(「업무위탁」 현황 표·글 없음) · 검색어: %s · 없음" % (len(pdf.pages), D_TERMS)]))
             r["_line"] = 0
             drow.append(r)

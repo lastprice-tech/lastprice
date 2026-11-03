@@ -568,6 +568,10 @@ def extract_A(d):
                 if m.group(4):
                     note.append("각주에 「겸직종료」")
                 note.append("지주 쪽 칸은 임원 표(%s) 행에서" % ("작성기준일 현재" if e["tkind"] == "기준일" else e["cap"][:40]))
+                sb = sorted(set(x["bkey"] for x in execs if x["key"] == key))
+                if len(sb) > 1:      # 15차 검증 보탬: 동명이인 표시
+                    note.append("(판단) 같은 성명이 같은 보고서 임원 표에 출생년월 %s 로 나옴 — 각주에는 출생년월이 없어 %s 행으로 맞춤; "
+                                "동일인 여부는 원문으로 가리지 않음" % ("·".join(sb), e["bkey"]))
                 res["rows"].append(dict(
                     src_kind="footnote", person=e["name"], birth_ym=e["birth"], holdco_title=e["title"],
                     holdco_duty=e["duty"], registered=e["reg"], fulltime=e["ft"],
@@ -617,6 +621,10 @@ def extract_A(d):
                 note.append("(판단) 경력 조각 「%s」을 마지막 띄어쓰기에서 회사·직위로 나누고 끝 기간 괄호는 concurrent_since 로" % seg)
             if e["tkind"] != "기준일":
                 note.append("작성기준일 이후 임원 표(%s)" % e["cap"][:40])
+            sb = sorted(set(x["bkey"] for x in execs if x["key"] == e["key"]))
+            if len(sb) > 1:          # 15차 검증 보탬: 동명이인 표시
+                note.append("같은 성명이 같은 보고서 임원 표에 출생년월 %s 로 나옴(동명이인이거나 표기 차이) — 이 행은 출생년월 %s 인 "
+                            "임원 표 행의 칸에서 나옴(출생년월로 구분)" % ("·".join(sb), e["bkey"]))
             res["rows"].append(dict(
                 src_kind="cell", person=e["name"], birth_ym=e["birth"], holdco_title=e["title"], holdco_duty=e["duty"],
                 registered=e["reg"], fulltime=e["ft"], concurrent_company=co if kind == "career" else "",
@@ -825,7 +833,8 @@ def main():
                     rowsA.append((dc, y, note, True))
             if not rowsA:
                 rng = ra.get("r8")
-                A.append(dict(base(dm), person="", reason_text=NONE, source_text=NONE, page="",
+                A.append(dict(base(dm), person="", reason_text=NONE, source_text=NONE,
+                              page=range_page(dm, (rng[0], (ra.get("r9") or rng)[1])) if rng else "",
                               note="찾은 범위: Ⅷ 임원 현황 표·임원 표 각주·「타회사 임원 겸직/겸임」「계열회사간 임원 겸직」 표, Ⅸ 겸직 표"
                                    " — 겸직 행 없음" + ("; " + "; ".join(corr_notes) if corr_notes else "")))
             for d, x, note, is_corr in rowsA:
@@ -933,8 +942,12 @@ def main():
                 bnote = "(판단) 넓은 검색어(위탁·수탁·자문·전산·IT·공동)가 나온 %d줄은 계약·거래 뜻이 아닌 쓰임(매매주문 수탁·위탁자예수금·" \
                         "전산시스템 관련 제재·개인정보 수탁자·공동기업 등)이라 행으로 넣지 않음: %s" % (
                             len(broad), " / ".join(ex[:6]) + (" 외 %d줄" % (len(ex) - 6) if len(ex) > 6 else ""))
+            tnote = tx_note(dm)          # 15차 검증 보탬: Ⅹ 장 계열사 거래 표의 거래 종류(브랜드사용료 등)
+            if tnote:
+                bnote = "; ".join(x for x in (bnote, tnote) if x)
             if not rd["rows"]:
-                D.append(dict(base(dm), counterparty="", contract_type="", amount="", source_text=NONE, page="",
+                D.append(dict(base(dm), counterparty="", contract_type="", amount="", source_text=NONE,
+                              page=range_page(dm, rd["rng"]) if rd["rng"] else "",
                               note="; ".join(x for x in [
                                   "찾은 범위: 「%s」~「%s」 절 전체(표·문단)" % (
                                       dm.head_of(rd["rng"][0])[2].strip() if rd["rng"] else "Ⅹ",
@@ -969,6 +982,41 @@ def main():
     json.dump(work, open(os.path.join(OUT, "bs_g2_work.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     print(json.dumps(work["counts"], ensure_ascii=False))
     print("probs", len(work["probs"]), "h5 missing", len(work["h5"]))
+
+
+def range_page(d, rng):
+    """「문서에 없음」 행의 page: 찾은 범위(절 번호·제목)."""
+    secs = [(n, t.strip()) for i, n, t in d.heads if rng[0] <= i < rng[1]]
+    if not secs:
+        return ""
+    return "XML [절 %d]~[절 %d] 「%s」~「%s」 전체(찾은 범위 — 해당 글 없음)" % (secs[0][0], secs[-1][0], secs[0][1], secs[-1][1])
+
+
+TX_RE = re.compile(r"브랜드\s*사용료|수수료\s*수익|임대차|명칭\s*사용료|상표\s*사용료")
+
+
+def tx_note(d):
+    """Ⅹ 장(대주주 등과의 거래) 계열사 거래 표에 나온 거래 종류 낱말(요청 낱말 계약이 아닌 것) — note 에만 원문 낱말·위치."""
+    rx = d.chap_range("X", ["XI", "XII"])
+    if not rx:
+        return ""
+    found = []
+    for i in range(rx[0], rx[1]):
+        l = d.L[i]
+        if not l.startswith("|"):
+            continue
+        for m in TX_RE.finditer(l):
+            t = d.table_at(i)
+            cellt = next((c.strip() for c in l.strip()[1:-1].split("|") if m.group(0) in c), m.group(0))
+            if len(cell(cellt)) > 30:
+                continue        # 표 아래 각주 칸(「주2) 당사의 영업수익은 … 수수료수익 등」)은 거래 종류 칸이 아님
+            item = "「%s」[표 %s]" % (cell(cellt), t["no"] if t else "?")
+            if item not in found:
+                found.append(item)
+    if not found:
+        return ""
+    return ("(판단) Ⅹ 장 계열사 거래 표의 거래 종류 칸 %s 은 요청 낱말(업무위탁·용역·경영자문·전산 공동사용) 계약이 아니라 행으로 넣지 않음"
+            % "·".join(found))
 
 
 def count(rows):
@@ -1028,6 +1076,12 @@ def d_fields(d, x, bnote, corr_D, corr_notes):
                 page=d.loc(i) + p13, note="; ".join(note))
 
 
+def mg_range(P):
+    """경영공시 「문서에 없음」 행의 page: 찾은 PDF 쪽 범위(15차 검증 보탬)."""
+    ps = [p for p, ls, nt in P["pages"]]
+    return "p.%d~p.%d 전체(찾은 범위, PDF 쪽 — 해당 글 없음)" % (min(ps), max(ps)) if ps else ""
+
+
 def mgmt_rows(corp):
     """13차 경영공시 2026.2Q PDF 텍스트 — 작업 B 키워드 문장, 작업 D 업무위탁 현황."""
     meta = next((r for r in csv.DictReader(open(MGMT_CSV, encoding="utf-8-sig")) if r["corp_label"] == corp), None)
@@ -1065,7 +1119,7 @@ def mgmt_rows(corp):
                              note="직원 수 칸 빈칸(경영공시에서 키워드 문장만 모음); " + pdfnote))
         out["sec"][("mgmt", p)] = ("mgmt", corp, p, ls, url, name, coll)
     if not hits:
-        out["B"].append(dict(b, keyword="없음", source_text=NONE, page="",
+        out["B"].append(dict(b, keyword="없음", source_text=NONE, page=mg_range(P),
                              note="찾은 범위: 경영공시 2026.2Q PDF 텍스트 전 쪽(%d쪽), 검색어 겸직·파견·출향·전출·전적·겸무"
                                   "(「전적」은 완전적용 등 오탐 뺌) — 없음" % len(P["pages"])))
     dh = []
@@ -1081,7 +1135,7 @@ def mgmt_rows(corp):
             out["sec"][("mgmt", p)] = ("mgmt", corp, p, P["pages"][[x[0] for x in P["pages"]].index(p)][1], url, name, coll)
     else:
         out["D"].append(dict(corp_label=corp, fy="2026.2Q", counterparty="", contract_type="", amount="", source_text=NONE,
-                             doc_kind="경영공시", rcept_no_or_url=url, page="", doc_name=name, collected_at=coll,
+                             doc_kind="경영공시", rcept_no_or_url=url, page=mg_range(P), doc_name=name, collected_at=coll,
                              note="찾은 범위: 경영공시 2026.2Q PDF 텍스트 전 쪽(%d쪽, 공백 무시), 검색어 업무위탁·위수탁·용역·경영자문·"
                                   "자문계약·공동사용·공동이용·전산 공동 — 「업무위탁」 현황 없음" % len(P["pages"])))
     return out

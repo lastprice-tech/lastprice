@@ -487,6 +487,10 @@ B(d, "278/0", "겸직", "주2)계열사 겸직     및  퇴직자 포함, 사외
 B(d, "278/6", "겸직", start="제28조(임직원 겸직 및 업무위탁에 대한 평가ㆍ관리)", end="평가하여야 한다.", note="부록 관련 규정(지배구조 내부규범) 조문 — 제1항 머리")
 
 # ── JB금융지주 ──
+# 15차 검증에서 더함: 리스크관리운영위원회 구성 표의 「(겸)」 약자 표기(앞선 검색어 겸직·겸임·겸무에 걸리지 않던 자리)
+JBKYUM = ("리스크관리운영위원회 구성 표(성명·직위·선임일·비고) 「지주사/전북/광주은행CRO(겸)」 — 「(겸)」 약자 표기라 처음 찾기(겸직·겸임·겸무)에 "
+          "걸리지 않던 것을 15차 검증(verify15_gov_g2)에서 더함. 한 칸의 겸직처 둘을 행으로 나눔. 선임일 2019.04.30 은 협의회 위원 선임일로 보아 "
+          "concurrent_since 를 비움(판단)")
 d = "M:JB금융지주:2021:본공시"
 for p, nm, end, cc, ct, extra in (
         (49, "정재식", "서강대경제학부교수", "서강대", "경제학부교수", ""),
@@ -501,6 +505,9 @@ A(d, 151, start="2016년 2월", end="개정을 결의하였", person="", holdco_
   note="리스크관리위원회 연혁 서술(2016년 2월 제2차 리스크관리위원회) — 성명 없음")
 B(d, 151, "겸직", start="2016년 2월", end="개정을 결의하였", note="리스크관리위원회 연혁 서술(리스크관리운영위원회 구성 보강)")
 B(d, 185, "전적", "중도퇴사자(자회사 전적 및 퇴직)", note="직급별 보수 표 주석 — 임직원 보수총액 산정 범위")
+for cc in ("전북은행", "광주은행"):
+    A(d, 167, start="이승국", end="위원장, 리스크관리책임자", person="이승국", holdco_title="지주사 CRO(리스크관리운영위원회 위원장)",
+      concurrent_company=cc, concurrent_title="CRO", note=JBKYUM)
 
 d = "M:JB금융지주:2022:본공시"
 for p, nm, end, cc, ct, extra in (
@@ -512,6 +519,9 @@ for p, nm, end, cc, ct, extra in (
 A(d, 177, start="2016년 2월", end="개정을 결의하였", person="", holdco_title="리스크관리책임자(CRO)", concurrent_company="은행자회사", concurrent_title="리스크관리책임자(CRO)",
   note="리스크관리위원회 연혁 서술(2016년 2월 제2차 리스크관리위원회) — 성명 없음")
 B(d, 177, "겸직", start="2016년 2월", end="개정을 결의하였", note="리스크관리위원회 연혁 서술")
+for cc in ("전북은행", "광주은행"):
+    A(d, 195, start="이승국", end="위원장, 리스크관리책임자", person="이승국", holdco_title="지주사 CRO(리스크관리운영위원회 위원장)",
+      concurrent_company=cc, concurrent_title="CRO", note=JBKYUM)
 
 d = "M:JB금융지주:2023:본공시"
 for p, nm, end, cc, ct, extra in (
@@ -663,6 +673,8 @@ SAME = {
 # 문서마다 찾은 범위(「문서에 없음」 행 note 용)
 SCOPE = "찾은 범위: 문서 전체 쪽 글에서 「겸직·겸임·겸무·파견·출향·전출·전적」 글자 검색 후 문장 단위로 확인"
 SCOPE6 = "찾은 범위: 6차 섹션 글(해당 문서의 모든 섹션 본문)에서 같은 글자 검색"
+REBUT_B = ("15차 검증(verify15_gov_g2.py): 더 넓은 검색어(겸·파견·출향·전출·전적·전입·전보·인사교류·인력·인원·「N명」)로 다시 찾아도 "
+           "겸직·파견 등을 말하는 조직·인력 서술 없음(인원 숫자만 있는 표는 키워드 문장이 아님)")
 
 # JB FY2019 — PDF 글꼴 대응 깨짐: 쪽 이미지를 보고 옮겨 적은 칸(판단)
 JB19 = []
@@ -673,13 +685,36 @@ for p, nm, txt, cc, ct in (
         (68, "유관우", "3) 현재 겸직 업무 김·장 법률사무소 고문(現)", "김·장 법률사무소", "고문"),
         (74, "이상복", "3) 현재 겸직 업무 동아회계법인 파트너(現)", "동아회계법인", "파트너")):
     JB19.append(dict(p=p, person=nm, text=txt, cc=cc, ct=ct))
+# 판독 표지(15차 검증 verify15_gov_g2.py 가 이 글이 note 에 있는지 봄)
+PANDOK = "판독(PDF 글자층 깨짐 — 쪽 그림을 보고 옮김)"
+# 같은 사람·같은 겸직처가 다른 쪽에도 있음(15차 검증 때 글자층 「?직」 꼴로 찾아 쪽 그림으로 확인)
+JB19_MORE = {
+    ("최정수", "전북은행"): "같은 겸직이 p.20 사외이사 소개 「- 전북은행 사외이사 겸직」, p.136 충실성 문단 「(자회사등은 제외/現 전북은행 사외이사 겸직)」에도 있음(판독)",
+    ("김상국", "광주은행"): "같은 겸직이 p.20 사외이사 소개 「- 광주은행 사외이사 겸직」, p.138 충실성 문단 「(자회사등은 제외/現 광주은행 사외이사 겸직)」에도 있음(판독)",
+}
+# p.187 위험관리위원회 연혁 서술 — FY2020~2025 보고서의 「지주회사 및 은행자회사 리스크관리책임자(CRO) 겸직에 따라」와 같은 글(15차 검증에서 찾아 판독)
+JB19_CRO = dict(p=187, lay=r"위험관리책임자\(C\S?O\)\s*\S직에",
+                text="2016년 지주회사\n및 은행자회사 위험관리책임자(CRO) 겸직에 따라 리스크관리협의회의 원활한 회의진행을 위\n"
+                     "하여 은행자회사 리스크관리부장을 동 협의회 위원으로 보강하는 리스크관리협의회규정 개정\n"
+                     "을 2016년 2월 개최된 2016년도 제2차 위험관리위원회에서 결의하였으며,")
+# p.23~24 퇴임 이사 소개 「(카) 사외이사 이광철 : 2019. 3. 23 퇴임」의 「- 재임기간」 값(15차 검증에서 찾아 판독). 「ㆍ」는 글자층 그대로(그림에서는 가운뎃점)
+JB19_LEE = dict(p=24, lay=r"직\s*2014\.\s*03\.\s*19\)", person="이광철",
+                text="ㆍ2018. 03. 23(JB우리캐피탈 겸직 2014. 03. 19) ~ 2019. 03. 39.")
+JB19_NOTE = ("(판단) 이 PDF 는 글꼴 글자 대응이 깨져 추출 글이 원문과 다름(예: 「현재 t직 업무」, 「겸」 글자 0회, 쪽마다 다른 글자로 깨짐) — "
+             "source_text 는 쪽 그림(pymupdf 110~200dpi)을 눈으로 보고 옮겨 적은 것(줄바꿈은 그림의 줄 끝, 표 칸 사이는 공백·줄바꿈으로 둠). "
+             "15차 검증에서 쪽 그림과 다시 맞대 확인")
+JB19_SCOPE = ("같은 문서의 다른 겸직 서술: 글자층에서 「겸」 자리에 깨진 글자가 오는 「?직」 꼴을 찾아 쪽 그림으로 본 것 — "
+              "p.20·p.136·p.138(위 후보와 같은 겸직), p.24 이광철 재임기간 「JB우리캐피탈 겸직」(따로 행), p.187 CRO 겸직(따로 행),p.14·p.30·p.127 감사위원의 위험관리위원회 겸직 제한·금지(위원회끼리), "
+              "p.55 법 「제10조(겸직제한)」 칸(p.88·p.90·p.92 는 글자층 꼴만 보고 같은 칸으로 봄), "
+              "p.286 위원회 구성 조문(자회사 상근임원을 겸직하는 이사 제외) — 그 밖은 글자 깨짐으로 다 확인하지 못함(312쪽 전부를 그림으로 읽지는 않음)")
 
 
 # ───────────────────────────── 만들기 ─────────────────────────────
 def page_label(D, k, p, r=None):
     if k.startswith("M:"):
         return "p.%s" % p
-    return "시작페이지 %s 섹션 안(「%s」, chunk %s)" % (r["시작페이지"], re.sub(r"\s+", " ", r["섹션제목_원문"]).strip(), r["chunk_seq"])
+    # 섹션 제목에 섞인 제어문자(U+0000 등)는 지움(15차 검증 — CSV 칸에 NUL 이 들어가던 것 고침)
+    return "시작페이지 %s 섹션 안(「%s」, chunk %s)" % (r["시작페이지"], re.sub(r"\s+", " ", re.sub(r"[\x00-\x1f]", " ", r["섹션제목_원문"])).strip(), r["chunk_seq"])
 
 
 def base_note(D, k):
@@ -725,15 +760,43 @@ def build():
     kj = "M:JB금융지주:2020:본공시"
     mj = D.meta[kj]
     for r in JB19:
+        more = JB19_MORE.get((r["person"], r["cc"]))
         rowsA.append(dict(corp_label=mj["co"], fy=mj["fy"], person=r["person"], birth_ym="", holdco_title="사외이사 후보", holdco_duty="",
                           registered="", fulltime="", concurrent_company=r["cc"], concurrent_title=r["ct"], concurrent_since="",
                           reason_text=NONE, doc_kind=DOCKIND, source_text=r["text"], rcept_no_or_url=mj["url"], page="p.%d" % r["p"],
-                          note=("(판단) 이 PDF 는 글꼴 글자 대응이 깨져 추출 글이 원문과 다름(예: 「현재 t직 업무」, 「겸」 글자 0회) — "
-                                "source_text 는 쪽 그림(pymupdf 110dpi)을 눈으로 보고 옮겨 적은 것(표 칸 사이는 공백·줄바꿈으로 둠). "
-                                "성명은 추출 글에서 읽히는 「%s 사외이사 후보자는 …」 문단. " % r["person"]) + CAND +
-                               " / 같은 문서의 다른 겸직 서술은 글자 깨짐으로 확인 못 함(p.59 김대곤·p.71 표현명 후보는 「해당사항 없음」) / reason_text: " + NOR,
+                          note=PANDOK + " / " + JB19_NOTE + ". 성명은 추출 글에서 읽히는 「%s 사외이사 후보자는 …」 문단. " % r["person"] + CAND +
+                               (" / " + more if more else "") +
+                               " / " + JB19_SCOPE + "(p.59 김대곤·p.71 표현명 후보 칸은 「해당사항 없음」) / reason_text: " + NOR,
                           doc_name=mj["name"], collected_at=mj["collected"]))
         keep_sec("A", kj, r["p"], "p.%d" % r["p"], D.page(kj, r["p"]))
+    c = JB19_LEE
+    if not re.search(c["lay"], D.page(kj, c["p"])):
+        ERR.append("A JB FY2019 p.%d 글자층에 재임기간 겸직 자리 없음" % c["p"])
+    rowsA.append(dict(corp_label=mj["co"], fy=mj["fy"], person=c["person"], birth_ym="", holdco_title="사외이사(2019. 3. 23 퇴임)", holdco_duty="",
+                      registered="", fulltime="", concurrent_company="JB우리캐피탈", concurrent_title="", concurrent_since="",
+                      reason_text=NONE, doc_kind=DOCKIND, source_text=c["text"], rcept_no_or_url=mj["url"], page="p.%d" % c["p"],
+                      note=PANDOK + " / " + JB19_NOTE + " / 이사 소개 「(카) 사외이사 이광철 : 2019. 3. 23 퇴임」(p.23, 판독)의 「- 재임기간」 값(p.24 첫 줄). "
+                           "성명은 p.23 머리글에서 읽음(판단). 겸직 직위는 글에 없음. 괄호 안 「2014. 03. 19」가 겸직 시작일인지 글만으로 가릴 수 없어 "
+                           "concurrent_since 를 비움(판단). 「2019. 03. 39.」는 그림 그대로 / " + JB19_SCOPE + " / reason_text: " + NOR,
+                      doc_name=mj["name"], collected_at=mj["collected"]))
+    keep_sec("A", kj, c["p"], "p.%d" % c["p"], D.page(kj, c["p"]))
+    c = JB19_CRO
+    if not re.search(c["lay"], D.page(kj, c["p"])):
+        ERR.append("A JB FY2019 p.%d 글자층에 CRO 겸직 자리 없음" % c["p"])
+    rowsA.append(dict(corp_label=mj["co"], fy=mj["fy"], person="", birth_ym="", holdco_title="위험관리책임자(CRO)", holdco_duty="",
+                      registered="", fulltime="", concurrent_company="은행자회사", concurrent_title="위험관리책임자(CRO)", concurrent_since="",
+                      reason_text=NONE, doc_kind=DOCKIND, source_text=c["text"], rcept_no_or_url=mj["url"], page="p.%d" % c["p"],
+                      note=PANDOK + " / " + JB19_NOTE + " / 위험관리위원회 연혁 서술(2016년 2월 2016년도 제2차 위험관리위원회) — 성명 없음 / "
+                           + JB19_SCOPE + " / reason_text: " + NOR,
+                      doc_name=mj["name"], collected_at=mj["collected"]))
+    rowsB.append(dict(corp_label=mj["co"], fy=mj["fy"], employees_total="", regular="", contract="", keyword="겸직",
+                      source_text=c["text"], doc_kind=DOCKIND, rcept_no_or_url=mj["url"], page="p.%d" % c["p"],
+                      note=PANDOK + " / " + JB19_NOTE + " / 위험관리위원회 연혁 서술(리스크관리협의회 구성 보강) / "
+                           "15차 검증에서 「확인 불가」 행을 이 행으로 바꿈 — " + JB19_SCOPE.replace("같은 문서의 다른 겸직 서술", "찾은 범위")
+                           + "; 파견·출향·전출·전적·겸무는 글자가 쪽마다 다르게 깨져 글자 검색으로 가릴 수 없음",
+                      doc_name=mj["name"], collected_at=mj["collected"]))
+    keep_sec("A", kj, c["p"], "p.%d" % c["p"], D.page(kj, c["p"]))
+    keep_sec("B", kj, c["p"], "p.%d" % c["p"], D.page(kj, c["p"]))
     for s in B_SPEC:
         k, m = s["d"], D.meta[s["d"]]
         try:
@@ -760,19 +823,20 @@ def build():
                 same_as = kk
         if same_as:
             continue   # 같은 글 — 본공시 행에 note 로 적음
-        if k == "M:JB금융지주:2020:본공시":
-            rowsB.append(dict(corp_label=m["co"], fy=m["fy"], employees_total="", regular="", contract="", keyword="확인 불가",
-                              source_text=NONE, doc_kind=DOCKIND, rcept_no_or_url=m["url"], page="",
-                              note="(판단) PDF 글꼴 글자 대응이 깨져(「겸」 글자 0회, 예: 「현재 t직 업무」) 글자 검색으로 키워드 유무를 가릴 수 없음 — "
-                                   "「문서에 없음」은 확인 못 했다는 뜻으로 둠(실패 목록에 올림). 312쪽 전부를 그림으로 읽지는 않음",
-                              doc_name=m["name"], collected_at=m["collected"]))
-            continue
+        # (JB FY2019 「확인 불가」 행은 15차 검증에서 p.187 판독 행으로 바꿈 — 위 JB19_CRO)
         if not any(r["doc_name"] == m["name"] for r in rowsB):
             if k.startswith("S:") and k in ("S:JB금융지주:2026:본공시",):
                 continue
+            if k.startswith("S:"):
+                sp = sorted({int(st) for st, _ch in D.sec[k]})
+                pg = "6차 섹션 글 전체(찾은 범위, 시작페이지 %s — 해당 글 없음)" % (
+                    str(sp[0]) if sp[0] == sp[-1] else "%d~%d" % (sp[0], sp[-1]))
+            else:
+                pg = "p.1~p.%s 전체(찾은 범위, PDF 쪽 — 해당 글 없음)" % m["pdfpages"]
             rowsB.append(dict(corp_label=m["co"], fy=m["fy"], employees_total="", regular="", contract="", keyword="없음",
-                              source_text=NONE, doc_kind=DOCKIND, rcept_no_or_url=m["url"], page="",
-                              note=sc + " — 조직·인력 서술에 해당하는 키워드 문장 없음" + (" / " + N6 if k.startswith("S:") else ""),
+                              source_text=NONE, doc_kind=DOCKIND, rcept_no_or_url=m["url"], page=pg,
+                              note=sc + " — 조직·인력 서술에 해당하는 키워드 문장 없음" + (" / " + N6 if k.startswith("S:") else "")
+                                   + " / " + REBUT_B,
                               doc_name=m["name"], collected_at=m["collected"]))
     return D, rowsA, rowsB, secs
 
@@ -804,7 +868,8 @@ def write(D, rowsA, rowsB, secs):
             if k.startswith("S:"):
                 out.append("- %s (6차 파일 %s)" % (N6, m.get("file", "")))
             if k == "M:JB금융지주:2020:본공시":
-                out.append("- 주의: 이 PDF 는 글꼴 글자 대응이 깨져 아래 추출 글이 원문과 다름. A 행 source_text 는 쪽 그림을 보고 옮겨 적음.")
+                out.append("- 주의: 이 PDF 는 글꼴 글자 대응이 깨져 아래 추출 글이 원문과 다름. 이 쪽에서 나온 A·B 행 source_text 는 쪽 그림을 보고 옮겨 적음"
+                           "(note 「" + PANDOK + "」).")
             out.append("")
             out.append("```text")
             out.append(clean(text))
