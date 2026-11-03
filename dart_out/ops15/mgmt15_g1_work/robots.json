@@ -1,0 +1,37 @@
+{
+ "www.kbfg.com": {
+  "co": "KB금융지주",
+  "base": "https://www.kbfg.com",
+  "status": "OK",
+  "note": "",
+  "checked_at": "2026-11-03T10:26:50+09:00"
+ },
+ "www.shinhangroup.com": {
+  "co": "신한금융지주",
+  "base": "https://www.shinhangroup.com",
+  "status": "OK",
+  "note": "",
+  "checked_at": "2026-11-03T10:27:52+09:00"
+ },
+ "www.hanafn.com": {
+  "co": "하나금융지주",
+  "base": "https://www.hanafn.com",
+  "status": "없음(HTTP 404)",
+  "note": "robots.txt 가 HTTP 404 — RFC 9309 §2.3.1.3 에 따라 제한 없음으로 봄",
+  "checked_at": "2026-11-03T10:23:30+09:00"
+ },
+ "www.woorifg.com": {
+  "co": "우리금융지주",
+  "base": "https://www.woorifg.com",
+  "status": "OK",
+  "note": "",
+  "checked_at": "2026-11-03T10:24:34+09:00"
+ },
+ "www.nhfngroup.com": {
+  "co": "NH농협금융지주",
+  "base": "https://www.nhfngroup.com",
+  "status": "없음(HTTP 400)",
+  "note": "robots.txt 가 HTTP 400 — RFC 9309 §2.3.1.3 에 따라 제한 없음으로 봄",
+  "checked_at": "2026-11-03T10:20:13+09:00"
+ }
+}

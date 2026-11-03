@@ -165,3 +165,5 @@ scripts/dart/dart_out/
 !/handoff/원문_지주운영방식/
 # 합본 폴더의 원문/ 사본은 dart_out/ops15/원문 과 같고 zip 에도 들어 있어 커밋하지 않는다
 /handoff/원문_지주운영방식/원문/
+# 15차 확장 — 조직도 쪽 그림(PNG)은 크기가 커서 폴더째 커밋하지 않는다(필요하면 zip 으로 따로 전달)
+/dart_out/ops15/조직도/
