@@ -573,6 +573,72 @@ TOC = re.compile(r"[·…]{3,}|…|\.{6,}")
 D_CONTEXT = {"iM금융지주": (re.compile(r"(?:DGB|iM)금융지주(?:고객정보전송시스템수탁운영|전산시스템유지보수|홈페이지수탁운영)"),
                            re.compile(r"^(?:DGB|iM)데이터시스템$"))}
 
+# ── 검증(verify15_mgmt_g2, 2026-11-03 KST)에서 찾은 D 빠짐 — 위 자동 규칙으로 못 잡은 곳을 줄 범위로 정해 더함(판단) ──
+# 검증이 md 마다 「위탁」「수탁」「용역」「자문」「전산」「공동」을 직접 찾아, 조각 행이 덮지 않고 같은 문장·표 행에 지주 쪽 말이 있는 곳을 원문으로 봄.
+# anchor = 첫 줄(제어문자·공백 뗀 줄) 꼴, nxt = 바로 다음 줄 꼴(있으면). rows = [(첫 줄에서 시작 오프셋, 끝 오프셋, 칸 자리, note)]
+# 칸 자리: cp·am = 그 행 안 칸 순번, ct = (시작, 끝) 칸 순번(PDF 줄로 나뉜 한 칸을 공백 하나로 이음). 문장 행은 ct 에 검색어 낱말.
+_MERGED = ("(판단) 표 병합 칸: 이 행의 거래내용 「미수수익」·채권자(매도자) 「JB금융지주」 칸은 이 묶음 첫 행(같은 쪽 「미수수익⏎JB금융지주⏎전북은행」)과 "
+           "함께 쓰는 병합 칸이라 이 행 글에는 없음")
+_JB_MISU = [(0, 5, dict(cp=2, am=3, ct=(4, 5)), ""),
+            (6, 9, dict(cp=0, am=1, ct=(2, 3)), _MERGED),
+            (10, 13, dict(cp=0, am=1, ct=(2, 3)), _MERGED)]
+_JB_NOTE = ("; 표 한 행(칸 줄 그대로) — counterparty·contract_type·amount 는 그 행의 칸 글 그대로(contract_type 은 비고 칸, PDF 두 줄을 공백 하나로 이음, "
+            "amount 는 거래금액 칸)")
+_ADD_NOTE = "(판단) 검증 단계에서 더함(자동 규칙 「같은 문장·표 행에 지주·계열사」가 놓친 곳 — %s)"
+_BNK_ROW = [(0, 1, dict(ct="공동"), "(판단) 같은 문장에 지주사(지주회사)·자회사와 검색어 「공동」(검증 단계 검색어)이 있음 — 업무위탁·용역·공동사용 같은 계약 "
+                                    "이름은 없는 글이라 애매해서 넣고 표시")]
+_IM_ROW = [(0, 1, dict(ct="전산", ctx=r"^현재당사의유동화익스포져는자회사인"),
+            "(판단) 같은 쪽 「나. 관리방법」 문단 첫 줄 %s 에 따라 이 문장은 자회사가 지주회사에 보고하는 글로 봄 — 업무위탁·용역·공동사용 같은 계약 "
+            "이름은 없는 글이라 애매해서 넣고 표시")]
+D_ADD = [
+    dict(co="JB금융지주", fy=2022, page=135, anchor=r"^미수수익$", nxt=r"^JB금융지주$", rows=_JB_MISU, why="비고 칸 줄만 잡고 지주 칸을 묶지 못함"),
+    dict(co="JB금융지주", fy=2023, page=137, anchor=r"^미수수익$", nxt=r"^JB금융지주$", rows=_JB_MISU, why="비고 칸 줄만 잡고 지주 칸을 묶지 못함"),
+    dict(co="BNK금융지주", fy=2021, page=125, anchor=r"^신용평가시스템의설계및운영은지주", rows=_BNK_ROW, why="검색어 「공동」이 자동 규칙 검색어에 없음"),
+    dict(co="BNK금융지주", fy=2022, page=127, anchor=r"^신용평가시스템의설계및운영은지주", rows=_BNK_ROW, why="검색어 「공동」이 자동 규칙 검색어에 없음"),
+    dict(co="BNK금융지주", fy=2024, page=69, anchor=r"^신용평가시스템의설계및운영은지주", rows=_BNK_ROW, why="검색어 「공동」이 자동 규칙 검색어에 없음"),
+    dict(co="BNK금융지주", fy=2025, page=72, anchor=r"^신용평가시스템의설계및운영은지주", rows=_BNK_ROW, why="검색어 「공동」이 자동 규칙 검색어에 없음"),
+    dict(co="iM금융지주", fy=2019, page=123, anchor=r"^신규유동화익스포져발생시매월지주회사에문서및전산을통하여보고", rows=_IM_ROW,
+         why="같은 문장에 계열사 쪽 말이 없음"),
+    dict(co="iM금융지주", fy=2020, page=124, anchor=r"^신규유동화익스포져발생시매월지주회사에문서및전산을통하여보고", rows=_IM_ROW,
+         why="같은 문장에 계열사 쪽 말이 없음"),
+    dict(co="iM금융지주", fy=2023, page=150, anchor=r"^신규유동화익스포져발생시매월지주회사에문서및전산을통하여보고", rows=_IM_ROW,
+         why="같은 문장에 계열사 쪽 말이 없음"),
+]
+
+
+def added_units(co, fy):
+    """D_ADD 의 (회사, FY) 행 → 단위 dict(page·a·b·text·ctrl·cp·ct·am·note). 첫 줄을 못 찾으면 멈춤(조용히 빠지지 않게)."""
+    out = []
+    pages = None
+    for e in D_ADD:
+        if (e["co"], e["fy"]) != (co, fy):
+            continue
+        pages = pages or dict(load_pages(co, fy))
+        lines = pages[e["page"]].split("\n")
+        cl = [ns(l) for l in lines]
+        at = [i for i in range(len(cl)) if re.search(e["anchor"], cl[i])
+              and (not e.get("nxt") or (i + 1 < len(cl) and re.search(e["nxt"], cl[i + 1])))]
+        if len(at) != 1:
+            raise SystemExit("D_ADD 첫 줄을 하나로 못 찾음: %s FY%d p.%d %s → %s" % (co, fy, e["page"], e["anchor"], at))
+        i0 = at[0]
+        for s0, e0, cells, extra in e["rows"]:
+            a, b = i0 + s0, i0 + e0
+            t, c = text_of(lines, a, b)
+            cs = [CTRL.sub("", l).strip() for l in lines[a:b + 1] if CTRL.sub("", l).strip()]
+            if "cp" in cells:
+                cp, am, ct = cs[cells["cp"]], cs[cells["am"]], " ".join(cs[cells["ct"][0]:cells["ct"][1] + 1])
+            else:
+                cp, am, ct = "", "", cells["ct"]
+            note = _ADD_NOTE % e["why"]
+            if "ctx" in cells:
+                q = [CTRL.sub("", l).strip() for l in lines if re.search(cells["ctx"], ns(l))]
+                if len(q) != 1:
+                    raise SystemExit("D_ADD 문맥 줄을 하나로 못 찾음: %s FY%d p.%d" % (co, fy, e["page"]))
+                extra = extra % ("「" + q[0] + "」")
+            out.append(dict(page=e["page"], a=a, b=b, text=t, ctrl=c, cp=cp, ct=ct, am=am, table="cp" in cells,
+                            note=note + ("; " + extra if extra else ""), lines=lines))
+    return out
+
 
 def units(co, fy, which):
     """문장·표 행 단위 후보. B: 오탐 뺀 키워드 행(같은 쪽·같은 낱말에서 다른 행 안에 든 것은 하나로). D: 관련 판정 붙임."""
@@ -692,6 +758,25 @@ def build(T=None):
             # ── D ──
             ud, _ = units(co, fy, "D")
             rel = [u for u in ud if u["rel"]]
+            adds = [x for x in added_units(co, fy)
+                    if not any(u["page"] == x["page"] and u["a"] <= x["b"] and x["a"] <= u["b"] for u in rel)]  # 자동 규칙이 이미 잡았으면 더하지 않음
+            drows = []
+            for x in adds:
+                note = base_note
+                if x["ctrl"]:
+                    note += "; 제어문자 지움"
+                if x["table"]:
+                    note += _JB_NOTE
+                    un = sorted(set(units_note(co, CTRL.sub("", "\n".join(x["lines"])))))     # 단위 표기 사이 제어문자(U+0001)는 떼고 찾음
+                    if un:
+                        note += "; 같은 쪽 단위 표기: " + "·".join("(단위: %s)" % y.strip() for y in un)
+                else:
+                    note += "; (판단) 문장 행의 contract_type 은 원문에서 맞은 검색어 낱말"
+                note += "; " + x["note"]
+                drows.append((x["page"], x["a"], dict(corp_label=co, fy=str(fy), counterparty=x["cp"], contract_type=x["ct"], amount=x["am"],
+                                                     source_text=x["text"], doc_kind="경영공시", rcept_no_or_url=dm["url"],
+                                                     page="p.%d" % x["page"], note=note, doc_name=dm["name"], collected_at=dm["at"])))
+                cited["D"].setdefault((co, fy), set()).add(x["page"])
             for u in rel:
                 note = base_note
                 if u["ctrl"]:
@@ -716,11 +801,12 @@ def build(T=None):
                     note += "; (판단) 문장 행의 contract_type 은 원문에서 맞은 검색어 낱말"
                     if "금융지주회사등" in ns(u["text"]) and not re.search(AFF[co] + r"|자회사|계열", ns(u["text"])):
                         note += "; (판단) 「금융지주회사 등」(법령 낱말)을 지주와 자회사 등을 함께 이르는 말로 보아 넣음"
-                D.append(dict(corp_label=co, fy=str(fy), counterparty=cp, contract_type=ct, amount=am, source_text=u["text"],
-                              doc_kind="경영공시", rcept_no_or_url=dm["url"], page="p.%d" % u["page"], note=note,
-                              doc_name=dm["name"], collected_at=dm["at"]))
+                drows.append((u["page"], u["a"], dict(corp_label=co, fy=str(fy), counterparty=cp, contract_type=ct, amount=am, source_text=u["text"],
+                                                     doc_kind="경영공시", rcept_no_or_url=dm["url"], page="p.%d" % u["page"], note=note,
+                                                     doc_name=dm["name"], collected_at=dm["at"])))
                 cited["D"].setdefault((co, fy), set()).add(u["page"])
-            if not rel:
+            D += [x[2] for x in sorted(drows, key=lambda x: (x[0], x[1]))]      # 쪽·줄 순서(자동 규칙 행끼리의 차례는 그대로)
+            if not rel and not adds:
                 ex = {}
                 for u in ud:
                     k = "목차 줄" if u["why"] == "목차 줄" else ("제외 낱말" if u["why"].startswith("제외") else "지주·계열사 함께 없음")

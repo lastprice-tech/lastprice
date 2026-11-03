@@ -37,6 +37,9 @@ COLS_B = ["corp_label", "fy", "employees_total", "regular", "contract", "keyword
           "rcept_no_or_url", "page", "note", "doc_name", "collected_at"]
 NONE = "문서에 없음"
 N6 = "6차 섹션 글(PDF 원본은 이번 컨테이너에 없음)"
+# 한국투자 오태균 — 후보제안자 주요경력란의 같은 겸직(15차 고침: 쪽을 note 에)
+OTK = ("같은 겸직이 사외이사 후보 「나. 후보제안자 : 오태균 사장」 주요경력란 「2022.03 ~ 현재 / (겸) 한국투자증권 기타 비상무이사」에도 있음 — %s"
+       " (판단: 같은 겸직이라 행을 더하지 않음). concurrent_since 는 그 경력란 「2022.03 ~ 현재」")
 BUL = re.compile(r'\n(?=\s*(?:[○●■□◦·•※\-–▶▣]|[①-⑳]|[㉮-㉿]|주\s?\d\)|\(\d+\)|\d+\)|[가-하]\.|\d+\.\s))')
 
 
@@ -134,9 +137,13 @@ def sent_bounds(t, pos):
     return st, min(ends)
 
 
+CTRL = {"hit": False}      # 마지막 clean() 이 제어문자를 지웠는지(15차 고침 — 지운 행은 note 에 「제어문자 지움」)
+
+
 def clean(s):
-    s = re.sub(r"[\x00-\x08\x0b-\x1f]", "", s)     # PDF 추출 글에 섞인 제어문자(U+0001 등) 지움
-    return "\n".join(l.rstrip() for l in s.strip().split("\n"))
+    t = re.sub(r"[\x00-\x08\x0b-\x1f]", "", s)     # PDF 추출 글에 섞인 제어문자(U+0001 등) 지움
+    CTRL["hit"] = t != s
+    return "\n".join(l.rstrip() for l in t.strip().split("\n"))
 
 
 def extract(D, k, p, a=None, start=None, end=None):
@@ -601,7 +608,7 @@ d = "M:한국투자금융지주:2024:본공시"
 A(d, 15, start="이사회 의장인 김남구", end="회장을 겸임하고 있습니다.", person="김남구", holdco_title="대표이사(이사회 의장)", concurrent_company="한국투자증권",
   concurrent_title="회장", note="이사회 구성 서술")
 A(d, 15, start="오태균 이사는", end="겸임하고 있습니다.", person="오태균", holdco_title="사내이사(사장)", concurrent_company="한국투자증권", concurrent_title="비상임이사",
-  note="이사회 구성 서술")
+  concurrent_since="2022.03", note="이사회 구성 서술. " + OTK % "p.51·p.53(PDF 쪽)")
 # 사외이사 — 「①회사 또는 계열회사와의 관계」 칸(현재 겸직 / 선임 후 겸직 예정). 성명은 앞쪽 「▶ 이름」·「후보자 이름은」 머리글(판단)
 KREL = "사외이사 후보 「다. 금융회사등과 관계 ①회사 또는 계열회사와의 관계」 칸. (판단) 성명은 이 칸 앞쪽 후보 머리글(「▶ 이름 사외이사」 또는 「후보자 이름은」)에서 읽음"
 for dd, p, nm, now in (
@@ -643,7 +650,7 @@ d = "S:한국투자금융지주:2025:본공시"
 A(d, "14/0", start="주력  자회사인", end="겸임하고    있습니다.", person="김남구", holdco_title="대표이사(이사회 의장)", concurrent_company="한국투자증권",
   concurrent_title="회장", note="이사회 구성 서술 — 6차 섹션 글의 이 문장에는 성명이 없음(앞 문장 「…김남구 대표이사는…」으로 판단)", _pre="임기는")
 A(d, "14/0", start="오태균  이사는", end="겸임하고 있습니다.", person="오태균", holdco_title="사내이사", concurrent_company="한국투자증권", concurrent_title="비상임이사",
-  note="이사회 구성 서술")
+  concurrent_since="2022.03", note="이사회 구성 서술. " + OTK % "6차 섹션 「마. 임원후보 추천 관련사항」(시작페이지 39, chunk 0) 1곳")
 A(d, "39/0", "선임 후 당사 및 한국투자증권 사외이사를 겸직할 예정이나", person="", holdco_title="사외이사 후보", concurrent_company="한국투자증권",
   concurrent_title="사외이사", note="사외이사 후보 「금융회사등과 관계」 칸 — 선임 후 겸직 예정. 6차 섹션 글에 성명 없음(성명 확인 못 함). 같은 글 시작페이지 39 chunk 1 에도")
 B(d, "130/2", "파견", "외부위탁 파견연수", note="부록 관련 규정 조문(임원 연수)")
@@ -651,7 +658,7 @@ d = "S:한국투자금융지주:2026:본공시"
 A(d, "15/0", start="주력   자회사인", end="겸임하고   있습니다.", person="김남구", holdco_title="대표이사(이사회 의장)", concurrent_company="한국투자증권",
   concurrent_title="회장", note="이사회 구성 서술 — 6차 섹션 글의 이 문장에는 성명이 없음(앞 문장으로 판단)")
 A(d, "15/0", start="오태균  이사는", end="겸임하고   있습니다.", person="오태균", holdco_title="사내이사(사장)", concurrent_company="한국투자증권", concurrent_title="비상임이사",
-  note="이사회 구성 서술")
+  concurrent_since="2022.03", note="이사회 구성 서술. " + OTK % "6차 섹션 「마. 임원후보 추천 관련사항」(시작페이지 40, chunk 0) 4곳(후보마다)")
 A(d, "40/0", "선임 후  당사 및  한국투자증권 사외이사를       겸직할 예정이나", person="", holdco_title="사외이사 후보", concurrent_company="한국투자증권",
   concurrent_title="사외이사", note="사외이사 후보 「금융회사등과 관계」 칸 — 선임 후 겸직 예정. 6차 섹션 글에 성명 없음(성명 확인 못 함)")
 B(d, "131/3", "파견", "외부위탁 파견연수", note="부록 관련 규정 조문(임원 연수)")
@@ -670,6 +677,7 @@ SAME = {
     "S:한국투자금융지주:2025:본공시": "재공시 같은 글(6차 섹션 글 대조)",
     "S:한국투자금융지주:2026:본공시": "재공시 같은 글(6차 섹션 글 대조)",
 }
+CTRL_NOTE = "제어문자 지움(PDF 추출 글에 섞인 보이지 않는 U+0001 등 — 보이는 글자는 그대로)"
 # 문서마다 찾은 범위(「문서에 없음」 행 note 용)
 SCOPE = "찾은 범위: 문서 전체 쪽 글에서 「겸직·겸임·겸무·파견·출향·전출·전적」 글자 검색 후 문장 단위로 확인"
 SCOPE6 = "찾은 범위: 6차 섹션 글(해당 문서의 모든 섹션 본문)에서 같은 글자 검색"
@@ -686,7 +694,7 @@ for p, nm, txt, cc, ct in (
         (74, "이상복", "3) 현재 겸직 업무 동아회계법인 파트너(現)", "동아회계법인", "파트너")):
     JB19.append(dict(p=p, person=nm, text=txt, cc=cc, ct=ct))
 # 판독 표지(15차 검증 verify15_gov_g2.py 가 이 글이 note 에 있는지 봄)
-PANDOK = "판독(PDF 글자층 깨짐 — 쪽 그림을 보고 옮김)"
+PANDOK = "(판독) PDF 글자층 깨짐 — 쪽 그림을 보고 옮김"   # 15차 고침: note 맨 앞 「(판독)」
 # 같은 사람·같은 겸직처가 다른 쪽에도 있음(15차 검증 때 글자층 「?직」 꼴로 찾아 쪽 그림으로 확인)
 JB19_MORE = {
     ("최정수", "전북은행"): "같은 겸직이 p.20 사외이사 소개 「- 전북은행 사외이사 겸직」, p.136 충실성 문단 「(자회사등은 제외/現 전북은행 사외이사 겸직)」에도 있음(판독)",
@@ -748,6 +756,8 @@ def build():
             j = t.rfind(s["_pre"], 0, mm.start())
             src = _extract(t, k, s["p"], None, s["_pre"], s["end"]) if j >= 0 else src
         note = [s.get("note", "")] + base_note(D, k)
+        if CTRL["hit"]:
+            note.append(CTRL_NOTE)
         rowsA.append(dict(corp_label=m["co"], fy=m["fy"], person=s.get("person", ""), birth_ym=s.get("birth_ym", ""),
                           holdco_title=s.get("holdco_title", ""), holdco_duty="", registered="", fulltime="",
                           concurrent_company=s.get("concurrent_company", ""), concurrent_title=s.get("concurrent_title", ""),
@@ -804,6 +814,8 @@ def build():
         except ValueError as e:
             ERR.append("B " + str(e)); continue
         note = [s.get("note", "")] + base_note(D, k)
+        if CTRL["hit"]:
+            note.append(CTRL_NOTE)
         rowsB.append(dict(corp_label=m["co"], fy=m["fy"], employees_total="", regular="", contract="", keyword=s["kw"],
                           source_text=src, doc_kind=DOCKIND, rcept_no_or_url=m["url"], page=page_label(D, k, s["p"], row),
                           note=" / ".join(x for x in note if x), doc_name=m["name"], collected_at=m["collected"]))

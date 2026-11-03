@@ -6,8 +6,11 @@
 
 대조:
  (a) source_text(와 reason_text 가 「문서에 없음」이 아니면 그것도)가 그 행 원문(새로 받은 PDF 쪽 텍스트 md 「## p.N」,
-     또는 6차 섹션 글 kit56/연차보고서_섹션.csv 본문)에 공백·줄바꿈·「|」만 무시하고 글자 그대로 있는지.
-     PDF 추출 글에 섞인 제어문자(U+0001 등)는 생성기가 지웠으므로 따로 셈(「제어문자만 다름」).
+     또는 6차 섹션 글 kit56/연차보고서_섹션.csv 본문)의 한 곳에 이어서 그대로 있는지 — 15차 새 원문 대조 규칙:
+     「공백·줄바꿈만 지운 source_text」가 「공백·줄바꿈만 지운 출처 텍스트」 안에 이어서 있어야 함(PDF·6차 섹션 출처라 「|」는 지우지 않음).
+     「 … 」·「 | 」 같은 생략·이음 표시가 든 행은 실패.
+     PDF 추출 글에 섞인 보이지 않는 제어문자(U+0000~U+001F 중 줄바꿈·탭 말고)만은 생성기가 지울 수 있음 — 그런 행(「제어문자만 다름」)은
+     note 에 「제어문자 지움」이 있어야 함(없으면 실패).
      JB FY2019(PDF 글자층 깨짐)의 판독 행은 글자층과 대조할 수 없으므로 note 의 판독 표지·아래 VISUAL(쪽 그림을 보고 적은 글)·
      글자층에서 그 자리를 가리키는 꼴(layer)로 대조.
  (b) page 가 그 글이 있는 위치인지(「p.N」 쪽, 「시작페이지 n 섹션 안(「제목」, chunk c)」). 틀리면 실제 위치를 찾아 적음.
@@ -51,7 +54,7 @@ COLS = {
 REQ = {"A": ["corp_label", "fy", "reason_text", "doc_kind", "source_text", "rcept_no_or_url", "page", "note", "doc_name", "collected_at"],
        "B": ["corp_label", "fy", "keyword", "doc_kind", "source_text", "rcept_no_or_url", "page", "doc_name", "collected_at"]}
 NONE = "문서에 없음"
-PANDOK = "판독(PDF 글자층 깨짐 — 쪽 그림을 보고 옮김)"
+PANDOK = "(판독)"     # 15차 새 규칙: JB FY2019 판독 행 note 맨 앞
 JB19_URL_KEY = ("JB금융지주", "2020", "본공시")
 
 # ── JB FY2019 판독 행: 15차 검증 때 쪽 그림(pymupdf 110~200dpi, venv python -I)을 눈으로 보고 적은 글 ──
@@ -123,6 +126,12 @@ JB19_PAGES = {
 }
 # 이번 검증에서 고친 것(생성기 scripts/dart/gov15_g2_extract.py 에 넣고 다시 돌림)
 FIXES = [
+    "(15차 6파동) PDF 추출 글의 보이지 않는 제어문자(U+0001 등)를 생성기가 지운 35행(A 32·B 3) note 에 「제어문자 지움(…)」을 넣음(clean() 이 지웠는지 표시).",
+    "(15차 6파동) JB FY2019 판독 8행(A 7·B 1) note 맨 앞을 「(판독) PDF 글자층 깨짐 — 쪽 그림을 보고 옮김」으로 바꿈.",
+    "(15차 6파동) 한국투자 오태균 FY2023(p.51·p.53)·FY2024(6차 시작페이지 39)·FY2025(6차 시작페이지 40, 4곳) 행 note 에 후보제안자 경력란 "
+    "「2022.03 ~ 현재 / (겸) 한국투자증권 기타 비상무이사」 위치를 적고, 이강행 행처럼 concurrent_since 를 그 경력란의 「2022.03」으로 채움((판단) 같은 겸직이라 행은 더하지 않음).",
+    "(15차 6파동) 이 스크립트를 새 원문 대조 규칙(공백·줄바꿈만 무시, 「|」 안 지움, 생략·이음 표시 실패, 제어문자 지운 행은 note 「제어문자 지움」 필수, "
+    "판독 표지는 note 맨 앞 「(판독)」)으로 고침.",
     "JB FY2019 판독 5행 note 맨 앞에 「판독(PDF 글자층 깨짐 — 쪽 그림을 보고 옮김)」을 넣음(전에는 「(판단) … 쪽 그림을 눈으로 보고 옮겨 적은 것」만 있었음). "
     "5행 모두 쪽 그림(p.62·65·68·74, 150~200dpi)과 다시 맞대 글자가 같음을 확인.",
     "JB FY2019 B 「확인 불가」(source_text 「문서에 없음」, page 빈칸) 1행을 반박: 글자층에서 「겸」 자리가 깨진 「?직」 꼴을 찾아 쪽 그림으로 보니 p.187 에 "
@@ -139,22 +148,27 @@ FIXES = [
 ]
 # 고치지 않고 남긴 것
 REMAIN = [
-    "(a) 의 「제어문자만 다름」 행은 원문 쪽 글에 섞인 제어문자(U+0001 등)를 생성기가 지운 것만 다름 — 보이는 글자는 같아 그대로 둠.",
+    "(a) 의 「제어문자만 다름」 행은 원문 쪽 글에 섞인 제어문자(U+0001 등)를 생성기가 지운 것만 다름 — 보이는 글자는 같아 그대로 둠(note 「제어문자 지움」).",
     "JB FY2019 PDF 는 글자층이 쪽마다 다르게 깨져 「겸」 자리 꼴로만 찾았음 — 파견·출향·전출·전적·겸무 및 「겸」 자리 꼴이 아닌 깨짐은 가릴 수 없음(312쪽 전부를 그림으로 읽지 않음; OCR 없음).",
     "한국투자 FY2023 p.51·p.53(2024 공시)과 6차 FY2024·FY2025 섹션의 사외이사 후보 「후보제안자 : 오태균 사장」 주요경력란 「2022.03 ~ 현재 (겸) 한국투자증권 기타 비상무이사」는 "
-    "같은 해 오태균 「한국투자증권 비상임이사 겸임」 행(이사회 구성 서술)과 같은 겸직으로 보아(판단) 행을 더하지 않았고 note 에도 쪽을 적지 않음.",
+    "같은 해 오태균 「한국투자증권 비상임이사 겸임」 행(이사회 구성 서술)과 같은 겸직으로 보아(판단) 행을 더하지 않음(15차 6파동에서 그 위치는 note 에 적음).",
     "B 에는 「(겸)」 약자 자리(JB 이승국)를 더하지 않음 — 사용자 키워드(겸직·파견·출향·전출·전적·겸무) 낱말 그대로가 아니어서(판단).",
 ]
 
 
 @functools.lru_cache(maxsize=None)
 def norm(s):
-    return re.sub(r"[\s|]+", "", (s or "").replace("<br>", ""))
+    """15차 새 원문 대조 규칙(PDF·6차 섹션 출처): 공백·줄바꿈만 지움(「|」·<br> 는 지우지 않음)."""
+    return re.sub(r"\s+", "", s or "")
 
 
 @functools.lru_cache(maxsize=None)
 def norm_cc(s):
-    return re.sub(r"[\s|\x00-\x1f]+", "", (s or "").replace("<br>", ""))
+    """공백·줄바꿈과 보이지 않는 제어문자(U+0000~U+001F)만 지움."""
+    return re.sub(r"[\s\x00-\x1f]+", "", s or "")
+
+
+JOIN_MARK = re.compile(r" … |…| \| ")
 
 
 def md_blocks(s):
@@ -245,7 +259,8 @@ def main():
     now = datetime.now(KST).isoformat(timespec="seconds")
     L.append("# 15차 검증 — 연차보고서 조각 g2 (메리츠금융지주·iM금융지주·BNK금융지주·JB금융지주·한국투자금융지주)")
     L.append("실행: %s (KST) · 스크립트 scripts/dart/verify15_gov_g2.py · 생성기 %s md5 %s" % (now, GEN, md5(GEN)))
-    L.append("대조 정규화: 공백·줄바꿈·「|」 무시. 그 밖의 글자는 그대로 비교(PDF 추출 글의 제어문자 U+0001 등은 생성기가 지웠으므로 「제어문자만 다름」으로 따로 셈).")
+    L.append("대조 정규화(15차 새 원문 대조 규칙): 공백·줄바꿈만 무시(「|」 안 지움), 행 글 전체가 원문 한 곳에 이어서 있어야 함. 그 밖의 글자는 그대로 비교"
+             "(PDF 추출 글의 보이지 않는 제어문자 U+0001 등을 생성기가 지운 행은 「제어문자만 다름」으로 따로 세고 note 「제어문자 지움」을 봄).")
     L.append("")
     rows = {}
     # ── (c) ──
@@ -346,10 +361,14 @@ def main():
                              and norm_cc(s["섹션제목_원문"]) == norm_cc(m.group(2))]
                 others = lambda: ["시작페이지 %s chunk %s" % (s["시작페이지"], s["chunk_seq"]) for s in S.sec[x] if find_in(s["본문"], r["source_text"])]
             res = [find_in(tx, r["source_text"]) for tx in texts]
+            if JOIN_MARK.search(r["source_text"]):
+                bad.append("%s %d행 source_text 에 생략·이음 표시(「 … 」·「 | 」)" % (t, i))
             if "strict" in res:
                 ok += 1; pg_ok += 1
             elif "cc" in res:
                 cc += 1; pg_ok += 1
+                if "제어문자 지움" not in r["note"]:
+                    bad.append("%s %d행 제어문자를 지운 행인데 note 에 「제어문자 지움」 없음" % (t, i))
             else:
                 wh = others()
                 if wh:
@@ -381,8 +400,8 @@ def main():
             key = (p, "", "은행자회사")
         vis = VISUAL.get(key)
         msgs = []
-        if PANDOK not in r["note"]:
-            msgs.append("note 에 판독 표지 없음")
+        if not r["note"].startswith(PANDOK):
+            msgs.append("note 맨 앞에 「(판독)」 없음")
         if not vis:
             msgs.append("VISUAL 판정 없음")
         else:
@@ -542,6 +561,27 @@ def main():
             bad.append("JB19 글자층 p.%d 미판정" % p)
     L.append("  → 전에 「확인 불가」(문서에 없음)였던 B 행은 p.187 판독 행으로 반박됨. 파견·출향·전출·전적·겸무는 글자가 쪽마다 다르게 깨져 "
              "글자 검색으로 가릴 수 없고 312쪽 전부를 그림으로 읽지는 않음(남은 한계).")
+    L.append("")
+
+    # ── 한국투자 오태균 경력란 「(겸)」 쪽(15차 6파동) ──
+    L.append("## 한국투자 오태균 행 note 의 후보제안자 경력란 「(겸) 한국투자증권 기타 비상무이사」 위치")
+    OT = re.compile(r"\(겸\)\s*한국투자증권\s*기타\s*비상무이사")
+    for i, r in enumerate(rows["A"], 2):
+        if r["person"] != "오태균" or r["fy"] not in ("2023", "2024", "2025"):
+            continue
+        kind, x = resolve(S, r)
+        if kind == "M":
+            pg = [p for p, tx in S.mpages(x).items() if OT.search(tx)]
+            want = "p.%s(PDF 쪽)" % "·p.".join(str(p) for p in sorted(pg))
+            ok = want in r["note"]
+        else:
+            hit = [(sx["시작페이지"], sx["chunk_seq"], len(OT.findall(sx["본문"]))) for sx in S.sec[x] if OT.search(sx["본문"])]
+            want = "; ".join("시작페이지 %s, chunk %s) %d곳" % h for h in hit)
+            ok = len(hit) == 1 and ("(시작페이지 %s, chunk %s) %d곳" % hit[0]) in r["note"]
+        ok = ok and r["concurrent_since"] == "2022.03"
+        L.append("- A %d행 FY%s %s: 원문에서 찾은 곳 %s — note·concurrent_since(2022.03) %s" % (i, r["fy"], r["page"][:40], want, "맞음" if ok else "틀림"))
+        if not ok:
+            bad.append("A %d행 오태균 note 의 (겸) 쪽 %s 또는 since 틀림" % (i, want))
     L.append("")
 
     # ── 고친 곳 ──

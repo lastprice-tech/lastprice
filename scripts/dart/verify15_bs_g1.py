@@ -19,6 +19,8 @@
      birth_ym 빈 행이 임원 표에 같은 성명으로 있지 않은지, 회사 안 같은 성명 다른 출생년월(동명이인 후보)
  (i) 「문서에 없음」 반박: 더 넓은 검색어·줄 넘김 무시(공백 뺀 글) 검색 — A 겸직 사유, B·D 경영공시, D 우리 FY2021~2024 Ⅹ~Ⅺ
  (j) 줄 넘김 누락 점검: 공백 뺀 글에서 B 검색어(Ⅷ)·D 검색어(Ⅹ~Ⅺ)가 어느 행 source_text 에도 덮이지 않은 곳
+ (wave6) 15차 wave6 새 원문 대조 규칙: source_text·reason_text 는 출처 한 곳에서 이어진 글 — 공백·줄바꿈만 지우고(OpenDART XML md 는 「|」「<br>」도,
+     경영공시 PDF 텍스트는 「|」 남김) 출처 글 안에 이어서 있어야 함. 그 밖 wave6 고침 점검(아래 블록 머리글).
 웹 요청 없음. 입력 파일은 읽기만 함.
 """
 from __future__ import annotations
@@ -73,6 +75,13 @@ FIXES = [
     "A note: 하나금융지주 박병준 출생년월 원문이 보고서마다 다름(FY2019·2020 1965.07, FY2021~2025 1966.03) — 7행 note 에 「(판단) 동명이인 확인 … (애매)」.",
     "D 우리금융지주 FY2021~2024 「문서에 없음」 4행 note 에 넓은 낱말(위탁·수탁·용역·자문·아웃소싱·외주·대행·공동) 다시 찾기 결과와 낱말별 첫 곳·정보 처리 위탁 글을 덧붙임.",
     "모든 고침은 생성기 scripts/dart/ops15_bs_g1.py 에 넣고 다시 돌려 조각·원문 md 를 새로 씀(행 수 A 980·B 110·D 96 그대로).",
+    "(15차 wave6) A fulltime·registered: 임원 현황 표에 같은 성명이 없는(또는 동명이인으로 못 맞춘) 겸직 표 행 129행(신한 89·우리 40) — fulltime 은 그 겸직 표 「비고/상근여부」 칸 원문 값(비상근), registered 「문서에 없음」(note 에 찾은 범위).",
+    "(15차 wave6) A 병합 칸(회사 칸이 윗줄 값) 3행(KB FY2023 김 신 2·FY2024 육창화 1): source_text 를 회사 칸이 있는 윗줄부터 그 행까지 이어서 옮김.",
+    "(15차 wave6) A 회사·직위 나누기: 손으로 본 잘못 나눔 7행 고침(법무법인(유)/(유한) 다담·사단법인 한꿈 학교 등), 확신이 없어 나누지 않음 5행(BNP Paribas 증권 일본 CEO/이사, Cleary Gottlieb … 2, 한국인터넷법학회장).",
+    "(15차 wave6) B 임원 현황 표에서 나온 행 12행(신한 11·우리 1) note 에 「(위치) 임원 현황 표 — 작업 A 와 겹침」.",
+    "(15차 wave6) D: 글이 다른 곳은 따로 행(묶음 풀기) · 검색어 「위탁」으로 넓힘(38행) · 경영공시 하나 1행 source_text 의 보이지 않는 제어문자(U+0007) 지움(note 「제어문자 지움」).",
+    '(15차 wave6, 2026-11-03) 새 원문 대조 규칙 점검 블록 「(wave6)」을 더함: source_text·reason_text 가 출처 한 곳에서 이어진 글인지(공백·줄바꿈만 지움, XML md 는 「|」「<br>」도 — &cr; 은 글자), page 가 이어진 글의 첫 줄·끝 줄 절·표와 맞는지(「(문단)~[표 m]」 범위 꼴 포함), A registered·fulltime 빈칸 0·「문서에 없음」이면 찾은 범위, 회사·직위 두 칸이 source_text 의 이어진 부분 글인지와 나누기 꼴(법인 종류 낱말뿐인 회사·회사 끝/앞 직함·부서 이름에서 끊김), 정정판 사이 같은 행, B keyword 6개·「없음」만·임원 현황 표 행 note, D 묶음 note·「글자까지 같은 글」 위치, 「위탁」 넓혀 넣은 행 꼴과 덮임, Ⅹ 거래 표 위치 인용(md 줄 글 그대로). 커밋된 이전 조각에 이 블록을 돌리면 g1 309·g2 85·g3 148건 실패(fulltime/registered 빈칸, 줄 이음 98, 묶음 15, 임원 현황 표 note 39, 정정판 중복 3, 「위탁」 누락 후보 등) — 검사력 확인.',
+    '(15차 wave6) 이전 lines 모드(줄마다 따로 있으면 통과)는 없앰 — 여러 줄 source_text 도 md 에서 이어서 있어야 함.',
 ]
 # (i) 반박 검색 결과를 읽고 내린 판정(사람 판단) — 검색 결과 자체는 위 표에 그대로 나옴
 REFUTE_JUDGE = [
@@ -80,18 +89,18 @@ REFUTE_JUDGE = [
     "사업부문 겸직체계 일반 글(KB FY2019)·겸직 사전승인 누락 제재(KB FY2022~2025)·겸임 표기(「글로벌부문장 겸임」+「고려대」) — 사람별 겸직 사유가 아님, 「문서에 없음」 유지.",
     "B 하나·우리 경영공시 2026.2Q: 넓은 검색어로 맞은 곳은 「예상손실충당금모델 완전적용」(전적)·충당금 전입(환입)액·손상차손전입(전입)뿐 — 직원 겸직·파견 글 아님, 「문서에 없음」 유지.",
     "D KB·우리 경영공시 2026.2Q: 같은 검색어 줄 넘김 무시 0곳. 넓은 낱말은 업무 범위 표의 「위탁매매」, 레버리지비율 「수탁자산」, 유동화 「자문」, 자회사 업무 「IT서비스업무」 — 위수탁 계약 글 아님, 「문서에 없음」 유지.",
-    "D 우리 FY2021~2024 Ⅹ~Ⅺ: 같은 검색어 줄 넘김 무시 0곳. 넓은 낱말은 소송(위탁자·수탁자·공동소송)·리츠 회사 이름·투자권유자문인력·수탁고·판매대행·고객정보 처리 위탁(위탁업체 점검·보안관리 약정서) — "
+    "(15차 wave6에서 바뀜 — 아래 판정은 이전 것: 이번에는 「위탁」으로 넓혀 고객정보 처리 위탁 글을 행으로 넣음) D 우리 FY2021~2024 Ⅹ~Ⅺ: 같은 검색어 줄 넘김 무시 0곳. 넓은 낱말은 소송(위탁자·수탁자·공동소송)·리츠 회사 이름·투자권유자문인력·수탁고·판매대행·고객정보 처리 위탁(위탁업체 점검·보안관리 약정서) — "
     "고객정보 처리 위탁 글은 계약(약정서) 언급이나 D 검색어 꼴이 아니고 KB(FY2021~)·신한(FY2024·2025) 같은 꼴 글도 행이 아니라 같은 기준으로 「문서에 없음」 유지(판단, note 에 적음).",
 ]
 # 참고(실패 아님) — 검증 중 본 것으로 메인이 합칠 때 판단할 것
 REMARKS = [
     "B 숫자 칸(employees_total·regular·contract)은 키워드 행에도 채워져 있으나 그 행 source_text 는 키워드 문단이라 숫자가 없음 — 숫자 원문은 note 「[표 n] 합계 행 「…」」"
     "(md Ⅷ 그 표 안에 있음 확인, 2·4·6번째 칸 = regular·contract·employees_total). g2·g3 조각도 같은 꼴이라 g1 만 바꾸지 않음.",
-    "D 는 같은 보고서의 같은 (상대방·유형)을 1행으로 묶고 나머지 위치만 note 「같은 상대방·유형 언급 글 N개 더: …」에 적음 — 글이 다른데 묶인 곳 43(하나 FY2019~2023"
-    " 하나대체투자자산운용 제재 표의 사람별 행, KB FY2021~2025 업무위탁수수료 미공시 제재의 사람별 행, 신한 FY2023~2025 리츠 업무위탁계약서 제재 행 등). 그 글은 원문 md 에 있음.",
+    "(15차 wave6에서 바뀜) D 는 글이 다른 곳마다 1행(이전에 같은 (상대방·유형)으로 묶였던 글이 다른 곳을 풀어 행 38개가 늘어남). 글자까지 같은 글만 1행으로 두고 note 「글자까지 같은 글이 n곳 더: …」에 위치.",
     "작업 범위(A=Ⅷ·Ⅸ, B=Ⅷ, D=Ⅹ~Ⅺ) 밖이라 행으로 넣지 않은 겸직 관련 글: 신한 FY2025 Ⅺ 「3. 제재 등과 관련된 사항」 「… 당사의 직원은 업무상 사유로 다른 회사의 임원을 겸직하였음에도 …」"
     "(기업결합신고 누락 제재), KB FY2022~2025 Ⅺ 제재 「임원 겸직 사전승인 절차 누락」「임직원 겸직에 대한 금융위원회 사전승인 및 보고 누락」.",
-    "D 검색어 밖 고객·개인(신용)정보 처리 위탁 글(위탁업체 점검·「개인(신용)정보 위탁(제공) 보안관리 약정서」): 우리 FY2019~2025, KB FY2021~2025, 신한 FY2024·2025 Ⅺ — 행 아님(넣으려면 D 검색어 확장).",
+    "(15차 wave6에서 바뀜) 고객·개인(신용)정보 처리 위탁 글(우리 FY2019~2025, KB FY2019·2021~2025, 신한 FY2024·2025, 하나 FY2019~2025 Ⅺ)은 검색어를 「위탁」으로 넓혀 D 행으로 넣음"
+    "(38행, note 「(판단) 검색어 「위탁」으로 넓혀 넣음」). 그래서 D 우리 FY2021~2024 「문서에 없음」 4행은 없어짐.",
 ]
 
 out_lines = []
@@ -206,7 +215,7 @@ class PDFT:
         self.off, parts, o = [], [], 0
         for l in self.lines:
             self.off.append(o)
-            t = nzv(l)
+            t = re.sub(r"[\x00-\x08\x0b-\x1f]", "", nzv(l))     # (15차 wave6) 보이지 않는 제어문자는 행 쪽에서 지울 수 있음(note 「제어문자 지움」)
             parts.append(t)
             o += len(t)
         self.off.append(o)
@@ -232,6 +241,345 @@ def read_csv(path):
 def kst_iso(s):
     d = datetime.fromisoformat(s.replace("Z", "+00:00"))
     return d.astimezone(KST).isoformat()
+
+
+# ================================================================ (15차 wave6) 새 원문 대조 규칙·고침 점검 — verify15_bs_g1·g2·g3 같은 블록
+# 대조 규칙: source_text(와 「문서에 없음」이 아닌 reason_text)는 출처 텍스트의 한 곳에서 이어진 글이어야 함.
+#   「공백·줄바꿈만 지운 source_text」가 「공백·줄바꿈만 지운 출처 텍스트」 안에 이어서 그대로 있는지로 봄.
+#   OpenDART XML md 출처는 md 표지 「|」「<br>」도 양쪽에서 지움(&cr; 은 글자로 셈). 경영공시(13차 PDF 텍스트)는 「|」를 지우지 않음
+#   (13차 텍스트의 쪽 머리 줄 「## p.N」은 출처 글이 아니라 뺌). 줄마다 따로 있는 것(떨어진 두 곳)은 실패.
+import bisect as _w6_bisect
+
+W6_LIST = os.path.join(ROOT, "dart_out", "ops15", "사업보고서_원문.csv")
+W6_T13 = os.path.join(ROOT, "handoff", "13차_지주관리유형", "13차_지주관리유형_텍스트.zip")
+W6_KW = ("겸직", "파견", "출향", "전출", "전적", "겸무")
+W6_NONE = "문서에 없음"
+W6_INFO = re.compile(r"(?:고객|개인|신용)\S{0,8}정보")
+W6_AFF = re.compile(r"자회사|손자회사|그룹사|계열사|계열회사")
+W6_NOISE = re.compile(r"위탁(?=\s?(?:자|관리|매매|증거금|계좌|투자중개|금\s?반환))")
+
+
+def w6_xml(s):
+    """OpenDART XML md 출처 대조 꼴: 공백·줄바꿈과 md 표지 「|」「<br>」만 지움."""
+    return re.sub(r"\s+", "", (s or "").replace("<br>", "").replace("|", ""))
+
+
+def w6_ws(s):
+    """PDF·경영공시 출처 대조 꼴: 공백·줄바꿈만 지움(「|」는 남김)."""
+    return re.sub(r"\s+", "", s or "")
+
+
+class W6Doc:
+    def __init__(self, path):
+        with open(path, encoding="utf-8") as f:
+            self.L = f.read().split("\n")
+        self.off, parts, o = [], [], 0
+        for l in self.L:
+            self.off.append(o)
+            t = w6_xml(l)
+            parts.append(t)
+            o += len(t)
+        self.off.append(o)
+        self.buf = "".join(parts)
+        self.heads, self.tab_of, self.tabs, cur = [], [None] * len(self.L), {}, None
+        for i, l in enumerate(self.L):
+            if cur is None:
+                m = re.match(r"### \[절 (\d+)\] ?(.*)$", l)
+                if m:
+                    self.heads.append((i, int(m.group(1)), m.group(2).strip()))
+                    continue
+                m = re.fullmatch(r"\[표 (\d+)\]", l)
+                if m:
+                    cur, s0 = int(m.group(1)), i
+                continue
+            if l == "[표 끝]":
+                self.tabs[cur] = (s0, i)
+                cur = None
+                continue
+            self.tab_of[i] = cur
+        self.hidx = [h[0] for h in self.heads]
+
+    def line_at(self, pos):
+        return _w6_bisect.bisect_right(self.off, pos) - 1
+
+    def head_at(self, i):
+        k = _w6_bisect.bisect_right(self.hidx, i) - 1
+        return self.heads[k] if k >= 0 else None
+
+    def heads_at(self, i):
+        """줄 i 의 절 머리 후보: 바로 앞 머리(제목 빈 것 포함)와 제목 있는 머리 — 생성기마다 빈 제목 절을 다르게 다룸."""
+        k = _w6_bisect.bisect_right(self.hidx, i) - 1
+        out = []
+        if k >= 0:
+            out.append(self.heads[k][1:])
+        while k >= 0 and not self.heads[k][2]:
+            k -= 1
+        if k >= 0:
+            out.append(self.heads[k][1:])
+        return out
+
+    def occ(self, needle):
+        out, p = [], self.buf.find(needle) if needle else -1
+        while p >= 0:
+            out.append((p, p + len(needle)))
+            p = self.buf.find(needle, p + 1)
+        return out
+
+    def chap(self, roman):
+        R = {"VIII": r"(?:VIII|Ⅷ)\.", "X": r"(?:X|Ⅹ)\.", "XI": r"(?:XI|Ⅺ)\.", "XII": r"(?:XII|Ⅻ)\."}
+        s = next((i for i, n, t in self.heads if re.match(R[roman], t)), None)
+        if s is None:
+            return None
+        e = next((i for i, n, t in self.heads if i > s and (re.match(r"(?:VIII|IX|XII|XI|X|Ⅷ|Ⅸ|Ⅹ|Ⅺ|Ⅻ)\.", t) or t.startswith("【"))
+                  and not re.match(R[roman], t)), len(self.L))
+        return s, e
+
+
+W6_PAGE = re.compile(r"XML \[절 (\d+)\] 「(.*?)」(?: (\(문단\)|\[표 (\d+)\]))?"
+                     r"(?:~(?:\[절 (\d+)\] 「(.*?)」 )?(\(문단\)|\[표 (\d+)\]))?(?:; (p\.\d+(?:[,~]p\.\d+)*)\(본문 PDF, 13차 보관\))?$")
+
+
+def wave6(data, say, fail, cos):
+    """data = {"A": [행], "B": [행], "D": [행]} (조각 CSV dict). fail(글) 은 실패로 셈."""
+    rep = {r["rcept_no"]: r for r in csv.DictReader(open(W6_LIST, encoding="utf-8-sig"))}
+    docs = {}
+
+    def doc(rc):
+        if rc not in docs:
+            m = rep.get(rc)
+            docs[rc] = W6Doc(os.path.join(ROOT, m["text_path"])) if m and m.get("text_path") else None
+        return docs[rc]
+
+    mg = {}
+    with zipfile.ZipFile(W6_T13) as z:
+        for co in cos:
+            nm = next((n for n in z.namelist() if n.endswith("/경영공시__%s.md" % co)), None)
+            if nm:
+                txt = z.read(nm).decode("utf-8")
+                mg[co] = w6_ws("".join(l for l in txt.split("\n") if not re.match(r"## p\.\d+\s*$", l)))
+    say("## (wave6) 새 원문 대조 규칙과 15차 wave6 고침 점검")
+    say("- 규칙: source_text·reason_text(「문서에 없음」 아님)는 출처 한 곳에서 이어진 글 — 공백·줄바꿈만 지우고(XML md 는 「|」「<br>」도) 출처 글 안에 이어서 있어야 함. "
+        "&cr; 은 글자로 셈. 줄마다 따로 있는 것·「 | 」「 … 」를 넣은 것은 실패.")
+    n_ok = {"A": 0, "B": 0, "D": 0}
+    n_all = {"A": 0, "B": 0, "D": 0}
+    n_page = 0
+    for T in "ABD":
+        for k, r in enumerate(data[T], 2):
+            tag = "%s 줄 %d(%s FY%s)" % (T, k, r["corp_label"], r["fy"])
+            texts = [("source_text", r["source_text"])]
+            if T == "A" and r.get("reason_text") and r["reason_text"] != W6_NONE:
+                texts.append(("reason_text", r["reason_text"]))
+            for col, tx in texts:
+                if tx == W6_NONE:
+                    continue
+                n_all[T] += 1
+                if re.search(r"[\x00-\x08\x0b-\x1f]", tx):
+                    fail("%s %s 에 보이지 않는 제어문자가 있음" % (tag, col))
+                ctrl = "제어문자 지움" in r["note"]      # 규칙: 보이지 않는 제어문자만은 지워도 됨(note 에 적음) — 그 행은 출처 쪽 제어문자도 빼고 대조
+                if r["doc_kind"] == "경영공시":
+                    buf = mg.get(r["corp_label"])
+                    if buf is not None and ctrl:
+                        buf = re.sub(r"[\x00-\x08\x0b-\x1f]", "", buf)
+                    if buf is None or w6_ws(tx) not in buf:
+                        fail("%s %s 이 13차 경영공시 텍스트에 이어서 그대로 없음(공백만 지움) 「%s」" % (tag, col, tx[:60]))
+                    else:
+                        n_ok[T] += 1
+                    continue
+                d = doc(r["rcept_no_or_url"])
+                if d is None:
+                    fail("%s 원문 md 없음 %s" % (tag, r["rcept_no_or_url"]))
+                    continue
+                oc = d.occ(w6_xml(tx))
+                if not oc and ctrl:
+                    oc = [(0, 0)] if w6_xml(tx) in re.sub(r"[\x00-\x08\x0b-\x1f]", "", d.buf) else []
+                if not oc:
+                    fail("%s %s 이 원문 md 에 이어서 그대로 없음(공백·「|」·<br> 만 지움) 「%s」" % (tag, col, tx[:60].replace("\n", "⏎")))
+                    continue
+                n_ok[T] += 1
+                if col != "source_text":
+                    continue
+                # page ↔ 이어진 글의 첫 줄·끝 줄 위치
+                m = W6_PAGE.match(r["page"])
+                if not m:
+                    fail("%s page 꼴 모름 「%s」" % (tag, r["page"][:80]))
+                    continue
+                n1, t1, p1, tb1, n2, t2, p2, tb2 = m.group(1, 2, 3, 4, 5, 6, 7, 8)
+                good = False
+                for s, e in oc:
+                    ls, le = d.line_at(s), d.line_at(e - 1)
+                    if (int(n1), t1) not in d.heads_at(ls):
+                        continue
+                    if p2 is None:
+                        if tb1 is not None and not (d.tab_of[ls] == int(tb1) and d.tab_of[le] == int(tb1)):
+                            continue
+                        if tb1 is None and (d.tab_of[ls] is not None or d.tab_of[le] is not None):
+                            continue
+                    else:
+                        if (tb1 is None) != (d.tab_of[ls] is None) or (tb1 is not None and d.tab_of[ls] != int(tb1)):
+                            continue
+                        if (tb2 is None) != (d.tab_of[le] is None) or (tb2 is not None and d.tab_of[le] != int(tb2)):
+                            continue
+                        if (int(n2 or n1), t2 if n2 else t1) not in d.heads_at(le):
+                            continue
+                    good = True
+                    break
+                if good:
+                    n_page += 1
+                else:
+                    fail("%s page 「%s」 ≠ 이어진 글의 실제 위치" % (tag, r["page"][:80]))
+    say("- 원문에 이어서 있음: A %d/%d · B %d/%d · D %d/%d · page(첫 줄·끝 줄 절·표) 맞음 %d"
+        % (n_ok["A"], n_all["A"], n_ok["B"], n_all["B"], n_ok["D"], n_all["D"], n_page))
+
+    # A: registered·fulltime 칸, 회사·직위 칸, 정정판 사이 같은 행
+    A = data["A"]
+    nreg = sum(1 for r in A if r["registered"] == W6_NONE)
+    nft = sum(1 for r in A if r["fulltime"] == W6_NONE)
+    for k, r in enumerate(A, 2):
+        if r["source_text"] == W6_NONE:
+            continue
+        tag = "A 줄 %d(%s FY%s %s)" % (k, r["corp_label"], r["fy"], r["person"])
+        for f in ("registered", "fulltime"):
+            if not r[f].strip():
+                fail("%s %s 빈칸" % (tag, f))
+            elif r[f] == W6_NONE and "찾은 범위" not in r["note"]:
+                fail("%s %s 「문서에 없음」인데 note 에 찾은 범위 없음" % (tag, f))
+        src = w6_xml(r["source_text"])
+        if r["concurrent_title"] == "(나누지 않음)":
+            if w6_xml(r["concurrent_company"]) not in src:
+                fail("%s 나누지 않은 company 가 source_text 의 이어진 글이 아님" % tag)
+            if "(판단)" not in r["note"]:
+                fail("%s title 「(나누지 않음)」인데 note 에 (판단) 없음" % tag)
+        else:
+            for f in ("concurrent_company", "concurrent_title"):
+                if r[f] and w6_xml(r[f]) not in src:
+                    fail("%s %s 「%s」가 source_text 의 이어진 부분 글이 아님" % (tag, f, r[f][:40]))
+            # 나누기 꼴 점검(15차 비평의 허진호·이종백 류): 법인 종류 낱말뿐인 회사, 회사 끝·앞에 붙은 직함, 부서 이름에서 끊긴 회사
+            c, toks = r["concurrent_company"], r["concurrent_company"].split()
+            why = ""
+            if re.fullmatch(r"(?:법무법인|사단법인|재단법인|종합법률사무소|세무법인|회계법인)(?:\((?:유|유한)\))?", c) and r["concurrent_title"]:
+                why = "회사 칸이 법인 종류 낱말뿐(이름이 직위 칸으로 감)"
+            elif len(toks) >= 2 and re.search(r"(?:대표이사|부사장|사장|실장|청장|겸)$", toks[-1]):
+                why = "회사 칸 끝에 직함"
+            elif len(toks) >= 2 and re.search(r"(?:청장|원장|총장|학장)$", toks[0]):
+                why = "회사 칸 앞에 직함"
+            elif len(toks) >= 2 and re.search(r"(?:연구|본부|사업개발)$", c):
+                why = "회사 칸이 부서 이름 중간에서 끊김"
+            if why:
+                fail("%s 회사·직위 나누기 꼴 의심(%s): 「%s」/「%s」" % (tag, why, c, r["concurrent_title"]))
+    seen = {}
+    ndup = 0
+    for k, r in enumerate(A, 2):
+        if r["source_text"] == W6_NONE or rep.get(r["rcept_no_or_url"], {}).get("kind") != "정정":
+            continue
+        key = (r["corp_label"], r["fy"], r["person"], w6_xml(r["source_text"]))
+        if key in seen and seen[key][1] != r["rcept_no_or_url"]:
+            ndup += 1
+            fail("A 줄 %d: 같은 FY 다른 정정판(%s·%s)에 같은 행이 두 번 — %s %s" % (k, seen[key][1], r["rcept_no_or_url"], r["person"], r["fy"]))
+        seen.setdefault(key, (k, r["rcept_no_or_url"]))
+    say("- A: registered 「문서에 없음」 %d · fulltime 「문서에 없음」 %d · registered/fulltime 빈칸 %d · 「(나누지 않음)」 %d · 정정판 사이 같은 행 %d"
+        % (nreg, nft, sum(1 for r in A if r["source_text"] != W6_NONE and (not r["registered"].strip() or not r["fulltime"].strip())),
+           sum(1 for r in A if r["concurrent_title"] == "(나누지 않음)"), ndup))
+
+    # B: keyword 값, 임원 현황 표 행 표시
+    nb_off = 0
+    for k, r in enumerate(data["B"], 2):
+        tag = "B 줄 %d(%s FY%s)" % (k, r["corp_label"], r["fy"])
+        kw = r["keyword"]
+        if not (kw == "없음" or all(x in W6_KW for x in kw.split("·"))):
+            fail("%s keyword 「%s」가 요청 키워드 6개·「없음」 밖" % (tag, kw))
+        if r["doc_kind"] != "사업보고서" or r["source_text"] == W6_NONE:
+            continue
+        d = doc(r["rcept_no_or_url"])
+        oc = d.occ(w6_xml(r["source_text"])) if d else []
+        in_off = False
+        for s, _ in oc[:1]:
+            tno = d.tab_of[d.line_at(s)]
+            if tno is not None:
+                s0, e0 = d.tabs[tno]
+                hdr = w6_xml(d.L[s0 + 1]) if s0 + 1 < e0 else ""
+                in_off = hdr.startswith("성명") and "출생" in hdr
+        mark = "(위치) 임원 현황 표 — 작업 A 와 겹침" in r["note"]
+        nb_off += in_off
+        if in_off != mark:
+            fail("%s 임원 현황 표 행 %s — note 표시 %s" % (tag, "임" if in_off else "아님", "있음" if mark else "없음"))
+    say("- B: keyword 값 「%s」 · 임원 현황 표 행(note 「(위치) 임원 현황 표 — 작업 A 와 겹침」) %d"
+        % (" · ".join("%s %d" % (x, sum(1 for r in data["B"] if r["keyword"] == x)) for x in sorted(set(r["keyword"] for r in data["B"]))), nb_off))
+
+    # D: 묶음 풀기, 「위탁」 넓혀 넣은 행, Ⅹ 거래 표 위치 인용
+    D = data["D"]
+    nwt = ngrp = 0
+    keyset = set()
+    for k, r in enumerate(D, 2):
+        tag = "D 줄 %d(%s FY%s)" % (k, r["corp_label"], r["fy"])
+        if "같은 상대방·유형 언급 글" in r["note"]:
+            fail("%s 글이 다른 곳을 같은 (상대방·유형)으로 묶은 note 가 남음" % tag)
+        if r["source_text"] != W6_NONE:
+            key = (r["rcept_no_or_url"], w6_xml(r["source_text"]), r["counterparty"], r["contract_type"])
+            if key in keyset:
+                fail("%s 같은 보고서·같은 글·같은 (상대방·유형) 행이 두 번" % tag)
+            keyset.add(key)
+        mm = re.search(r"글자까지 같은 글이 (\d+)곳 더: ([^;]*)", r["note"])
+        if mm and r["doc_kind"] == "사업보고서":
+            ngrp += 1
+            d = doc(r["rcept_no_or_url"])
+            locs = re.findall(r"\[절 (\d+)\] 「(.*?)」(?: \[표 (\d+)\])?", mm.group(2))
+            for n, ti, tb in locs:
+                if not any((int(n), ti) in d.heads_at(d.line_at(s)) and
+                           (tb == "" or d.tab_of[d.line_at(s)] == int(tb)) for s, _ in d.occ(w6_xml(r["source_text"]))):
+                    fail("%s note 「글자까지 같은 글」 위치 [절 %s] [표 %s] 에 같은 글 없음" % (tag, n, tb or "-"))
+        if "검색어 「위탁」으로 넓혀 넣음" in r["note"]:
+            nwt += 1
+            s = r["source_text"]
+            if "위탁" not in s or "위탁" not in r["contract_type"] or w6_xml(r["contract_type"]) not in w6_xml(s):
+                fail("%s 「위탁」 행인데 source_text·contract_type 꼴이 맞지 않음" % tag)
+            if not (W6_INFO.search(s) or W6_AFF.search(s)):
+                fail("%s 「위탁」 행인데 같은 글에 정보·계열 낱말 없음" % tag)
+            if "(판단)" not in r["note"]:
+                fail("%s 「위탁」 행 note 에 (판단) 없음" % tag)
+        for seg in re.findall(r"지주–자회사 거래 표[^;]*", r["note"]):
+            d = doc(r["rcept_no_or_url"])
+            for a, b, q in re.findall(r"md (\d+)(?:~(\d+))?행 ((?:「[^」]*」)+)", seg):
+                qs = re.findall(r"「([^」]*)」", q)
+                ln = list(range(int(a) - 1, int(b or a)))
+                if d is None or len(qs) != len(ln) or any(d.L[i].strip() != x for i, x in zip(ln, qs)):
+                    fail("%s note Ⅹ 거래 표 위치 인용(md %s행)이 원문 줄과 다름" % (tag, a))
+    # 「위탁」 넓혀 찾기 덮임 — 본 보고서 Ⅹ~Ⅺ 의 「위탁」(위탁자·위탁매매 등 낱말 뺌) 가운데 같은 줄에 정보·계열 낱말이 있는 곳
+    unc, noted = [], 0
+    for rc, m in rep.items():
+        if m["label"] not in cos or m["kind"] != "본" or not m.get("text_path"):
+            continue
+        d = doc(rc)
+        x, xi = d.chap("X"), d.chap("XI")
+        if not x:
+            continue
+        s0, e0 = x[0], (xi[1] if xi else x[1])
+        drs = [r for r in D if r["rcept_no_or_url"] == rc and r["source_text"] != W6_NONE]
+        spans = [sp for r in drs for sp in d.occ(w6_xml(r["source_text"]))]
+        for i in range(s0, e0):
+            l = d.L[i]
+            if "위탁" not in l or l.startswith("### "):
+                continue
+            ctxt = " ".join(d.L[max(s0, i - 2):min(e0, i + 3)])
+            for mm in re.finditer("위탁", l):
+                if W6_NOISE.match(l, mm.start()):
+                    continue
+                if not (W6_INFO.search(l) or W6_AFF.search(l) or (len(l) < 40 and (W6_INFO.search(ctxt) or W6_AFF.search(ctxt)))):
+                    continue
+                pos = d.off[i] + len(w6_xml(l[:mm.start()]))
+                if any(a <= pos < b for a, b in spans):
+                    continue
+                locs = ["[절 %d] 「%s」" % hh for hh in d.heads_at(i)]
+                loc = locs[-1] if locs else "-"
+                if any("넣지 않은 글" in r["note"] and any(lc in r["note"] for lc in locs) for r in D if r["rcept_no_or_url"] == rc):
+                    noted += 1
+                    continue
+                unc.append("%s FY%s md %d행 %s 「…%s…」" % (m["label"], m["fy"], i + 1, loc, l[max(0, mm.start() - 20):mm.end() + 20]))
+    say("- D: 「위탁」 넓혀 넣은 행 %d · 「글자까지 같은 글」로 묶은 행 %d(위치마다 같은 글 확인) · 「위탁」+정보·계열 낱말 줄 가운데 행에 없고 note 「넣지 않은 글」 절에 있는 곳 %d · 어디에도 없는 곳 %d"
+        % (nwt, ngrp, noted, len(unc)))
+    for x in unc[:20]:
+        fail("D 「위탁」 넓혀 찾기 누락 후보 " + x)
+    say("- 조각별 행 수: " + " · ".join("%s %d(「문서에 없음」 %d)" % (T, len(data[T]), sum(1 for r in data[T] if r["source_text"] == W6_NONE)) for T in "ABD"))
+    say("")
 
 
 def main():
@@ -523,6 +871,8 @@ def main():
                 tabs = {pt} | {int(x) for x in re.findall(r"\[표 (\d+)\]", re.sub(r"「\|[^」]*\|」", "", r["note"]))}
                 for tno in tabs:
                     same_tab.add((tno, nzv(r["source_text"])))
+                    # (15차 wave6) 병합 칸 행은 윗줄부터 이어서 옮기므로 마지막 줄(그 행)도
+                    same_tab.add((tno, nzv(r["source_text"].split("\n")[-1])))
                 for tno, q in QRE.findall(r["note"]):
                     quoted.add((int(tno), nzv(q)))
             spans8 = [d.chapter("VIII"), d.chapter("IX")]
@@ -805,7 +1155,7 @@ def main():
                 continue
             fn = os.path.join(ORIG, t, "%s__%s__%s.md" % (r["corp_label"], ("FY" + r["fy"]) if r["fy"].isdigit() else r["fy"], r["doc_kind"]))
             if fn not in omd:
-                omd[fn] = nzv(open(fn, encoding="utf-8").read()) if os.path.exists(fn) else None
+                omd[fn] = re.sub(r"[\x00-\x08\x0b-\x1f]", "", nzv(open(fn, encoding="utf-8").read())) if os.path.exists(fn) else None
             buf = omd[fn]
             texts = [r["source_text"]] + ([r["reason_text"]] if t == "A" and r["reason_text"] != NONE else [])
             if buf is not None and all(nzv(x) in buf for x in texts):
@@ -838,6 +1188,9 @@ def main():
     say("- 본 파일 %d개(조각 CSV 3 · 생성기 1 · 원문 md %d) — 환경변수 키 값 %s · crtfc_key=값 · 40자리 16진: 걸린 파일 %d"
         % (len(files), len(files) - 4, "대조함" if len(key) >= 8 else "(환경변수 없음 — 꼴 검사만)", bad))
     say("")
+
+    # ------------------------------------------------ (15차 wave6) 새 원문 대조 규칙·고침 점검
+    wave6(data, say, lambda s: prob("w6", s), COS)
 
     # ------------------------------------------------ 고친 곳·결과
     say("## 고친 곳(이번 검증)")

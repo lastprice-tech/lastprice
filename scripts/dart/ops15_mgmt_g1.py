@@ -781,11 +781,42 @@ def _base(co, fy, r, t):
                 collected_at=r["fetched_at"])
 
 
-def _common(co, fy, t):
+def _ranges(ns):
+    """[348, 349, 350, 651] → 「348~350,651」."""
+    out, ns = [], sorted(ns)
+    for n in ns:
+        if out and n == out[-1][1] + 1:
+            out[-1][1] = n
+        else:
+            out.append([n, n])
+    return ",".join(("%d~%d" % (a, b)) if a != b else str(a) for a, b in out)
+
+
+def garbled_pages(pages):
+    """(판단) 글자층이 깨진 쪽(검증 15차 g1 추가): 글자는 있으나 공백 뺀 글자 가운데 한글이 20% 미만이고 보이지 않는
+    제어문자가 5자 이상인 쪽 — 글꼴 부호가 깨져 낱말을 찾을 수 없는 쪽(KB FY2024 감사보고서 부분 등). 글을 지어내지 않고 note 에 밝힘."""
+    out = []
+    for n, body in pages:
+        s = re.sub(r"\s", "", body)
+        if s and len(HANGUL.findall(s)) / len(s) < 0.2 and len(CTRL.findall(body)) >= 5:
+            out.append(n)
+    return out
+
+
+def _garble_note(pages):
+    g = garbled_pages(pages)
+    return ("%d쪽(p.%s)" % (len(g), _ranges(g))) if g else ""
+
+
+def _common(co, fy, t, pages=None):
     c = "FY%d 경영공시 PDF 글(%s, pymupdf page.get_text() 그대로 — 「## p.N」= PDF 쪽)" % (fy, os.path.basename(t["text_path"]))
     m = re.match(r"(\d+)쪽\(", t.get("empty_pages") or "")
     if m and int(m.group(1)) >= 10:
         c += "; 이 문서의 글자 없는 쪽 %s 은 그림이라 찾지 못함" % t["empty_pages"]
+    gn = _garble_note(pages) if pages else ""
+    if gn:
+        c += ("; 이 문서의 글자층이 깨진 쪽 %s 은 글자는 있으나 한글 20%% 미만·제어문자 5자 이상이라(글꼴 부호 깨짐) 낱말을 "
+              "찾을 수 없어 찾지 못함" % gn)
     return c
 
 
@@ -793,7 +824,7 @@ def extract_B(docs, sect):
     rows = []
     for co, fy, r, t in docs:
         pages = load_pages(t["text_path"])
-        base, common = _base(co, fy, r, t), _common(co, fy, t)
+        base, common = _base(co, fy, r, t), _common(co, fy, t, pages)
         seen = {}
         mine = []
         for n, body in pages:
@@ -842,12 +873,33 @@ def extract_B(docs, sect):
         if not mine:
             mine.append(dict(base, employees_total="", regular="", contract="", keyword="없음", source_text=NONE,
                              page="p.1~p.%d(경영공시 전체 — 찾은 범위)" % len(pages),
-                             note="; ".join([common, "찾은 범위: FY%d 경영공시 전체 %d쪽(글자 없는 쪽 %s) · 검색어 %s(공백·줄바꿈 무시, "
+                             note="; ".join([common, "찾은 범위: FY%d 경영공시 전체 %d쪽(글자 없는 쪽 %s%s) · 검색어 %s(공백·줄바꿈 무시, "
                                                      "「전적으로」「완전적용」 같은 다른 낱말 속 「전적」은 뺌) · 없음"
-                                             % (fy, len(pages), t.get("empty_pages") or "없음", "·".join(B_KWS)),
+                                             % (fy, len(pages), t.get("empty_pages") or "없음",
+                                                (" · 글자층 깨진 쪽 " + _garble_note(pages)) if _garble_note(pages) else "",
+                                                "·".join(B_KWS)),
+                                             _b_wider(pages),
                                              "직원 수는 같은 FY 사업보고서 행"])))
         rows.extend(mine)
     return rows
+
+
+B_WIDER = ["겸임", "겸업", "兼", "인사교류", "인력지원", "지원인력", "인력교류", "순환근무"]
+
+
+def _b_wider(pages):
+    """(검증 15차 g1 추가) 「문서에 없음」 반박 시도 — 더 넓은 검색어로 찾은 쪽(위치만; 6개 검색어가 아니라 행으로 넣지 않음)."""
+    hits = {}
+    for n, body in pages:
+        S = re.sub(r"\s", "", body)
+        for w in B_WIDER:
+            if w in S:
+                hits.setdefault(w, []).append(n)
+        if re.search(r"(?:^|\s)겸(?=\s)", body):
+            hits.setdefault("홀로 쓴 「겸」", []).append(n)
+    found = " · ".join("%s p.%s" % (w, _ranges(ns)) for w, ns in hits.items()) or "없음"
+    return ("더 넓은 검색어(%s·홀로 쓴 「겸」, 공백·줄바꿈 무시)로도 찾음 — 찾은 곳: %s; (판단) 이 낱말들은 사용자 지정 검색어 6개가 "
+            "아니라 행으로 넣지 않고 위치만 적음" % ("·".join(B_WIDER), found))
 
 
 HOLDCO = {
@@ -881,12 +933,39 @@ def _party(line):
             and re.search(r"[가-힣A-Za-z]{2}", t) is not None and len(t) < 30)
 
 
+HDR_AMT_RE = re.compile(r"^\s*(거래금액|금액|금엑)\s*$")
+HDR_TAIL_RE = re.compile(r"^\s*(비고|계정과목|거래항목?|목|\(?\s*단위)")
+
+
+def _label_first_header(lines, h):
+    """검색어 줄 위에서 가장 가까운 「거래금액」 머리 칸이 [거래내용, 채권자…, 채무자…, 거래금액] 4칸 머리의 끝이고
+    그 다음 줄이 계정과목·비고 머리 칸이 아닌지(= 행 끝이 금액 칸인 표)."""
+    for k in range(h - 1, max(-1, h - 400), -1):
+        if HDR_AMT_RE.match(lines[k]):
+            if k < 3:
+                return False
+            a, b, c = (lines[k - 3].strip(), re.sub(r"\s", "", lines[k - 2]), re.sub(r"\s", "", lines[k - 1]))
+            nxt = _nb(lines, k, 1, 3)
+            return (a == "거래내용" and re.search(r"채권자|매도자", b) is not None and re.search(r"채무자|매수자", c) is not None
+                    and nxt is not None and not HDR_TAIL_RE.match(lines[nxt]))
+    return False
+
+
 def table_row(lines, h):
     """(판단) 거래 표의 한 행 → (s, e, 방식) 또는 None. 셋 가운데 처음 맞는 것:
     ① 거래구분 칸(채권·채무·수익·비용·매매거래 등)이 행마다 있는 표 — 검색어 줄 위 8줄 안의 거래구분 칸부터 다음 거래구분 칸·합계·주석 줄 앞까지
     ② 거래구분 칸이 합쳐진 표의 [당사자, 당사자, 금액, 계정과목] 행 — 검색어 줄 바로 위가 금액 칸, 그 위 두 줄이 당사자 칸 꼴
     ③ [당사자, 당사자, 계정과목, 금액] 행 — 검색어 줄 바로 아래가 금액 칸, 위 두 줄이 당사자 칸 꼴
+    ④(검증 15차 g1 추가, 가장 먼저 봄) 표 머리가 [거래내용, 채권자·매도자, 채무자·매수자, 거래금액] 4칸(금액 뒤 칸 없음)인 표
+       (KB) — 검색어 줄이 거래내용 칸이고 아래 두 줄이 당사자 칸, 그 다음 줄이 금액 칸. ②는 이 표에서 앞 행의 금액과 다음 행의
+       거래내용을 한 행으로 잘못 묶었으므로 ④를 먼저 봄.
     (빈 줄 = 공백만 있는 표 칸은 건너뜀)"""
+    if _label_first_header(lines, h):
+        p1 = _nb(lines, h, 1, 3)
+        p2 = _nb(lines, p1, 1, 3) if p1 is not None else None
+        am = _nb(lines, p2, 1, 3) if p2 is not None else None
+        if am is not None and _party(lines[p1]) and _party(lines[p2]) and AMT_RE.match(lines[am]):
+            return h, am, "④"
     st, k = None, h
     for _ in range(9):
         if k is None:
@@ -922,7 +1001,8 @@ def table_row(lines, h):
 
 
 ROW_HOW = {"①": "거래구분 칸부터 다음 거래구분 칸 앞까지", "②": "거래구분 칸이 합쳐진 표의 [당사자, 당사자, 금액, 계정과목] 줄",
-           "③": "[당사자, 당사자, 계정과목, 금액] 줄"}
+           "③": "[당사자, 당사자, 계정과목, 금액] 줄",
+           "④": "머리가 [거래내용, 채권자·매도자, 채무자·매수자, 거래금액] 4칸인 표의 [거래내용, 당사자, 당사자, 금액] 줄"}
 # (판단) 지주·계열사 사이 글이 아니라고 본 문장 — 검색어·계열사 낱말·지주 낱말이 한 문장에 있으나 뜻이 다른 것. 빼고 work 의
 # D_제외문장.csv 에 남김. (공백 지운 글의 앞부분, 사유)
 D_EXCLUDE = [
@@ -938,11 +1018,109 @@ def _excluded(txt0):
     return ""
 
 
+# (검증 15차 g1 추가, 판단) 지주 이름은 없으나 계열사가 「그룹사」를 상대로 자문·용역 등을 준다는 글 — 지주가 「그룹사」에
+# 드는지 원문에 없어 애매하므로 넣음(지시: 지주–계열사 사이인지 애매하면 넣고 note (판단)). (공백 지운 문장 정규식, contract_type 을
+# 뽑는 원문 정규식(첫 묶음), note)
+D_AMBIG_TERMS = ["자문", "위탁", "용역", "전산"]
+D_AMBIG = [
+    (r"그룹사(를)?상대로.*(자문|위탁|용역|전산).*제공", r"그룹사\s*상대로\s*([\s\S]+?)를\s*제공",
+     "(판단) 계열사(문장 주어)가 「그룹사 상대로」 서비스를 제공한다는 자회사 소개 글 — 지주가 「그룹사」에 드는지는 원문에 없어 "
+     "애매하므로 넣음; counterparty 는 문장 주어, contract_type 은 「그룹사 상대로」 뒤 「…를 제공」 앞 글(줄바꿈은 공백으로)"),
+]
+HOLD_CELL = {"KB금융지주":r"㈜?KB금융지주|케이비금융지주", "신한금융지주": r"신한금융지주(회사)?", "하나금융지주": r"하나금융지주",
+             "우리금융지주": r"우리금융지주"}
+SERIAL_RE = re.compile(r"^\s*\d{1,3}\s*$")
+
+
+def joint_ad_rows(lines, co):
+    """(검증 15차 g1 추가, 판단) 「공동광고 현황」 표에서 공동광고 회사명 칸(한 줄 전체)이 지주 이름인 행 →
+    [(s, e, 행 첫 줄, 지주 말고 회사명 칸들)]. 행 = 연번 줄(숫자만, 다음 글 줄이 「20xx」로 시작)부터 다음 연번 줄 앞까지.
+    s 는 표 제목 줄(「…공동광고 현황」, 없으면 「공동광고」가 든 가장 가까운 위 줄)이고, 거기서 행 끝까지 2,000자가 넘으면 행 첫 줄."""
+    flat = [re.sub(r"\s", "", ln) for ln in lines]
+    tops = [i for i, f in enumerate(flat) if "공동광고" in f]
+    if not tops:
+        return []
+    t0 = next((i for i in tops if "공동광고현황" in flat[i]), tops[0])
+    t1 = next((i for i in range(t0 + 1, len(lines)) if "시설물" in flat[i]), len(lines))
+    cell = re.compile(r"^(%s)$" % HOLD_CELL[co])
+    starts = [i for i in range(t0, t1) if SERIAL_RE.match(lines[i]) and
+              (lambda nx: nx is not None and re.match(r"\s*20\d\d", lines[nx]))(_nb(lines, i, 1, 2))]
+    out = []
+    for i in range(t0, t1):
+        if not cell.match(flat[i]):
+            continue
+        rs = max([x for x in starts if x < i], default=None)
+        if rs is None:
+            continue
+        nxt = [x for x in starts if x > i]
+        e = (nxt[0] - 1) if nxt else t1 - 1
+        while e > i and not lines[e].strip():
+            e -= 1
+        heads = [x for x in tops if x <= rs]
+        s = max([x for x in heads if "공동광고현황" in flat[x]] or heads or [rs])
+        if len("\n".join(lines[s:e + 1])) > 2000:
+            s = rs
+        names = [flat[x] for x in range(rs, e + 1) if re.fullmatch(r"[가-힣A-Za-z&]{2,14}", flat[x])
+                 and lines[x].strip() == flat[x] and not cell.match(flat[x]) and not re.search(r"홍보관|박람회|골프|광고|매체|대회", flat[x])]
+        out.append((s, e, rs, names))
+    return out
+
+
+D_WIDER = ["자문", "공동"]
+
+
+def _d_wider(rows):
+    """(검증 15차 g1 추가) D 「문서에 없음」 반박 시도 — note 에 위치만 더함(행으로 넣지 않음).
+    ① 더 넓은 검색어 「자문」「공동」이 지주 이름 앞뒤 3줄 안에 있는 쪽.
+    ② 같은 회사의 다른 FY 3개 이상에서 거래 표 행 counterparty 였던 회사가 이 문서에서도 지주와 붙은 표 행으로 있는 곳(칸 글 그대로)."""
+    cps = {}
+    for r in rows:
+        if r["source_text"] != NONE and r.get("counterparty"):
+            cps.setdefault((r["corp_label"], r["counterparty"]), set()).add(r["fy"])
+    for r in rows:
+        pages = r.pop("_pages", None)
+        if pages is None:
+            continue
+        co = r["corp_label"]
+        hold = re.compile(HOLDCO[co])
+        hits, same = {}, []
+        for n, body in pages:
+            lines = body.split("\n")
+            flat = [re.sub(r"\s", "", ln) for ln in lines]
+            for i, f in enumerate(flat):
+                for w in D_WIDER:
+                    if w in f and any(hold.search(x) for x in flat[max(0, i - 3):i + 4]):
+                        hits.setdefault(w, set()).add(n)
+            for (c2, cp), fys in sorted(cps.items()):
+                if c2 != co or len(fys) < 3 or r["fy"] in fys:
+                    continue
+                for i, f in enumerate(flat):
+                    if f != re.sub(r"\s", "", cp):
+                        continue
+                    j = _nb(lines, i, 1, 2)
+                    if j is None or not hold.search(flat[j]):
+                        continue
+                    a = _nb(lines, j, 1, 3)
+                    if a is None or not AMT_RE.match(lines[a]):
+                        continue
+                    b = _nb(lines, a, 1, 3)
+                    same.append("p.%d 「%s」·「%s」·금액 칸 「%s」·다음 칸 「%s」(다른 FY %s 에 행이 있던 상대방)"
+                                % (n, lines[i].strip(), lines[j].strip(), lines[a].strip(),
+                                   lines[b].strip() if b is not None else "", "·".join(sorted(fys))))
+        add = ["더 넓은 검색어 「자문」「공동」(지주 이름 앞뒤 3줄 안 — 쪽 머리글의 지주 이름 포함)으로도 찾음 — 찾은 곳: %s"
+               % (" · ".join("%s p.%s" % (w, _ranges(ns)) for w, ns in hits.items()) or "없음")
+               + ("; (판단) 원문을 보니 연혁·회계정책(관계기업 및 공동기업)·자회사끼리의 공동이용 표 등이라 지주가 당사자인 "
+                  "업무위탁·용역·공동사용 글이 아님" if hits else "")]
+        if same:
+            add.append("같은 상대방 표 행: %s — 이 칸들에 검색어가 없어 행으로 넣지 않음(위치·칸 글만)" % " ; ".join(same[:4]))
+        r["note"] = "; ".join([r["note"]] + add)
+
+
 def extract_D(docs, sect):
     rows, excl = [], []
     for co, fy, r, t in docs:
         pages = load_pages(t["text_path"])
-        base, common = _base(co, fy, r, t), _common(co, fy, t)
+        base, common = _base(co, fy, r, t), _common(co, fy, t, pages)
         hold = re.compile(HOLDCO[co])
         seen, mine = {}, []
         for n, body in pages:
@@ -952,7 +1130,7 @@ def extract_D(docs, sect):
                 if tr:
                     s, e, how = tr
                     cells = [x.strip() for x in lines[s:e + 1] if x.strip()]
-                    body_c = cells[1:] if how == "①" else cells
+                    body_c = cells[1:] if how in ("①", "④") else cells
                     nonamt = [x for x in body_c if not AMT_RE.match(x)]
                     parties = nonamt[:2]
                     if not any(hold.search(re.sub(r"\s", "", x)) for x in parties):
@@ -961,17 +1139,20 @@ def extract_D(docs, sect):
                                              text="\n".join(lines[s:e + 1]).strip(),
                                              why="표 행에 지주 이름이 있으나 당사자 칸(앞 두 칸)이 아님"))
                         continue
-                    ctl = [x for x in nonamt[2:]]
+                    ctl = [cells[0]] if how == "④" else [x for x in nonamt[2:]]
                     ct = "\n".join(ctl) if any(term in re.sub(r"\s", "", x) for x in ctl) else ""
                     amts = [x for x in body_c if AMT_RE.match(x)]
                     others = [x for x in parties if not hold.search(re.sub(r"\s", "", x))]
                     extra = {"counterparty": others[0] if len(others) == 1 else "", "contract_type": ct,
                              "amount": amts[0] if len(amts) == 1 else ""}
                     xn = ["(판단) 표 행 %s = %s(PDF 줄 그대로); counterparty 는 지주가 아닌 당사자 칸, contract_type 은 "
-                          "검색어가 든 계정과목·비고 칸(줄이 나뉜 칸은 줄바꿈 그대로), amount 는 금액 칸(원문 글 그대로)"
-                          % (how, ROW_HOW[how])]
+                          "검색어가 든 %s 칸(줄이 나뉜 칸은 줄바꿈 그대로), amount 는 금액 칸(원문 글 그대로)"
+                          % (how, ROW_HOW[how], "거래내용" if how == "④" else "계정과목·비고")]
                     if cells and how == "①":
                         xn.append("거래구분 칸 「%s」" % cells[0])
+                    if how == "④":
+                        xn.append("표 머리 「거래내용 / 채권자, 매도자 등 / 채무자, 매수자 등 / 거래금액」 순서대로 읽음(검증 15차 g1: "
+                                  "전에는 ②로 읽어 앞 행의 금액·당사자와 다음 행의 거래내용을 한 행으로 묶었던 것을 고침)")
                     if len(others) != 1:
                         xn.append("상대방 칸을 하나로 못 정해 counterparty 비움")
                     if not ct:
@@ -1008,19 +1189,65 @@ def extract_D(docs, sect):
                 seen[key] = row
                 mine.append(row)
                 sect.setdefault(("D", co, fy), set()).add(n)
+            for term, a, b in find_terms(lines, D_AMBIG_TERMS):
+                s, e, kind = unit(lines, a, b)
+                raw = "\n".join(lines[s:e + 1]).strip()
+                txt0 = re.sub(r"\s", "", raw)
+                hit = next(((rx, cap, why) for rx, cap, why in D_AMBIG if re.search(rx, txt0)), None)
+                if not hit:
+                    continue
+                txt, cut = clean(raw)
+                key = re.sub(r"\s", "", txt)
+                if key in seen:
+                    continue
+                subj = re.match(r"\s*([^\s]+?)는\s", txt)
+                ctm = re.search(hit[1], txt)
+                notes = [common, "검색어 「%s」(검증 15차 g1 에서 「%s」 grep 으로 찾아 넣음)" % (term, term), hit[2]] \
+                    + (["제어문자 지움"] if cut else [])
+                row = dict(base, source_text=txt, page="p.%d" % n, _notes=notes, _also=[],
+                           counterparty=subj.group(1) if subj else "",
+                           contract_type=re.sub(r"\s+", " ", ctm.group(1)).strip() if ctm else "", amount="")
+                seen[key] = row
+                mine.append(row)
+                sect.setdefault(("D", co, fy), set()).add(n)
+            for s, e, rs, names in joint_ad_rows(lines, co):
+                raw = "\n".join(lines[s:e + 1]).strip()
+                txt, cut = clean(raw)
+                key = re.sub(r"\s", "", txt)
+                if key in seen:
+                    continue
+                notes = [common, "검색어 「공동」(표 「공동광고 현황」 — 검증 15차 g1 에서 「공동」 grep 으로 찾아 넣음)",
+                         "(판단) 「공동광고 현황」 표의 한 행 — 공동광고 회사명 칸에 지주 이름이 있어 넣음. 「공동광고」가 업무위탁·용역·"
+                         "공동사용 가운데 무엇인지는 원문에 없음(같은 문서의 금융지주회사법 조문 「④ 금융지주회사등은 … 공동광고를 하거나 … "
+                         "공동사용할 수 있다」 행과 함께 봄)",
+                         ("표 제목 줄부터 그 행 끝까지 PDF 줄 그대로 이어 옮김(사이의 앞 행은 지주가 없는 행이나 이어진 글이라 함께 옮김)"
+                          if s < rs else "그 행만 PDF 줄 그대로 옮김(표 제목 「공동광고 현황」은 같은 쪽 위)"),
+                         "공동광고 회사명 칸(지주 말고): %s — 여럿이라 counterparty 비움" % "·".join(names)] \
+                    + (["제어문자 지움"] if cut else [])
+                row = dict(base, source_text=txt, page="p.%d" % n, _notes=notes, _also=[], counterparty="",
+                           contract_type="공동광고", amount="")
+                seen[key] = row
+                mine.append(row)
+                sect.setdefault(("D", co, fy), set()).add(n)
         for row in mine:
             if row["_also"]:
                 row["_notes"].insert(1, "같은 글이 %s 에도 있음(한 번만 옮김)" % ",".join(row["_also"]))
             row["note"] = "; ".join(row.pop("_notes"))
             row.pop("_also")
         if not mine:
+            gn = _garble_note(pages)
             mine.append(dict(base, counterparty="", contract_type="", amount="", source_text=NONE,
                              page="p.1~p.%d(경영공시 전체 — 찾은 범위)" % len(pages),
-                             note="; ".join([common, "찾은 범위: FY%d 경영공시 전체 %d쪽(글자 없는 쪽 %s — 그림이라 찾지 못함) · 검색어 %s"
+                             note="; ".join([common, "찾은 범위: FY%d 경영공시 전체 %d쪽(글자 없는 쪽 %s%s) · 검색어 %s"
                                                      "(공백·줄바꿈 무시) · 지주가 당사자인 거래 표 행이나 지주·계열사 사이 문장 없음"
-                                             % (fy, len(pages), t.get("empty_pages") or "없음", "·".join(D_TERMS))]
-                                            + _none_hint(co, fy, excl))))
+                                             % (fy, len(pages), (t["empty_pages"] + " — 그림이라 찾지 못함")
+                                                if t.get("empty_pages") else "없음",
+                                                (" · 글자층 깨진 쪽 %s — 낱말을 찾을 수 없음" % gn) if gn else "",
+                                                "·".join(D_TERMS))]
+                                            + _none_hint(co, fy, excl)),
+                             _pages=pages))
         rows.extend(mine)
+    _d_wider(rows)
     with open(os.path.join(WORK, "D_제외문장.csv"), "w", encoding="utf-8-sig", newline="") as f:
         w = csv.DictWriter(f, fieldnames=["co", "fy", "page", "term", "how", "text", "why"], lineterminator="\n")
         w.writeheader()

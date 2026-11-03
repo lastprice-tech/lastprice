@@ -3,12 +3,25 @@
 
     python3 scripts/dart/verify15_C.py      # 인자 없음 → exit 0(통과)/1(실패), 결과 dart_out/ops15/verify15_C.txt
 
-원문은 생성기(scratchpad C/scripts/build.py — 저장소 밖)와 따로 읽어 대조한다(웹 요청·API 키 사용 없음, 입력은 읽기만).
+원문은 생성기(scripts/dart/ops15_C/build.py — 15차 6파동에 저장소 밖 scratchpad 에서 옮김)와 따로 읽어 대조한다(웹 요청·API 키 사용 없음, 입력은 읽기만).
+
+저장소 밖(git 밖) 파일에 기댐 — 없으면 이렇게 다시 만듦(scripts/dart/ops15_C/README.md 와 같은 내용):
+  dart_out/raw/document/<접수번호>.zip(.meta.json)  OpenDART document.xml 원본. 25건(작업 C 가 15차에 받은 것)은 커밋한 dart_out/raw_part*.tar.gz 에
+        없음 → `python3 scripts/dart/ops15_C/fetch_docs.py <접수번호> …`(DART_API_KEY 환경변수, client.py 가 로그에서 가림). 나머지는 raw_part*.tar.gz 를
+        dart_out/ 아래에 풀면 dart_out/raw/ 로 나옴.
+  dart_out/raw/list/<corp_code>_*.json(.meta.json)  공시목록 원장 — raw_part*.tar.gz 에서 풀거나 fetch_lists.py·fetch_nh.py 로 다시 받음
+        (NH 조회 원본은 dart_out/raw/list/nh15/, 요약은 커밋하는 scripts/dart/ops15_C/nh_list.json).
+  dart_out/text/ops15/신고서__<접수번호>.md       `python3 scripts/dart/ops15_C/tomd.py`(위 zip → ops15_prep.xml_to_md).
+  dart_out/text/ops15/신고서__<접수번호>__본문PDF.md  `<venv 파이썬> -I scripts/dart/ops15_C/pdf2md.py handoff/원본_주요신고서본문.zip <접수번호> <제출회사> <출력>`.
+  PDF 쪽 글 다시 뽑기는 아래 VENV_PY(COMMON15 의 PDF 처리 파이썬, PyMuPDF)가 있을 때만 하고, 없으면 원본 zip sha256 대조만 함.
   원문: OpenDART document.xml 원본 dart_out/raw/document/<rcept>.zip 을 ops15_prep.xml_to_md() 로 다시 md 로 옮긴 글
         (저장해 둔 dart_out/text/ops15/신고서__<rcept>.md 본문과 같은지도 봄),
         본문 PDF 쪽 텍스트 dart_out/text/ops15/신고서__<rcept>__본문PDF.md(「## p.N」, 원본 handoff/원본_주요신고서본문.zip sha256 대조),
         우리 2018 정정 웹 회수본 = handoff/dart-benchmark-kit.zip 안 원문_지주전환_서술.csv(status 014→웹회수, 이전 차수 회수본).
-  (a) 모든 행 source_text 가 그 행 출처 원문에 글자 그대로 있는지 — 공백·줄바꿈·「|」(｜)만 무시. (C 에는 reason_text 칸 없음)
+  (a) 모든 행 source_text 가 그 행 출처 원문의 한 곳에 이어서 그대로 있는지 — 15차 새 원문 대조 규칙: 「공백·줄바꿈만 지운 source_text」가
+      「공백·줄바꿈만 지운 출처 텍스트」 안에 이어서 있어야 함. OpenDART XML md 출처는 md 표지 「|」와 「<br>」도 양쪽에서 지움(「｜」 등 다른 글자는 그대로).
+      웹 회수본 출처는 공백·줄바꿈만 지우고, 「 … 」·「 | 」 같은 생략·이음 표시가 든 행은 실패. (C 에는 reason_text 칸 없음)
+      source_text 「수집 실패」 행(OpenDART 014 로 원문을 못 받은 문서)은 note 에 정해진 문구가 있고 그 문서가 정말 014·다른 로컬 원문 없음인지 봄.
   (b) page: 「XML [절 n] 「제목」 [표 m]」 → md 의 절 n 제목이 같고 글이 그 절(표 m 이 있으면 그 표 안, 없으면 표 밖)에 있음,
       「p.N(본문 PDF)」 → 그 글이 PDF 쪽 N 에(쪽을 넘으면 N 에서 시작), 「웹 회수본 목차 [n] 「제목」 안 「소절」 부분」 → 회수본
       목차 n 제목이 같고 글이 그 안에, 소절 제목이 글 앞에 있음. section_title 칸도 같은 제목인지.
@@ -20,7 +33,8 @@
   (f) 우리 2018 정정 8건(웹 회수본) 행 note 에 「이전 차수 웹 회수본 — 이번에 새로 받지 않음」.
   (g) 문서당 60행 상한: 후보를 다시 세어 note 의 「키워드 행 N개 … M개 뺌」·문서별 행 수·보고 숫자와 같은지.
   (h) 원문 md(dart_out/ops15/원문/C/) 에 행마다 그 절이 있고 글이 있는지(같은 절 가리킴 줄은 따라감), 절 글 sha256 이 원문과 같은지.
-  (i) 「문서에 없음」 7행 반박 시도: 더 넓은 검색어로 같은 문서·공시목록을 다시 찾음. 「전적」(轉籍) 0건도 다시 봄.
+  (i) 「문서에 없음」 행 반박 시도: 더 넓은 검색어로 같은 문서·공시목록을 다시 찾음(NH농협금융지주 2012 설립 행 포함). 「수집 실패」 행은 로컬에
+      다른 원문이 없는지 봄. 「전적」(轉籍) 0건도 다시 봄.
 """
 from __future__ import annotations
 
@@ -56,6 +70,10 @@ PDFZIP = "handoff/원본_주요신고서본문.zip"
 COLS = ["corp_label", "doc_kind", "rcept_no", "rcept_dt", "section_title", "keyword", "source_text", "page", "note",
         "doc_name", "collected_at"]
 NOT = "문서에 없음"
+FAILED = "수집 실패"      # 15차 6파동: OpenDART 014(파일 미제공)로 원문을 못 본 문서 — 「문서에 없음」과 구분
+FAILED_NOTE = "OpenDART document.xml 014(파일 미제공) — 원문을 볼 수 없어 내용 확인 못함; '문서에 없음' 아님"
+NOSRC = (NOT, FAILED)
+JOIN_MARK = re.compile(r" … |…| \| ")
 WEBPHRASE = "이전 차수 웹 회수본 — 이번에 새로 받지 않음"
 # (i) 사람이 걸린 글을 읽고 적은 판단(웹 회수본 「문서에 없음」 2행) — 기능 분류·이유 추정 아님, 「인력 운용 계획 글인지」만
 REVIEW = {
@@ -86,6 +104,8 @@ EVENTS = OrderedDict([
     ("우리 2018", ("우리금융지주", ["00254045", "01350869"], "20180901", "20190131")),
     ("메리츠 2022", ("메리츠금융지주", ["00860332", "00117744", "00163682"], "20221101", "20230430")),
     ("한국투자 2003", ("한국투자금융지주", ["00118026", "00360425", "00406709", "00432102", "00162142"], "20020801", "20030630")),
+    # 15차 6파동 더함: NH농협금융지주 설립(2012-03-02, 농협중앙회 신용사업 분리) — 농협금융지주·농협은행·농업협동조합중앙회(코드 2개)
+    ("NH 2012", ("NH농협금융지주", ["00908021", "00908757", "00332565", "00291675"], "20110701", "20121231")),
 ])
 # 사건 서류(신고서·투자설명서) 이름 꼴. 결정·주요사항보고서·종료보고서는 신고서·투자설명서가 아니라 C 대상 밖(보고 「실패·누락」에 적힌 대로).
 EVDOC = re.compile(r"주식교환ㆍ이전신고서|증권신고서\(주식의포괄적교환ㆍ이전\)|증권신고서\(분할\)|분할신고서|증권신고서\[주식|"
@@ -93,7 +113,7 @@ EVDOC = re.compile(r"주식교환ㆍ이전신고서|증권신고서\(주식의�
 BARE_TS = re.compile(r"^(?:\[[^\]]+\])*투자설명서$")
 REG = re.compile(r"신고서")
 
-# ── 생성기 추출 규칙(scratchpad C/scripts/extract.py·build.py 와 같은 규칙 — (g) 다시 세기용) ─────────────
+# ── 생성기 추출 규칙(scripts/dart/ops15_C/extract.py·build.py 와 같은 규칙 — (g) 다시 세기용) ─────────────
 KW = ["인력", "임직원", "조직", "겸직", "파견", "전적", "채용"]
 RE_JJ = re.compile(r"(?<![가-힣])전적(?!으로|인|이)")
 
@@ -210,8 +230,12 @@ def relevant(sec_t, text):
 
 
 # ── 공통 도구 ─────────────────────────────────────────────────
-def n1(s):  # (a) 규칙: 공백·줄바꿈·「|」(md 의 칸 안 ｜ 포함)만 무시
-    return re.sub(r"[\s|｜]+", "", s)
+def n1(s):  # (a) 규칙(15차 새 원문 대조 규칙, OpenDART XML md 출처): 공백·줄바꿈과 md 표지 「|」·「<br>」만 지움
+    return re.sub(r"[\s|]+", "", s.replace("<br>", ""))
+
+
+def nws(s):  # (a) 규칙(웹 회수본·PDF 출처): 공백·줄바꿈만 지움
+    return re.sub(r"\s+", "", s)
 
 
 def npdf(s):  # PDF 쪽 대조용: XML 표지(&cr;·<br>)도 걷어냄(PDF 에는 없음)
@@ -269,7 +293,7 @@ def main():
         for c in req:
             if not (r.get(c) or "").strip():
                 empty[c] += 1
-        if r["source_text"] != NOT:
+        if r["source_text"] not in NOSRC:
             for c in ["rcept_dt", "section_title", "keyword"]:
                 if not r[c].strip():
                     empty[c] += 1
@@ -346,7 +370,7 @@ def main():
 
     st_cache = {rc: struct(s["md"]) for rc, s in src.items() if s["kind"] == "xml"}
     full_n = {rc: n1(s["md"]) for rc, s in src.items() if s["kind"] == "xml"}
-    web_n = {rc: n1("\n".join(d["text"] for d in web[rc].values())) for rc in web}
+    web_n = {rc: [nws(d["text"]) for d in web[rc].values()] for rc in web}
 
     # PDF
     pdfp = {}
@@ -406,6 +430,12 @@ def main():
         rc, stx = r["rcept_no"], r["source_text"]
         if stx == NOT:
             stat["not"] += 1
+            continue
+        if stx == FAILED:
+            stat["failed"] += 1
+            s = src.get(rc, {})
+            if not (s.get("kind") == "none" and s.get("meta", {}).get("api_status") == "014" and r["note"].startswith(FAILED_NOTE)):
+                bad_rows.append((i, "수집실패", rc, f"kind {s.get('kind')} · status {s.get('meta', {}).get('api_status')} · note 머리 {r['note'][:40]}"))
             continue
         per_doc_rows[rc] += 1
         s = src.get(rc, {})
@@ -467,7 +497,10 @@ def main():
                     bad_rows.append((i, "b-PDF쪽없음note", rc, ""))
         elif s.get("kind") == "web":
             stat["web"] += 1
-            if n1(stx) not in web_n[rc]:
+            if JOIN_MARK.search(stx):
+                bad_rows.append((i, "a-이음표시", rc, stx[:50]))
+                continue
+            if not any(nws(stx) in w for w in web_n[rc]):
                 bad_rows.append((i, "a", rc, stx[:50]))
                 continue
             stat["a_ok"] += 1
@@ -479,7 +512,7 @@ def main():
                 continue
             si, stt, sub = int(m.group(1)), m.group(2), m.group(3)
             d = web[rc].get(si)
-            if not d or d["title"] != stt or n1(stx) not in n1(d["text"]):
+            if not d or d["title"] != stt or nws(stx) not in nws(d["text"]):
                 bad_rows.append((i, "b-웹목차", rc, r["page"][:60]))
                 continue
             if r["section_title"] != (sub or stt):
@@ -544,11 +577,11 @@ def main():
       f"{' ' + str(coll_bad[:5]) if coll_bad else ''}")
     P(f"- keyword 칸 = source_text 안 키워드(인력·임직원·조직·겸직·파견·전적(轉籍 꼴)·채용) 집합과 다른 행 {len(kw_bad)}{' ' + str(kw_bad[:10]) if kw_bad else ''}")
     P("")
-    P("## (a) source_text ↔ 원문 글자 그대로(공백·줄바꿈·「|」만 무시) · (b) page ↔ 실제 위치")
+    P("## (a) source_text ↔ 원문 한 곳에 이어서 그대로(XML md: 공백·줄바꿈·md 표지 「|」「<br>」만 무시 / 웹 회수본: 공백·줄바꿈만 무시) · (b) page ↔ 실제 위치")
     P(f"- 원문 md: OpenDART zip 에서 xml_to_md 로 다시 만든 글과 저장 md(dart_out/text/ops15/신고서__*.md) 본문이 다른 문서 {len(md_mismatch)}"
       f"{' ' + str(md_mismatch) if md_mismatch else ''} (XML 원문 {sum(1 for s in src.values() if s['kind'] == 'xml')}건 · 웹 회수본 {sum(1 for s in src.values() if s['kind'] == 'web')}건 · 원문 없음(014) {sum(1 for s in src.values() if s['kind'] == 'none')}건)")
-    nn = len(rows) - stat["not"]
-    P(f"- 「문서에 없음」 {stat['not']}행 · 글 행 {nn}(XML {stat['xml']} · 웹 회수본 {stat['web']})")
+    nn = len(rows) - stat["not"] - stat["failed"]
+    P(f"- 「문서에 없음」 {stat['not']}행 · 「수집 실패」 {stat['failed']}행(note 머리 「{FAILED_NOTE}」·OpenDART 014 확인) · 글 행 {nn}(XML {stat['xml']} · 웹 회수본 {stat['web']})")
     P(f"- (a) 원문에 있음 {stat['a_ok']}/{nn} (공백 무시 없이도 그대로 부분 문자열 {stat['a_exact']})")
     P(f"- (b) page 맞음 {stat['b_ok']}/{nn} — XML 은 절 번호·제목이 md 와 같고 글이 그 절의 그 표(표 없으면 표 밖)에 있음, 웹은 목차 번호·제목·소절 위치")
     P(f"- (b) 본문 PDF 쪽(「p.N」 또는 쪽을 넘는 글 「p.S~E」): 쪽 붙은 행 {stat['pdf_rows']} — 글 전체가 그 쪽(범위)에 이어져 있음 {pdf_levels['full']} · "
@@ -615,6 +648,13 @@ def part2(ctx, lines, fails, warn):
         missing = sorted(ev_r - all_c)
         covered |= ev_r
         fails["e_missing"] += len(missing)
+        if not ev_r:
+            # 사건 서류가 하나도 없으면 그 회사에 사건 단위 「문서에 없음」 행(출처 = 조회한 공시목록 주소)이 있어야 함(15차 6파동 — NH 2012 행 빠짐을 잡으려고)
+            evrow = [r for r in rows if r["corp_label"] == label and r["source_text"] == NOT and "list.json" in r["rcept_no"]
+                     and all(cc in r["rcept_no"] for cc in ccs if cc not in ("00547583",))]
+            if not evrow:
+                fails["e_no_event_row"] += 1
+                P(f"  · [실패] {ev}: 사건 서류가 0건인데 사건 단위 「문서에 없음」 행(공시목록 주소 출처)이 없음")
         P(f"- {ev} ({label}) 원장 {', '.join(cover)} · 기간 {b}~{e} · 사건 서류 {len(ev_r)}건 · C 에 있음 {len(ev_r) - len(missing)}"
           f"{' · 빠짐 ' + str(missing) if missing else ''}")
         if other_ts:
@@ -692,7 +732,7 @@ def part2(ctx, lines, fails, warn):
         keep = [c for c in uniq if relevant(c[3], c[4])] if n_all > 60 else uniq
         dropped = n_all - len(keep)
         n_rows = ctx["per_doc_rows"].get(rc, 0)
-        notes = {r["note"] for r in rows if r["rcept_no"] == rc and r["source_text"] != NOT}
+        notes = {r["note"] for r in rows if r["rcept_no"] == rc and r["source_text"] not in NOSRC}
         pat = re.compile(r"이 문서 키워드 행 (\d+)개\(60 초과\) → .*?, (\d+)개 뺌")
         got = {pat.search(n).groups() if pat.search(n) else None for n in notes}
         label = next(r["corp_label"] for r in rows if r["rcept_no"] == rc)
@@ -747,7 +787,7 @@ def part3(ctx, lines, fails, warn):
     md_bad, ptr, sha_bad, sha_ok = [], 0, 0, 0
     need = set()
     for i, r in enumerate(rows, start=2):
-        if r["source_text"] == NOT:
+        if r["source_text"] in NOSRC:
             continue
         rc = r["rcept_no"]
         f = files.get(rc)
@@ -831,7 +871,7 @@ def part3(ctx, lines, fails, warn):
     BROAD = ["인력", "임직원", "조직", "겸직", "파견", "전적", "채용", "인원", "직원", "임원", "인사", "겸임", "겸무", "출향", "전출",
              "전입", "근무", "고용", "승계", "노동조합", "종업원", "본부", "부서"]
     for i, r in enumerate(rows, start=2):
-        if r["source_text"] != NOT:
+        if r["source_text"] not in NOSRC:
             continue
         rc = r["rcept_no"]
         if re.match(r"^\d{14}$", rc):
@@ -866,9 +906,9 @@ def part3(ctx, lines, fails, warn):
                 g = gzip.open("dart_out/11_원문추출.csv.gz", "rb").read()
                 if rc.encode() in g:
                     local.append("11_원문추출.csv.gz")
-                P(f"- 행 {i} {r['corp_label']} {rc} {r['doc_kind']}: OpenDART {s.get('meta', {}).get('api_status')} · 로컬 다른 원문(kit 서술 1~3차·주요신고서본문 zip·11_원문추출) "
-                  f"{local or '없음'} → 반박할 글 없음 → 「문서에 없음」 유지(DART 웹 뷰어는 robots Disallow 라 새로 받지 않음)")
-                if local:
+                P(f"- 행 {i} {r['corp_label']} {rc} {r['doc_kind']} 「{r['source_text']}」: OpenDART {s.get('meta', {}).get('api_status')} · 로컬 다른 원문(kit 서술 1~3차·주요신고서본문 zip·11_원문추출) "
+                  f"{local or '없음'} → 볼 수 있는 원문 없음 → 「수집 실패」 유지(내용을 보지 못했으므로 「문서에 없음」이 아님; DART 웹 뷰어는 robots Disallow 라 새로 받지 않음)")
+                if local or r["source_text"] != FAILED:
                     fails["i_rebutted"] += 1
         else:
             label = r["corp_label"]
@@ -885,6 +925,17 @@ def part3(ctx, lines, fails, warn):
                           and not re.search(r"최대주주|임원ㆍ주요주주|사채|채무증권|파생|일괄|신탁|기업어음|주식등의대량보유", it["report_nm"]))
             want = "투자설명서" if r["doc_kind"] == "투자설명서" else "신고서·투자설명서"
             ts = [h for h in hits if ("설명서" in h[3] if want == "투자설명서" else re.search(r"신고서|설명서", h[3]))]
+            # 이름만 「투자설명서」인 것은 같은 법인이 바로 앞에 낸 신고서가 채무증권·사채·일괄신고면 사건 서류가 아님((e) 와 같은 규칙)
+            def _prev_debt(h):
+                if not BARE_TS.match(h[3]):
+                    return False
+                pv = sorted((it["rcept_dt"], it["rcept_no"], it["report_nm"]) for it in led.values()
+                            if it["cc"] == h[2] and REG.search(it["report_nm"]) and (it["rcept_dt"], it["rcept_no"]) < (h[0], h[1]))
+                return bool(pv) and bool(re.search(r"채무증권|사채|일괄신고", pv[-1][2]))
+            debt_ts = [h for h in ts if _prev_debt(h)]
+            ts = [h for h in ts if not _prev_debt(h)]
+            if debt_ts:
+                P(f"  · 이름만 「투자설명서」이고 바로 앞 신고서가 채무증권·사채인 것 {len(debt_ts)}건은 사건 서류 아님: " + ", ".join(h[1] for h in debt_ts))
             P(f"- 행 {i} {label} {r['doc_kind'][:30]}: 원장 {','.join(ccs)} 기간을 {b2}~{e2} 로 넓혀 이름에 신고서·설명서·교환·이전·지주·설립·등록·인가 "
               f"(사채·채무증권·파생·일괄·신탁·지분 공시 뺌) → {len(hits)}건, 그 가운데 {want} {len(ts)}건")
             for h in hits[:12]:
@@ -925,6 +976,19 @@ def part3(ctx, lines, fails, warn):
 
 
 FIXES = [
+    "G1(15차 6파동) 생성기를 저장소 밖 scratchpad C/scripts/(build.py·docs.py·extract.py·tomd.py·pdf2md.py·fetch_*.py)+manifest.json·kit 에서 "
+    "scripts/dart/ops15_C/ 로 옮김: 경로를 저장소 상대로, manifest.json 은 tomd.py 가 이 폴더에 다시 씀(md 경로 저장소 상대), kit CSV 는 handoff/dart-benchmark-kit.zip "
+    "안에서 바로 읽음, 본문 PDF md 는 pdf2md.py 가 handoff/원본_주요신고서본문.zip 안 PDF 를 바로 읽음. 옮긴 생성기를 고치기 전에 돌려 C.csv(md5 ad02161c…)·원문/C md 46개·"
+    "build_stats 가 옮기기 전과 바이트까지 같고, tomd.py·pdf2md.py 가 다시 만든 신고서 md 40개·본문 PDF md 4개도 같음을 확인. 저장소 밖 파일 다시 만들기는 README.md.",
+    "G2(15차 6파동) BNK 20101229000364·JB 20130320000306 [첨부정정](OpenDART 014 — 원문 못 받음) 2행: source_text 「문서에 없음」 → 「수집 실패」, note 머리 "
+    "「OpenDART document.xml 014(파일 미제공) — 원문을 볼 수 없어 내용 확인 못함; '문서에 없음' 아님」. 다른 014 문서 8건(우리 2018 정정)은 이전 차수 웹 회수본으로 "
+    "글을 봤으므로 그대로(웹 「문서에 없음」 2행 포함).",
+    "G3(15차 6파동) NH농협금융지주 설립(2012-03-02) 행 더함: fetch_nh.py 로 OpenDART list.json 2011-07~2012-12(농협금융지주 00908021·농협은행 00908757·"
+    "농업협동조합중앙회 00332565·00291675, 공시유형 C·B·I·E·전체)을 받아 보니 설립·전환(주식이전·분할·교환) 신고서·투자설명서 없음(걸린 것은 2012-10~12 "
+    "채무증권 신고서·그 뒤 투자설명서) → 「문서에 없음」 1행(note 에 찾은 목록 범위·검색한 보고서명). DartClient 의 list 캐시 이름에 pblntf_ty 가 없어 처음 조회는 "
+    "유형별로 같은 캐시를 돌려받았음 → refresh 로 다시 받고 유형별 원본을 dart_out/raw/list/nh15/ 에 둠.",
+    "G4(15차 6파동) 이 스크립트를 새 원문 대조 규칙으로: XML md 출처는 공백·줄바꿈·「|」·「<br>」만 지우고(전에는 「｜」도 지움), 웹 회수본은 공백·줄바꿈만, "
+    "웹 행의 「 … 」「 | 」 표시는 실패, 「수집 실패」 행 검사, NH 사건 (e)·(i).",
     "F1 우리 2018 정정 8건(웹 회수본) 30행(글 28 + 「문서에 없음」 2) note 맨 앞에 「이전 차수 웹 회수본 — 이번에 새로 받지 않음」을 넣음"
     "(전에는 「… 회수해 둔 본문 글 … 이번에 새로 받지 않음(뷰어는 robots Disallow)」 꼴이라 이 문구가 없었음). 원문 md(웹 회수본 6개 파일) 머리 출처 줄에도 같은 문구. "
     "생성기 build.py 에 넣음.",
@@ -951,7 +1015,7 @@ def run():
     part2(ctx, lines, fails, warn)
     part3(ctx, lines, fails, warn)
     P = lines.append
-    P("## 고친 곳(이번 검증에서 — 조각 C.csv 는 생성기 scratchpad C/scripts/build.py 를 고쳐 다시 만듦)")
+    P("## 고친 곳(조각 C.csv 는 생성기를 고쳐 다시 만듦 — 15차 6파동부터 생성기는 scripts/dart/ops15_C/build.py, 그 전 F1~F6 은 옮기기 전 scratchpad 판에 넣은 것)")
     for f in FIXES:
         P(f"- {f}")
     P("")

@@ -6,6 +6,8 @@ iM(옛 DGB) FY2018)와 FY2024·FY2025 10개사 PDF 다시 받기(handoff/연차�
     python3 -I scripts/dart/ops15b_gov_old.py terms       # 첫 화면을 받아 약관·저작권 링크 글을 찾음 → _work/terms.json
     python3 -I scripts/dart/ops15b_gov_old.py lists       # 게시판 목록을 받아 받을 파일 → _work/targets.json
     python3 -I scripts/dart/ops15b_gov_old.py download    # 받기(이미 받은 칸은 건너뜀) → _work/download.json
+    python3 -I scripts/dart/ops15b_gov_old.py kbfix       # KB 옛 해 6바이트 칸 → 게시판 boardFileDownload() 주소로(그 뒤 download KB금융지주)
+    python3 -I scripts/dart/ops15b_gov_old.py dates       # FY2024·FY2025 행의 게시일(게시판 목록의 같은 제목 글) → _work/dates.json
     python3 -I scripts/dart/ops15b_gov_old.py text        # PDF → 「## p.N」 md(venv pymupdf 를 하위 프로세스로)
     python3 -I scripts/dart/ops15b_gov_old.py csv         # dart_out/ops15/문서목록15b_gov_old.csv
     <venv python> -I scripts/dart/ops15b_gov_old.py pdf2md <pdf> <md> <머리줄>   # (text 가 부름)
@@ -582,12 +584,15 @@ def dates():
     # 메리츠 gr_search GR002 1~2쪽
     co = "메리츠금융지주"
     got[co] = []
-    for pg in (1, 2):
+    for pg in range(1, 6):                          # 2024년 보고서(2025.3 게시)가 나올 때까지 5쪽까지
         p, m = fetch(co, "https://www.meritzgroup.com/web/gr_search.do", os.path.join("_pages", "gr_search_GR002_p%d.json" % pg),
                      referer=BOARD[co], data="bd_div_cd=GR002&currentPage=%d" % pg)
-        for r in json.load(open(p, encoding="utf-8")).get("result", []):
+        rs = json.load(open(p, encoding="utf-8")).get("result", [])
+        for r in rs:
             got[co].append((r.get("title_ko", ""), "20%s-%s-%s" % tuple(r["reg_ymd"].split(".")),
                             "https://www.meritzgroup.com/web/gr_search.do (POST bd_div_cd=GR002 currentPage=%d)" % pg, m["fetched_at"]))
+        if not rs or any("2024년 지배구조" in (r.get("title_ko") or "") for r in rs):
+            break
     # JB 2025·2026
     co = "JB금융지주"
     got[co] = []
@@ -660,6 +665,8 @@ def download(only=None, cos=None):
         urls = []
         if t["method"] == "POST?":
             rec["실패사유"] = t.get("비고", "")
+        elif t.get("prefer_board_link") and t.get("board_link"):
+            urls.append(t["board_link"])                 # kbfix: 게시판 쪽 boardFileDownload() 주소만(목록 경로는 이미 2번 6바이트)
         else:
             urls.append(t["파일_url"])
             if t.get("board_link") and t["board_link"] != t["파일_url"]:
@@ -821,12 +828,46 @@ def main(argv):
         text(cos)
     elif cmd == "dates":
         dates()
+    elif cmd == "kbfix":
+        kbfix()
     elif cmd == "csv":
         write_csv()
     else:
         print(__doc__)
         return 1
     return 0
+
+
+def kbfix():
+    """KB 옛 해: 목록 API 의 migration 경로(fileDownUtil.jsp)가 6바이트(PDF 아님)를 준 칸만, 게시판 쪽 스크립트
+    boardFileDownload(fileId) 가 만드는 /api/download/board/<fileId>(같은 호스트)를 board_link 로 두고 그것만 받게 표시.
+    fileId·fileSize 는 이미 저장한 목록 응답(_pages/kb_posts_b6_p*.json)의 그 글(bltcId) files[]."""
+    import glob
+    T = jload(os.path.join(WORK, "targets.json"), [])
+    res = jload(os.path.join(WORK, "download.json"), {})
+    files = {}
+    for f in glob.glob(os.path.join(RAW, "KB금융지주", "_pages", "kb_posts_b6_p*.json")):
+        if f.endswith(".meta.json"):
+            continue
+        for x in (json.load(open(f, encoding="utf-8")).get("result") or {}).get("posts", []):
+            files[str(x["bltcId"])] = x.get("files") or []
+    n = 0
+    for t in T:
+        if t.get("kind") != "old" or t["회사"] != "KB금융지주":
+            continue
+        rec = res.get(tkey(t)) or {}
+        if not str(rec.get("실패사유", "")).startswith("받은 내용이 PDF 가 아님"):
+            continue
+        fl = [f for f in files.get(t["게시글"].split("=")[-1], []) if f.get("orglFileNm") == t["목록_파일명"]]
+        if len(fl) != 1:
+            print(tkey(t), "fileId 못 정함", len(fl))
+            continue
+        t.update(board_link="https://www.kbfg.com/api/download/board/%s" % fl[0]["fileId"], prefer_board_link=True,
+                 kb_fileId=fl[0]["fileId"], kb_fileSize=fl[0].get("fileSize"))
+        n += 1
+        print(tkey(t), t["board_link"], fl[0].get("fileSize"))
+    jdump(os.path.join(WORK, "targets.json"), T)
+    print("kbfix", n)
 
 
 def _robots_text(co, url):
@@ -909,11 +950,18 @@ def write_csv():
             status = "받음"
         if co == "NH농협금융지주" and not rec.get("저장경로"):
             status = "막힘"
-        if rec.get("실패사유"):
+        notes.append("공시유형 %s%s(게시글 제목 낱말로 기계적으로)" % (t["공시유형"], (" · 구분 " + t["구분"]) if t.get("구분") else ""))
+        if rec.get("실패사유") and not t.get("prefer_board_link"):
             notes.append("실패: " + rec["실패사유"])
-        if rec.get("시도"):
+        if rec.get("시도") and not t.get("prefer_board_link") and rec.get("시도") != [rec.get("실패사유")]:
             notes.append("시도: " + " / ".join(rec["시도"]))
-        if rec.get("받기횟수", 1) > 1:
+        if co == "NH농협금융지주" and status == "막힘":
+            rb = (jload(os.path.join(WORK, "robots.json"), {}) or {}).get("www.nhfngroup.com", {})
+            tm = (jload(os.path.join(WORK, "terms.json"), {}) or {}).get(co, {})
+            notes.append("2026-11-02(15차)에도 www.nhfngroup.com 모든 요청 HTTP 400. 이번에 한 번만 다시 시도(재시도 없음): robots.txt %s(%s), "
+                         "첫 화면 %s %s(%s), 이 파일 URL 1번 HTTP 400(2026-11-03 12:59:45~12:59:59 KST 사이 실행) — 막힘, 기록만(다른 호스트·캐시·미러 쓰지 않음)"
+                         % (rb.get("status", ""), rb.get("checked_at", ""), tm.get("url", HOME[co]), tm.get("error", ""), tm.get("fetched_at", "")))
+        if rec.get("받기횟수", 1) > 1 and not t.get("prefer_board_link"):
             notes.append("받기 %d번(재시도 %d번)" % (rec["받기횟수"], rec["받기횟수"] - 1))
         if t.get("handoff_sha256") and rec.get("sha256") and status == "받음":
             if rec["sha256"] == t["handoff_sha256"]:
@@ -921,11 +969,25 @@ def write_csv():
             else:
                 notes.append("sha256 이 handoff 목록과 다름 — handoff %s(크기 %s, 쪽 %s, 받은 때 %s) / 이번 %s(크기 %s) — 둘 다 기록, 이번 파일 그대로 둠"
                              % (t["handoff_sha256"], t["handoff_크기"], t["handoff_쪽수"], t["handoff_fetched_at"], rec["sha256"], rec.get("크기")))
-        if rec.get("실제_url") and rec["실제_url"] != t["파일_url"]:
-            notes.append("(판단) 목록 URL %s 대신 %s 로 받음 — 목록 URL 호스트:포트의 robots.txt 를 판정할 수 없어(접속 끊김) 그 주소에서는 받지 않고 같은 호스트 443 의 같은 경로로 받음"
-                         % (t["파일_url"], rec["실제_url"]))
+        if t.get("prefer_board_link"):
+            prev_try = ["%s %sB(%s)" % (p.get("http"), p.get("크기"), p.get("fetched_at")) for p in rec.get("이전", []) if p.get("http")]
+            notes.append("(판단) 게시판 글에 첨부(목록 API posts?bulbdId=6 의 files[]: %s, fileSize %s)가 있으나 — ① 목록의 migration 경로 %s "
+                         "(fileDownUtil.jsp) 2번: %s — PDF 아님; ② 게시판 쪽(%s) 스크립트 boardFileDownload() 가 만드는 같은 호스트 주소 %s "
+                         "1번(web9.Web 한 요청 안 3번 시도): %s. 요청 수 합 %d번 — 더 받지 않음"
+                         % (t.get("목록_파일명", ""), t.get("kb_fileSize", ""), t["파일_url"], " / ".join(prev_try) or "기록 없음",
+                            t["board_url"], t["board_link"],
+                            ("HTTP %s %sB 받음" % (rec.get("http"), rec.get("크기"))) if rec.get("저장경로") and rec.get("실제_url") == t["board_link"]
+                            else "; ".join(rec.get("시도", [])) or rec.get("실패사유", ""), len(prev_try) + 3))
+            bad = [p.get("저장경로") for p in rec.get("이전", []) if p.get("저장경로")]
+            if bad and not rec.get("저장경로"):
+                notes.append("① 의 마지막 6바이트 응답은 %s 에 남겨 둠(이름은 .pdf 지만 PDF 아님 — 쓰지 말 것)" % bad[-1])
+        elif rec.get("실제_url") and rec["실제_url"] != t["파일_url"]:
+            notes.append("(판단) handoff 목록 URL·지금 게시판 글 링크(%s)는 모두 %s — 그 호스트:포트의 robots.txt 가 접속 끊김(이 환경 릴레이가 "
+                         "비표준 포트 터널을 끊음)으로 판정할 수 없어 그 주소에서는 받지 않고, 같은 서버 443 의 같은 경로 %s(https://www.hanafn.com/robots.txt "
+                         "HTTP 404 = 제한 없음)로 받음 — 15차 ops15_gov_g1 과 같은 처리"
+                         % (t.get("게시글", ""), t["파일_url"], rec["실제_url"]))
         if st:
-            notes.append("쪽 %d, 글자 없는 쪽 %s, 한글 %d자(서로 다른 %d자), 「이사회」 %d회, 깨진 글자 %d — 글자층 %s%s"
+            notes.append("쪽 %d, 글자 없는 쪽 %s, 한글 %d자(서로 다른 %d자), 「이사회」 %d회, 깨진 글자 %d — 판정 %s%s"
                          % (st["pages"], (",".join(map(str, st["empty_pages"])) or "없음"), st["hangul"], st["hangul_distinct"],
                             st["board_count"], st["bad_chars"], st["verdict"], (" (" + st["reason"] + ")") if st["reason"] else ""))
             if t.get("handoff_쪽수") and str(st["pages"]) != str(t["handoff_쪽수"]):

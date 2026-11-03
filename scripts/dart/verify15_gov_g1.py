@@ -7,8 +7,10 @@
   원문: FY2019~2023 = dart_out/text/ops15/연차보고서__<회사>__<공시연도>__<유형>.md(「## p.N」= PDF 쪽, 출처 목록
         dart_out/ops15/gov15_g1_work/download.json), FY2024·2025 = 6차 섹션 글 dart_out/ops15/kit56/연차보고서_섹션.csv
         (출처 목록 handoff/연차보고서_파일목록.csv), FY2025 쪽 대조는 13차 텍스트 zip 의 연차보고서__<회사>.md.
-  (a) 모든 행 source_text(그리고 reason_text 가 「문서에 없음」이 아니면 그것도)가 그 행 출처 원문에 글자 그대로 있는지
-      — 공백·줄바꿈·「|」만 무시. 표 행과 각주를 「 … 」로 이은 행은 두 조각을 따로 찾음.
+  (a) 모든 행 source_text(그리고 reason_text 가 「문서에 없음」이 아니면 그것도)가 그 행 출처 원문의 한 곳에 이어서 그대로 있는지
+      — 15차 새 원문 대조 규칙: 「공백·줄바꿈만 지운 source_text」가 「공백·줄바꿈만 지운 출처 텍스트」 안에 이어서 있어야 함.
+      PDF·6차 섹션 출처라 「|」는 지우지 않음(원문에 없는 「 | 」를 넣은 행은 실패). 「 … 」 같은 생략·이음 표시가 든 행도 실패.
+      PDF 출처 텍스트 = 「## p.N」 쪽 표지 줄만 뺀 쪽 글을 차례로 이은 것.
   (b) page: 「p.N」 → 그 글이 PDF 쪽 N 에서 시작, 「시작페이지 N 섹션 안」 → 시작페이지 N 인 6차 섹션 글 안,
       note 의 「각주 p.N」·「13차 텍스트(같은 PDF sha256) p.N」 도 그 쪽에 있는지. 「문서에 없음」 행은 page 「전체」.
   (c) 열 이름(COMMON15 순서)·utf-8-sig·필수 칸 빈칸 0, doc_name·rcept_no_or_url·collected_at·fy 가 출처 목록과 같음.
@@ -17,9 +19,10 @@
   (e) A 「손으로 고른 A_SPECS」 개별 겸직 54행: 겸직 회사·직위가 source_text 안에 있는지(전수), 사외이사 후보 「현재 겸직 업무」 칸은
       바로 앞 「후보자(의) 인적사항」 머리의 성명·출생연도가 그 행과 같은지(전수), 표본 15개는 사람이 원문을 읽고 근거 글을 적음
       (근거 글이 원문 그 자리에 있는지는 이 스크립트가 다시 찾음).
-  (f) reason_text 가 든 9행 전부: 글자 대조 + 같은 문단(같은 사람 서술) 안인지 + 사람이 읽은 판단.
+  (f) reason_text 가 든 행 전부(11행): 글자 대조 + 같은 문단(같은 사람 서술) 안인지(또는 note 「사유 위치 p.N」 쪽인지) + 사람이 읽은 판단.
   (g) B 에서 뺀 630문장(gov15_g1_work/B_제외문장.csv) 표본 30개(seed 20261103): 원문 그 쪽에 있는지 + 사람 판단.
   (h) 「문서에 없음」 반박 시도: A 30행·B 8행을 더 넓은 검색어(공백 무시)로 같은 문서에서 다시 찾음 — 걸린 글은 txt 에, 판단은 REVIEW.
+  (i) reason_text 「문서에 없음」 개별 겸직 행(43): note 의 찾은 범위(파일·쪽 범위·검색어)와 걸린 줄 수를 원문에서 다시 셈.
 """
 from __future__ import annotations
 
@@ -73,7 +76,20 @@ OUT, FAIL = [], []
 # 사람이 원문을 읽고 적은 것(검증하면서 고친 곳·손 대조·반박 판단). 근거 글이 원문 그 자리에 있는지는 아래 자동 대조가 다시 찾음.
 # ======================================================================================================================
 FIXES = [
-    "### 고친 곳(모두 생성기 scripts/dart/ops15_gov_g1_extract.py 에 넣고 build 를 다시 돌림 — 고치기 전 조각 md5 A 335bf8a7… B 07af24f4…, "
+    "### 15차 6파동 고친 곳(새 원문 대조 규칙 — 모두 생성기 scripts/dart/ops15_gov_g1_extract.py 에 넣고 build 를 다시 돌림, 두 번 돌려 md5 같음)",
+    "- 원문 PDF 줄바꿈 자리에 원문에 없는 「 | 」를 넣은 38행(A 32: 사외이사 후보 「3) 현재 겸직 업무」 칸 신한 15·우리 12, 하나 리스크관리집행위원회 표 5 / "
+    "B 6: 하나 FY2019~2023 「인원수 … 전출자」 표 머리 5·신한 FY2023 「당해년도 … 겸직 포함」 1) → 칸 사이를 원문 줄바꿈 그대로 둠(join table·collect_hits).",
+    "- 표 행과 각주 주5 를 「 … 」로 이은 하나 5행(FY2019~2023 황효상·김주성) → 표의 그 사람 행부터 같은 쪽 각주 「주5) … 겸직」까지 원문에 이어진 글 전체"
+    "(583~653자, 2,000자 이하 — 사이의 다른 위원 행·주1~주4 포함)를 줄바꿈 그대로 옮김(Doc.span_to). 각주는 겸직 사실(사유 아님)이라 reason_text 는 「문서에 없음」, 위치는 note 「각주 p.N」.",
+    "- reason_text 「문서에 없음」 45행: 행 쪽 앞뒤 1쪽과 그 절(6차는 섹션 글 전체)에서 「사유」「겸직」「겸임」「선임」, 문서 전체에서 「겸직·겸임」과 「사유·선임」이 "
+    "같은 줄·앞뒤 줄에 함께 있는 곳을 다시 찾음(걸린 줄 841, 판정은 gov15_g1_work/A_사유_재검색.csv). 신한 FY2019 장동기·정운진 2행은 같은 날(2019-12-19) "
+    "제8회 임시이사회 결의 문장 「…겸직 사업부문 활성화를 위해 경영진 신규 선임에 관한 사항을 결의하였습니다」(p.25)를 reason_text 로 옮김((판단), note 「사유 위치 p.25」). "
+    "남은 43행 note 에 찾은 범위(파일·쪽 범위·절·검색어·걸린 줄 수)를 적음.",
+    "- 신한 FY2020 그룹디지털부문장 행 note: 「원문에 성명 없음」 → 이 문장에 성명 없음 + 같은 문서 p.161·p.164 의 「…신한DS 대표이사인 이성용 사장을 그룹 "
+    "디지털사업부문장…」 위치(person 칸은 비워 둠).",
+    "- 이 스크립트: 대조를 「공백·줄바꿈만 지움, 「|」 안 지움, 행 전체가 원문 한 곳에 이어서」로 바꾸고, 생략·이음 표시 검사·각주 쪽 검사·「사유 위치 p.N」 검사·"
+    "(i) 찾은 범위 다시 세기를 더함. 고치기 전 조각(작업 사본)에 돌리면 [실패] 127(「 | 」·「 … 」 38행, 원문에 이어서 없음 34행, reason 찾은 범위 없음 45행 등)으로 잡힘.",
+    "### (이전 검증 때) 고친 곳(모두 scripts/dart/ops15_gov_g1_extract.py 에 넣고 build 를 다시 돌림 — 고치기 전 조각 md5 A 335bf8a7… B 07af24f4…, "
     "고치기 전 생성기를 그대로 다시 돌리면 git HEAD 와 바이트까지 같음(결정적) 확인)",
     "- (a)(b)(c)(d) 자동 대조에서는 틀린 행 0 — 글자·쪽·열·출처·비밀값 모두 맞았음. 아래는 대조하면서 찾은 「원문 그대로이지만 문장이 잘렸거나 군더더기가 붙은」 "
     "행과 note 를 고친 것.",
@@ -170,6 +186,10 @@ HAND_R = {
     ("하나금융지주", "2021", "박성호"): "같은 문장 가운데 「그룹 내 회사의 비중 및 이익 측면에서 은행장이 지주회사 비상임이사를 겸직하는 것이 … 판단하여」 "
                                      "— 원문이 겸직 판단 이유를 직접 적음.",
     ("우리금융지주", "2019", ""): "특정 겸직 건이 아닌 이사회 요청 서술 — source 와 reason 이 같은 문장(생성기 (판단) 표시 그대로 둠).",
+    ("신한금융지주", "2019", "장동기"): "15차 다시 찾기(「사유」「겸직」「겸임」「선임」)로 더함: source(p.168 이사회운영위원회 2019-12-19 추천 결과 「GMS사업부문겸직 "
+                                     "부사장 장동기」)와 같은 날 제8회 임시이사회 「이사 아닌 경영진 선임의 건」 결의 문장(p.25) 「…겸직 사업부문 활성화를 위해 "
+                                     "경영진 신규 선임에 관한 사항을 결의하였습니다」 — 같은 선임 건의 목적을 원문이 직접 적음(생성기 (판단) 표시). 같은 문장이 p.51 에도.",
+    ("신한금융지주", "2019", "정운진"): "같음(「GIB사업부문겸직 부사장 정운진」).",
 }
 
 # B 제외 표본 30(seed 20261103) 판단: 번호(제외 CSV 0부터) → (범주, 판단)
@@ -210,7 +230,8 @@ EXCL_SEED, EXCL_N = 20261103, 30
 REVIEW = [
     "### 손 대조 요약",
     "- A 표본 15개(위 목록): 15개 모두 원문에서 그 사람·그 회사(또는 성명 없는 직위)가 맞음. 근거 글은 자동으로 다시 찾음.",
-    "- reason_text 9행: 9행 모두 글자 그대로 있고 source 와 같은 문단(같은 사람 서술) 안 — 사유 문장을 다른 사람·다른 겸직에 붙인 행 없음.",
+    "- reason_text 11행: 11행 모두 글자 그대로 원문 한 곳에 있음. 9행은 source 와 같은 문단(같은 사람 서술) 안, 신한 FY2019 장동기·정운진 2행은 같은 날 같은 "
+    "선임 건의 이사회 결의 문장(note 「사유 위치 p.25」) — 사유 문장을 다른 사람·다른 겸직에 붙인 행 없음.",
     "- B 제외 표본 30개: 30개 모두 규정 조문·사외이사 자격요건/본인 소명 칸·경력 속 「파견」 — 조직·인력 서술이 아님 → 다시 넣을 문장 없음. "
     "본인 소명 칸 가운데 내용이 있는 것(120·182·183·463·465)은 A 행으로 이미 들어 있음.",
     "- 참고(수집 보고 오기): wave1_results.json g1 의 「사외이사 후보 본인 소명 칸 신한 16행」은 실제 15행(A_SPECS od 15개) — 신한 개별 겸직 합계 25행은 맞음. "
@@ -242,7 +263,8 @@ def fail(s):
 
 
 def vnorm(t):
-    return re.sub(r"[\s|]+", "", t or "")
+    """15차 새 원문 대조 규칙(PDF·6차 섹션 출처): 공백·줄바꿈만 지움 — 「|」는 지우지 않음."""
+    return re.sub(r"\s+", "", t or "")
 
 
 def md5(p):
@@ -268,13 +290,15 @@ class PdfDoc:
         st = next(i for i, l in enumerate(L) if re.match(r"## p\.1\b", l))
         chars, pages, pg = [], [], 0
         self.page_text = {}
+        self.lines = []          # [(쪽, 줄)] — 쪽 표지 줄 뺌
         for l in L[st:]:
             m = re.match(r"## p\.(\d+)", l)
             if m:
                 pg = int(m.group(1))
                 continue
+            self.lines.append((pg, l))
             for ch in l:
-                if ch.isspace() or ch == "|":
+                if ch.isspace():
                     continue
                 chars.append(ch)
                 pages.append(pg)
@@ -306,7 +330,7 @@ class SecDoc:
         for sn in sorted(bysec):
             ch = sorted(bysec[sn], key=lambda x: int(x["chunk_seq"] or 0))
             self.units.append(dict(sn=sn, start=ch[0]["시작페이지"], title=ch[0]["섹션제목_원문"],
-                                   n=vnorm("".join(c["본문"] for c in ch))))
+                                   n=vnorm("".join(c["본문"] for c in ch)), body="".join(c["본문"] for c in ch)))
         self.n = "".join(u["n"] for u in self.units)
 
     def find(self, needle):
@@ -363,8 +387,11 @@ DN_RE = re.compile(r"^(?P<title>.*) \((?P<kind>본공시|추가공시|정정공�
 
 
 def parts_of(text):
-    """표 행과 각주를 「 … 」로 이은 행은 조각으로."""
-    return [p for p in text.split(" … ")] if " … " in text else [text]
+    """15차 새 규칙: 이은 조각을 따로 찾지 않음 — 행 전체가 원문 한 곳에 이어서 있어야 함(「 … 」 든 행은 아래에서 실패)."""
+    return [text]
+
+
+JOIN_MARK = re.compile(r" … |…| \| ")
 
 
 # ================================================================ 실행
@@ -372,7 +399,8 @@ def main():
     now = datetime.now(KST).isoformat(timespec="seconds")
     say("# 15차 검증 — 연차보고서 조각 g1 (KB금융지주·신한금융지주·하나금융지주·우리금융지주·NH농협금융지주)")
     say("실행: %s (KST) · 스크립트 scripts/dart/verify15_gov_g1.py · 생성기 %s md5 %s" % (now, GEN, md5(GEN)))
-    say("대조 정규화: 공백·줄바꿈·「|」만 무시. 그 밖의 글자는 그대로 비교. 원문은 생성기 함수를 쓰지 않고 따로 읽음.")
+    say("대조 정규화(15차 새 원문 대조 규칙): 공백·줄바꿈만 무시(「|」는 지우지 않음), 행 글 전체가 원문 한 곳에 이어서 있어야 함. 그 밖의 글자는 그대로 비교. "
+        "원문은 생성기 함수를 쓰지 않고 따로 읽음.")
     say("")
     for line in FIXES:
         say(line)
@@ -455,8 +483,9 @@ def main():
                     fail("A 줄 %d source 없음인데 reason 있음" % i)
                 continue
             ps = parts_of(src)
-            if len(ps) > 1:
+            if JOIN_MARK.search(src):
                 st["joined"] += 1
+                fail("%s 줄 %d source_text 에 생략·이음 표시(「 … 」·「 | 」) — 원문에 이어진 글이 아님" % (task, i))
             hits = [d.find(vnorm(p)) for p in ps]
             if not all(hits):
                 st["bad"] += 1
@@ -482,12 +511,16 @@ def main():
                 fail("%s 줄 %d page 「%s」 — 실제 %s" % (task, i, pg, pages_found))
             # 각주 쪽
             mf = re.search(r"각주 p\.(\d+)", r["note"])
-            if mf and len(ps) > 1:
+            if mf:
                 st["fn"] += 1
-                if any(p == int(mf.group(1)) for _, p in hits[1]):
+                fl = [l for l in src.split("\n") if re.match(r"\s*주\s?\d\)", l)]
+                fh = d.find(vnorm(fl[-1])) if (fl and d.src == "pdf") else []
+                # 각주 줄이 source 시작 뒤 2,000자 안, note 의 쪽에 있어야 함
+                fh = [x for x in fh if any(0 <= x[0] - a < 2000 for a, _ in hits[0])]
+                if fh and any(p == int(mf.group(1)) for _, p in fh):
                     st["fok"] += 1
                 else:
-                    fail("%s 줄 %d 각주 쪽 %s 틀림 — 실제 %s" % (task, i, mf.group(0), sorted({p for _, p in hits[1]})))
+                    fail("%s 줄 %d 각주 쪽 %s 틀림 — 실제 %s" % (task, i, mf.group(0), sorted({p for _, p in fh})))
             # 13차 쪽
             m13 = re.search(r"13차 텍스트\(같은 PDF sha256\) ((?:p\.\d+,?)+)", r["note"])
             if m13:
@@ -539,7 +572,7 @@ def main():
                     r["_rhits"] = rh
                 else:
                     fail("A 줄 %d reason_text 원문에 없음: %s" % (i, r["reason_text"][:60]))
-        say("- %s: %d행(문서에 없음 %d) — 글 대조 맞음 %d / 틀림 %d (표+각주 이은 행 %d), page 맞음 %d / 틀림 %d" % (
+        say("- %s: %d행(문서에 없음 %d) — 글 대조(한 곳에 이어서 있음) 맞음 %d / 틀림 %d (생략·이음 표시 든 행 %d), page 맞음 %d / 틀림 %d" % (
             task, st["n"], st["none"], st["ok"], st["bad"], st["joined"], st["pok"], st["pbad"]))
         if task == "A":
             say("  reason_text(문서에 없음 아님) %d행 — 원문에 있음 %d; 각주 쪽(note 「각주 p.N」) %d행 맞음 %d" % (
@@ -670,13 +703,73 @@ def main():
                     if dd is not None and (dist is None or dd < dist):
                         dist = dd
         near = dist is not None and dist <= 400
-        if not near:
+        mp = re.search(r"사유 위치 p\.(\d+)", r["note"])
+        if not near and mp and d.src == "pdf":
+            # 15차: 같은 문서 다른 쪽의 사유 문장을 옮긴 행 — note 「사유 위치 p.N」 쪽에 reason 이 있어야 함
+            near = any(p == int(mp.group(1)) for _, p in (r.get("_rhits") or []))
+            if not near:
+                fail("A 줄 %d reason 이 note 「사유 위치 p.%s」 쪽에 없음" % (r["_line"], mp.group(1)))
+        elif not near:
             fail("A 줄 %d reason 이 source 와 같은 문단이 아님(거리 %s)" % (r["_line"], dist))
         if key not in HAND_R:
             fail("A 줄 %d reason 행 손 판단 없음" % r["_line"])
         say("  - 줄 %d %s FY%s %s: 글자 그대로 %s, source 와 거리 %s 글자(공백 뺀) → %s. %s" % (
             r["_line"], r["corp_label"], r["fy"], r["person"] or "(성명 없음)", "있음" if r.get("_rhits") else "없음", dist,
-            "같은 문단" if near else "멀음", HAND_R.get(key, "")))
+            ("같은 문단" if not mp else "note 「%s」 쪽에 있음" % mp.group(0)) if near else "멀음", HAND_R.get(key, "")))
+    say("")
+
+    # ---------------------------------------------------------------- (i) reason_text 「문서에 없음」 행의 찾은 범위(15차)
+    say("## (i) reason_text 「문서에 없음」 개별 겸직 행 — note 의 찾은 범위와 걸린 줄 수를 원문에서 다시 셈")
+    RS_RE = re.compile(r"사\s*유|겸\s*직|겸\s*임|선\s*임")
+    RA, RB = re.compile(r"겸\s*직|겸\s*임"), re.compile(r"사\s*유|선\s*임")
+    RN = [r for r in tables["A"] if r["reason_text"] == NONE and r["source_text"] != NONE]
+    rs_ok = 0
+    for r in RN:
+        d, i = r["_doc"], r["_line"]
+        m = re.search(r"reason_text 「문서에 없음」 — 찾은 범위: (.+?) 에서 검색어 「사유」「겸직」「겸임」「선임」\(걸린 줄 (\d+)\), (.+?)에서 「겸직」「겸임」이 "
+                      r"「사유」「선임」과 같은 줄이나 앞뒤 줄에 함께 있는 곳\((\d+)\)", r["note"])
+        if not m:
+            fail("A 줄 %d reason_text 「문서에 없음」인데 note 에 찾은 범위(문서·쪽 범위·검색어) 없음" % i)
+            continue
+        if d.src == "pdf":
+            mp = re.match(r"(.+) p\.(\d+)~p\.(\d+)\(행 쪽", m.group(1))
+            if not mp or mp.group(1) != d.file:
+                fail("A 줄 %d 찾은 범위 문서 이름이 출처 파일과 다름: %s" % (i, m.group(1)[:60]))
+                continue
+            a, b = int(mp.group(2)), int(mp.group(3))
+            n1 = sum(1 for p, l in d.lines if a <= p <= b and RS_RE.search(l))
+            n2 = 0
+            for k, (p, l) in enumerate(d.lines):
+                if RA.search(l) and RB.search(" ".join(x for _, x in d.lines[max(0, k - 1):k + 2])):
+                    n2 += 1
+            pg_ok = bool(re.fullmatch(r"p\.(\d+)", r["page"])) and a <= int(r["page"][2:]) <= b
+        else:
+            mu = re.search(r"6차 섹션 「(.+)」\(시작페이지 (\d+)\) 글 전체", m.group(1))
+            us = [u for u in d.units if mu and u["start"] == mu.group(2) and vnorm(mu.group(1)).endswith(vnorm(u["title"]))]
+            if not us:
+                fail("A 줄 %d 찾은 범위 섹션을 못 찾음: %s" % (i, m.group(1)[:60]))
+                continue
+            n1 = sum(1 for l in us[0]["body"].split("\n") if l.strip() and RS_RE.search(l))
+            n2 = 0
+            for u in d.units:
+                ls = [l for l in u["body"].split("\n") if l.strip()]
+                n2 += sum(1 for k, l in enumerate(ls) if RA.search(l) and RB.search(" ".join(ls[max(0, k - 1):k + 2])))
+            pg_ok = vnorm(r["source_text"]) in us[0]["n"]
+        if (n1, n2) == (int(m.group(2)), int(m.group(4))) and pg_ok:
+            rs_ok += 1
+        else:
+            fail("A 줄 %d 찾은 범위 다시 세기 다름: note 걸린 줄 %s·%s, 다시 센 것 %d·%d, 행 위치가 범위 안 %s" % (
+                i, m.group(2), m.group(4), n1, n2, pg_ok))
+    say("- %d행: note 에 찾은 범위가 있고 원문에서 다시 센 걸린 줄 수(범위 안 4낱말, 문서 전체 함께 나옴)와 행 위치가 맞는 행 %d" % (len(RN), rs_ok))
+    LOG = list(csv.DictReader(open(os.path.join(WORK, "A_사유_재검색.csv"), encoding="utf-8-sig")))
+    import collections as _c
+    jc = _c.Counter(x["judge"] for x in LOG)
+    say("- 작업 기록 gov15_g1_work/A_사유_재검색.csv %d줄 — 판정별: %s" % (len(LOG), "; ".join("%s %d" % (k, v) for k, v in jc.most_common())))
+    if jc.get("판정 없음"):
+        fail("A_사유_재검색.csv 에 판정 없는 줄 %d" % jc["판정 없음"])
+    moved = [x for x in LOG if "reason_text 로 옮김" in x["judge"]]
+    say("  reason_text 로 옮긴 글은 신한 FY2019 「겸직 사업부문 활성화를 위해 경영진 신규 선임」(p.25·p.51 같은 글, 걸린 줄 %d) 하나 — 장동기·정운진 행(위 (f)). "
+        "그 밖의 걸린 줄은 후보 「현재 겸직 업무」 칸·충실성 문구·자격요건·선임 사실·규정 조문·다른 사람(은행장) 겸직 서술 등으로, 그 행 겸직의 사유를 적은 글이 아님(사람이 읽음)." % len(moved))
     say("")
 
     # ---------------------------------------------------------------- (g) B 제외 표본

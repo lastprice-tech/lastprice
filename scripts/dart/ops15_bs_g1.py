@@ -351,7 +351,7 @@ def gj_tables(d):
         dt = last_date(capt)
         after = (dt is not None and dt > (d.fy, 12, 31)) or (dt is None and "이후" in capt)
         kind = "타회사" if "타회사" in nz("".join(title_lines(cap))) else "계열회사"
-        recs, prev = [], None
+        recs, prev, prev_ln = [], None, None
         for (i, c) in t["rows"][1:]:
             if all(not x.strip() for x in c):
                 continue
@@ -359,16 +359,20 @@ def gj_tables(d):
             if len(c) < len(cols) and prev is not None:
                 k = len(cols) - len(c)
                 full = prev[:k] + c
+                full_ln = prev_ln[:k] + [i] * len(c)
                 carried = [cols[j] for j in range(k)]
             elif len(c) > len(cols):
                 full = c[:len(cols)]
+                full_ln = [i] * len(cols)
                 carried = ["칸 수 넘침(%d>%d)" % (len(c), len(cols))]
             else:
                 full = c
-            prev = full
+                full_ln = [i] * len(cols)
+            prev, prev_ln = full, full_ln
             r = {cols[j]: full[j] for j in range(len(cols))}
             r.update(line=i, table=t["no"], after=after, date=dt, kind=kind, cap=cap, carried=carried,
-                     src=d.L[i], prev_line=(d.L[i - 1] if carried else ""))
+                     src=d.L[i], prev_line=(d.L[i - 1] if carried else ""),
+                     col_line={cols[j]: full_ln[j] for j in range(len(cols))})   # (15차 wave6) 칸 값이 나온 md 줄
             r["pkey"] = name_key(r.get("person", ""))
             r["ckey"] = comp_key(r.get("company", ""))
             r["tkey"] = nz(r.get("title", ""))
@@ -502,6 +506,201 @@ def cell_concurrents(co, off):
     return out
 
 
+# ================================================================ (15차 wave6 고침) 회사·직위 나누기 점검 — g1·g2·g3 같은 규칙
+NOSPLIT = "(나누지 않음)"
+# (판단) 손으로 본 잘못 나눔(키: 띄어쓰기 뺀 「회사‖직위」, 끝 * 는 앞부분 같음) → (회사, 직위) 원문 조각 또는 NOSPLIT
+SPLIT_FIX = {
+    "종합법률사무소‖그레이스변호사": ("종합법률사무소 그레이스", "변호사"),
+    "법무법인(유)‖다담대표변호사": ("법무법인(유) 다담", "대표변호사"),
+    "법무법인(유한)‖다담대표변호사": ("법무법인(유한) 다담", "대표변호사"),
+    "사단법인‖한꿈학교이사장": ("사단법인 한꿈 학교", "이사장"),
+    "서울고등검찰청장김앤장법률사무소‖변호사": ("김앤장법률사무소", "변호사"),
+    "한국금융연구원은행보험연구‖2실장": ("한국금융연구원", "은행보험연구&cr;2실장"),
+    "금융정보분석원자금세탁방지‖정책자문위원": ("금융정보분석원", "자금세탁방지 정책자문위원"),
+    "메리츠증권대표이사‖부사장": ("메리츠증권", "대표이사 부사장"),
+    "메리츠증권대표이사‖사장": ("메리츠증권", "대표이사 사장"),
+    "메리츠화재ESG경영실장‖부사장": ("메리츠화재", "ESG경영실장 부사장"),
+    "부산대경제통상대학장겸‖대학원장": ("부산대", "경제통상대학장 겸 대학원장"),
+    "㈜루트로닉사업개발및리스크관리‖본부장": ("㈜루트로닉", "사업개발 및 리스크관리 본부장"),
+    "BNPParibas증권‖일본CEO": NOSPLIT,
+    "BNPParibas증권‖일본이사": NOSPLIT,
+    "ClearyGottliebSteen&HamiltonLLP*": NOSPLIT,
+    "한국인터넷법학회장‖": NOSPLIT,
+}
+
+
+def _nsp(s):
+    return re.sub(r"\s+", "", s or "")
+
+
+def cmpn(s):
+    """원문 대조 꼴(OpenDART XML md): 공백·줄바꿈과 md 표지 「|」「<br>」만 지움."""
+    return re.sub(r"\s+", "", (s or "").replace("<br>", "").replace("|", ""))
+
+
+def verbatim(src, want):
+    """want 와 띄어쓰기만 다른 글을 src 에서 원문 그대로 꺼냄(없으면 None)."""
+    w = _nsp(want)
+    if not w:
+        return None
+    m = re.search(r"\s*".join(re.escape(ch) for ch in w), src)
+    return m.group(0).strip() if m else None
+
+
+def fix_split(comp, title, src):
+    """concurrent_company·concurrent_title 점검 → (회사, 직위, note 글). 두 칸은 각각 source_text 의 이어진 부분 글이어야 함."""
+    k = _nsp(comp) + "‖" + _nsp(title)
+    fix = SPLIT_FIX.get(k)
+    if fix is None:
+        fix = next((v for kk, v in SPLIT_FIX.items() if kk.endswith("*") and k.startswith(kk[:-1])), None)
+    if fix == NOSPLIT:
+        whole = verbatim(src, comp + title)
+        if whole:
+            return whole, NOSPLIT, ("(판단) 회사·직위를 어디서 나눌지 확신이 없어 나누지 않음 — company 에 원문 조각 통째로(이전 나눔 「%s」/「%s」)"
+                                    % (comp, title))
+    elif fix is not None:
+        c2, t2 = verbatim(src, fix[0]), verbatim(src, fix[1])
+        if c2 and t2:
+            extra = ""
+            if _nsp(comp + title).replace("&cr;", "") != _nsp(c2 + t2).replace("&cr;", ""):
+                extra = " — 남은 낱말 「%s」은 회사 이름이 아니라 두 칸에서 뺌" % (comp + " " + title).replace(c2, "").replace(t2, "").strip()
+            return c2, t2, "(판단) 회사·직위 나누기 고침(이전 「%s」/「%s」)%s" % (comp, title, extra)
+    if (not comp or cmpn(comp) in cmpn(src)) and (not title or cmpn(title) in cmpn(src)):
+        return comp, title, ""
+    whole = verbatim(src, comp + title)
+    if whole:
+        return whole, NOSPLIT, "(판단) 이전 나눔 「%s」/「%s」이 source_text 의 이어진 글이 아니라 나누지 않음" % (comp, title)
+    return comp, title, "(판단) 회사·직위 칸이 source_text 에 그대로 없음 — 점검 필요"
+
+
+def fix_split_rows(rows):
+    """조각 A 행 전부에 fix_split 을 걸고 note 에 덧붙임. 고친 행 수를 돌려줌."""
+    n = 0
+    for r in rows:
+        if r.get("source_text") in (None, "", NONE):
+            continue
+        c, t, why = fix_split(r.get("concurrent_company", ""), r.get("concurrent_title", ""), r["source_text"])
+        if why:
+            r["concurrent_company"], r["concurrent_title"] = c, t
+            r["note"] = (r.get("note", "") + "; " + why).lstrip("; ")
+            n += 1
+    return n
+
+
+CTRL_RE = re.compile(r"[\x00-\x08\x0b-\x1f]")
+
+
+def strip_ctrl_rows(rows):
+    """(15차 wave6) 보이지 않는 제어문자(U+0000~U+001F 중 줄바꿈·탭 말고)를 source_text·reason_text 에서 지우고 note 에 「제어문자 지움」."""
+    n = 0
+    for r in rows:
+        hit = False
+        for f in ("source_text", "reason_text"):
+            if r.get(f) and CTRL_RE.search(r[f]):
+                r[f] = CTRL_RE.sub("", r[f])
+                hit = True
+        if hit:
+            r["note"] = (r.get("note", "") + "; 제어문자 지움").lstrip("; ")
+            n += 1
+    return n
+
+
+# ================================================================ (15차 wave6 고침) D 검색어를 「위탁」까지 넓힘 — g1·g2·g3 같은 규칙
+WT_NOISE = re.compile(r"위탁(?=\s?(?:자|관리|매매|증거금|계좌|투자중개|금\s?반환))")   # 위탁자·위탁관리부동산투자회사(이름)·위탁매매 등
+WT_INFO = re.compile(r"(?:고객|개인|신용)\S{0,8}정보")
+WT_AFF = re.compile(r"자회사|손자회사|그룹사|계열사|계열회사")
+WT_REG = re.compile(r"(?:감독당국|금융위원회)\S{0,3}\s?위탁")
+WT_RULE = re.compile(r"[가-힣()]{0,8}(?:준칙|규정|지침)")
+WT_WHY = "(판단) 검색어 「위탁」으로 넓혀 넣음"
+WT_RULE_TXT = ("「위탁」 넓혀 찾기 규칙(판단): Ⅹ~Ⅺ 줄에서 「위탁」이 든 문장(긴 문단은 그 문장, 표 행은 행 그대로)에 고객·개인·신용 정보 낱말 또는 "
+               "자회사·손자회사·그룹사·계열사 낱말이 함께 있으면 넣음. 위탁자·위탁관리(회사 이름)·위탁매매·위탁증거금·위탁계좌·위탁금반환, "
+               "내규 이름(…위탁업체 관리 준칙 등), 감독당국·금융위원회의 위탁은 넣지 않음")
+
+
+def wt_sentence(text, pos):
+    """text 안 pos 를 담은 문장(원문 조각 그대로) → (시작, 끝). 표 행·300자 이하 글은 통째로."""
+    if text.startswith("|") or len(text) <= 300:
+        return 0, len(text)
+    a = 0
+    for mk in ("다.", ". ", "&cr;"):
+        k = text.rfind(mk, 0, pos)
+        if k >= 0:
+            a = max(a, k + len(mk))
+    b = len(text)
+    for mk, add in (("다.", 2), ("&cr;", 0)):
+        k = text.find(mk, pos)
+        if k >= 0:
+            b = min(b, k + add)
+    while a < b and text[a] in " \n":
+        a += 1
+    while b > a and text[b - 1] in " \n":
+        b -= 1
+    return a, b
+
+
+def wt_word(text, pos):
+    """「위탁」이 든 낱말 덩어리(원문, 띄어쓰기·문장부호 전까지, 끝 조사 하나 뗌) — contract_type 용."""
+    a = pos
+    while a > 0 and pos - a < 8 and re.match(r"[가-힣]", text[a - 1]):
+        a -= 1
+    b = pos + 2
+    while b < len(text) and re.match(r"[가-힣]", text[b]):
+        b += 1
+    w = text[a:b]
+    m = re.search(r"(?:에게|에서|으로|를|을|에|의|로|과|와)$", w)
+    if m and len(w) - len(m.group(0)) >= 2 and not re.search(r"(?:하|되|받)$", w[:m.start()]):
+        w = w[:m.start()]
+    return w
+
+
+_WT_MARK = re.compile(r"^\s*(?:\(?\d+\)|[가-하]\.|\d+\.|[①-⑳]|[-*•·□■○●▶◦※])")
+
+
+def wt_unit(L, i, lo, hi, maxn=60):
+    """md 줄 i 를 담은 글 덩이 → (시작 줄, 끝 줄). 표 행은 그 줄. 글은 문장 끝(다././&cr;)·머리 표시·표·제목 전까지 앞뒤 줄을 이음
+    (XML 이 글을 낱말마다 줄로 나눈 문단 — 예 우리 FY2023 Ⅺ — 을 한 글로)."""
+    def text(j):
+        l = L[j]
+        return lo <= j < hi and l.strip() != "" and not l.startswith(("|", "### ", "[표")) and not re.fullmatch(r"(?:&cr;|\s)*", l)
+    if L[i].startswith("|"):
+        return i, i
+    end = re.compile(r"(?:다\.|\.|&cr;)\s*$")
+    s = i
+    while s - 1 >= lo and i - s < maxn and text(s - 1) and not end.search(L[s - 1]) and not _WT_MARK.match(L[s]):
+        s -= 1
+    e = i
+    while e + 1 < hi and e - i < maxn and not end.search(L[e]) and text(e + 1) and not _WT_MARK.match(L[e + 1]):
+        e += 1
+    return s, e
+
+
+def wt_scan(L, i, lo, hi):
+    """md 줄 i 의 「위탁」 쓰임 → [(넣음 여부, 까닭, 원문 조각(source_text 후보), 낱말, 시작 줄, 끝 줄)]."""
+    out = []
+    s, e = wt_unit(L, i, lo, hi)
+    T = "\n".join(L[s:e + 1])
+    off = sum(len(L[j]) + 1 for j in range(s, i))
+    for m in re.finditer("위탁", L[i]):
+        p = off + m.start()
+        if WT_NOISE.match(T, p):
+            out.append((False, "낱말", "", T[p:p + 6], s, e))
+            continue
+        a, b = wt_sentence(T, p)
+        sent = T[a:b]
+        sa = s + T.count("\n", 0, a)
+        sb = s + T.count("\n", 0, b)
+        word = wt_word(T, p)
+        if WT_RULE.match(_nsp(T[p + 2:p + 22])):
+            out.append((False, "내규 이름", sent, word, sa, sb))
+        elif WT_REG.search(T[max(0, p - 12):p + 2]):
+            out.append((False, "감독당국 위탁", sent, word, sa, sb))
+        elif WT_INFO.search(sent) or WT_AFF.search(sent):
+            out.append((True, "정보" if WT_INFO.search(sent) else "계열", sent, word, sa, sb))
+        else:
+            out.append((False, "정보·계열 낱말 없음", sent, word, sa, sb))
+    return out
+
+
 # ================================================================ 작업 B·D 검색어
 TRUE_JEONJEOK = re.compile(r"(?<![가-힣])전적(?!으로|인|합)")
 B_KWS = ["겸직", "파견", "출향", "전출", "전적", "겸무"]
@@ -544,8 +743,8 @@ def broad_d_note(d, s, e):
     if not cnt:
         return "넓은 낱말(위탁·수탁·용역·자문·아웃소싱·외주·대행·공동) 다시 찾기: 0곳"
     return ("넓은 낱말(위탁·수탁·용역·자문·아웃소싱·외주·대행·공동) 다시 찾기(공백 무시): %s — 낱말별 첫 곳 %s%s; "
-            "(판단) 모두 D 검색어 꼴(업무위탁·위수탁·위탁계약·용역계약·경영자문·공동사용 등)이 아님. 고객·개인(신용)정보 처리 위탁 글은 "
-            "KB·신한 보고서의 같은 꼴 글도 행으로 넣지 않았으므로 같은 기준으로 행에 넣지 않음"
+            "(판단) 모두 D 검색어 꼴(업무위탁·위수탁·위탁계약·용역계약·경영자문·공동사용 등)이 아니고, 「위탁」 넓혀 찾기 규칙(정보·계열 낱말과 같은 문장)에도 "
+            "맞지 않음(위탁자·위탁매매·회사 이름 등)"
             % (" ".join("%s %d" % kv for kv in sorted(cnt.items(), key=lambda x: -x[1])), " · ".join(ex.values()),
                (" · 정보 처리 위탁 글 " + info) if info else ""))
 
@@ -767,15 +966,38 @@ def build():
                 elif kind in has_after:
                     notes.append("작성기준일 이후 표에는 이 행 없음")
             notes.append(how)
+            # (15차 wave6) 임원 현황 표에서 못 맞춘 사람: fulltime 은 이 겸직 표 상근여부 칸 원문 값, registered 는 「문서에 없음」
+            if o is None:
+                rk = (r.get("remark") or "").strip()
+                if rk and re.fullmatch(r"\s*(?:비\s?)?(?:상근|상임)\s*", rk):
+                    ft = rk
+                    notes.append("fulltime 은 이 겸직 표 「비고/상근여부」 칸 원문 값(임원 현황 표에서 이 사람을 못 맞춤)")
+                else:
+                    ft = NONE
+                    notes.append("fulltime 「문서에 없음」 — 찾은 범위: 같은 보고서 Ⅷ 임원 현황 표(작성기준일·이후) 상근여부 칸, 이 겸직 표 비고/상근여부 칸(값 %s)"
+                                 % ("「%s」" % rk if rk else "없음"))
+                reg = NONE
+                notes.append("registered 「문서에 없음」 — 찾은 범위: 같은 보고서 Ⅷ 임원 현황 표(작성기준일·이후) 등기임원여부 칸(이 사람 못 맞춤), "
+                             "이 겸직 표(등기 여부 칸 없음)")
+            else:
+                ft, reg = o.get("ft", ""), o.get("reg", "")
+            src = r["src"]
+            # (15차 wave6) 회사·직위 칸이 윗줄 값(병합 칸)이면 source_text 를 그 윗줄부터 이 행까지 이어서(사이 줄 포함)
+            cl = r.get("col_line", {})
+            s0 = min([cl.get(f, r["line"]) for f in ("company", "title")] + [r["line"]])
+            if s0 < r["line"]:
+                src = "\n".join(d.L[s0:r["line"] + 1])
+                notes.append("(판단) 병합 칸 — 회사·직위 칸이 윗줄 값이라 source_text 는 그 칸이 있는 md %d행부터 이 행(md %d행)까지 이어서 옮김"
+                             % (s0 + 1, r["line"] + 1))
             notes.append("겸직 사유 글: 이 보고서 Ⅷ·Ⅸ에 없음")
             if extra_note:
                 notes.append(extra_note)
             row = base(d)
             row.update(person=r.get("person", ""), birth_ym=(o or {}).get("birth", ""),
                        holdco_title=(o or {}).get("title", ""), holdco_duty=(o or {}).get("duty", ""),
-                       registered=(o or {}).get("reg", ""), fulltime=(o or {}).get("ft", ""),
+                       registered=reg, fulltime=ft,
                        concurrent_company=r.get("company", ""), concurrent_title=r.get("title", ""),
-                       concurrent_since=r.get("since", ""), reason_text=NONE, source_text=r["src"],
+                       concurrent_since=r.get("since", ""), reason_text=NONE, source_text=src,
                        page=d.page(r["line"]), note="; ".join(notes))
             row["_line"] = r["line"]
             row["_key"] = ("gj",) + k
@@ -882,8 +1104,10 @@ def build():
                 continue
             row = base(d)
             where = "표 행" if i in d.tab_of else ("글 줄" if h["s"] == h["e"] else "글(md 줄 %d개 — 문단 이어 붙임, 줄바꿈 그대로)" % (h["e"] - h["s"] + 1))
+            offno = {t["t"]["no"] for t in a_records[d.rcept][0]}
+            pos = "(위치) 임원 현황 표 — 작업 A 와 겹침" if d.tab_of.get(i) in offno else ""
             row.update(employees_total=tot, regular=reg, contract=con, keyword=k, source_text=h["text"], page=d.page(i),
-                       note="; ".join(x for x in ["Ⅷ %s" % where, empnote, extra_note] if x))
+                       note="; ".join(x for x in [pos, "Ⅷ %s" % where, empnote, extra_note] if x))
             row["_line"] = i
             row["_key"] = key
             rows.append(row)
@@ -909,6 +1133,23 @@ def build():
                 continue
             seen.add((a0, b0))
             hits.append(dict(i=i, s=a0, e=b0, text=txt, ms=list(D_RE.finditer(txt))))
+        # (15차 wave6) 검색어를 「위탁」까지 넓힘 — 위 검색어 글 밖의 줄만
+        covered = set(j for h in hits for j in range(h["s"], h["e"] + 1))
+        wseen, wskip = set(), []
+        for i in range(s, e):
+            if i in covered or not is_body(d, i) or "위탁" not in d.L[i]:
+                continue
+            for ok, why, sent, word, sa, sb in wt_scan(d.L, i, s, e):
+                if not ok:
+                    if why != "낱말" and (sa, sent) not in wseen:
+                        wseen.add((sa, sent))
+                        wskip.append((i, why, word))
+                    continue
+                if (sa, sent) in wseen or any(j in covered for j in range(sa, sb + 1)):
+                    continue
+                wseen.add((sa, sent))
+                hits.append(dict(i=i, s=sa, e=sb, text=sent, ms=[], wt=True, word=word, why=why))
+        d.wt_skip = wskip
         heads = [h for h in d.heads if s <= h[0] < e and h[3] <= 2]
         return hits, heads, (s, e)
 
@@ -924,6 +1165,32 @@ def build():
         x0, x1 = d.chapter("X")
         for h in hits:
             i, l, ms = h["i"], h["text"], h["ms"]
+            if h.get("wt"):
+                # (15차 wave6) 「위탁」 넓혀 찾은 글 — 글마다 1행
+                judg.add(WT_RULE_TXT)
+                key = ("wt", nz(l))
+                if key in seen:
+                    seen[key]["_more"].append(h["s"])
+                    continue
+                if only is not None and ("d", nz(l), key) not in only:
+                    continue
+                hd = d.head_at(i)
+                row = base(d)
+                notes = ["%s 「%s」 %s" % ("Ⅹ" if x0 <= i < x1 else "Ⅺ", hd[2], "표 행" if i in d.tab_of else
+                                         ("글 줄" if l == d.L[i] else "글 줄의 한 문장(긴 문단이라 「위탁」이 든 문장만)") if h["s"] == h["e"] else
+                                         "글(md 줄 %d개 — 낱말마다 줄이 나뉜 문단을 문장 끝까지 이어 붙임, 줄바꿈 그대로)" % (h["e"] - h["s"] + 1)),
+                         WT_WHY + "(같은 문장에 %s 낱말)" % ("고객·개인·신용 정보" if h["why"] == "정보" else "자회사·손자회사·그룹사·계열사"),
+                         "contract_type 은 「위탁」이 든 원문 낱말 덩어리",
+                         "counterparty 칸 비움(원문에 상대 회사 칸 없음 — 글 안 회사 이름은 source_text 그대로)"]
+                if extra_note:
+                    notes.append(extra_note)
+                row.update(counterparty="", contract_type=h["word"], amount="", source_text=l, page=d.page(i))
+                row["_notes"], row["_more"], row["_line"], row["_s"], row["_key"] = notes, [], i, h["s"], ("d", nz(l), key)
+                seen[key] = row
+                rows.append(row)
+                add_sec("D", d, i, row)
+                want_pdf(d, h["s"], nz(l)[:40], row)
+                continue
             types = []
             for m in ms:
                 t = contract_type(l, m)
@@ -946,8 +1213,9 @@ def build():
             cps = cps or [""]
             for cp in cps:
                 key = (nz(cp), nz(ctype))
-                if key in seen:
-                    seen[key]["_more"].append(h["s"])
+                # (15차 wave6) 같은 (상대방·유형)이라도 글이 다르면 따로 1행 — 글까지 같은 것만 묶음
+                if (nz(l),) + key in seen:
+                    seen[(nz(l),) + key]["_more"].append(h["s"])
                     continue
                 if only is not None and ("d", nz(l), key) not in only:
                     continue
@@ -973,7 +1241,7 @@ def build():
                 row["_line"] = i
                 row["_s"] = h["s"]
                 row["_key"] = ("d", nz(l), key)
-                seen[key] = row
+                seen[(nz(l),) + key] = row
                 rows.append(row)
                 add_sec("D", d, i, row)
                 cc = cells_of(l) if h["s"] == h["e"] else None
@@ -981,7 +1249,7 @@ def build():
         for row in rows:
             more = sorted(set(x for x in row["_more"] if x != row["_s"]))
             if more:
-                row["_notes"].append("같은 상대방·유형 언급 글 %d개 더: %s" % (len(more), ", ".join(d.page(x).replace("XML ", "") for x in more[:8]) + (" …" if len(more) > 8 else "")))
+                row["_notes"].append("글자까지 같은 글이 %d곳 더: %s" % (len(more), ", ".join(d.page(x).replace("XML ", "") for x in more[:8]) + (" …" if len(more) > 8 else "")))
                 for x in more:
                     add_sec("D", d, x, row)
             row["note"] = "; ".join(row.pop("_notes"))
@@ -1123,6 +1391,11 @@ def build():
                 row["_line"] = ds
                 row["_key"] = ("none",)
                 d_main = [row]
+            wsk = getattr(dm, "wt_skip", [])
+            if wsk:
+                dnotes.append("(판단) 「위탁」 넓혀 찾기에서 넣지 않은 글 %d곳(%s): %s" % (
+                    len(wsk), "·".join(sorted(set(w for _, w, _ in wsk))),
+                    " / ".join("%s「%s」" % (dm.page(i).replace("XML ", ""), wd) for i, _, wd in wsk[:6]) + (" 외 %d곳" % (len(wsk) - 6) if len(wsk) > 6 else "")))
             for r in d_main:
                 if dnotes:
                     r["note"] += "; " + "; ".join(dnotes)
@@ -1313,6 +1586,12 @@ def build():
         for r in rows:
             for k in [k for k in r if k.startswith("_")]:
                 r.pop(k)
+    # (15차 wave6) 회사·직위 나누기 점검(두 칸이 source_text 의 이어진 부분 글인지 · 손으로 본 잘못 나눔 고침)
+    nctrl = sum(strip_ctrl_rows(x) for x in (A_rows, B_rows, D_rows))     # (15차 wave6)
+    if nctrl:
+        judg.add("보이지 않는 제어문자를 지운 행 %d(note 「제어문자 지움」)" % nctrl)
+    nfix = fix_split_rows(A_rows)
+    judg.add("A 회사·직위 나누기 점검: 손으로 본 잘못 나눔은 원문 조각으로 고치고, 확신이 없거나 이어진 글이 아니면 company 에 통째로·title 「(나누지 않음)」 (%d행)" % nfix)
     os.makedirs(FRAG, exist_ok=True)
     write(os.path.join(FRAG, "A_bs_g1.csv"), A_rows, A_COLS)
     write(os.path.join(FRAG, "B_bs_g1.csv"), B_rows, B_COLS)

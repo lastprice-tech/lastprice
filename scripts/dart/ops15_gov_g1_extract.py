@@ -9,7 +9,9 @@
     「## p.N」= PDF 쪽). 출처 url·fetched_at 은 dart_out/ops15/gov15_g1_work/download.json.
   FY2024·2025(공시연도 2025·2026): 6차 섹션 글(dart_out/ops15/kit56/연차보고서_섹션.csv). url·fetched_at 은
     handoff/연차보고서_파일목록.csv. page = 「시작페이지 N 섹션 안」. FY2025 는 13차 텍스트(같은 PDF, sha256 같음)의 쪽을 note 에 덧붙임.
-글자는 원문 그대로 옮긴다. PDF 줄바꿈만 붙여 쓴다(줄 끝 공백은 원문대로). 웹 요청·API 키 없음.
+글자는 원문 그대로 옮긴다. 문장은 PDF 줄바꿈만 붙여 쓰고(줄 끝 공백은 원문대로), 표 칸(짧은 줄)은 줄바꿈 그대로 둔다. 웹 요청·API 키 없음.
+15차 6파동 새 원문 대조 규칙: 행 글은 원문 한 곳에 이어진 글이어야 함 — 원문에 없는 「 | 」·「 … 」를 넣지 않고, 떨어진 두 곳은 그 사이 글까지
+이어서(2,000자 이하) 옮김. reason_text 「문서에 없음」 행은 note 에 찾은 범위(파일·쪽 범위·검색어)를 적고 걸린 줄은 gov15_g1_work/A_사유_재검색.csv.
 """
 from __future__ import annotations
 
@@ -171,10 +173,11 @@ def line_of(offs, pos):
 
 
 def join(txt, how):
-    """여러 줄 원문 → 한 칸: prose 는 줄바꿈만 없앰(줄 끝 공백은 그대로), table 은 「 | 」로 이음."""
+    """여러 줄 원문 → 한 칸: prose 는 줄바꿈만 없앰(줄 끝 공백은 그대로), table 은 줄바꿈을 그대로 둠(빈 줄과 줄 끝 공백만 뺌).
+    (15차 고침: 전에는 table 을 원문에 없는 「 | 」로 이었음 — 새 원문 대조 규칙(이어진 글·글자 추가 없음)에 맞춰 줄바꿈 그대로)"""
     lines = [l for l in txt.split("\n")]
     if how == "table":
-        return " | ".join(l.strip() for l in lines if l.strip())
+        return "\n".join(l.rstrip() for l in lines if l.strip()).strip()
     return "".join(lines).strip()
 
 
@@ -257,7 +260,8 @@ def collect_hits(d):
                         and not BULLET_RE.match(texts[s - 1]):
                     s -= 1
                 e = i
-                pieces = [" | ".join(texts[j].strip() for j in range(s, e + 1) if texts[j] and texts[j].strip())]
+                # (15차 고침) 칸 사이는 원문 줄바꿈 그대로(전에는 원문에 없는 「 | 」를 넣었음)
+                pieces = ["\n".join(texts[j].rstrip() for j in range(s, e + 1) if texts[j] and texts[j].strip()).strip()]
                 mode = "table"
             else:
                 _, s, e = sentence(texts, i)
@@ -355,9 +359,16 @@ SH_REASON = rx("창립 이래 당사는 그룹 전략의 일관성 유지") + AN
 SH_REASON2 = rx("창립이래 당사는") + ANY + rx("선임하고 있습니다.")
 NOTE_REASON = ("(판단) reason_text 는 같은 문단의 비상임이사 선임 이유 문장(원문 그대로) — 은행장의 지주 비상임이사 겸직에 "
                "대한 서술로 보아 옮김")
-NOTE_OD = "사외이사 후보 추천 관련 사항 — 후보 본인 소명 「3) 현재 겸직 업무」 칸(표 칸은 「 | 」로 이음)"
+# (15차 고침) reason_text 「문서에 없음」 행을 「사유」「겸직」「겸임」「선임」으로 다시 찾을 때 걸린 글: 신한 FY2019 같은 날(2019-12-19)
+#   제8회 임시이사회 「이사 아닌 경영진 선임의 건」 결의 문장 — 「겸직 사업부문 활성화를 위해 경영진 신규 선임」
+SH_REASON_GM = rx("2019년 12월 19일 개최한 제8회 임시이사회에서는") + r"[\s\S]{0,300}?" + rx("겸직 사업부문 활성화를 위해 경영진 신규 선임에 관한") \
+    + r"\s*" + rx("사항을 결의하였습니다")
+NOTE_REASON_GM = ("(판단) reason_text 는 같은 문서 이사회 활동 서술(2019년 12월 19일 제8회 임시이사회 「이사 아닌 경영진 선임의 건」)의 결의 문장 "
+                  "전체(원문 그대로, 위치는 note 「사유 위치」) — 같은 날 이사회운영위원회가 추천한 이 행의 「…사업부문겸직 부사장」 선임을 두고 "
+                  "「겸직 사업부문 활성화를 위해 경영진 신규 선임」이라 적은 글로 보아 옮김. 같은 문장은 B 조각에도 있음")
+NOTE_OD = "사외이사 후보 추천 관련 사항 — 후보 본인 소명 「3) 현재 겸직 업무」 칸(칸 머리와 값 사이 줄바꿈은 원문 그대로)"
 NOTE_OD_AUDIT = ("감사위원 후보 추천 관련 사항(감사위원후보추천위원회 절 — 감사위원이 되는 사외이사 후보) — 「(사) 감사위원후보 본인 소명」 "
-                 "「3) 현재 겸직 업무」 칸(표 칸은 「 | 」로 이음)")
+                 "「3) 현재 겸직 업무」 칸(칸 머리와 값 사이 줄바꿈은 원문 그대로)")
 
 
 def od(co, year, line, text, person, birth, pairs, unit=None, ahead=None, note="", audit=False):
@@ -394,17 +405,20 @@ A_SPECS = [
         note=("이사회 구성 — 「이사 정상혁 (비상임이사)」 절. " if y == 2024 else "6차 섹션 「라. 이사회 및 이사에 대한 평가」 글. ")
         + "(판단) reason_text 는 같은 문장의 뒷부분(원문 그대로)") for y in (2024, 2025, 2026)],
     A("신한금융지주", 2020, rx("GMS사업부문겸직 부사장 장동기(임기 1년)"), person="장동기", title="부사장",
-      pairs=[("문서에 없음", "GMS사업부문")],
+      pairs=[("문서에 없음", "GMS사업부문")], reason=SH_REASON_GM,
       note="이사회운영위원회 「이사 아닌 경영진 신규 선임」 추천 결과 목록. (판단) 원문 「GMS사업부문겸직 부사장」을 지주 부사장의 "
-           "GMS사업부문 겸직으로 읽음 — 겸직 회사명은 원문에 없음. 같은 날 이사회 결의 문장(p.25 「…겸직 사업부문 활성화를 위해 "
-           "경영진 신규 선임…」)은 B 조각에 있음"),
+           "GMS사업부문 겸직으로 읽음 — 겸직 회사명은 원문에 없음. " + NOTE_REASON_GM),
     A("신한금융지주", 2020, rx("GIB사업부문겸직 부사장 정운진(임기 1년)"), person="정운진", title="부사장",
-      pairs=[("문서에 없음", "GIB사업부문")],
+      pairs=[("문서에 없음", "GIB사업부문")], reason=SH_REASON_GM,
       note="이사회운영위원회 「이사 아닌 경영진 신규 선임」 추천 결과 목록. (판단) 원문 「GIB사업부문겸직 부사장」을 지주 부사장의 "
-           "GIB사업부문 겸직으로 읽음 — 겸직 회사명은 원문에 없음"),
+           "GIB사업부문 겸직으로 읽음 — 겸직 회사명은 원문에 없음. " + NOTE_REASON_GM),
     A("신한금융지주", 2021, rx("결의-나.이사 아닌 경영진 선임의 건 : 지주회사와 신한DS 대표이사를 겸직하는 "
                              "그룹디지털부문장을 선임하였습니다."),
-      title="그룹디지털부문장", pairs=[("신한DS", "대표이사")], note="이사회 활동내역(결의 안건) — 원문에 성명 없음"),
+      title="그룹디지털부문장", pairs=[("신한DS", "대표이사")],
+      note="이사회 활동내역(결의 안건) — 이 문장에 성명 없음. 같은 문서 p.161 이사회운영위원회 서술에 「2020년 2월 5일 개최한 "
+           "제1회 이사회운영위원회는 신한DS 대표이사인 이성용 사장을 그룹 디지털사업부문장 후보로 추천하였습니다」, p.164 활동내역에 「…신한DS "
+           "대표이사인 이성용 사장을 그룹 디지털사업부문장…」이 있음(위치만 적음 — "
+           "person 칸은 이 행 source_text 기준으로 비워 둠, 판단)"),
     od("신한금융지주", 2020, 4323, ["성균관대학교 외 겸직사항 없음"], "성재호", "1960", [("성균관대학교", "")], audit=True),
     od("신한금융지주", 2020, 5263, ["(유)프리메르코리아 외 겸직사항 없음"], "히라카와 유키", "1960", [("(유)프리메르코리아", "")]),
     od("신한금융지주", 2021, 5295, ["(유)프리메르코리아 외 겸직사항 없음"], "히라카와 유키", "1960", [("(유)프리메르코리아", "")]),
@@ -426,8 +440,8 @@ A_SPECS = [
     # ── 하나금융지주: 리스크관리집행위원회 구성 표 + 주5
     *[A("하나금융지주", y, rx(nm) + r"\s*" + rx(ttl + "주5") + r"\s*" + rx(dt) + r"\s*" + rx("위원장"), person=nm, title=ttl,
         pairs=[("하나은행", cttl)], join_how="table", extra=rx("주5) 하나은행 " + cttl + " 겸직"),
-        note="리스크관리집행위원회 구성 표의 행과 각주 주5(표 칸은 「 | 」, 행과 각주는 「 … 」로 이음). 표의 선임일은 위원 선임일"
-             "(주4 「최초 회의참석일 기준」) — 겸직 시작일 아님")
+        note="리스크관리집행위원회 구성 표의 이 사람 행(「…담당임원주5」)부터 같은 쪽 표 아래 각주 「주5) … 겸직」까지 이어진 글을 그대로 "
+             "옮김(그 사이 다른 위원 행·주1~주4 포함, 줄바꿈 그대로). 표의 선임일은 위원 선임일(주4 「최초 회의참석일 기준」) — 겸직 시작일 아님")
       for (y, nm, ttl, dt, cttl) in [
           (2020, "황효상", "하나금융지주 리스크관리 담당임원", "2014.2.26.", "리스크관리담당임원"),
           (2021, "황효상", "하나금융지주 리스크관리 담당임원", "2014.2.26.", "리스크관리담당임원"),
@@ -519,7 +533,7 @@ class Doc:
             if not m:
                 return None
             li = line_of(self.offs, m.start())
-            return dict(raw=m.group(0), page="p.%d" % self.pg[li], line=li, unit=None)
+            return dict(raw=m.group(0), page="p.%d" % self.pg[li], line=li, unit=None, start=m.start(), end=m.end())
         for u in d["units"]:
             if unit and unit not in u["title"]:
                 continue
@@ -528,6 +542,17 @@ class Doc:
                 return dict(raw=m.group(0), page="시작페이지 %s 섹션 안" % u["start"], line=None, unit=u,
                             pos=m.start())
         return None
+
+    def span_to(self, f, pattern, limit=2000):
+        """pdf: f(find 결과) 시작부터 그 뒤 pattern 끝까지 원문에 이어진 글(쪽 표지를 넘지 않고 limit 자 이하). 없으면 None."""
+        m = re.compile(pattern).search(self.text, f["end"], f["start"] + limit + 200)
+        if not m:
+            return None
+        raw = self.text[f["start"]:m.end()]
+        if len(raw) > limit or re.search(r"^## p\.\d+", raw, re.M):
+            return None
+        li = line_of(self.offs, m.start())
+        return dict(raw=raw, page="p.%d" % self.pg[li], line=line_of(self.offs, f["start"]))
 
     def section(self, li):
         """pdf md 줄 li 가 든 절: (시작 줄, 끝 줄, 제목, 비고)."""
@@ -562,8 +587,92 @@ class Doc:
         return s, e, "(절 머리를 못 잡음)", "(판단) 절 경계를 제목 줄로 못 잡거나 절이 길어 앞뒤 60줄만"
 
 
+# ================================================================ reason_text 찾은 범위(15차 고침)
+RS_RE = re.compile(r"사\s*유|겸\s*직|겸\s*임|선\s*임")
+RS_A = re.compile(r"겸\s*직|겸\s*임")
+RS_B = re.compile(r"사\s*유|선\s*임")
+REASON_LOG = os.path.join(WORK, "A_사유_재검색.csv")
+# 걸린 줄을 사람이 읽고 붙인 판정(글 꼴 → 판정). 위에서부터 처음 맞는 것. 어느 것에도 안 맞으면 「판정 없음」 → build 가 문제로 알림.
+RS_JUDGE = [
+    (r"겸직\s*사업부문\s*활성화를\s*위해\s*경영진\s*신규\s*선임", "겸직 사업부문장 선임 목적 문장(2019-12-19 이사회) — 장동기·정운진 행 reason_text 로 옮김(판단)"),
+    (r"겸직\s*사업부문\s*활성화를\s*위한", "겸직 사업부문 경영진 선임 목적(2020-12-17 회의) — 이 FY 의 개별 겸직 행(2020-02 선임 그룹디지털부문장·사외이사 후보)과 "
+                                    "다른 회의·다른 사람이라 옮기지 않음(판단)"),
+    (r"은행장을\s*겸직|은행장을\s*겸임", "은행장의 지주 비상임이사 겸직 서술 — 그 사람 행(진옥동·정상혁)에 이미 있음"),
+    (r"사업부문겸직\s*부사장", "이 FY 장동기·정운진 행 source_text(겸직 사실)"),
+    (r"3\)\s*현재\s*겸직\s*업무|겸직사항\s*없음|겸직\s*사항\s*없음|해당사항\s*없음", "후보 본인 소명 「현재 겸직 업무」 칸 머리·값(겸직 사실)"),
+    (r"겸직\s*사실\s*변동|겸직한\s*사실이\s*없|겸직상황", "사외이사 충실성 문구(선임 뒤 겸직 변동 없음)"),
+    (r"한다\.|아니한다|아니하다|될\s*수\s*없다", "정관·규정 조문(겸직 제한·선임 절차)"),
+    (r"결격\s*사유|자격\s*충족|선임시\s*적용된\s*법령|자격요건|소극적|적극적", "사외이사 자격요건·결격사유 확인 문구"),
+    (r"선임\s*기준|선임기준|선임원칙", "사외이사 선임 기준 서술"),
+    (r"선임연구원", "경력 직함(「선임연구원」)"),
+    (r"겸\s+임원", "「…사외이사 겸 임원후보추천위원회…」(낱말이 이어져 「겸 임」으로 걸림)"),
+    (r"주\s*5\)\s*하나은행", "이 행 source_text 의 각주 주5(겸직 사실)"),
+    (r"임기가\s*만료됨에\s*따라|임기\s*만료|임기\s*도래", "선임 계기(임기 만료) — 겸직 사유 아님"),
+    (r"재\s*선임을\s*추천|분리\s*선임|후보로.{0,20}추천|추천하였습니다|추천함", "후보 추천 사유(이사 후보 추천의 이유 — 겸직 사유 아님)"),
+    (r"선임일|선임\s*되었|선임되었|최초\s*선임|재선임\s*되었|위원으로\s*선임|선임\s*이후|선임\s*보고|선임의\s*건|선임에\s*관한|신규\s*선임|선임하였"
+     r"|선임\s*\(안\)|의장\s*선임|위원\s*선임|선임\s*결의|사업그룹장\s*선임", "선임 사실·날짜·안건 이름"),
+    (r"일신상의\s*사유|중도사임", "다른 사람 사임 사유"),
+    (r"겸직\)|겸직하는|겸직하고|겸직\s*사업부문장|겸임하는|겸임", "겸직 사실 서술(사유 없음)"),
+    (r"사유", "그 밖의 「사유」(불참·결격·변경 사유 등)"),
+]
+
+
+def rs_judge(t):
+    s = re.sub(r"\s+", " ", t)
+    for pat, lab in RS_JUDGE:
+        if re.search(pat, s):
+            return lab
+    return "판정 없음"
+
+
+def reason_scope(dobj, d, f, sp, log):
+    """reason_text 「문서에 없음」 행의 찾은 범위 note. (1) 행 쪽 앞뒤 1쪽과 그 절(6차는 그 섹션 글 전체)에서 「사유」「겸직」「겸임」「선임」,
+    (2) 문서 전체에서 「겸직」「겸임」이 「사유」「선임」과 같은 줄이나 앞뒤 줄에 함께 있는 곳. 걸린 줄은 log 에 판정과 함께."""
+    who = sp["person"] or sp["title"]
+    if d["src"] == "pdf":
+        L, pg, h = dobj.md_lines, dobj.pg, dobj.head
+        p = pg[f["line"]]
+        s, e, title, _ = dobj.section(f["line"])
+        ps = max(1, min(pg[s], p - 1))
+        pe = min(int(d["pages"] or pg[-1]), max(pg[max(s, e - 1)], p + 1))
+        body = [j for j in range(h, len(L)) if not L[j].startswith("## p.")]
+        near = [j for j in body if ps <= pg[j] <= pe and RS_RE.search(L[j])]
+        whole = []
+        for j in body:
+            if RS_A.search(L[j]):
+                win = " ".join(L[k] for k in range(max(h, j - 1), min(len(L), j + 2)) if not L[k].startswith("## p."))
+                if RS_B.search(win):
+                    whole.append(j)
+        for scope, js in (("행 쪽 앞뒤·절", near), ("문서 전체 함께 나옴", whole)):
+            for j in js:
+                log.append(dict(co=d["co"], fy=d["fy"], person=who, row_page=f["page"], scope=scope, page="p.%d" % pg[j],
+                                text=L[j].strip(), judge=rs_judge(L[j] + " " + (L[j + 1] if j + 1 < len(L) else ""))))
+        rng = "%s p.%d~p.%d(행 쪽 p.%d 앞뒤 1쪽과 「%s」 절)" % (d["file"], ps, pe, p, title.strip())
+        allr = "문서 전체 p.1~p.%s" % (d["pages"] or pg[-1])
+    else:
+        u = f["unit"]
+        near = [l for l in u["body"].split("\n") if l.strip() and RS_RE.search(l)]
+        whole = []
+        for uu in d["units"]:
+            ls = [l for l in uu["body"].split("\n") if l.strip()]
+            for k, l in enumerate(ls):
+                if RS_A.search(l) and RS_B.search(" ".join(ls[max(0, k - 1):k + 2])):
+                    whole.append((uu, l))
+        for l in near:
+            log.append(dict(co=d["co"], fy=d["fy"], person=who, row_page=u["start"], scope="행 섹션", page="시작페이지 %s" % u["start"],
+                            text=re.sub(r"\s+", " ", l).strip(), judge=rs_judge(l)))
+        for uu, l in whole:
+            log.append(dict(co=d["co"], fy=d["fy"], person=who, row_page=u["start"], scope="문서 전체 함께 나옴",
+                            page="시작페이지 %s" % uu["start"], text=re.sub(r"\s+", " ", l).strip(), judge=rs_judge(l)))
+        rng = "%s 6차 섹션 「%s %s」(시작페이지 %s) 글 전체" % (d["file"], u["no"], re.sub(r"\s+", " ", u["title"]).strip(), u["start"])
+        allr = "이 문서 6차 섹션 글 전체(%d개 섹션)" % len(d["units"])
+    return ("reason_text 「문서에 없음」 — 찾은 범위: %s 에서 검색어 「사유」「겸직」「겸임」「선임」(걸린 줄 %d), %s에서 「겸직」「겸임」이 "
+            "「사유」「선임」과 같은 줄이나 앞뒤 줄에 함께 있는 곳(%d) — 걸린 줄은 모두 사람이 읽었고 이 겸직의 사유를 적은 글은 없음"
+            "(걸린 줄과 판정: dart_out/ops15/gov15_g1_work/A_사유_재검색.csv) (판단)") % (rng, len(near), allr, len(whole))
+
+
 # ================================================================ 행 만들기
-A_COLS = ["corp_label", "fy", "person", "birth_ym", "holdco_title", "holdco_duty", "registered", "fulltime",
+A_COLS =["corp_label", "fy", "person", "birth_ym", "holdco_title", "holdco_duty", "registered", "fulltime",
           "concurrent_company", "concurrent_title", "concurrent_since", "reason_text", "doc_kind", "source_text",
           "rcept_no_or_url", "page", "note", "doc_name", "collected_at"]
 B_COLS = ["corp_label", "fy", "employees_total", "regular", "contract", "keyword", "source_text", "doc_kind",
@@ -602,9 +711,11 @@ def doc_name(d):
     return "%s (%s, 파일 %s)" % (d["title"], d["kind"], d["file"])
 
 
-def base_note(d):
+def base_note(d, how="prose"):
     if d["src"] == "sec6":
         return "6차 섹션 글(PDF 원본은 이번 컨테이너에 없음; 레이아웃 추출이라 낱말 사이 공백이 여러 칸일 수 있음)"
+    if how == "table":
+        return "PDF 쪽 텍스트(pymupdf) — 표 칸 사이 PDF 줄바꿈은 그대로 둠"
     return "PDF 쪽 텍스트(pymupdf) — PDF 줄바꿈만 붙여 씀"
 
 
@@ -643,6 +754,7 @@ def build():
 
     # ---------------- A: 손으로 고른 개별 겸직
     used = {}     # id(doc) -> [norm source]
+    reason_log = []
     for sp in A_SPECS:
         ds = [d for d in by.get((sp["co"], sp["year"]), []) if d["kind"] == "본공시"]
         if not ds:
@@ -654,15 +766,18 @@ def build():
             problems.append("A 원문 못 찾음: %s %s %s" % (sp["co"], sp["year"], sp["src"][:60]))
             continue
         src = join(f["raw"], sp["join"])
-        notes = [sp["note"], base_note(d)]
+        notes = [sp["note"], base_note(d, sp["join"])]
         if sp["extra"]:
-            g = D[id(d)].find(sp["extra"]) if d["src"] == "pdf" else None
+            # (15차 고침) 표 행과 각주를 「 … 」로 잇지 않고, 표 행 시작부터 각주 끝까지 원문에 이어진 글 전체(2,000자 이하)를 옮김
+            g = D[id(d)].span_to(f, sp["extra"]) if d["src"] == "pdf" else None
             if g:
-                src = src + " … " + join(g["raw"], "prose")
+                src = join(g["raw"], "table")
+                f = dict(f, raw=g["raw"])
                 used.setdefault(id(d), []).append(norm(g["raw"]))
                 notes.append("각주 %s" % g["page"])
+                notes.append("표 행~각주 %d자(공백·줄바꿈 빼고 %d자)" % (len(src), len(norm(src))))
             else:
-                problems.append("A 각주 못 찾음: %s %s" % (sp["co"], sp["year"]))
+                problems.append("A 각주 못 찾음(또는 2,000자 넘음): %s %s" % (sp["co"], sp["year"]))
         reason = "문서에 없음"
         if sp["reason"]:
             r = D[id(d)].find(sp["reason"], sp["near_line"], sp["unit"]) if d["src"] == "pdf" else None
@@ -670,8 +785,13 @@ def build():
                 r = D[id(d)].find(sp["reason"], None, f["unit"]["title"])
             if r:
                 reason = join(r["raw"], "prose")
+                if r.get("page", "").startswith("p.") and r["page"] != f["page"]:
+                    notes.append("사유 위치 %s" % r["page"])
             else:
                 problems.append("A 사유 못 찾음: %s %s" % (sp["co"], sp["year"]))
+        else:
+            # (15차 고침) reason_text 「문서에 없음」 행: 찾은 범위(문서·쪽 범위·검색어)를 note 에. 같은 범위를 다시 찾은 줄은 작업 기록 CSV 에
+            notes.append(reason_scope(D[id(d)], d, f, sp, reason_log))
         birth = sp["birth"]
         if birth == "auto" and d["src"] == "sec6":
             body = f["unit"]["body"][:f["pos"]]
@@ -730,9 +850,9 @@ def build():
                 if c != "B":
                     excl_log.append(dict(co=co, year=year, kind=d["kind"], page=h["page"], cat=c, sent=h["sent"]))
                     continue
-                notes = [base_note(d)]
+                notes = [base_note(d, h.get("mode") or "prose")]
                 if h.get("mode") == "table":
-                    notes.append("표 칸은 「 | 」로 이음 (판단: 앞의 짧은 칸들을 같은 행으로 봄)")
+                    notes.append("표 칸(짧은 줄)을 원문 줄바꿈 그대로 옮김 (판단: 앞의 짧은 칸들을 같은 행으로 봄)")
                 if MISSING.get((co, year)):
                     notes.append(MISSING[(co, year)].lstrip("; "))
                 if d is not main and main is not None and norm(h["sent"]) in D[id(main)].ntext:
@@ -791,6 +911,13 @@ def build():
         w = csv.DictWriter(f, fieldnames=["co", "year", "kind", "page", "cat", "sent"])
         w.writeheader()
         w.writerows(excl_log)
+    with open(REASON_LOG, "w", encoding="utf-8-sig", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=["co", "fy", "person", "row_page", "scope", "page", "text", "judge"])
+        w.writeheader()
+        w.writerows(reason_log)
+    for x in reason_log:
+        if x["judge"] == "판정 없음":
+            problems.append("reason 재검색 판정 없음: %s %s %s %s" % (x["co"], x["fy"], x["page"], x["text"][:60]))
     # 원문 md
     for (task, co, fy), lst in sorted(sections.items()):
         od_ = os.path.join("dart_out", "ops15", "원문", task)
